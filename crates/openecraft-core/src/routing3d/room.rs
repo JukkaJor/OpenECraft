@@ -143,6 +143,18 @@ pub(super) fn room_chain(links: &[panel::WallLink], a: usize, b: usize) -> Optio
     Some(chain)
 }
 
+/// Of the wall penetrations joining the rooms of `l`, the one with the shortest way
+/// from `from` (room coordinates of `l.from`) through it to `to` (of `l.to`).
+pub(super) fn nearest_link(links: &[panel::WallLink], l: panel::WallLink, from: V3, to: V3) -> panel::WallLink {
+    let way = |k: &panel::WallLink| manhattan(from, k.a) + manhattan(k.b, to);
+    links
+        .iter()
+        .flat_map(|k| [*k, k.reversed()])
+        .filter(|k| k.from == l.from && k.to == l.to)
+        .min_by(|a, b| way(a).total_cmp(&way(b)).then(a.item.cmp(&b.item)))
+        .unwrap_or(l)
+}
+
 /// The legs of a route between two placed ends in rooms `rooms` (in a room itself or
 /// in a cabinet standing there): from a device in a cabinet to its entry, through the
 /// rooms and the wall penetrations between them (`links`: [`panel::wall_links`]), from
@@ -150,13 +162,19 @@ pub(super) fn room_chain(links: &[panel::WallLink], a: usize, b: usize) -> Optio
 /// of a roof and the length of the ways through the walls.
 #[allow(clippy::too_many_arguments)]
 pub(super) fn plan_legs(prj: &Project, pos: &[V3], poses: &[SitePose], lineup_of: &dyn Fn(usize) -> Option<usize>, rooms: [usize; 2], links: &[panel::WallLink], ends: &[End; 2]) -> Option<(Vec<LegPlan>, bool, f32)> {
-    let chain = if rooms[0] == rooms[1] { Vec::new() } else { room_chain(links, rooms[0], rooms[1])? };
+    let mut chain = if rooms[0] == rooms[1] { Vec::new() } else { room_chain(links, rooms[0], rooms[1])? };
     // An end in room coordinates of its room.
     let in_room = |ri: usize, end: &End| -> Option<V3> {
         let (k, q) = (end.enclosure?, end.point?);
         Some(if k == ri { sub(q, pos[ri]) } else { cabinet_in_room(prj, poses, ri, k, sub(q, pos[k])) })
     };
     let at = [in_room(rooms[0], &ends[0])?, in_room(rooms[1], &ends[1])?];
+    // Through the nearest of the wall penetrations joining two rooms.
+    for i in 0..chain.len() {
+        let from = if i == 0 { at[0] } else { chain[i - 1].b };
+        let to = chain.get(i + 1).map_or(at[1], |l| l.a);
+        chain[i] = nearest_link(links, chain[i], from, to);
+    }
     // What each end heads for in its room: the other end, or the wall penetration.
     let near = [chain.first().map_or(at[1], |l| l.a), chain.last().map_or(at[0], |l| l.b)];
     let mut roof = false;

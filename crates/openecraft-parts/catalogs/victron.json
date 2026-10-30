@@ -4,7 +4,7 @@
     "name": "Victron Energy",
     "manufacturer": "Victron Energy",
     "version": "2026.1",
-    "description": "Off-grid and backup power: MultiPlus-II inverter / charger, SmartSolar MPPT charge controller, Orion-Tr DC-DC charger, Cerbo GX, SmartShunt and BMV battery monitors, Lynx DC distribution. Most of them are mounted directly on a wall (Wall mounting). Curated from public data sheets; check against the manufacturer data before ordering."
+    "description": "Off-grid and backup power: MultiPlus-II inverter / charger, Inverter RS Smart Solar, SmartSolar MPPT charge controller, Orion-Tr DC-DC charger, Cerbo GX, SmartShunt and BMV battery monitors, Lynx DC distribution. Most of them are mounted directly on a wall (Wall mounting). Curated from public data sheets; check against the manufacturer data before ordering."
   },
   "parts": [
     {
@@ -135,7 +135,11 @@
       "functions": [
         {
           "kind": "Generic",
-          "pins": "V+ V- VE.Bus VE.Direct1 VE.Direct2 VE.Direct3 VE.Can BMS-Can LAN"
+          "pins": "V+ V-"
+        },
+        {
+          "kind": "Generic",
+          "pins": "VE.Bus VE.Can BMS-Can LAN VE.Direct1 VE.Direct2 VE.Direct3"
         },
         {
           "kind": "Changeover",
@@ -245,6 +249,82 @@
       ],
       "mounting_data": {
         "wall_mount": true
+      }
+    },
+    {
+      "number": "VIC.PMP482505010",
+      "type_number": "MultiPlus-II 48/5000/70-50",
+      "order_number": "PMP482505010",
+      "manufacturer": "Victron Energy",
+      "description": "Inverter / charger MultiPlus-II 48/5000/70-50, 230 V, with 50 A transfer switch, parallel and 3-phase operation",
+      "group": "Power supplies, transformers",
+      "subgroup": "Inverter / charger",
+      "identifier": "T",
+      "voltage": "48 V DC / 230 V AC",
+      "current": "70 A charge, 50 A transfer",
+      "power": "5000 VA",
+      "tech_data": "Continuous output power at 25 °C: 4000 W\nPeak power: 9000 W\nBattery voltage range: 38 - 66 V DC\nEfficiency: 96 %\nProtection: IP21\nCommunication: VE.Bus",
+      "price": 1590.0,
+      "width": 275,
+      "height": 565,
+      "depth": 147,
+      "weight": 30.0,
+      "mounting": "Wall mounting",
+      "functions": [
+        {
+          "kind": "PowerSupply",
+          "pins": "ACin-L ACin-N PE ACout1-L ACout1-N DC+ DC-"
+        },
+        {
+          "kind": "Generic",
+          "pins": "ACout2-L ACout2-N"
+        },
+        {
+          "kind": "Generic",
+          "pins": "VE.Bus1 VE.Bus2"
+        }
+      ],
+      "mounting_data": {
+        "wall_mount": true,
+        "clearance_top": 100,
+        "clearance_bottom": 100,
+        "power_loss": 200
+      }
+    },
+    {
+      "number": "VIC.PIN482601000",
+      "type_number": "Inverter RS 48/6000 230V Smart Solar",
+      "order_number": "PIN482601000",
+      "manufacturer": "Victron Energy",
+      "description": "Inverter RS Smart Solar 48/6000, 230 V, with solar charger 80 - 450 V PV input, 4000 W",
+      "group": "Power supplies, transformers",
+      "subgroup": "Inverter",
+      "identifier": "T",
+      "voltage": "48 V DC / 230 V AC",
+      "current": "18 A PV input",
+      "power": "5300 W",
+      "tech_data": "Continuous output power at 25 °C: 5300 W\nPeak power: 9000 W\nPV voltage range: 80 - 450 V DC\nPV power: 4000 W\nBattery voltage range: 38 - 62 V DC\nProtection: IP21\nCommunication: VE.Can, VE.Direct",
+      "price": 1890.0,
+      "width": 440,
+      "height": 425,
+      "depth": 125,
+      "weight": 11.0,
+      "mounting": "Wall mounting",
+      "functions": [
+        {
+          "kind": "PowerSupply",
+          "pins": "PV+ PV- DC+ DC- L N PE"
+        },
+        {
+          "kind": "Generic",
+          "pins": "VE.Can1 VE.Can2 VE.Direct"
+        }
+      ],
+      "mounting_data": {
+        "wall_mount": true,
+        "clearance_top": 150,
+        "clearance_bottom": 150,
+        "power_loss": 180
       }
     }
   ]

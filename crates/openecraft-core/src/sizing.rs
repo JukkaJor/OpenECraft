@@ -2,7 +2,8 @@
 //! devices (IEC 60204-1, table 6, installation method B2, copper, PVC, 40 °C,
 //! corrected for the installation conditions of the project) and the voltage drop of
 //! cables to their loads. Rated currents come from the parts (`Current` field, e.g.
-//! "16 A" or the setting range "2.5 - 4 A").
+//! "16 A" or the setting range "2.5 - 4 A"); fuse bases and fuse switch disconnectors
+//! protect at the rated current of the fuse links put into them ([`FUSE_LINK`]).
 
 use openecraft_i18n::tr_fmt;
 use crate::model::*;
@@ -114,14 +115,59 @@ pub(crate) fn passes_current(prj: &Project, s: &SymbolInst) -> bool {
         || prj.symbol(&s.sym).is_some_and(|d| d.func == Func::Aux(ContactKind::MainNo))
 }
 
-/// Rated current of a protective device: the largest rated current of its parts
-/// that have a protective function.
+/// Subgroup of the fuse links (NH, D, cylindrical) put into fuse bases and fuse switch
+/// disconnectors.
+pub const FUSE_LINK: &str = "Fuse link";
+
+/// The fuse link of a device (the one with the highest rated current), if it has one.
+pub fn fuse_link<'a>(prj: &'a Project, tag: &str) -> Option<&'a Part> {
+    let current = |p: &Part| parse_current(&p.current).unwrap_or(0.0);
+    device_parts(prj, tag).into_iter().filter(|p| p.subgroup == FUSE_LINK && parse_current(&p.current).is_some()).max_by(|a, b| current(a).total_cmp(&current(b)))
+}
+
+/// Rated current of a protective device: that of its fuse links, otherwise the largest
+/// rated current of its parts that have a protective function.
 pub fn protective_current(prj: &Project, tag: &str) -> Option<f32> {
+    if let Some(link) = fuse_link(prj, tag) {
+        return parse_current(&link.current);
+    }
     device_parts(prj, tag)
         .into_iter()
         .filter(|p| p.functions.iter().any(|f| PROTECTIVE.contains(&f.kind)))
         .filter_map(|p| parse_current(&p.current))
         .reduce(f32::max)
+}
+
+/// Smallest cross-section of the table that carries `current` under the installation
+/// conditions of the project (mm²); `None` above the table.
+pub fn cross_section_for(prj: &Project, current: f32) -> Option<f32> {
+    AMPACITY.iter().map(|x| x.0).find(|&a| capacity(prj, a).is_some_and(|iz| iz + 0.01 >= current))
+}
+
+/// Gives the wires behind protective devices that carry less than the device lets
+/// through the smallest cross-section that carries it (wires of cables keep the
+/// cross-section of their cable). Returns the number of wires changed.
+pub fn size_wires(prj: &mut Project) -> usize {
+    let (nl, open) = (Netlist::build(prj, true), Netlist::build(prj, false));
+    let mut needed: std::collections::HashMap<usize, f32> = std::collections::HashMap::new();
+    for o in overloads(prj, &nl, &open) {
+        if let Some(&n) = open.wire_net.get(&o.target.1) {
+            let rated = needed.entry(n).or_insert(0.0);
+            *rated = rated.max(o.rated);
+        }
+    }
+    let mut changed = 0;
+    for (n, rated) in needed {
+        let Some(mm2) = cross_section_for(prj, rated) else { continue };
+        let cs = format!("{mm2} mm²");
+        for &(pi, wid) in &open.nets[n].wires {
+            if let Some(w) = prj.pages[pi].wires.iter_mut().find(|w| w.id == wid && w.cable.is_empty()) {
+                w.cross_section = cs.clone();
+                changed += 1;
+            }
+        }
+    }
+    changed
 }
 
 pub(crate) fn designation_number(s: &SymbolInst, pin: usize) -> Option<u32> {
@@ -227,14 +273,16 @@ pub fn cable_drops(prj: &Project, conns: &[Connection]) -> Vec<CableDrop> {
     for cable in &prj.cables {
         let on: Vec<&Connection> = conns.iter().filter(|c| c.cable == cable.tag).collect();
         // The load: the device at the cable's ends with the highest rated current
-        // (terminals, plugs and protective devices are no loads).
+        // (terminals, plugs, protective devices, meters and current transformers are
+        // no loads).
         let mut load: Option<(String, f32, Option<f32>)> = None;
         let mut tags: Vec<&str> = Vec::new();
         for c in &on {
             for p in [c.a, c.b] {
                 let s = &prj.pages[p.page].symbols[p.sym];
                 let func = prj.symbol(&s.sym).map(|d| d.func);
-                if func.is_some_and(|f| f.is_feedthrough()) || is_protective(&s.sym) || tags.contains(&s.tag.as_str()) {
+                let measuring = matches!(kind_of_symbol(&s.sym), Some(FnKind::Meter | FnKind::CurrentTransformer));
+                if func.is_some_and(|f| f.is_feedthrough()) || is_protective(&s.sym) || measuring || tags.contains(&s.tag.as_str()) {
                     continue;
                 }
                 tags.push(&s.tag);

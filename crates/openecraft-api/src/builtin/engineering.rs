@@ -49,6 +49,12 @@ pub static COMMANDS: &[Spec] = &[
         params: &[],
         run: electrical_sizing,
     },
+    Spec {
+        name: "size_wires",
+        help: tr_const!("Gives the wires behind protective devices that are too thin for the device the smallest cross-section that carries its rated current (IEC 60204-1); wires of cables keep their cable"),
+        params: &[],
+        run: size_wires,
+    },
 ];
 
 const INSTALLATIONS: [(&str, Installation); 7] = [
@@ -129,6 +135,11 @@ fn enclosure_climate(prj: &mut Project, a: &Args) -> Result<Value, String> {
         })
         .collect();
     Ok(Value::Array(out))
+}
+
+fn size_wires(prj: &mut Project, _: &Args) -> Result<Value, String> {
+    let changed = sizing::size_wires(prj);
+    Ok(json!({ "changed": changed }))
 }
 
 fn electrical_sizing(prj: &mut Project, _: &Args) -> Result<Value, String> {

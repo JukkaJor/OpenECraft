@@ -195,7 +195,7 @@ pub fn check(prj: &Project, idx: &Index, nl: &Netlist) -> Vec<Issue> {
         if dev.mains.is_empty() && !dev.auxs.is_empty() {
             v.push(crate::issue!(Severity::Error, t(&dev.auxs[0]), "{}: auxiliary function(s) without main function", tag));
         }
-        if dev.mains.len() > 1 {
+        if dev.mains.len() > 1 && !poles_of_one_device(prj, tag, &dev.mains) {
             v.push(crate::issue!(Severity::Error, t(&dev.mains[1]), "{}: main function placed {} times", tag, dev.mains.len()));
         }
         if !dev.others.is_empty() {
@@ -281,6 +281,16 @@ pub fn check(prj: &Project, idx: &Index, nl: &Netlist) -> Vec<Issue> {
     }
     v.sort_by_key(|i| i.severity);
     v
+}
+
+/// Several main functions of one device are its poles or channels drawn one by one
+/// (a fuse holder per pole, a surge arrester per conductor, the fuses of a fuse
+/// block): all of one kind, which its parts provide as often as they are placed.
+fn poles_of_one_device(prj: &Project, tag: &str, mains: &[crate::index::Loc]) -> bool {
+    let kind = |l: &crate::index::Loc| prj.pages[l.page].symbols.iter().find(|s| s.id == l.sym_id).and_then(|s| crate::parts::kind_of_symbol(&s.sym));
+    let Some(first) = mains.first().and_then(kind) else { return false };
+    let provided = crate::parts::available_functions(prj, None, tag).iter().filter(|f| f.kind == first).count();
+    mains.iter().all(|l| kind(l) == Some(first)) && provided >= mains.len()
 }
 
 /// Panel layout checks: enclosures of mounting pages and unplaced devices; the

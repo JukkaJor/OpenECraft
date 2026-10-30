@@ -45,7 +45,7 @@ Where the code of each feature lives. [architecture.md](architecture.md) describ
 | `crates/openecraft-core/src/structure.rs` | Structure identifiers: parse / complete / shorten tags (`=A1+CAB1-K1`) |
 | `crates/openecraft-core/src/potentials.rs` | Potential definitions, presets, automatic wire colour and cross-section |
 | `crates/openecraft-core/src/climate.rs` | Enclosure climate (IEC/TR 60890): power loss, surface, cooling and heating |
-| `crates/openecraft-core/src/sizing.rs` | Electrical sizing: current-carrying capacity behind protective devices, voltage drop |
+| `crates/openecraft-core/src/sizing.rs` | Electrical sizing: current-carrying capacity behind protective devices (fuse links set the rating of fuse switches), sizing of the wires behind them, voltage drop |
 | `crates/openecraft-core/src/electrical.rs` | Supply, installation conditions, circuits of the mains |
 | `crates/openecraft-core/src/protection.rs` | Protective devices: characteristics, time-current bands, let-through energy |
 | `crates/openecraft-core/src/shortcircuit.rs` | Short-circuit currents, disconnection, withstand, selectivity |
@@ -71,6 +71,7 @@ Where the code of each feature lives. [architecture.md](architecture.md) describ
 | `crates/openecraft-core/src/export3d.rs` | 3D scene of the panel layout, glTF, STEP, IGES, IFC, JT and Parasolid export |
 | `crates/openecraft-parts/src/ifc.rs` | IFC import of part models (small STEP physical file reader) |
 | `crates/openecraft-parts/src/bmecat.rs` | BMEcat catalog import with ETIM / eCl@ss features (small XML reader in `xml.rs`) |
+| `crates/openecraft-parts/src/bundled.rs` | Manufacturer catalogs shipped with OpenECraft (`catalogs/<id>.json`): installed by the parts server, used by the example projects |
 | `openecraft/src/app/engineering.rs` | Windows for macros, terminal strips and PLC overview |
 | `openecraft/src/app/revisions_ui.rs` | Revisions window with the approval workflow |
 | `openecraft/src/app/compare_ui.rs`, `openecraft/src/app/review_ui.rs`, `openecraft/src/app/requests_ui.rs` | Compare and baselines, review tab and tools, change requests |
@@ -84,7 +85,7 @@ Where the code of each feature lives. [architecture.md](architecture.md) describ
 | `openecraft/src/mounting_ui.rs` | Mounting assistant: checklist in mounting order, current item, 3D view, progress |
 | `crates/openecraft-core/src/panel.rs` | Panel layout model, device sizes, rail snapping, collisions, duct routing |
 | `crates/openecraft-core/src/panel/lineup.rs` | Line-ups: enclosures bayed side by side and the cable passages between them |
-| `crates/openecraft-core/src/panel/rooms.rs` | Rooms: floor plan outline and its walls, cabinets standing in them, rails, ducts and wall-mounted devices on walls and ceiling, wall penetrations and where they lead, their checks |
+| `crates/openecraft-core/src/panel/rooms.rs` | Rooms: floor plan outline and its walls, cabinets standing in them, rails, ducts and wall-mounted devices on walls and ceiling, wall penetrations and where they lead, building entries, their checks |
 | `crates/openecraft-core/src/panel/rack.rs` | 19-inch racks: rack units, 19-inch parts snapped onto whole units, their mounting rails and checks |
 | `openecraft/src/panel_ui/plan.rs` | Floor plan of a room: drawing and moving walls, placing cabinets |
 | `crates/openecraft-core/src/routing3d.rs` | 3D routing of wires, cables and tubes: rules, routing paths and reservations, grid search, bundles, shields, frozen routes |

@@ -310,7 +310,9 @@ impl Protection {
 pub fn of_device(prj: &Project, tag: &str) -> Option<Protection> {
     crate::sizing::device_parts(prj, tag).into_iter().find_map(|p| {
         let f = p.functions.iter().find(|f| crate::sizing::PROTECTIVE.contains(&f.kind))?;
-        Protection::of_part(p, f.kind)
+        // A fuse base or fuse switch disconnector protects with its fuse links.
+        let link = crate::sizing::fuse_link(prj, tag);
+        Protection::of_part(link.unwrap_or(p), f.kind)
     })
 }
 

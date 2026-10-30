@@ -249,7 +249,7 @@ impl PanelUi {
                         ItemKind::Cutout => match it.opening {
                             Opening::Door => Color32::from_rgb(150, 110, 70),
                             Opening::Window => Color32::from_rgb(160, 205, 235),
-                            Opening::Cutout | Opening::Penetration => Color32::from_rgb(40, 40, 44),
+                            Opening::Cutout | Opening::Penetration | Opening::Entry => Color32::from_rgb(40, 40, 44),
                         },
                         ItemKind::Device => Color32::from_rgb(170, 186, 210),
                         ItemKind::Accessory => Color32::from_rgb(95, 100, 110),

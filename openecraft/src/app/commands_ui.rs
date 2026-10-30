@@ -40,7 +40,7 @@ impl App {
             Cmd::LayoutDoorInside | Cmd::LayoutDoor | Cmd::LayoutFront => self.panel_ui.view == crate::panel_ui::View::Front && !self.panel_ui.in_room,
             Cmd::LayoutWalls => self.panel_ui.view != crate::panel_ui::View::ThreeD,
             Cmd::LayoutBusbar | Cmd::LayoutCutout | Cmd::LayoutRoutingPath | Cmd::LayoutReservation | Cmd::LayoutHeat | Cmd::LayoutNcData => !self.panel_ui.in_room,
-            Cmd::LayoutWallPart | Cmd::LayoutFloorPart | Cmd::LayoutPipeRun | Cmd::LayoutFloorPlan | Cmd::LayoutDrawWalls | Cmd::LayoutInnerWalls | Cmd::LayoutRoomDoor | Cmd::LayoutRoomWindow | Cmd::LayoutRoomPenetration => self.panel_ui.in_room,
+            Cmd::LayoutWallPart | Cmd::LayoutFloorPart | Cmd::LayoutPipeRun | Cmd::LayoutFloorPlan | Cmd::LayoutDrawWalls | Cmd::LayoutInnerWalls | Cmd::LayoutRoomDoor | Cmd::LayoutRoomWindow | Cmd::LayoutRoomPenetration | Cmd::LayoutRoomEntry => self.panel_ui.in_room,
             Cmd::LayoutRackPart => self.session.prj.layout.enclosures.get(self.panel_ui.enclosure).is_some_and(openecraft_core::panel::is_rack),
             Cmd::LayoutLineup | Cmd::LayoutSite => self.panel_ui.view == crate::panel_ui::View::ThreeD,
             _ => true,
@@ -105,6 +105,7 @@ impl App {
             Cmd::LayoutRoomDoor => self.panel_ui.tool == crate::panel_ui::Tool::Opening(openecraft_core::panel::Opening::Door),
             Cmd::LayoutRoomWindow => self.panel_ui.tool == crate::panel_ui::Tool::Opening(openecraft_core::panel::Opening::Window),
             Cmd::LayoutRoomPenetration => self.panel_ui.tool == crate::panel_ui::Tool::Opening(openecraft_core::panel::Opening::Penetration),
+            Cmd::LayoutRoomEntry => self.panel_ui.tool == crate::panel_ui::Tool::Opening(openecraft_core::panel::Opening::Entry),
             Cmd::LayoutWires => self.panel_ui.show_wires,
             Cmd::LayoutDuctFill => self.panel_ui.show_fill,
             Cmd::LayoutHeat => self.panel_ui.show_heat,
@@ -381,6 +382,7 @@ impl App {
             Cmd::LayoutRoomDoor => self.panel_ui.choose_tool(crate::panel_ui::Tool::Opening(openecraft_core::panel::Opening::Door)),
             Cmd::LayoutRoomWindow => self.panel_ui.choose_tool(crate::panel_ui::Tool::Opening(openecraft_core::panel::Opening::Window)),
             Cmd::LayoutRoomPenetration => self.panel_ui.choose_tool(crate::panel_ui::Tool::Opening(openecraft_core::panel::Opening::Penetration)),
+            Cmd::LayoutRoomEntry => self.panel_ui.choose_tool(crate::panel_ui::Tool::Opening(openecraft_core::panel::Opening::Entry)),
             Cmd::NewRoom => {
                 self.set_workspace(Workspace::Panel);
                 self.panel_ui.new_room(&mut self.session.prj);

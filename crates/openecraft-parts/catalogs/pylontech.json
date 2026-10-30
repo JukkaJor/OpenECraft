@@ -1,0 +1,77 @@
+{
+  "catalog": {
+    "id": "pylontech",
+    "name": "Pylontech",
+    "manufacturer": "Pylontech",
+    "version": "2026.1",
+    "description": "Low-voltage lithium iron phosphate battery modules US5000 and US3000C for 19-inch racks, with CAN / RS485 communication to inverters and GX devices. Curated from public data sheets; check against the manufacturer data before ordering."
+  },
+  "parts": [
+    {
+      "number": "PYL.US5000",
+      "type_number": "US5000",
+      "order_number": "US5000",
+      "manufacturer": "Pylontech",
+      "description": "Lithium iron phosphate battery module US5000, 48 V, 100 Ah, 4.8 kWh, 19-inch, 4 U",
+      "group": "Power supplies, transformers",
+      "subgroup": "Battery",
+      "identifier": "G",
+      "voltage": "48 V DC (44.5 - 53.5 V)",
+      "current": "80 A",
+      "power": "4.8 kWh",
+      "tech_data": "Rack units: 4\nNominal capacity: 100 Ah\nMax. current: 100 A\nCell chemistry: LiFePO4\nCycle life: > 6000 at 90 % DoD\nCommunication: CAN, RS485\nParallel modules: up to 16\nProtection: IP20",
+      "price": 1290.0,
+      "width": 482.6,
+      "height": 177.8,
+      "depth": 420,
+      "weight": 39.7,
+      "mounting": "19-inch rack",
+      "functions": [
+        {
+          "kind": "Battery",
+          "pins": "+ -"
+        },
+        {
+          "kind": "Generic",
+          "pins": "CAN RS485 Link0 Link1"
+        }
+      ],
+      "mounting_data": {
+        "power_loss": 5
+      }
+    },
+    {
+      "number": "PYL.US3000C",
+      "type_number": "US3000C",
+      "order_number": "US3000C",
+      "manufacturer": "Pylontech",
+      "description": "Lithium iron phosphate battery module US3000C, 48 V, 74 Ah, 3.55 kWh, 19-inch, 3 U",
+      "group": "Power supplies, transformers",
+      "subgroup": "Battery",
+      "identifier": "G",
+      "voltage": "48 V DC (44.5 - 53.5 V)",
+      "current": "37 A",
+      "power": "3.55 kWh",
+      "tech_data": "Rack units: 3\nNominal capacity: 74 Ah\nMax. current: 74 A\nCell chemistry: LiFePO4\nCycle life: > 6000 at 90 % DoD\nCommunication: CAN, RS485\nParallel modules: up to 16\nProtection: IP20",
+      "price": 990.0,
+      "width": 482.6,
+      "height": 133.35,
+      "depth": 420,
+      "weight": 32.0,
+      "mounting": "19-inch rack",
+      "functions": [
+        {
+          "kind": "Battery",
+          "pins": "+ -"
+        },
+        {
+          "kind": "Generic",
+          "pins": "CAN RS485 Link0 Link1"
+        }
+      ],
+      "mounting_data": {
+        "power_loss": 5
+      }
+    }
+  ]
+}

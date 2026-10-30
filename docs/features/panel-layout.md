@@ -124,6 +124,13 @@ or Enter), walls are dragged to move them or get a length in the room's properti
   wall (up to 1 m away, through rooms turned against each other too): cables, tubes
   and pipes are routed from room to room through them. The floor plan draws them and
   the way through the wall dashed; `list_rooms` tells where each one leads.
+- **Building entries** (*Layout space › Draw › Building entry*, command
+  `add_wall_opening` with `kind` `entry`; 200 x 200 mm, 600 mm above the floor unless
+  set otherwise) are the house lead-ins of the outer walls: the supply cable, the
+  water main and other lines from outside the building come in through them. A cable
+  or pipe from a device in the room to a device outside the building (its location is
+  none of the rooms and enclosures of the layout, such as the utility's cable
+  distribution cabinet) is routed to the nearest building entry.
 - **Pipe runs** (*Layout space › Draw › Pipe run*, command `add_pipe_run`) are drawn on a
   wall, the ceiling or the floor by clicking their corners (at right angles), 100 mm in
   front of a wall, 300 mm below the ceiling or 200 mm above the floor unless set
@@ -181,7 +188,10 @@ Between rooms, a route passes the wall penetrations that join them, through as f
 walls as possible: through the first room to a penetration, through the rooms between,
 through the last room to its end (its legs per room and cabinet in the routing list);
 its length includes the ways through the walls. Without such a penetration the route
-stays unrouted (*no wall penetration leads from room to room*).
+stays unrouted (*no wall penetration leads from room to room*). A route from a device
+of a room to the outside of the building ends at its nearest building entry; of several
+wall penetrations joining the same two rooms the route takes the one with the shortest
+way.
 
 In a room, routes run through its free space: around its walls, inner walls, the
 cabinets standing in it and the swing of its doors, preferring its cable ducts and pipe

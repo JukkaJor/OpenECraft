@@ -39,16 +39,30 @@ with a command line, an MCP server, a parts server and a project server.
   shown, opened with a double-click. **19-inch racks** (42 U in 2000 mm) have mounting
   rails instead of a plate; switches, patch panels, servers, UPS and blank panels snap
   onto whole rack units, with a rack elevation report and the commands `add_rack`,
-  `mount_in_rack` and `list_racks`.
-- **Engineering:** conductor sizing, short circuit and selectivity, load calculation,
+  `mount_in_rack` and `list_racks`. **Building entries** in outer walls bring the
+  supply cable and the water main into the building: cables and pipes to devices
+  outside the building are routed to them. Of several wall penetrations into the same
+  room a route takes the nearest; cables and pipes ending at the same device (a heat
+  pump) may meet there.
+- **Engineering:** conductor sizing (`size_wires` gives the wires behind protective
+  devices the cross-section they need; fuse switch disconnectors protect at the rating
+  of their fuse links), short circuit and selectivity, load calculation,
   EMC, ISO 13849-1 safety functions; wire harnesses with KBL (their wires stay assigned when pages or symbols move), fluid
-  power, pre-planning.
+  power, pre-planning. Fluid power and P&ID symbols for air receivers, dryers,
+  lubricators, quick couplings, heat pumps and buffer tanks, the media hot water and
+  heating water; symbols for energy meters, PV generators, hybrid inverters, inverter /
+  chargers, valve actuators and motor-operated valves. A device drawn pole by pole (fuse
+  holders, surge arresters, fuse blocks) may have as many main functions as its parts
+  provide.
 - **Revisions and review:** released pages, approval workflow, baselines with compare
   and merge, comments and redlining.
 - **Parts:** a parts database with mounting data and 3D models (STEP, IGES, Parasolid,
   JT, IFC), BMEcat, EPLAN XML and EDZ import; a parts server with a data portal that
   shows the 2D front view and the 3D model of a part; the example parts, mounting
-  material included, come with both. Parts are dragged from parts management or the
+  material included, come with both; the manufacturer catalogs of the parts server
+  (ABB, Beckhoff, DEHN, Hager with NH fuse switch disconnectors and energy meters,
+  MDT, Phoenix Contact, Pylontech, Siemens, Victron, Weidmüller) also feed the example
+  projects. Parts are dragged from parts management or the
   data portal onto a schematic page, imported into the parts database on the way when
   needed, and placed as a device with the part.
 - **Data exchange:** PDF, DXF / DWG, SVG; the panel as glTF, STEP, IGES, IFC, JT and

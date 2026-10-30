@@ -11,6 +11,10 @@ pub enum Medium {
     Vacuum,
     HydraulicOil,
     Water,
+    /// Domestic hot water.
+    HotWater,
+    /// Water of a heating circuit (flow and return of a boiler or heat pump).
+    HeatingWater,
     Coolant,
     Lubricant,
     Gas,

@@ -276,3 +276,48 @@ fn routes_take_the_rooms_between_and_turned_rooms() {
     assert!(h.routed(), "{:?}", h.status);
     assert_eq!(h.enclosures, vec![r, r3, r2]);
 }
+
+#[test]
+fn routes_take_the_nearest_of_parallel_wall_penetrations() {
+    let link = |item: u64, z: f32| panel::WallLink { from: 0, item, to: 1, a: [3900.0, 500.0, z], b: [60.0, 500.0, z], length: 320.0 };
+    let links = [link(1, 500.0), link(2, 2500.0)];
+    // From near the second one into the other room.
+    let from = [3000.0, 1500.0, 2200.0];
+    let to = [500.0, 1500.0, 2600.0];
+    assert_eq!(super::nearest_link(&links, links[0], from, to).item, 2);
+    assert_eq!(super::nearest_link(&links, links[1], [3000.0, 500.0, 200.0], [500.0, 500.0, 300.0]).item, 1);
+    // The other way round through the same penetrations.
+    let back = super::nearest_link(&links, links[0].reversed(), to, from);
+    assert_eq!((back.item, back.from, back.to), (2, 1, 0));
+}
+
+#[test]
+fn lines_to_the_outside_run_to_a_building_entry() {
+    let mut k = Kit::new();
+    let q2 = k.sym("fl_shutoff", 100.0, 80.0, "-QM2", "");
+    let q3 = k.sym("fl_shutoff", 100.0, 120.0, "+YARD-QM3", "");
+    k.wire((q2, "2"), (q3, "1"));
+    k.part("-QM2", FnKind::FluidComponent, "1 2", |p| {
+        (p.width, p.height, p.depth) = (160.0, 120.0, 140.0);
+        p.mounting_data.wall_mount = true;
+    });
+    k.part("+YARD-QM3", FnKind::FluidComponent, "1 2", |_| {});
+    let mut prj = k.prj;
+    let room = panel::new_room(&mut prj, "+ROOM1", 4000.0, 3000.0, 2800.0);
+    prj.layout.enclosures.push(room);
+    panel::mount_on_wall(&mut prj, 0, "-QM2", Face::Wall(1), p(1000.0, 1200.0)).unwrap();
+    let tubes = |prj: &Project| Analysis::checked(prj).routing.items.into_iter().filter(|i| i.kind == RouteKind::Tube).collect::<Vec<_>>();
+    // Without a building entry the line to the yard is not routed.
+    assert!(tubes(&prj).is_empty());
+    let entry = panel::add_opening(&mut prj, 0, panel::Opening::Entry, Face::Wall(3), Some(1000.0), None, None).unwrap();
+    let it = prj.layout.enclosures[0].item(entry).unwrap().clone();
+    assert_eq!((it.w, it.h, panel::opening_sill(&prj.layout.enclosures[0], &it)), (panel::ENTRY_SIZE.0, panel::ENTRY_SIZE.1, panel::ENTRY_SILL));
+    assert!(panel::add_opening(&mut prj, 0, panel::Opening::Entry, Face::Roof, None, None, None).is_err(), "outer walls only");
+    let t = tubes(&prj);
+    assert!(t.len() == 1 && t[0].routed(), "{t:?}");
+    assert!(t[0].ends.iter().any(|e| e.item == Some(entry)));
+    assert_eq!(t[0].enclosures, [0]);
+    // A device of the room that is not placed yet is no line to the outside.
+    crate::ops::rename_device(&mut prj, "+YARD-QM3", "+ROOM1-QM3");
+    assert!(tubes(&prj).is_empty());
+}

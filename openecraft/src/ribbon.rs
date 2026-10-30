@@ -269,7 +269,7 @@ pub static TABS: &[Tab] = &[
             g(
                 "draw",
                 tr_const!("Draw"),
-                &[S(C::LayoutRail), S(C::LayoutDuct), S(C::LayoutBusbar), S(C::LayoutCutout), S(C::LayoutRoutingPath), S(C::LayoutReservation), S(C::LayoutDrawWalls), S(C::LayoutInnerWalls), S(C::LayoutRoomDoor), S(C::LayoutRoomWindow), S(C::LayoutRoomPenetration), S(C::LayoutPipeRun)],
+                &[S(C::LayoutRail), S(C::LayoutDuct), S(C::LayoutBusbar), S(C::LayoutCutout), S(C::LayoutRoutingPath), S(C::LayoutReservation), S(C::LayoutDrawWalls), S(C::LayoutInnerWalls), S(C::LayoutRoomDoor), S(C::LayoutRoomWindow), S(C::LayoutRoomPenetration), S(C::LayoutRoomEntry), S(C::LayoutPipeRun)],
             ),
             g(
                 "view",

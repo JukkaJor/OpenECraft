@@ -202,3 +202,56 @@ fn pump_room_routes_pipes_and_motor_cables() {
     }
     assert!(!an.issues.iter().any(|i| i.message().contains("enters through the roof")));
 }
+
+#[test]
+fn building_services_route_from_room_to_room() {
+    use crate::model::panel::Opening;
+    use crate::routing3d::RouteKind;
+    let (prj, an) = checked("building_services");
+    let l = &prj.layout;
+    let room = |name: &str| l.enclosures.iter().position(|e| e.is_room() && e.name == name).expect(name);
+    let (hr, tr) = (room("+HR"), room("+TR"));
+    // Manufacturer parts from the catalogs of the parts server.
+    for part in ["HAG.LT0057", "HAG.LT056", "HAG.LT253", "HAG.ECR300C", "VIC.PMP482505010", "VIC.PIN482601000", "VIC.BPP900450100", "PYL.US5000", "DEH.952515"] {
+        assert!(prj.parts.iter().any(|p| p.number == part), "{part}");
+    }
+    // Sections in two levels, the pages numbered after them.
+    assert!(prj.sections.iter().any(|s| s.parent != 0));
+    assert!(prj.pages.iter().any(|p| p.name == "2.1.1") && prj.pages.iter().any(|p| p.name == "7.2.4"), "{:?}", prj.pages.iter().map(|p| &p.name).collect::<Vec<_>>());
+    // Two building entries lead into the house connection room, wall penetrations on.
+    let entries = l.enclosures[hr].items.iter().filter(|i| i.opening == Opening::Entry).count();
+    assert_eq!(entries, 2);
+    assert!(crate::panel::wall_links(&prj).iter().filter(|w| (w.from, w.to) == (hr, tr)).count() >= 2);
+    // The supply cable runs from its building entry to the house connection box.
+    let w1 = an.routing.item("=GRID-W1").expect("W1 routed");
+    assert!(w1.routed() && w1.enclosures == [hr], "{:?}", w1.status);
+    assert!(w1.ends.iter().any(|e| e.item.is_some_and(|id| l.enclosures[hr].item(id).is_some_and(|i| i.opening == Opening::Entry))));
+    // The feeders of the main distribution and the water pipe pass into the technical room.
+    for tag in ["=MD-W11", "=MD-W12", "=MD-W13"] {
+        let c = an.routing.item(tag).expect(tag);
+        assert!(c.routed() && c.enclosures.contains(&hr) && c.enclosures.contains(&tr), "{tag}: {:?} {:?}", c.status, c.enclosures);
+    }
+    let pipes: Vec<_> = an.routing.items.iter().filter(|i| i.kind == RouteKind::Tube).collect();
+    assert!(pipes.iter().all(|i| i.routed()), "{pipes:#?}");
+    assert!(pipes.iter().any(|i| i.enclosures == [hr, tr]), "the pipe into the storage tank");
+    // Compressed air, heating water and hot water in their own pipes, the compressor
+    // and the heat pump fed from the pump cabinet.
+    let media: std::collections::BTreeSet<_> = prj.pages.iter().flat_map(|p| &p.wires).filter_map(|w| w.medium).collect();
+    use crate::model::fluid::Medium;
+    assert!([Medium::Water, Medium::CompressedAir, Medium::HeatingWater, Medium::HotWater].iter().all(|m| media.contains(m)), "{media:?}");
+    for tag in ["=AIR-W1", "=HEAT-W1", "=HEAT-W2", "=HEAT-W3"] {
+        assert!(an.routing.item(tag).is_some_and(|c| c.routed() && c.enclosures.contains(&tr)), "{tag}");
+    }
+    assert!(pipes.len() > 30, "{}", pipes.len());
+    // Batteries and network in the 19-inch rack.
+    let rack = l.enclosures.iter().position(crate::panel::is_rack).expect("rack");
+    assert_eq!(crate::panel::rack::occupied(&l.enclosures[rack]).len(), 9);
+    // PLC cards and EtherCAT terminals, NH fuse switches of three sizes.
+    let plc = an.report(&prj, ReportKind::PlcAssignment).unwrap();
+    for addr in ["I0.0", "Q0.1", "IW66", "DI4", "DO2"] {
+        assert!(plc.rows.iter().any(|r| r.contains(&addr.to_string())), "{addr}");
+    }
+    let idx = Index::build(&prj);
+    let devices = crate::singleline::devices(&prj, &idx);
+    assert!(devices.iter().filter(|d| d.status == crate::singleline::Status::Engineered).count() >= 12);
+}

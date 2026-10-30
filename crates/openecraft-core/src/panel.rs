@@ -39,7 +39,7 @@ pub use placement::{align, apply_anchors, apply_one_anchor, arrange_on_rail, cap
 pub use points::{device_points, point_of, PlacedPoint};
 pub use rack::{is_rack, mount_in_rack, rack_units, RACK_SYSTEM, RACK_UNIT, RACK_WIDTH};
 pub use rooms::{
-    add_inner_wall, add_opening, add_pipe_run, add_wall_profile, pipe_run_offset, pipe_run_on_face, PIPE_RUN_WIDTH, inner_sides, moved_inner_wall, remove_inner_wall, side, INNER_WALL, door_zone, opening_sill, DOOR_SIZE, WINDOW_SILL, WINDOW_SIZE, bounds, cabinet_problems, cabinets_in, check_outline, floor_cells, floor_footprint, floor_problems, footprint, inside_outline, mount_ok, mount_on_wall, moved_wall, new_room, normalize_outline, outline, room_face_from_key, room_face_key, room_face_title, room_faces,
+    add_inner_wall, add_opening, add_pipe_run, add_wall_profile, pipe_run_offset, pipe_run_on_face, PIPE_RUN_WIDTH, inner_sides, moved_inner_wall, remove_inner_wall, side, INNER_WALL, door_zone, opening_sill, entries, entry_point, ENTRY_SILL, ENTRY_SIZE, DOOR_SIZE, WINDOW_SILL, WINDOW_SIZE, bounds, cabinet_problems, cabinets_in, check_outline, floor_cells, floor_footprint, floor_problems, footprint, inside_outline, mount_ok, mount_on_wall, moved_wall, new_room, normalize_outline, outline, room_face_from_key, room_face_key, room_face_title, room_faces,
     room_of, room_place, rooms, set_outline, turned_place, set_room, stand_on_floor, stands_inside, wall_length_set, walls, Wall, MIN_WALL, ROOM_WALL,
     penetration_link, wall_links, WallLink, MAX_WALL_THICKNESS, PENETRATION_SIZE, PENETRATION_TOP,
 };
@@ -138,7 +138,7 @@ impl Face {
 }
 
 impl Opening {
-    pub const ALL: [Opening; 4] = [Opening::Cutout, Opening::Door, Opening::Window, Opening::Penetration];
+    pub const ALL: [Opening; 5] = [Opening::Cutout, Opening::Door, Opening::Window, Opening::Penetration, Opening::Entry];
 
     pub fn title(self) -> &'static str {
         match self {
@@ -146,6 +146,7 @@ impl Opening {
             Opening::Door => tr("Door"),
             Opening::Window => tr("Window"),
             Opening::Penetration => tr("Wall penetration"),
+            Opening::Entry => tr("Building entry"),
         }
     }
 
@@ -156,6 +157,7 @@ impl Opening {
             Opening::Door => "door",
             Opening::Window => "window",
             Opening::Penetration => "penetration",
+            Opening::Entry => "entry",
         }
     }
 
@@ -164,6 +166,7 @@ impl Opening {
         match self {
             Opening::Door => DOOR_SIZE,
             Opening::Penetration => PENETRATION_SIZE,
+            Opening::Entry => ENTRY_SIZE,
             _ => WINDOW_SIZE,
         }
     }

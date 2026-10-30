@@ -1,7 +1,7 @@
 use super::*;
-use openecraft_parts::{default_catalog, FnKind};
-use openecraft_parts::portal::catalog_id;
-use openecraft_parts::productgroups::group_id;
+use crate::{default_catalog, FnKind};
+use crate::portal::catalog_id;
+use crate::productgroups::group_id;
 
 #[test]
 fn bundled_catalogs_are_consistent() {
