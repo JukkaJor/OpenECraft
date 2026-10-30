@@ -36,6 +36,14 @@
           "pins": "CAN RS485 Link0 Link1"
         }
       ],
+      "connection_points": [
+        { "pin": "+", "pos": [352.3, 108.5, 420], "exit": "Front" },
+        { "pin": "-", "pos": [246.1, 108.5, 420], "exit": "Front" },
+        { "pin": "CAN", "pos": [69.5, 46.2, 407.4], "exit": "Front" },
+        { "pin": "RS485", "pos": [86.9, 46.2, 407.4], "exit": "Front" },
+        { "pin": "Link0", "pos": [104.2, 46.2, 407.4], "exit": "Front" },
+        { "pin": "Link1", "pos": [121.6, 46.2, 407.4], "exit": "Front" }
+      ],
       "mounting_data": {
         "power_loss": 5
       }
@@ -68,6 +76,14 @@
           "kind": "Generic",
           "pins": "CAN RS485 Link0 Link1"
         }
+      ],
+      "connection_points": [
+        { "pin": "+", "pos": [352.3, 81.3, 420], "exit": "Front" },
+        { "pin": "-", "pos": [246.1, 81.3, 420], "exit": "Front" },
+        { "pin": "CAN", "pos": [69.5, 34.7, 407.4], "exit": "Front" },
+        { "pin": "RS485", "pos": [86.9, 34.7, 407.4], "exit": "Front" },
+        { "pin": "Link0", "pos": [104.2, 34.7, 407.4], "exit": "Front" },
+        { "pin": "Link1", "pos": [121.6, 34.7, 407.4], "exit": "Front" }
       ],
       "mounting_data": {
         "power_loss": 5

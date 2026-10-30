@@ -39,6 +39,18 @@
           "pins": "VE.Bus1 VE.Bus2"
         }
       ],
+      "connection_points": [
+        { "pin": "DC-", "pos": [23.6, 506, 73.5], "exit": "Down" },
+        { "pin": "DC+", "pos": [48.9, 506, 73.5], "exit": "Down" },
+        { "pin": "VE.Bus1", "pos": [74.2, 506, 73.5], "exit": "Down" },
+        { "pin": "VE.Bus2", "pos": [99.5, 506, 73.5], "exit": "Down" },
+        { "pin": "ACin-L", "pos": [124.8, 506, 73.5], "exit": "Down" },
+        { "pin": "ACin-N", "pos": [150.2, 506, 73.5], "exit": "Down" },
+        { "pin": "ACout1-L", "pos": [175.5, 506, 73.5], "exit": "Down" },
+        { "pin": "ACout1-N", "pos": [200.8, 506, 73.5], "exit": "Down" },
+        { "pin": "ACout2-L", "pos": [226, 506, 73.5], "exit": "Down" },
+        { "pin": "ACout2-N", "pos": [251.3, 506, 73.5], "exit": "Down" }
+      ],
       "mounting_data": {
         "wall_mount": true,
         "clearance_top": 100,
@@ -108,6 +120,14 @@
           "pins": "H L"
         }
       ],
+      "connection_points": [
+        { "pin": "IN+", "pos": [21.7, 130, 40], "exit": "Down" },
+        { "pin": "IN-", "pos": [50.2, 130, 40], "exit": "Down" },
+        { "pin": "H", "pos": [78.7, 130, 40], "exit": "Down" },
+        { "pin": "L", "pos": [107.3, 130, 40], "exit": "Down" },
+        { "pin": "OUT+", "pos": [135.8, 130, 40], "exit": "Down" },
+        { "pin": "OUT-", "pos": [164.3, 130, 40], "exit": "Down" }
+      ],
       "mounting_data": {
         "wall_mount": true,
         "clearance_top": 100,
@@ -146,6 +166,20 @@
           "pins": "R1-NO R1-C R1-NC"
         }
       ],
+      "connection_points": [
+        { "pin": "V+", "pos": [19.6, 3.9, 44.4], "exit": "Up" },
+        { "pin": "V-", "pos": [25, 3.9, 44.4], "exit": "Up" },
+        { "pin": "R1-NO", "pos": [36.4, 3.9, 44.4], "exit": "Up" },
+        { "pin": "R1-C", "pos": [40, 3.9, 44.4], "exit": "Up" },
+        { "pin": "R1-NC", "pos": [43.6, 3.9, 44.4], "exit": "Up" },
+        { "pin": "VE.Direct1", "pos": [54.2, 3.9, 44.4], "exit": "Up" },
+        { "pin": "VE.Direct2", "pos": [57.8, 3.9, 44.4], "exit": "Up" },
+        { "pin": "VE.Direct3", "pos": [61.3, 3.9, 44.4], "exit": "Up" },
+        { "pin": "VE.Bus", "pos": [75.5, 3.9, 44.4], "exit": "Up" },
+        { "pin": "VE.Can", "pos": [93.2, 3.9, 44.4], "exit": "Up" },
+        { "pin": "BMS-Can", "pos": [110.9, 3.9, 44.4], "exit": "Up" },
+        { "pin": "LAN", "pos": [128.6, 3.9, 44.4], "exit": "Up" }
+      ],
       "mounting_data": {
         "wall_mount": true,
         "power_loss": 3
@@ -177,6 +211,13 @@
           "kind": "Generic",
           "pins": "Vbat+ Aux VE.Direct"
         }
+      ],
+      "connection_points": [
+        { "pin": "BAT-", "pos": [12, 23, 48.6], "exit": "Left" },
+        { "pin": "LOAD-", "pos": [108, 23, 48.6], "exit": "Right" },
+        { "pin": "Vbat+", "pos": [44, 2.3, 35.1], "exit": "Up" },
+        { "pin": "Aux", "pos": [60, 2.3, 35.1], "exit": "Up" },
+        { "pin": "VE.Direct", "pos": [76, 2.3, 35.1], "exit": "Up" }
       ],
       "mounting_data": {
         "wall_mount": true
@@ -247,6 +288,13 @@
           "pins": "BUS+ F4"
         }
       ],
+      "connection_points": [
+        { "pin": "BUS+", "pos": [0, 95, 20], "exit": "Left" },
+        { "pin": "F1", "pos": [36, 190, 20], "exit": "Down" },
+        { "pin": "F2", "pos": [72, 190, 20], "exit": "Down" },
+        { "pin": "F3", "pos": [108, 190, 20], "exit": "Down" },
+        { "pin": "F4", "pos": [144, 190, 20], "exit": "Down" }
+      ],
       "mounting_data": {
         "wall_mount": true
       }
@@ -284,6 +332,19 @@
           "pins": "VE.Bus1 VE.Bus2"
         }
       ],
+      "connection_points": [
+        { "pin": "DC-", "pos": [22.5, 565, 73.5], "exit": "Down" },
+        { "pin": "DC+", "pos": [45.5, 565, 73.5], "exit": "Down" },
+        { "pin": "VE.Bus1", "pos": [68.5, 565, 73.5], "exit": "Down" },
+        { "pin": "VE.Bus2", "pos": [91.5, 565, 73.5], "exit": "Down" },
+        { "pin": "ACin-L", "pos": [114.5, 565, 73.5], "exit": "Down" },
+        { "pin": "ACin-N", "pos": [137.5, 565, 73.5], "exit": "Down" },
+        { "pin": "PE", "pos": [160.5, 565, 73.5], "exit": "Down" },
+        { "pin": "ACout1-L", "pos": [183.5, 565, 73.5], "exit": "Down" },
+        { "pin": "ACout1-N", "pos": [206.5, 565, 73.5], "exit": "Down" },
+        { "pin": "ACout2-L", "pos": [229.5, 565, 73.5], "exit": "Down" },
+        { "pin": "ACout2-N", "pos": [252.5, 565, 73.5], "exit": "Down" }
+      ],
       "mounting_data": {
         "wall_mount": true,
         "clearance_top": 100,
@@ -319,6 +380,18 @@
           "kind": "Generic",
           "pins": "VE.Can1 VE.Can2 VE.Direct"
         }
+      ],
+      "connection_points": [
+        { "pin": "PV+", "pos": [37.8, 425, 62.5], "exit": "Down" },
+        { "pin": "PV-", "pos": [78.3, 425, 62.5], "exit": "Down" },
+        { "pin": "DC+", "pos": [118.8, 425, 62.5], "exit": "Down" },
+        { "pin": "DC-", "pos": [159.3, 425, 62.5], "exit": "Down" },
+        { "pin": "VE.Can1", "pos": [199.8, 425, 62.5], "exit": "Down" },
+        { "pin": "VE.Can2", "pos": [240.2, 425, 62.5], "exit": "Down" },
+        { "pin": "VE.Direct", "pos": [280.7, 425, 62.5], "exit": "Down" },
+        { "pin": "L", "pos": [321.2, 425, 62.5], "exit": "Down" },
+        { "pin": "N", "pos": [361.7, 425, 62.5], "exit": "Down" },
+        { "pin": "PE", "pos": [402.2, 425, 62.5], "exit": "Down" }
       ],
       "mounting_data": {
         "wall_mount": true,

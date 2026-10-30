@@ -40,7 +40,11 @@ with a command line, an MCP server, a parts server and a project server.
   model of their own get a detailed, coloured one by what they are (pumps, vessels,
   valves, heat pumps, inverters, rack batteries, …); devices of the bundled catalogs
   (Victron, Pylontech, Hager, DEHN, Beckhoff, Phoenix Contact, Siemens) are drawn after
-  their product photos. The 3D view hides the walls in front of the camera or the
+  their product photos and wired to their real terminals: the Pylontech batteries
+  to the power terminals and ports on their front, the Victron devices from below,
+  the Cerbo GX at its row of connectors, Beckhoff terminals at their spring contacts,
+  surge arresters with the earth at the bottom, 19-inch devices at the rear; DIN rail
+  models have a screw at every connection point. The 3D view hides the walls in front of the camera or the
   ceiling on request; the opacity of the walls is a setting. Wires are drawn in their
   colours and, like cables and tubes, in their real thickness. The title bar can show
   the frame time and the frames per second (Settings › Appearance). A placed device is shown in the

@@ -184,20 +184,20 @@ fn enclosures(prj: &mut Project, db: &PartsDb) -> [usize; 5] {
     // Main distribution: busbar system, NH fuse switch disconnectors below it, the
     // meters and terminals on rails; every cable goes up through a gland right above
     // the device it lands on.
-    let md = cabinet(prj, "GEN.TS-1000X2000X600", "+MD", "GEN.DUCT-80X80", &[900.0, 1250.0, 1550.0], &[180.0, 760.0, 1100.0, 1400.0, 1700.0]);
+    let md = cabinet(prj, "GEN.TS-1000X2000X600", "+MD", "GEN.DUCT-100X80", &[900.0, 1250.0, 1550.0], &[180.0, 760.0, 1100.0, 1400.0, 1700.0]);
     profile(prj, md, ItemKind::Busbar, "GEN.BB-3X30X10", (100.0, 300.0), (840.0, 300.0));
     for (tag, x) in [("=MD+MD-X0", 100.0), ("=MD+MD-Q1", 260.0), ("=MD+MD-Q2", 380.0), ("=MD+MD-Q3", 560.0)] {
         panel::place_device(prj, md, tag, p(x, 380.0));
     }
     on_rail(prj, md, 900.0, 240.0, &["=MD+MD-P1", "=MD+MD-P2", "=MD+MD-P3", "=MD+MD-F11", "=MD+MD-F10"]);
-    on_rail(prj, md, 900.0, 770.0, &["=MD+MD-X2"]);
+    on_rail(prj, md, 900.0, 750.0, &["=MD+MD-X2"]);
     on_rail(prj, md, 1250.0, 560.0, &["=MD+MD-T11"]);
     panel::place_accessory(prj, md, "GEN.PE-BAR-10", Face::Plate, p(120.0, 1760.0));
     panel::place_accessory(prj, md, "GEN.HANDLE-SWING", Face::Door, p(890.0, 900.0));
     // The main cable comes in above its terminals, the feeders leave above the duct
     // on the right.
     gland_over(prj, md, "GEN.GLAND-M32", "=MD+MD-X0");
-    let duct_x = panel::PLATE_MARGIN + prj.layout.enclosures[md].plate_size().0 - panel::profile(prj, ItemKind::Duct, "GEN.DUCT-80X80").0 / 2.0;
+    let duct_x = panel::PLATE_MARGIN + prj.layout.enclosures[md].plate_size().0 - panel::profile(prj, ItemKind::Duct, "GEN.DUCT-100X80").0 / 2.0;
     gland_at(prj, md, "GEN.GLAND-M25", duct_x, 87.5);
 
     // Automation cabinet +CC1 and pump cabinet +CC2, bayed: power at the top, the PLC

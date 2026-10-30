@@ -26,6 +26,13 @@
           "pins": "Us 0Vs Up 0Vp PE"
         }
       ],
+      "connection_points": [
+        { "pin": "Us", "pos": [30.8, 32, 68], "exit": "Front" },
+        { "pin": "0Vs", "pos": [37.4, 32, 68], "exit": "Front" },
+        { "pin": "Up", "pos": [30.8, 46, 68], "exit": "Front" },
+        { "pin": "0Vp", "pos": [37.4, 46, 68], "exit": "Front" },
+        { "pin": "PE", "pos": [30.8, 74, 68], "exit": "Front" }
+      ],
       "tech_data": "Bus: EtherCAT\nSupply: 24 V DC"
     },
     {
@@ -58,6 +65,12 @@
           "kind": "PlcInput",
           "pins": "DI4"
         }
+      ],
+      "connection_points": [
+        { "pin": "DI1", "pos": [3.6, 32, 68], "exit": "Front" },
+        { "pin": "DI2", "pos": [8.4, 32, 68], "exit": "Front" },
+        { "pin": "DI3", "pos": [3.6, 74, 68], "exit": "Front" },
+        { "pin": "DI4", "pos": [8.4, 74, 68], "exit": "Front" }
       ],
       "voltage": "24 V DC",
       "tech_data": "Bus: EtherCAT\nChannels: 4"
@@ -108,6 +121,16 @@
           "kind": "PlcInput",
           "pins": "DI8"
         }
+      ],
+      "connection_points": [
+        { "pin": "DI1", "pos": [3.6, 32, 68], "exit": "Front" },
+        { "pin": "DI2", "pos": [8.4, 32, 68], "exit": "Front" },
+        { "pin": "DI3", "pos": [3.6, 46, 68], "exit": "Front" },
+        { "pin": "DI4", "pos": [8.4, 46, 68], "exit": "Front" },
+        { "pin": "DI5", "pos": [3.6, 60, 68], "exit": "Front" },
+        { "pin": "DI6", "pos": [8.4, 60, 68], "exit": "Front" },
+        { "pin": "DI7", "pos": [3.6, 74, 68], "exit": "Front" },
+        { "pin": "DI8", "pos": [8.4, 74, 68], "exit": "Front" }
       ],
       "voltage": "24 V DC",
       "tech_data": "Bus: EtherCAT\nChannels: 8"
@@ -191,6 +214,24 @@
           "pins": "DI16"
         }
       ],
+      "connection_points": [
+        { "pin": "DI1", "pos": [3.6, 30, 68], "exit": "Front" },
+        { "pin": "DI2", "pos": [8.4, 30, 68], "exit": "Front" },
+        { "pin": "DI3", "pos": [3.6, 36.6, 68], "exit": "Front" },
+        { "pin": "DI4", "pos": [8.4, 36.6, 68], "exit": "Front" },
+        { "pin": "DI5", "pos": [3.6, 43.2, 68], "exit": "Front" },
+        { "pin": "DI6", "pos": [8.4, 43.2, 68], "exit": "Front" },
+        { "pin": "DI7", "pos": [3.6, 49.8, 68], "exit": "Front" },
+        { "pin": "DI8", "pos": [8.4, 49.8, 68], "exit": "Front" },
+        { "pin": "DI9", "pos": [3.6, 56.4, 68], "exit": "Front" },
+        { "pin": "DI10", "pos": [8.4, 56.4, 68], "exit": "Front" },
+        { "pin": "DI11", "pos": [3.6, 63, 68], "exit": "Front" },
+        { "pin": "DI12", "pos": [8.4, 63, 68], "exit": "Front" },
+        { "pin": "DI13", "pos": [3.6, 69.6, 68], "exit": "Front" },
+        { "pin": "DI14", "pos": [8.4, 69.6, 68], "exit": "Front" },
+        { "pin": "DI15", "pos": [3.6, 76.2, 68], "exit": "Front" },
+        { "pin": "DI16", "pos": [8.4, 76.2, 68], "exit": "Front" }
+      ],
       "voltage": "24 V DC",
       "tech_data": "Bus: EtherCAT\nChannels: 16"
     },
@@ -224,6 +265,12 @@
           "kind": "PlcOutput",
           "pins": "DO4"
         }
+      ],
+      "connection_points": [
+        { "pin": "DO1", "pos": [3.6, 32, 68], "exit": "Front" },
+        { "pin": "DO2", "pos": [8.4, 32, 68], "exit": "Front" },
+        { "pin": "DO3", "pos": [3.6, 74, 68], "exit": "Front" },
+        { "pin": "DO4", "pos": [8.4, 74, 68], "exit": "Front" }
       ],
       "voltage": "24 V DC",
       "current": "0.5 A",
@@ -275,6 +322,16 @@
           "kind": "PlcOutput",
           "pins": "DO8"
         }
+      ],
+      "connection_points": [
+        { "pin": "DO1", "pos": [3.6, 32, 68], "exit": "Front" },
+        { "pin": "DO2", "pos": [8.4, 32, 68], "exit": "Front" },
+        { "pin": "DO3", "pos": [3.6, 46, 68], "exit": "Front" },
+        { "pin": "DO4", "pos": [8.4, 46, 68], "exit": "Front" },
+        { "pin": "DO5", "pos": [3.6, 60, 68], "exit": "Front" },
+        { "pin": "DO6", "pos": [8.4, 60, 68], "exit": "Front" },
+        { "pin": "DO7", "pos": [3.6, 74, 68], "exit": "Front" },
+        { "pin": "DO8", "pos": [8.4, 74, 68], "exit": "Front" }
       ],
       "voltage": "24 V DC",
       "current": "0.5 A",
@@ -359,6 +416,24 @@
           "pins": "DO16"
         }
       ],
+      "connection_points": [
+        { "pin": "DO1", "pos": [3.6, 30, 68], "exit": "Front" },
+        { "pin": "DO2", "pos": [8.4, 30, 68], "exit": "Front" },
+        { "pin": "DO3", "pos": [3.6, 36.6, 68], "exit": "Front" },
+        { "pin": "DO4", "pos": [8.4, 36.6, 68], "exit": "Front" },
+        { "pin": "DO5", "pos": [3.6, 43.2, 68], "exit": "Front" },
+        { "pin": "DO6", "pos": [8.4, 43.2, 68], "exit": "Front" },
+        { "pin": "DO7", "pos": [3.6, 49.8, 68], "exit": "Front" },
+        { "pin": "DO8", "pos": [8.4, 49.8, 68], "exit": "Front" },
+        { "pin": "DO9", "pos": [3.6, 56.4, 68], "exit": "Front" },
+        { "pin": "DO10", "pos": [8.4, 56.4, 68], "exit": "Front" },
+        { "pin": "DO11", "pos": [3.6, 63, 68], "exit": "Front" },
+        { "pin": "DO12", "pos": [8.4, 63, 68], "exit": "Front" },
+        { "pin": "DO13", "pos": [3.6, 69.6, 68], "exit": "Front" },
+        { "pin": "DO14", "pos": [8.4, 69.6, 68], "exit": "Front" },
+        { "pin": "DO15", "pos": [3.6, 76.2, 68], "exit": "Front" },
+        { "pin": "DO16", "pos": [8.4, 76.2, 68], "exit": "Front" }
+      ],
       "voltage": "24 V DC",
       "current": "0.5 A",
       "tech_data": "Bus: EtherCAT\nChannels: 16"
@@ -394,6 +469,12 @@
           "pins": "AI4"
         }
       ],
+      "connection_points": [
+        { "pin": "AI1", "pos": [3.6, 32, 68], "exit": "Front" },
+        { "pin": "AI2", "pos": [8.4, 32, 68], "exit": "Front" },
+        { "pin": "AI3", "pos": [3.6, 74, 68], "exit": "Front" },
+        { "pin": "AI4", "pos": [8.4, 74, 68], "exit": "Front" }
+      ],
       "tech_data": "Bus: EtherCAT\nChannels: 4"
     },
     {
@@ -426,6 +507,12 @@
           "kind": "PlcAnalogInput",
           "pins": "AI4"
         }
+      ],
+      "connection_points": [
+        { "pin": "AI1", "pos": [3.6, 32, 68], "exit": "Front" },
+        { "pin": "AI2", "pos": [8.4, 32, 68], "exit": "Front" },
+        { "pin": "AI3", "pos": [3.6, 74, 68], "exit": "Front" },
+        { "pin": "AI4", "pos": [8.4, 74, 68], "exit": "Front" }
       ],
       "tech_data": "Bus: EtherCAT\nChannels: 4"
     },
@@ -460,6 +547,12 @@
           "pins": "AO4"
         }
       ],
+      "connection_points": [
+        { "pin": "AO1", "pos": [3.6, 32, 68], "exit": "Front" },
+        { "pin": "AO2", "pos": [8.4, 32, 68], "exit": "Front" },
+        { "pin": "AO3", "pos": [3.6, 74, 68], "exit": "Front" },
+        { "pin": "AO4", "pos": [8.4, 74, 68], "exit": "Front" }
+      ],
       "tech_data": "Bus: EtherCAT\nChannels: 4"
     },
     {
@@ -493,6 +586,12 @@
           "pins": "AO4"
         }
       ],
+      "connection_points": [
+        { "pin": "AO1", "pos": [3.6, 32, 68], "exit": "Front" },
+        { "pin": "AO2", "pos": [8.4, 32, 68], "exit": "Front" },
+        { "pin": "AO3", "pos": [3.6, 74, 68], "exit": "Front" },
+        { "pin": "AO4", "pos": [8.4, 74, 68], "exit": "Front" }
+      ],
       "tech_data": "Bus: EtherCAT\nChannels: 4"
     },
     {
@@ -513,6 +612,12 @@
           "kind": "Generic",
           "pins": "Us 0Vs Up 0Vp"
         }
+      ],
+      "connection_points": [
+        { "pin": "Us", "pos": [3.6, 32, 68], "exit": "Front" },
+        { "pin": "0Vs", "pos": [8.4, 32, 68], "exit": "Front" },
+        { "pin": "Up", "pos": [3.6, 46, 68], "exit": "Front" },
+        { "pin": "0Vp", "pos": [8.4, 46, 68], "exit": "Front" }
       ],
       "voltage": "24 V DC",
       "tech_data": "Bus: EtherCAT"

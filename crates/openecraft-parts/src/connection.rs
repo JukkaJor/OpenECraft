@@ -82,7 +82,9 @@ pub fn upper_side(pin: &str) -> bool {
 /// Connection points following the IEC conventions, for parts without their own:
 /// the designations of the function templates in two rows (upper and lower edge,
 /// spread over the width). Terminals get one point per side, door devices their
-/// points on the rear, PLC modules all points at the bottom. Empty without size.
+/// points on the rear, PLC modules all points at the bottom; surge arresters have their
+/// lines on top and the earth and the remote signalling contact at the bottom. Empty
+/// without size.
 pub fn default_connection_points(part: &Part) -> Vec<ConnectionPoint> {
     let Some([w, h, d]) = part.size() else { return Vec::new() };
     if part.functions.iter().any(|f| f.kind == FnKind::Terminal) {
@@ -90,6 +92,7 @@ pub fn default_connection_points(part: &Part) -> Vec<ConnectionPoint> {
         return vec![pin("1", 0.0, Exit::Up), pin("2", h, Exit::Down)];
     }
     let door = !part.functions.is_empty() && part.functions.iter().all(|f| door_kind(f.kind));
+    let arrester = part.functions.iter().any(|f| f.kind == FnKind::SurgeProtection);
     let (mut upper, mut lower): (Vec<String>, Vec<String>) = (Vec::new(), Vec::new());
     for f in &part.functions {
         let plc = matches!(f.kind, FnKind::PlcInput | FnKind::PlcOutput | FnKind::PlcAnalogInput | FnKind::PlcAnalogOutput);
@@ -97,7 +100,8 @@ pub fn default_connection_points(part: &Part) -> Vec<ConnectionPoint> {
             if upper.contains(&pin) || lower.contains(&pin) {
                 continue;
             }
-            if !plc && upper_side(&pin) {
+            let top = if arrester { f.kind == FnKind::SurgeProtection && !matches!(pin.as_str(), "PE" | "PEN") } else { !plc && upper_side(&pin) };
+            if top {
                 upper.push(pin);
             } else {
                 lower.push(pin);
