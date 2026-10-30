@@ -147,8 +147,8 @@ impl PanelUi {
                 continue;
             }
             let (color, width) = if selected { (WIRE_HIGHLIGHT, 3.0) } else { (class_color(it.class), (it.diameter * self.zoom * 0.5).clamp(1.5, 6.0)) };
-            // The legs in the line-up, not those through a room.
-            for (_, points) in it.stretches().into_iter().filter(|(leg, _)| leg.is_none_or(|k| !prj.layout.enclosures[k].is_room())) {
+            // The legs in this line-up, not those through a room or another line-up.
+            for points in it.stretches_in_lineup(&prj.layout, ei) {
                 let pts: Vec<Pos2> = points.iter().map(|q| plate([q[0] - pos[ei][0], q[1] - pos[ei][1], q[2]])).collect();
                 painter.add(Shape::line(pts, Stroke::new(width, color.gamma_multiply(0.8))));
             }

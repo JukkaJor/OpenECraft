@@ -11,7 +11,7 @@
 
 use crate::model::{Cable, Project};
 use crate::netlist::{Connection, Netlist, PinRef};
-use crate::panel::{self, Face, ItemKind, PanelItem, RoutedWire, DUCT_PROFILE, PLATE_MARGIN, PLATE_Z};
+use crate::panel::{self, Face, ItemKind, Layout, PanelItem, RoutedWire, DUCT_PROFILE, PLATE_MARGIN, PLATE_Z};
 use crate::parts::vec3::{add, manhattan, sub, V3};
 use openecraft_i18n::{tr, tr_fmt};
 use std::collections::{BTreeMap, HashMap};
@@ -292,6 +292,13 @@ impl RoutedItem {
         } else {
             self.legs.iter().map(|l| (Some(l.enclosure), l.points.as_slice())).collect()
         }
+    }
+
+    /// The stretches of the route in the line-up of enclosure `ei` (what its plate view
+    /// shows): legs through rooms and other line-ups are left out.
+    pub fn stretches_in_lineup(&self, layout: &Layout, ei: usize) -> Vec<&[V3]> {
+        let lineup = panel::lineup_of(layout, ei);
+        self.stretches().into_iter().filter(|(leg, _)| leg.is_none_or(|k| lineup.contains(&k))).map(|(_, points)| points).collect()
     }
 
     pub fn status_text(&self) -> String {

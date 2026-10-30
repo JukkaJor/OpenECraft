@@ -260,6 +260,17 @@ fn building_services_route_from_room_to_room() {
         assert_eq!(end.point, Some(point("=ESS+RACK-G1", pin)), "{cable}");
         assert!(c.routed(), "{cable}: {:?}", c.status);
     }
+    // The plate view of a cabinet shows the legs of its line-up only: the cable from
+    // the main distribution to the PLC cabinet stays on the plate of each.
+    let w11 = an.routing.item("=MD-W11").expect("=MD-W11");
+    assert_eq!(w11.legs.len(), 4, "{:?}", w11.enclosures);
+    for name in ["+MD", "+CC1"] {
+        let ei = l.enclosures.iter().position(|e| e.name == name).expect(name);
+        let lineup = crate::panel::lineup_of(l, ei);
+        let x = (pos[lineup[0]][0], lineup.iter().map(|&k| pos[k][0] + l.enclosures[k].width).fold(0.0, f32::max));
+        let points: Vec<_> = w11.stretches_in_lineup(l, ei).concat();
+        assert!(!points.is_empty() && points.iter().all(|q| q[0] >= x.0 && q[0] <= x.1), "{name}: {points:?}");
+    }
     // PLC cards and EtherCAT terminals, NH fuse switches of three sizes.
     let plc = an.report(&prj, ReportKind::PlcAssignment).unwrap();
     for addr in ["I0.0", "Q0.1", "IW66", "DI4", "DO2"] {
