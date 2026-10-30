@@ -547,6 +547,28 @@ impl Default for PanelUi {
     }
 }
 
+/// How a wire is drawn in the 3D view: in its own colour (IEC 60757 code, the second
+/// colour of a two-colour code as a stripe), in the colour of the selection or of a
+/// wired wire, dimmed while another wire is selected; with a least width in pixels
+/// (otherwise its outer diameter in perspective).
+pub(super) fn wire_look(code: &str, selected: bool, done: bool, other_selected: bool) -> (Color32, Option<Color32>, f32) {
+    let rgb = |c: [u8; 3]| Color32::from_rgb(c[0], c[1], c[2]);
+    let (own, stripe) = match openecraft_core::potentials::color_parts(code).as_slice() {
+        [a] => (rgb(*a), None),
+        [a, b] => (rgb(*a), Some(rgb(*b))),
+        _ => (WIRE_COLOR, None),
+    };
+    if selected {
+        (WIRE_HIGHLIGHT, None, 3.5)
+    } else if done {
+        (if other_selected { WIRE_DONE.gamma_multiply(0.5) } else { WIRE_DONE }, None, 1.5)
+    } else if other_selected {
+        (own.gamma_multiply(0.3), stripe.map(|s| s.gamma_multiply(0.3)), 1.0)
+    } else {
+        (own, stripe, 1.5)
+    }
+}
+
 /// Opacity of the walls seen from the outside in the 3D view, unless set otherwise.
 pub const WALL_OPACITY: f32 = 0.6;
 

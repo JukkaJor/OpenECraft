@@ -18,7 +18,9 @@ line-ups, rooms of the building with their floor-standing equipment and pipe run
 - 2D front view and a 3D view (orbit, pan, zoom, click to select). Walls, ceilings and
   doors seen from the outside are see-through (*Wall opacity* in the settings, under
   Appearance); *Hide walls in front* leaves out the walls between the eye and the inside,
-  *Hide ceiling* the ceilings of the rooms.
+  *Hide ceiling* the ceilings of the rooms. Wires are drawn in their colour (two-colour
+  wires such as green-yellow with a stripe) and, like cables and tubes, as thick as
+  their outer diameter.
 - Copper **busbar systems** (bars drawn, metres and holders in the BOM) and rectangular
   or round **cutouts** in the mounting plate.
 - Mounting layout pages (scaled 2D model view with dimensions) for printing / SVG;

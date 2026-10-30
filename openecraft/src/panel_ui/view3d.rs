@@ -4,13 +4,17 @@
 
 use openecraft_i18n::{tr, tr_fmt};
 use super::routing_ui::RouteRef;
-use super::{wheel_delta, PanelUi, DOOR_OPEN_ANGLE, OUTER_WALLS, WIRE_COLOR, WIRE_DONE, WIRE_HIGHLIGHT};
+use super::{wheel_delta, PanelUi, DOOR_OPEN_ANGLE, OUTER_WALLS, WIRE_HIGHLIGHT};
 use openecraft_core::geom::{p, P};
 use openecraft_core::model::Project;
 use openecraft_core::panel::{self, Face, ItemKind, Opening, Role, SitePose, PLATE_MARGIN, PLATE_Z};
 use openecraft_core::parts::vec3::{self, cross, dot, norm, sub, Orbit};
 use openecraft_core::analysis::Analysis;
 use egui::{vec2, Color32, PointerButton, Pos2, Sense, Stroke};
+
+/// A wire segment among the equipment: ends (view coordinates), colour, stripe, least
+/// width (px), outer diameter (mm).
+type WireSegment = ([f32; 3], [f32; 3], Color32, Option<Color32>, f32, f32);
 
 /// Layer of the equipment (ducts, busbars, devices), painted in the order of its boxes.
 const EQUIPMENT: u8 = 5;
@@ -133,7 +137,9 @@ impl PanelUi {
             (lo, hi)
         };
         // Wire segments among the equipment (view coordinates), placed once its order is known.
-        let mut equipment_wires: Vec<([f32; 3], [f32; 3], Color32, f32)> = Vec::new();
+        let mut equipment_wires: Vec<WireSegment> = Vec::new();
+        // Width on the screen of a line of `diameter` mm at depth `z` (at least `least` px).
+        let line_px = |diameter: f32, z: f32, least: f32| if diameter > 0.0 { (diameter * f / z).clamp(least, 24.0) } else { least };
         let light_view = norm([0.35, 0.75, 0.55]);
         let shown_wire = |i: usize| shown.iter().any(|(k, _)| an.wiring[i].in_enclosure(*k));
         let selected_wire = self.wire_index(an).filter(|i| shown_wire(*i));
@@ -340,15 +346,9 @@ impl PanelUi {
                 if !self.show_wires && !selected && !done {
                     continue;
                 }
-                let (layer, color, width) = if selected {
-                    (OUTER_WALLS + 1, WIRE_HIGHLIGHT, 3.5)
-                } else if done {
-                    (4, if selected_wire.is_some() { WIRE_DONE.gamma_multiply(0.5) } else { WIRE_DONE }, 1.5)
-                } else if selected_wire.is_some() {
-                    (4, WIRE_COLOR.gamma_multiply(0.3), 1.0)
-                } else {
-                    (4, WIRE_COLOR, 1.5)
-                };
+                let layer = if selected { OUTER_WALLS + 1 } else { 4 };
+                let (color, stripe, width) = super::wire_look(&wire.color, selected, done, selected_wire.is_some());
+                let diameter = openecraft_core::harness::outer_diameter(&wire.cross_section);
                 // Door ends run along the door and over the hinge loop; the part on the
                 // door swings with it.
                 let door_end = |at: [f32; 3], route: &Option<panel::Route>, plate: Option<&P>, z: f32| -> Vec<[f32; 3]> {
@@ -387,9 +387,10 @@ impl PanelUi {
                     let (a, b) = (seg[0], seg[1]);
                     if let (Some(pa), Some(pb)) = (project(a), project(b)) {
                         if layer == 4 {
-                            equipment_wires.push((pose.apply(a), pose.apply(b), color, width));
+                            equipment_wires.push((pose.apply(a), pose.apply(b), color, stripe, width, diameter));
                         } else {
-                            prims.push((layer, None, (pa.1 + pb.1) / 2.0, Prim::Line { a: pa.0, b: pb.0, color, width }));
+                            let z = (pa.1 + pb.1) / 2.0;
+                            prims.push((layer, None, z, Prim::Line { a: pa.0, b: pb.0, color, width: line_px(diameter, z, width) }));
                         }
                         wire_segs.push((pa.0, pb.0, wi));
                     }
@@ -443,9 +444,10 @@ impl PanelUi {
             for seg in line.points.windows(2) {
                 if let (Some(pa), Some(pb)) = (project_view(seg[0]), project_view(seg[1])) {
                     if line.on_top {
-                        prims.push((OUTER_WALLS + 1, None, (pa.1 + pb.1) / 2.0, Prim::Line { a: pa.0, b: pb.0, color: line.color, width: line.width }));
+                        let z = (pa.1 + pb.1) / 2.0;
+                        prims.push((OUTER_WALLS + 1, None, z, Prim::Line { a: pa.0, b: pb.0, color: line.color, width: line_px(line.diameter, z, line.width) }));
                     } else {
-                        equipment_wires.push((seg[0], seg[1], line.color, line.width));
+                        equipment_wires.push((seg[0], seg[1], line.color, line.stripe, line.width, line.diameter));
                     }
                     match &line.target {
                         RouteRef::Wire(wi) => wire_segs.push((pa.0, pb.0, *wi)),
@@ -479,7 +481,7 @@ impl PanelUi {
                 corners.map(|p| p.map(|x| x.0)).collect::<Option<Vec<Pos2>>>().map(|pts| egui::Rect::from_points(&pts))
             })
             .collect();
-        for (a, b, color, width) in equipment_wires {
+        for (a, b, color, stripe, least, diameter) in equipment_wires {
             let at = |t: f32| [0, 1, 2].map(|k| a[k] + (b[k] - a[k]) * t);
             for (t0, t1, inside) in vec3::split_by_boxes(a, b, &cut_boxes) {
                 let inside = inside.map(|c| cut[c]);
@@ -489,6 +491,8 @@ impl PanelUi {
                 let (p0, p1) = (at(t0), at(t1));
                 let (Some(pa), Some(pb)) = (project_view(p0), project_view(p1)) else { continue };
                 let piece = bounds(&[p0, p1]);
+                let z = (pa.1 + pb.1) / 2.0;
+                let width = line_px(diameter, z, least);
                 let on_screen = egui::Rect::from_two_pos(pa.0, pb.0).expand(width);
                 let hiders = (0..objects.len())
                     .filter(|&i| rects[i].is_none_or(|r| r.intersects(on_screen)) && vec3::may_hide(&objects[i], &piece, eye_view))
@@ -499,7 +503,11 @@ impl PanelUi {
                     Some((i, false)) => Some((i, 0)),
                     None => order.last().map(|&i| (i, 3)),
                 };
-                prims.push((EQUIPMENT, obj, (pa.1 + pb.1) / 2.0, Prim::Line { a: pa.0, b: pb.0, color, width }));
+                prims.push((EQUIPMENT, obj, z, Prim::Line { a: pa.0, b: pb.0, color, width }));
+                // A two-colour wire (green-yellow) with its second colour along the middle.
+                if let Some(stripe) = stripe {
+                    prims.push((EQUIPMENT, obj, z, Prim::Line { a: pa.0, b: pb.0, color: stripe, width: width * 0.45 }));
+                }
             }
         }
         let key = |o: &Option<(usize, u8)>| o.map(|(i, part)| (rank[i], part));
