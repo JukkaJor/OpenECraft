@@ -204,10 +204,20 @@ impl PanelUi {
                 if leg.is_some_and(|k| !shown.contains(&k)) {
                     continue;
                 }
-                // The cores parting at the ends of the first and the last stretch.
-                let ends = [(s == 0).then_some(&it.ends[0]), (s == last).then_some(&it.ends[1])];
-                let cores = ends.into_iter().flatten().filter_map(|e| e.point.map(|at| (at, &e.cores))).flat_map(|(at, cores)| cores.iter().map(move |q| [at, *q]));
-                let cores: Vec<[[f32; 3]; 2]> = cores.map(|c| c.map(|q| to_view(leg, q))).collect();
+                // The cores part where the cable comes up to the device at the ends of the
+                // first and the last stretch (off its face, so the device does not hide them).
+                let mut points = points;
+                let mut cores: Vec<[[f32; 3]; 2]> = Vec::new();
+                if s == 0 && !it.ends[0].cores.is_empty() && points.len() > 2 {
+                    cores.extend(it.ends[0].cores.iter().map(|q| [points[1], *q]));
+                    points = &points[1..];
+                }
+                if s == last && !it.ends[1].cores.is_empty() && points.len() > 2 {
+                    let n = points.len();
+                    cores.extend(it.ends[1].cores.iter().map(|q| [points[n - 2], *q]));
+                    points = &points[..n - 1];
+                }
+                let cores: Vec<[[f32; 3]; 2]> = cores.into_iter().map(|c| c.map(|q| to_view(leg, q))).collect();
                 let points: Vec<[f32; 3]> = points.iter().map(|q| to_view(leg, *q)).collect();
                 match (it.kind, it.wire) {
                     (RouteKind::Wire, Some(wi)) if wires_3d => {

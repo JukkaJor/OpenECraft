@@ -846,7 +846,7 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, progress: &dy
                 zoned.insert(leg.lineup, job.class);
             }
             let ignore: Vec<u64> = job.ends.iter().filter_map(|e| e.item).chain(leg.ignore.iter().copied()).collect();
-            let req = grid::Request { kind: job.kind, class: job.class, ignore: &ignore, area, turn: (space.cell * 0.5).max(radius) };
+            let req = grid::Request { kind: job.kind, class: job.class, ignore: &ignore, at: [leg.a, leg.b], area, turn: (space.cell * 0.5).max(radius) };
             let cell = space.cell;
             let near = |q: Option<&V3>, e: V3| q.is_some_and(|q| manhattan(*q, e) <= 2.0 * cell);
             let way = match (&job.fixed, thawed.get(i)) {
@@ -934,11 +934,12 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, progress: &dy
     }
     let (bundles, branches) = bundles::find(&items, rules.grid.max(5.0));
     // Classes that keep apart in one bundle; routes that end at the same device (the
-    // power cable and the pipes of a heat pump) meet at it.
+    // power cable and the pipes of a heat pump) meet at it, where they leave it
+    // ([`grid::Request::at`]) and come up to it.
     let at_common_end = |b: &Bundle| {
         let ends = |i: usize| items[i].ends.iter().filter_map(|e| e.item).collect::<Vec<u64>>();
         let first = b.items.first().map_or_else(Vec::new, |&i| ends(i));
-        b.length <= 2.0 * rules.grid.max(5.0) && first.iter().any(|id| b.items.iter().all(|&i| ends(i).contains(id)))
+        b.length <= 4.0 * rules.grid.max(5.0) && first.iter().any(|id| b.items.iter().all(|&i| ends(i).contains(id)))
     };
     for b in bundles.iter().filter(|b| !at_common_end(b)) {
         let classes: Vec<Class> = b.items.iter().map(|&i| items[i].class).collect();

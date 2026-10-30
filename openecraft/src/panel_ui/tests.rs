@@ -225,14 +225,20 @@ fn cable_cores_are_drawn_with_their_cable() {
     let cores = scene.picks.iter().filter(|(_, _, t)| matches!(t, routing_ui::RouteRef::Wire(wi) if an.wiring[*wi].cable == "=ESS-W97")).count();
     assert_eq!(cores, 0);
     assert!(scene.picks.iter().any(|(_, _, t)| matches!(t, routing_ui::RouteRef::Item(key) if key == "=ESS-W97")));
-    // The battery cable parts at the battery into its cores to + and -.
+    // The battery cable parts in front of the battery into its cores to + and -; they
+    // are seen without the cable being selected.
     let w71 = an.routing.item("=ESS-W71").unwrap();
     let end = w71.ends.iter().find(|e| e.tag == "=ESS+RACK-G1").unwrap();
-    let lines = ui.routing_lines_3d(&prj, &an, &[rack], &|_, q| q, None);
-    for core in &end.cores {
-        assert!(lines.iter().any(|l| matches!(&l.target, routing_ui::RouteRef::Item(k) if k == "=ESS-W71") && l.points == [end.point.unwrap(), *core]), "{core:?}");
-    }
     assert_eq!(end.cores.len(), 2);
+    let approach = w71.stretches()[0].1[1];
+    let lines = ui.routing_lines_3d(&prj, &an, &[rack], &|_, q| q, None);
+    let (pos, (_, pose)) = (panel::positions(&prj.layout)[rack], shown[0]);
+    let view = |q: [f32; 3]| pose.apply([q[0] - pos[0], prj.layout.enclosures[rack].height - (q[1] - pos[1]), q[2] - pos[2]]);
+    for core in &end.cores {
+        assert!(lines.iter().any(|l| matches!(&l.target, routing_ui::RouteRef::Item(k) if k == "=ESS-W71") && l.points == [approach, *core]), "{core:?}");
+        let at = view(*core);
+        assert!(scene.wires.iter().any(|w| [w.line.a, w.line.b].iter().any(|q| (0..3).all(|k| (q[k] - at[k]).abs() < 0.5)) && w.line.a != w.line.b), "{core:?} not drawn");
+    }
 }
 
 #[test]

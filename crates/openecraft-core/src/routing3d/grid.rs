@@ -16,8 +16,10 @@ use std::collections::BinaryHeap;
 
 /// Cell blocked by a wall, the outside or a keep-out reservation.
 const WALL: u8 = 2;
-/// Cell blocked by an item (see `owner`).
+/// Cell blocked by an item (see `owner`): its clearance around it.
 const ITEM: u8 = 1;
+/// Cell blocked by the item itself (see `owner`).
+const BODY: u8 = 3;
 /// Cost factor of a channel that is already full.
 const FULL: f32 = 10.0;
 /// Upper limit of cells; a larger line-up gets coarser cells.
@@ -54,8 +56,10 @@ struct Crossing {
 pub struct Request<'a> {
     pub kind: RouteKind,
     pub class: Class,
-    /// Items the ends are at: their cells are passable.
+    /// Items the ends are at: their cells are passable, those of the items themselves
+    /// only near the start and the end `at` (a route leaves a device, not runs through it).
     pub ignore: &'a [u64],
+    pub at: [V3; 2],
     /// Cross-section in mm² (capacity of the paths).
     pub area: f32,
     /// Extra cost of a turn (mm), from the bend radius.
@@ -278,11 +282,16 @@ impl Space {
             let bx = shift(panel::item_box(e, it), 0.0);
             match it.kind {
                 ItemKind::Device | ItemKind::Rail | ItemKind::Busbar | ItemKind::Accessory => {
-                    let bx = shift(panel::item_box(e, it), rules.clearance);
-                    for idx in self.cells_in(bx) {
+                    let around = shift(panel::item_box(e, it), rules.clearance);
+                    for idx in self.cells_in(around) {
                         if self.block[idx] == 0 {
                             self.block[idx] = ITEM;
                             self.owner[idx] = it.id;
+                        }
+                    }
+                    for idx in self.cells_in(bx) {
+                        if self.block[idx] == ITEM && self.owner[idx] == it.id {
+                            self.block[idx] = BODY;
                         }
                     }
                 }
@@ -435,6 +444,7 @@ impl Space {
         let free = match self.block[idx] {
             0 => true,
             ITEM => req.ignore.contains(&self.owner[idx]),
+            BODY => req.ignore.contains(&self.owner[idx]) && req.at.iter().any(|q| dist(self.centre(idx), *q) <= 2.0 * self.cell),
             _ => false,
         };
         free && (self.reserved[idx] == 0 || self.reserved[idx] & req.class.bit() != 0)

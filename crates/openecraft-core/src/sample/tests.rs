@@ -274,6 +274,18 @@ fn building_services_route_from_room_to_room() {
         let middle = crate::parts::vec3::add(cores[0], cores[1]).map(|v| v / 2.0);
         assert!(end.point.is_some_and(|q| (0..3).all(|k| (q[k] - middle[k]).abs() < 0.01)), "{tag}: {:?}", end.point);
     }
+    // The battery cables leave their battery at the front and run past the others, not
+    // through them (a device is passable only where a route leaves it).
+    let racked = &l.enclosures[rack];
+    let batteries: Vec<_> = racked.items.iter().filter(|i| i.tag.contains("RACK-G")).map(|i| crate::panel::item_box(racked, i)).collect();
+    for cable in ["=ESS-W71", "=ESS-W72", "=ESS-W73", "=ESS-W74"] {
+        let c = an.routing.item(cable).expect(cable);
+        let (_, points) = c.stretches().into_iter().find(|(leg, _)| *leg == Some(rack)).expect("rack leg");
+        for seg in points[1..].windows(2) {
+            let mid = [0, 1, 2].map(|k| (seg[0][k] + seg[1][k]) / 2.0 - pos[rack][k]);
+            assert!(!batteries.iter().any(|(lo, hi)| (0..3).all(|k| mid[k] > lo[k] && mid[k] < hi[k])), "{cable}: {seg:?}");
+        }
+    }
     // The plate view of a cabinet shows the legs of its line-up only: the cable from
     // the main distribution to the PLC cabinet stays on the plate of each.
     let w11 = an.routing.item("=MD-W11").expect("=MD-W11");

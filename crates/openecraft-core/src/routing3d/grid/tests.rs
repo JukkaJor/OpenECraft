@@ -14,7 +14,7 @@ fn single() -> Enclosure {
 }
 
 fn req(ignore: &[u64]) -> Request<'_> {
-    Request { kind: RouteKind::Cable, class: Class::Signal, ignore, area: 50.0, turn: 12.5 }
+    Request { kind: RouteKind::Cable, class: Class::Signal, ignore, at: [[0.0; 3]; 2], area: 50.0, turn: 12.5 }
 }
 
 fn space(prj: &Project) -> Space {
@@ -50,8 +50,12 @@ fn routes_go_around_devices() {
     for seg in w.points[1..w.points.len() - 1].windows(2) {
         assert_eq!((0..3).filter(|&i| (seg[0][i] - seg[1][i]).abs() > 1e-3).count(), 1, "{:?}", w.points);
     }
-    // Its own device is no obstacle for a route ending at it.
-    assert!(s.route(a, [250.0, 375.0, 100.0], &req(&[7]), &RoutingRules::default()).is_some());
+    // Its own device is no obstacle for a route ending at it, but only where the route
+    // leaves it: past the end the route goes around it as around any other device.
+    let end = [250.0, 375.0, 100.0];
+    assert!(s.route(a, end, &Request { at: [a, end], ..req(&[7]) }, &RoutingRules::default()).is_some());
+    let w = s.route(a, b, &Request { at: [a, b], ..req(&[7]) }, &RoutingRules::default()).expect("a way around");
+    assert!(w.cells.iter().all(|&c| !inside(s.centre(c), [120.0, 320.0, 15.0], [430.0, 430.0, 225.0])), "{:?}", w.points);
 }
 
 #[test]
