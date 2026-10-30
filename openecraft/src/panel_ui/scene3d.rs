@@ -362,10 +362,15 @@ impl PanelUi {
                 add_box(&mut s, layer, side, obj, min, max, base, Some(it.id), on_door, decal);
             }
             // Wires inside the ducts; the selected one is drawn on top of everything.
-            // Wires routed in 3D are drawn with the routing below.
+            // Wires routed in 3D are drawn with the routing below, cores of a cable routed
+            // in 3D with their cable.
             let routed_3d = |w: &panel::RoutedWire| prj.layout.routing.wires_3d && w.door == (None, None);
+            let in_cable = |w: &panel::RoutedWire| !w.cable.is_empty() && an.routing.item(&w.cable).is_some_and(|c| c.routed());
             for (wi, wire) in an.wiring.iter().enumerate().filter(|(_, wire)| wire.in_enclosure(k) && !routed_3d(wire)) {
                 let selected = Some(wi) == selected_wire;
+                if in_cable(wire) && !selected {
+                    continue;
+                }
                 let done = self.done_wires.contains(&wire.key());
                 if !self.show_wires && !selected && !done {
                     continue;
@@ -392,15 +397,19 @@ impl PanelUi {
                         .filter(|s| s.0 == k)
                         .map(|(_, route, entry, exit)| {
                             let z = if route.via_ducts { panel::DUCT_PROFILE.1 * 0.5 } else { 5.0 };
+                            // From the connection points down to the plate.
                             let mut v = match (entry, a) {
                                 (None, Some(a)) => door_end(a, &wire.door_routes.0, route.points.first(), z),
+                                (None, None) => wire.terminals.0.map(up).into_iter().collect(),
                                 _ => Vec::new(),
                             };
                             v.extend(entry.map(passage));
                             v.extend(route.points.iter().map(|q| to3(q.x, q.y, z)));
                             v.extend(exit.map(passage));
-                            if let (None, Some(b)) = (exit, b) {
-                                v.extend(door_end(b, &wire.door_routes.1, route.points.last(), z).into_iter().rev());
+                            match (exit, b) {
+                                (None, Some(b)) => v.extend(door_end(b, &wire.door_routes.1, route.points.last(), z).into_iter().rev()),
+                                (None, None) => v.extend(wire.terminals.1.map(up)),
+                                _ => {}
                             }
                             v
                         })

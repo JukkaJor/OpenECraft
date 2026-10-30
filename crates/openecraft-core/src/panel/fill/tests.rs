@@ -20,6 +20,7 @@ fn wire(cross_section: &str, runs: &[(f32, f32)]) -> RoutedWire {
         color: String::new(),
         cross_section: cross_section.into(),
         number: String::new(),
+        cable: String::new(),
         route: Route {
             points: Vec::new(),
             plate_length: 0.0,
@@ -31,6 +32,7 @@ fn wire(cross_section: &str, runs: &[(f32, f32)]) -> RoutedWire {
         ends: (EndKind::Generated, EndKind::Generated),
         door: (None, None),
         door_routes: (None, None),
+        terminals: (None, None),
         legs: Vec::new(),
     }
 }

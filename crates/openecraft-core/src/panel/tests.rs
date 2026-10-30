@@ -91,6 +91,10 @@ fn virtual_wiring_of_demo() {
     // The motor is in the field: its connections stay open.
     let report = &an.report(&prj, crate::model::ReportKind::PanelWiring).unwrap();
     assert!(report.rows.iter().any(|r| r[3].starts_with("-M1") && r[8] == "device not placed"));
+    // Plate ends know their connection point: above the start of the route on the plate.
+    let w = an.wiring.iter().find(|w| w.door.0.is_none() && !w.route.points.is_empty()).expect("plate wire");
+    let (t, q) = (w.terminals.0.expect("terminal"), w.route.points[0]);
+    assert!((t[0] - PLATE_MARGIN - q.x).abs() < 0.01 && (t[1] - PLATE_MARGIN - q.y).abs() < 0.01 && t[2] > PLATE_Z, "{t:?} {q:?}");
 }
 
 #[test]

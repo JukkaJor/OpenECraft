@@ -246,19 +246,33 @@ fn building_services_route_from_room_to_room() {
     // Batteries and network in the 19-inch rack.
     let rack = l.enclosures.iter().position(crate::panel::is_rack).expect("rack");
     assert_eq!(crate::panel::rack::occupied(&l.enclosures[rack]).len(), 9);
-    // The battery cable ends at the + terminal of its battery, the BMS cable at its CAN
-    // port (the connection points of the part, not the middle of the front).
+    // The BMS cable ends at the CAN port of the battery (a connection point of the
+    // part, not the middle of the front); the battery cable carries + and - and parts at
+    // both ends: to + and - of the battery, to the fuse F1 and the stud N1 of the
+    // negative busbar of the Lynx distributor.
     let pos = crate::panel::positions(l);
     let point = |tag: &str, pin: &str| {
         let (ei, it) = crate::panel::locate(&prj, tag).expect(tag);
         let q = crate::panel::device_points(&prj, it).into_iter().find(|p| p.pin == pin).expect(pin).pos;
         crate::parts::vec3::add(crate::panel::face_point(&l.enclosures[ei], it.face, q), pos[ei])
     };
-    for (cable, pin) in [("=ESS-W71", "+"), ("=ESS-W96", "CAN")] {
+    let bms = an.routing.item("=ESS-W96").expect("=ESS-W96");
+    assert!(bms.routed() && bms.ends.iter().any(|e| e.tag == "=ESS+RACK-G1" && e.point == Some(point("=ESS+RACK-G1", "CAN")) && e.cores.is_empty()));
+    // So do the DC cables of the inverters.
+    for (cable, tag, pins) in [
+        ("=ESS-W71", "=ESS+RACK-G1", ["+", "-"]),
+        ("=ESS-W71", "=ESS+TR-F1", ["F1", "N1"]),
+        ("=ESS-W81", "=ESS+TR-F2", ["F1", "N1"]),
+        ("=ESS-W81", "=ESS+TR-T1", ["DC+", "DC-"]),
+        ("=ESS-W85", "=ESS+TR-F3", ["F1", "N1"]),
+    ] {
         let c = an.routing.item(cable).expect(cable);
-        let end = c.ends.iter().find(|e| e.tag == "=ESS+RACK-G1").expect("battery end");
-        assert_eq!(end.point, Some(point("=ESS+RACK-G1", pin)), "{cable}");
         assert!(c.routed(), "{cable}: {:?}", c.status);
+        let end = c.ends.iter().find(|e| e.tag == tag).unwrap_or_else(|| panic!("{cable} {tag}: {:?}", c.ends));
+        let cores: Vec<_> = pins.iter().map(|p| point(tag, p)).collect();
+        assert_eq!(end.cores, cores, "{cable} {tag}");
+        let middle = crate::parts::vec3::add(cores[0], cores[1]).map(|v| v / 2.0);
+        assert!(end.point.is_some_and(|q| (0..3).all(|k| (q[k] - middle[k]).abs() < 0.01)), "{tag}: {:?}", end.point);
     }
     // The plate view of a cabinet shows the legs of its line-up only: the cable from
     // the main distribution to the PLC cabinet stays on the plate of each.

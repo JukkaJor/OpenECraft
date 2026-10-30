@@ -198,10 +198,16 @@ impl PanelUi {
         let wires_3d = prj.layout.routing.wires_3d;
         for it in an.routing.items.iter().filter(|i| i.routed() && i.enclosures.iter().any(|k| shown.contains(k))) {
             // Leg by leg; legs through an enclosure not shown are left out.
-            for (leg, points) in it.stretches() {
+            let stretches = it.stretches();
+            let last = stretches.len().saturating_sub(1);
+            for (s, (leg, points)) in stretches.into_iter().enumerate() {
                 if leg.is_some_and(|k| !shown.contains(&k)) {
                     continue;
                 }
+                // The cores parting at the ends of the first and the last stretch.
+                let ends = [(s == 0).then_some(&it.ends[0]), (s == last).then_some(&it.ends[1])];
+                let cores = ends.into_iter().flatten().filter_map(|e| e.point.map(|at| (at, &e.cores))).flat_map(|(at, cores)| cores.iter().map(move |q| [at, *q]));
+                let cores: Vec<[[f32; 3]; 2]> = cores.map(|c| c.map(|q| to_view(leg, q))).collect();
                 let points: Vec<[f32; 3]> = points.iter().map(|q| to_view(leg, *q)).collect();
                 match (it.kind, it.wire) {
                     (RouteKind::Wire, Some(wi)) if wires_3d => {
@@ -224,6 +230,9 @@ impl PanelUi {
                         // In the colour of its class, as thick as it is.
                         let (color, width) = if selected { (WIRE_HIGHLIGHT, 4.0) } else { (class_color(it.class), 2.0) };
                         out.push(RouteLine { points, color, stripe: None, width, diameter: it.diameter, on_top: selected, target: RouteRef::Item(it.key.clone()) });
+                        for core in cores {
+                            out.push(RouteLine { points: core.to_vec(), color, stripe: None, width: width * 0.5, diameter: it.diameter * 0.5, on_top: selected, target: RouteRef::Item(it.key.clone()) });
+                        }
                     }
                 }
             }

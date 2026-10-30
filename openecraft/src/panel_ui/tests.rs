@@ -211,6 +211,31 @@ fn wires_routed_through_ducts_lie_inside_the_duct_boxes() {
 }
 
 #[test]
+fn cable_cores_are_drawn_with_their_cable() {
+    // The link cable between two batteries in the rack is drawn by the 3D routing; its
+    // cores are not drawn again as wires over the rear of the rack.
+    let prj = openecraft_core::sample::example("building_services").unwrap();
+    let an = Analysis::checked(&prj);
+    let rack = prj.layout.enclosures.iter().position(|e| e.name == "+RACK").unwrap();
+    assert!(an.wiring.iter().any(|w| w.cable == "=ESS-W97" && w.in_enclosure(rack)));
+    assert!(an.routing.item("=ESS-W97").is_some_and(|c| c.routed()));
+    let mut ui = PanelUi::default();
+    let shown = ui.shown_3d(&prj, rack);
+    let scene = ui.scene_3d(&prj, &an, rack, &shown);
+    let cores = scene.picks.iter().filter(|(_, _, t)| matches!(t, routing_ui::RouteRef::Wire(wi) if an.wiring[*wi].cable == "=ESS-W97")).count();
+    assert_eq!(cores, 0);
+    assert!(scene.picks.iter().any(|(_, _, t)| matches!(t, routing_ui::RouteRef::Item(key) if key == "=ESS-W97")));
+    // The battery cable parts at the battery into its cores to + and -.
+    let w71 = an.routing.item("=ESS-W71").unwrap();
+    let end = w71.ends.iter().find(|e| e.tag == "=ESS+RACK-G1").unwrap();
+    let lines = ui.routing_lines_3d(&prj, &an, &[rack], &|_, q| q, None);
+    for core in &end.cores {
+        assert!(lines.iter().any(|l| matches!(&l.target, routing_ui::RouteRef::Item(k) if k == "=ESS-W71") && l.points == [end.point.unwrap(), *core]), "{core:?}");
+    }
+    assert_eq!(end.cores.len(), 2);
+}
+
+#[test]
 fn face_summaries_count_openings_apart() {
     let item = |kind: ItemKind, opening: Opening| PanelItem { kind, opening, ..Default::default() };
     let rail = item(ItemKind::Rail, Opening::Cutout);

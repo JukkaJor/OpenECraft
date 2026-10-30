@@ -115,13 +115,15 @@ pub fn device_points(prj: &Project, it: &PanelItem) -> Vec<PlacedPoint> {
 }
 
 /// The placed point of connection point `pin` (index) of schematic symbol `s`:
-/// terminals by terminal number and side, PLC points by their address, other
+/// terminals by terminal number and side (the studs of a busbar, such as the negative
+/// busbar of a DC distributor, by their number), PLC points by their address, other
 /// functions by designation (as in `netlist::pin_designation`).
 pub fn point_of<'a>(prj: &Project, points: &'a [PlacedPoint], s: &SymbolInst, pin: usize) -> Option<&'a PlacedPoint> {
     let def = prj.symbol(&s.sym)?;
     if def.func == Func::Terminal {
         let side = (pin + 1).to_string();
-        return points.iter().find(|p| p.terminal == s.label && p.pin == side);
+        let stud = || points.iter().find(|p| p.terminal.is_empty() && p.pin == s.label);
+        return points.iter().find(|p| p.terminal == s.label && p.pin == side).or_else(stud);
     }
     let name = match def.func {
         Func::Plc | Func::Plug(_) => s.label.as_str(),

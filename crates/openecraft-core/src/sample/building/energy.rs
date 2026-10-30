@@ -59,7 +59,10 @@ pub(super) fn dc(prj: &mut Project, section: u64) {
         g.sym("fuse", x, 80.0, 0, "-F1", "", if i == 0 { "Lynx batteries" } else { "" }).pins(&["BUS+", &format!("F{n}")]);
         g.core(x, 84.0, x, 116.0, &format!("=ESS-W7{n}"), "RD");
         g.sym("battery", x, 120.0, 0, &format!("+RACK-G{n}"), "", &format!("US5000 {n}"));
-        g.w(x, 124.0, x, 160.0);
+        // The minus in the same cable to a stud of the negative busbar of -F1.
+        g.core(x, 124.0, x, 136.0, &format!("=ESS-W7{n}"), "BK");
+        g.sym("term", x, 140.0, 0, "-F1", &format!("N{n}"), "");
+        g.w(x, 144.0, x, 160.0);
     }
     g.w(40.0, 160.0, 200.0, 160.0).w(200.0, 160.0, 200.0, 172.0);
     g.sym("ammeter", 200.0, 176.0, 0, "-P1", "", "SmartShunt").pins(&["BAT-", "LOAD-"]);
@@ -86,9 +89,11 @@ pub(super) fn dc(prj: &mut Project, section: u64) {
         };
         g.w(x, 40.0, x, 76.0).sym("fuse", x, 80.0, 0, lynx, "", text).pins(&["BUS+", fuse]);
         g.core(x, 84.0, x, 112.0, cable, "RD").link(x, 112.0, &format!("{name}+"));
-        g.w(x + 12.0, 200.0, x + 12.0, 184.0).link(x + 12.0, 184.0, &format!("{name}-"));
+        // The minus in the same cable from the stud of the negative busbar under the fuse.
+        g.w(x + 12.0, 200.0, x + 12.0, 196.0).sym("term", x + 12.0, 192.0, 0, lynx, &fuse.replace('F', "N"), "");
+        g.core(x + 12.0, 188.0, x + 12.0, 176.0, cable, "BK").link(x + 12.0, 176.0, &format!("{name}-"));
     }
-    g.text(40.0, 224.0, "Battery bank 4 x 4.8 kWh on Lynx distributor -F1; SmartShunt -P1 in the negative of the batteries", 2.5);
+    g.text(40.0, 224.0, "Battery bank 4 x 4.8 kWh on Lynx distributor -F1 (minus on its negative busbar N1 - N4); SmartShunt -P1 in the negative of the batteries", 2.5);
 }
 
 /// The three MultiPlus-II on the AC input of the battery storage, one per phase.

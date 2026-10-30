@@ -1294,6 +1294,8 @@ pub struct RoutedWire {
     pub cross_section: String,
     /// Wire number of the connection.
     pub number: String,
+    /// Cable the wire is a core of; empty for a single wire.
+    pub cable: String,
     pub route: Route,
     /// Total length including the way down to the plate and the reserve.
     pub length: f32,
@@ -1308,6 +1310,9 @@ pub struct RoutedWire {
     /// to the hinge; between two door devices the whole wire is the first one. The
     /// second end is in the last enclosure of the wire.
     pub door_routes: (Option<Route>, Option<Route>),
+    /// Connection point of an end on the plate or a wall (enclosure coordinates; the
+    /// middle of the device front without one): the wire runs from there to the plate.
+    pub terminals: (Option<V3>, Option<V3>),
     /// Further stretches through cable passages into neighbouring enclosures of the
     /// line-up; empty if the wire stays in `enclosure`.
     pub legs: Vec<Leg>,
@@ -1469,10 +1474,13 @@ pub fn virtual_wiring(prj: &Project, conns: &[Connection]) -> (Vec<RoutedWire>, 
             };
             let (w, extra, door_route) = wiring_end(e, it, point);
             let door = (it.face == Face::Door).then(|| door_point(e, it, point));
-            (w, extra, kind, door, door_route)
+            let c = it.center();
+            let at = point.map(|pt| pt.pos).unwrap_or([c.x, c.y, it.z + it.d]);
+            let terminal = (it.face != Face::Door).then(|| face_point(e, it.face, at));
+            (w, extra, kind, door, door_route, terminal)
         };
-        let (pa, la, ka, da, ra) = end(ea, ia, sa, c.a.pin);
-        let (pb, lb, kb, db, rb) = end(eb, ib, sb, c.b.pin);
+        let (pa, la, ka, da, ra, ta) = end(ea, ia, sa, c.a.pin);
+        let (pb, lb, kb, db, rb, tb) = end(eb, ib, sb, c.b.pin);
         let e = &prj.layout.enclosures[ea];
         let (r, length, door_routes, legs) = match (da, db) {
             // Both ends on the door: along the door, not into the cabinet.
@@ -1509,12 +1517,14 @@ pub fn virtual_wiring(prj: &Project, conns: &[Connection]) -> (Vec<RoutedWire>, 
             color: c.color.clone(),
             cross_section: c.cross_section.clone(),
             number: c.number.clone(),
+            cable: c.cable.clone(),
             route: r,
             length,
             items: (ia.id, ib.id),
             ends: (ka, kb),
             door: (da, db),
             door_routes,
+            terminals: (ta, tb),
             legs,
         });
     }

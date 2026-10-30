@@ -40,7 +40,7 @@ fn terminations_and_problems() {
     let e = crate::panel::new_enclosure(&mut prj, "", "+A");
     prj.layout.enclosures.push(e);
     prj.cables.push(Cable { tag: "-W5".into(), bus: Some(crate::devdesc::BusKind::Profinet), ..Default::default() });
-    let device = |tag: &str, x: f32| End { tag: tag.into(), enclosure: Some(0), point: Some([x, 400.0, 100.0]), item: Some(1) };
+    let device = |tag: &str, x: f32| End { tag: tag.into(), enclosure: Some(0), point: Some([x, 400.0, 100.0]), item: Some(1), ..Default::default() };
     let mut it = item("-W5", Class::Signal, 7.0, vec![[100.0, 400.0, 100.0], [500.0, 400.0, 100.0]]);
     it.shielded = true;
     // The device ends are no placed devices of the project: give them ids that are not

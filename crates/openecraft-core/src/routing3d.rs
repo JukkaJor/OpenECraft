@@ -226,6 +226,9 @@ pub struct End {
     pub point: Option<V3>,
     /// Item the route ends at (device, cable gland).
     pub item: Option<u64>,
+    /// The connection points the cores land on where they part at the end (layout
+    /// coordinates; `point` is their middle); empty for one.
+    pub cores: Vec<V3>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -445,21 +448,27 @@ pub fn accessories<'a>(prj: &'a Project, ei: usize, subgroup: &str) -> Vec<&'a P
 }
 
 /// Where a device is reached (layout coordinates): the middle of the connection points
-/// the schematic connection points `pins` (the cores of a cable) land on, otherwise the
-/// middle of its front; devices of a placed valve terminal at the terminal
-/// ([`panel::locate`]).
+/// the schematic connection points `pins` (the cores of a cable) land on, the cores
+/// parting there to each of them, otherwise the middle of its front; devices of a placed
+/// valve terminal at the terminal ([`panel::locate`]).
 fn device_end(prj: &Project, pos: &[V3], tag: &str, pins: &[PinRef]) -> End {
     match panel::locate(prj, tag) {
         Some((ei, it)) => {
             let e = &prj.layout.enclosures[ei];
             let placed = if pins.is_empty() { Vec::new() } else { panel::device_points(prj, it) };
-            let at: Vec<V3> = pins.iter().filter_map(|p| panel::point_of(prj, &placed, &prj.pages[p.page].symbols[p.sym], p.pin)).map(|p| p.pos).collect();
+            let mut at: Vec<V3> = Vec::new();
+            for q in pins.iter().filter_map(|p| panel::point_of(prj, &placed, &prj.pages[p.page].symbols[p.sym], p.pin)).map(|p| p.pos) {
+                if !at.contains(&q) {
+                    at.push(q);
+                }
+            }
             let q = match at.len() {
                 0 => [it.x + it.w / 2.0, it.y + it.h / 2.0, it.z + it.d],
                 n => at.iter().fold([0.0; 3], |s, q| add(s, *q)).map(|v| v / n as f32),
             };
-            let q = panel::face_point(e, it.face, q);
-            End { tag: tag.into(), enclosure: Some(ei), point: Some(add(q, pos[ei])), item: Some(it.id) }
+            let in_layout = |q: V3| add(panel::face_point(e, it.face, q), pos[ei]);
+            let cores = if at.len() > 1 { at.into_iter().map(in_layout).collect() } else { Vec::new() };
+            End { tag: tag.into(), enclosure: Some(ei), point: Some(in_layout(q)), item: Some(it.id), cores }
         }
         None => End { tag: tag.into(), ..Default::default() },
     }
@@ -478,10 +487,10 @@ fn entry_end(prj: &Project, pos: &[V3], ei: usize, near: V3) -> End {
     let glands = accessories(prj, ei, "Cable gland");
     let at = |it: &PanelItem| add(panel::face_point(e, it.face, [it.x + it.w / 2.0, it.y + it.h / 2.0, 5.0]), pos[ei]);
     match glands.into_iter().min_by(|a, b| manhattan(at(a), near).total_cmp(&manhattan(at(b), near)).then(a.id.cmp(&b.id))) {
-        Some(g) => End { tag: g.part.clone(), enclosure: Some(ei), point: Some(at(g)), item: Some(g.id) },
+        Some(g) => End { tag: g.part.clone(), enclosure: Some(ei), point: Some(at(g)), item: Some(g.id), cores: Vec::new() },
         None => {
             let q = [e.width / 2.0, e.height - e.wall() - 5.0, (PLATE_Z + e.depth) / 2.0];
-            End { tag: tr("Bottom").to_string(), enclosure: Some(ei), point: Some(add(q, pos[ei])), item: None }
+            End { tag: tr("Bottom").to_string(), enclosure: Some(ei), point: Some(add(q, pos[ei])), item: None, cores: Vec::new() }
         }
     }
 }
@@ -540,7 +549,7 @@ fn building_entry(prj: &Project, pos: &[V3], ri: usize, near: V3) -> Option<End>
     let e = &prj.layout.enclosures[ri];
     let at = |it: &PanelItem| panel::entry_point(e, it).map(|q| add(q, pos[ri]));
     let it = panel::entries(e).into_iter().filter(|it| at(it).is_some()).min_by(|a, b| manhattan(at(a).unwrap_or(near), near).total_cmp(&manhattan(at(b).unwrap_or(near), near)).then(a.id.cmp(&b.id)))?;
-    Some(End { tag: tr("Building entry").to_string(), enclosure: Some(ri), point: at(it), item: Some(it.id) })
+    Some(End { tag: tr("Building entry").to_string(), enclosure: Some(ri), point: at(it), item: Some(it.id), cores: Vec::new() })
 }
 
 /// The location of a device tag (`=F1+LOC-K1` → `LOC`), empty without one.
@@ -723,6 +732,7 @@ fn jobs(prj: &Project, wiring: &[RoutedWire], conns: &[Connection], open: &Netli
             enclosure: Some(ei),
             point: q.map(|q| add([PLATE_MARGIN + q.x, PLATE_MARGIN + q.y, PLATE_Z + 5.0], pos[ei])),
             item: Some(item),
+            cores: Vec::new(),
         };
         let last = w.stretches().last().map(|s| s.1).unwrap_or(&w.route);
         let ends = [end(&w.from, w.enclosure, w.items.0, w.route.points.first()), end(&w.to, w.last_enclosure(), w.items.1, last.points.last())];
