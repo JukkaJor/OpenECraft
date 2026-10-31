@@ -4,7 +4,7 @@
 //! running together lie side by side, each on a lane of its own ([`spread_ways`]).
 
 use super::{Class, RoutedItem};
-use crate::parts::vec3::{add, cross, dot, norm, sub, V3};
+use crate::parts::vec3::{add, cross, dot, norm, segment_in_box, sub, V3};
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 
 /// Stretch shared by two or more routed items.
@@ -184,9 +184,12 @@ pub struct Way<'a> {
 /// the lanes lie in rows away from it as far as the ways may move towards it and away
 /// (as deep as they lie in front of it), each row side by side along the surface;
 /// elsewhere they form a square turned like the bundles round their corners (traced
-/// through a grid of `cell`). At its corners a way steps from lane to lane, its ends
-/// stay where they are, the stretches at its ends too.
-pub fn spread_ways(ways: &[Way], cell: f32) -> Vec<(Vec<V3>, Vec<f32>)> {
+/// through a grid of `cell`). The lanes keep out of the `obstacles` (boxes) a way did
+/// not run through before: centred on the group, otherwise all to one side of it (or a
+/// corner), otherwise (along a surface) in one stack away from it; where none of them
+/// does, the group stays as it is. At its corners a way steps from lane to lane, its
+/// ends stay where they are, the stretches at its ends too.
+pub fn spread_ways(ways: &[Way], cell: f32, obstacles: &[(V3, V3)]) -> Vec<(Vec<V3>, Vec<f32>)> {
     let stretches: Vec<(usize, &[V3])> = ways.iter().enumerate().map(|(i, w)| (i, w.points)).collect();
     let (_, chains) = chains(&stretches, cell);
     // Across each line of the grid the directions of the bundles on it, turned with
@@ -276,7 +279,8 @@ pub fn spread_ways(ways: &[Way], cell: f32) -> Vec<(Vec<V3>, Vec<f32>)> {
             n[axis] = 0.0;
             n
         });
-        let (u, v, cols, rows) = match rest.filter(|n| dot(*n, *n) > 0.25).map(norm) {
+        let rest = rest.filter(|n| dot(*n, *n) > 0.25).map(norm);
+        let (u, v, cols, rows) = match rest {
             Some(n) => {
                 let below = members.iter().map(|&r| ways[runs[r].0].below).fold(f32::INFINITY, f32::min).max(0.0);
                 let rows = ((2.0 * below / gap).floor() as usize + 1).min(members.len());
@@ -288,30 +292,56 @@ pub fn spread_ways(ways: &[Way], cell: f32) -> Vec<(Vec<V3>, Vec<f32>)> {
                 (u, v, cols, members.len().div_ceil(cols))
             }
         };
-        let mut tos: Vec<V3> = members
-            .iter()
-            .enumerate()
-            .map(|(k, &r)| {
-                let (c, row) = ((k % cols) as f32 - (cols - 1) as f32 / 2.0, (k / cols) as f32 - (rows - 1) as f32 / 2.0);
-                let mut to = sub(add(middle, add(scale(u, c * gap), scale(v, row * gap))), runs[r].5);
-                to[axis] = 0.0;
-                to
+        // The moves of the members onto lanes of `cols` × `rows` around the middle,
+        // shifted by `aside` lanes along `u` and `v`, away from the surface where they
+        // come too near to it.
+        let layout = |cols: usize, rows: usize, aside: (f32, f32)| -> Vec<V3> {
+            let mut tos: Vec<V3> = members
+                .iter()
+                .enumerate()
+                .map(|(k, &r)| {
+                    let (c, row) = ((k % cols) as f32 - (cols - 1) as f32 / 2.0 + aside.0, (k / cols) as f32 - (rows - 1) as f32 / 2.0 + aside.1);
+                    let mut to = sub(add(middle, add(scale(u, c * gap), scale(v, row * gap))), runs[r].5);
+                    to[axis] = 0.0;
+                    to
+                })
+                .collect();
+            if let Some(n) = rest {
+                let shift = members.iter().zip(&tos).map(|(&r, to)| -ways[runs[r].0].below - dot(*to, n)).fold(0.0, f32::max);
+                for to in &mut tos {
+                    *to = add(*to, scale(n, shift));
+                }
+            }
+            tos
+        };
+        // Moved, no run enters an obstacle it did not run through before.
+        let clear = |tos: &[V3]| {
+            members.iter().zip(tos).all(|(&r, to)| {
+                let (i, _, axis, from, till, at) = runs[r];
+                let (mut a, mut b) = (at, at);
+                (a[axis], b[axis]) = (from, till);
+                let half = ways[i].diameter / 2.0;
+                obstacles.iter().all(|(lo, hi)| {
+                    let bx = (lo.map(|x| x - half), hi.map(|x| x + half));
+                    segment_in_box(add(a, *to), add(b, *to), bx).is_none() || segment_in_box(a, b, bx).is_some()
+                })
             })
-            .collect();
-        // Away from the surface the ways run along as far as one of them would come too
-        // near to it.
-        let rest = members.iter().map(|&r| ways[runs[r].0].rest).find(|n| *n != [0.0; 3]).map(|mut n| {
-            n[axis] = 0.0;
-            n
-        });
-        if let Some(n) = rest.filter(|n| dot(*n, *n) > 0.25).map(norm) {
-            let shift = members.iter().zip(&tos).map(|(&r, to)| -ways[runs[r].0].below - dot(*to, n)).fold(0.0, f32::max);
-            for to in &mut tos {
-                *to = add(*to, scale(n, shift));
+        };
+        let (su, sv) = ((cols - 1) as f32 / 2.0, (rows - 1) as f32 / 2.0);
+        let mut tries = vec![(cols, rows, (0.0, 0.0))];
+        for (a, b) in [(1.0, 0.0), (-1.0, 0.0), (0.0, 1.0), (0.0, -1.0), (1.0, 1.0), (-1.0, 1.0), (1.0, -1.0), (-1.0, -1.0)] {
+            let aside = (a * su, b * sv);
+            if aside != (0.0, 0.0) && !tries.iter().any(|t| t.2 == aside) {
+                tries.push((cols, rows, aside));
             }
         }
-        for (&r, to) in members.iter().zip(tos) {
-            moves.insert((runs[r].0, runs[r].1), to);
+        if cols > 1 && rest.is_some() {
+            tries.push((1, members.len(), (0.0, 0.0)));
+        }
+        if let Some(tos) = tries.into_iter().map(|(c, r, aside)| layout(c, r, aside)).find(|tos| clear(tos)) {
+            for (&r, to) in members.iter().zip(tos) {
+                moves.insert((runs[r].0, runs[r].1), to);
+            }
         }
     }
     ways.iter()

@@ -177,6 +177,40 @@ fn unordered<T: Hash>(items: impl Iterator<Item = T>) -> u64 {
         .fold(0u64, u64::wrapping_add)
 }
 
+/// A wire's way along the plate lifted over the boxes it would pass through: just
+/// before one it rises in front of it (half its thickness and a little more), just
+/// after it it goes down again.
+fn over(points: &[V3], blockers: &[(V3, V3)], half: f32) -> Vec<V3> {
+    let margin = half + 1.0;
+    let mut out: Vec<V3> = points.first().copied().into_iter().collect();
+    for s in points.windows(2) {
+        let (a, b) = (s[0], s[1]);
+        let at = |t: f32| [0, 1, 2].map(|k| a[k] + (b[k] - a[k]) * t);
+        // The stretches inside the boxes (grown by the wire) and how far in front of the
+        // plate their fronts are, joined where they overlap.
+        let mut hits: Vec<(f32, f32, f32)> = blockers
+            .iter()
+            .filter_map(|(lo, hi)| vec3::segment_in_box(a, b, (lo.map(|v| v - margin), hi.map(|v| v + margin))).map(|(t0, t1)| (t0, t1, hi[2] + margin)))
+            .filter(|h| h.2 > a[2].max(b[2]))
+            .collect();
+        hits.sort_by(|x, y| x.0.total_cmp(&y.0));
+        let mut joined: Vec<(f32, f32, f32)> = Vec::new();
+        for h in hits {
+            match joined.last_mut() {
+                Some(last) if h.0 <= last.1 => *last = (last.0, last.1.max(h.1), last.2.max(h.2)),
+                _ => joined.push(h),
+            }
+        }
+        for (t0, t1, front) in joined {
+            let (p, q) = (at(t0), at(t1));
+            out.extend([p, [p[0], p[1], front], [q[0], q[1], front], q]);
+        }
+        out.push(b);
+    }
+    out.dedup_by(|x, y| vec3::dist(*x, *y) < 0.01);
+    out
+}
+
 /// The fingers (indices) a tube passes through: each of `ways` with its radius, the
 /// fingers with the duct they belong to (index into `ducts`) and their box.
 fn fingers_hit(fingers: &[(usize, std::ops::Range<usize>, (V3, V3))], ways: &[(Vec<V3>, f32)], ducts: &[(V3, V3)]) -> Vec<usize> {
@@ -473,6 +507,13 @@ impl PanelUi {
             // Wires routed in 3D are drawn with the routing below, cores of a cable routed
             // in 3D with their cable.
             let routed_3d = |w: &panel::RoutedWire| prj.layout.routing.wires_3d && w.door == (None, None);
+            // What stands on the plate in the way of the wires along it (by item).
+            let blockers: Vec<(u64, (V3, V3))> = e
+                .items
+                .iter()
+                .filter(|i| i.face == Face::Plate && matches!(i.kind, ItemKind::Device | ItemKind::Busbar | ItemKind::Accessory))
+                .map(|i| (i.id, up_box(panel::item_box(e, i))))
+                .collect();
             let in_cable = |w: &panel::RoutedWire| !w.cable.is_empty() && an.routing.item(&w.cable).is_some_and(|c| c.routed());
             for (wi, wire) in an.wiring.iter().enumerate().filter(|(_, wire)| wire.in_enclosure(k) && !routed_3d(wire)) {
                 let selected = Some(wi) == selected_wire;
@@ -512,7 +553,10 @@ impl PanelUi {
                                 _ => Vec::new(),
                             };
                             v.extend(entry.map(passage));
-                            v.extend(route.points.iter().map(|q| to3(q.x, q.y, z)));
+                            // Over what stands in its way along the plate (but its own devices).
+                            let along: Vec<V3> = route.points.iter().map(|q| to3(q.x, q.y, z)).collect();
+                            let around: Vec<(V3, V3)> = blockers.iter().filter(|(id, _)| *id != wire.items.0 && *id != wire.items.1).map(|(_, b)| *b).collect();
+                            v.extend(over(&along, &around, diameter / 2.0));
                             v.extend(exit.map(passage));
                             match (exit, b) {
                                 (None, Some(b)) => v.extend(door_end(b, &wire.door_routes.1, route.points.last(), z).into_iter().rev()),
@@ -602,7 +646,9 @@ impl PanelUi {
         // bent round their corners with their bend radius as round tubes (a two-colour one
         // with a stripe along it).
         let ways: Vec<Way> = pending.iter().map(|t| Way { points: &t.points, radii: &t.bends, diameter: t.diameter, rest: t.rest, below: t.below }).collect();
-        let laid = bundles::spread_ways(&ways, LANE_CELL);
+        // Kept out of the devices, busbars and accessories (their own boxes).
+        let obstacles: Vec<(V3, V3)> = (0..s.objects.len()).filter(|&i| exact[i] && !s.ducts[i]).map(|i| s.objects[i]).collect();
+        let laid = bundles::spread_ways(&ways, LANE_CELL, &obstacles);
         for (t, (points, bends)) in pending.iter().zip(laid) {
             let points = vec3::fillet_each(&points, &bends, t.steps);
             tube_faces(&mut s.tubes, &points, t.diameter, t.color, t.stripe, t.sides);

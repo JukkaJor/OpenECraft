@@ -13,3 +13,18 @@ fn duct_fingers_a_tube_passes_through_are_left_out() {
     let away = vec![(vec![[40.0, -50.0, 40.0], [40.0, 30.0, 40.0]], 4.0)];
     assert!(fingers_hit(&fingers, &away, &[duct]).is_empty());
 }
+
+#[test]
+fn wires_along_the_plate_go_over_what_stands_in_their_way() {
+    // A run 30 mm in front of the plate crosses a busbar 20 .. 70 mm in front of it.
+    let busbar = ([100.0, 0.0, 20.0], [200.0, 50.0, 70.0]);
+    let way = over(&[[0.0, 25.0, 30.0], [300.0, 25.0, 30.0]], &[busbar], 1.5);
+    assert_eq!((way[0], way[way.len() - 1]), ([0.0, 25.0, 30.0], [300.0, 25.0, 30.0]));
+    assert!(way.iter().any(|q| q[2] >= 72.5), "in front of it: {way:?}");
+    for s in way.windows(2) {
+        assert!(vec3::segment_in_box(s[0], s[1], ([98.5, -1.5, 18.5], [201.5, 51.5, 71.5])).is_none(), "{way:?}");
+    }
+    // Beside it nothing changes.
+    let beside = [[0.0, 80.0, 30.0], [300.0, 80.0, 30.0]];
+    assert_eq!(over(&beside, &[busbar], 1.5), beside.to_vec());
+}

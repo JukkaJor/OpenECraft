@@ -378,6 +378,42 @@ fn wires_and_cables_laid_side_by_side_keep_in_front_of_the_plate() {
 }
 
 #[test]
+fn wires_pass_in_front_of_the_busbars() {
+    // In the main distribution of the building the wires from the circuit breakers to
+    // the duct above them cross the busbar: in front of it, not through it.
+    let prj = openecraft_core::sample::example("building_services").unwrap();
+    let an = Analysis::build(&prj);
+    let ei = prj.layout.enclosures.iter().position(|e| e.items.iter().any(|i| i.kind == ItemKind::Busbar)).expect("busbars");
+    let e = &prj.layout.enclosures[ei];
+    let mut ui = PanelUi { enclosure: ei, show_wires: true, ..Default::default() };
+    let shown = ui.shown_3d(&prj, ei);
+    let pose = shown.iter().find(|s| s.0 == ei).unwrap().1;
+    let scene = ui.scene_3d(&prj, &an, ei, &shown);
+    let busbars: Vec<([f32; 3], [f32; 3])> = e
+        .items
+        .iter()
+        .filter(|i| i.kind == ItemKind::Busbar)
+        .map(|i| {
+            let (a, b) = panel::item_box(e, i);
+            let (lo, hi) = (pose.apply([a[0], e.height - b[1], a[2]]), pose.apply([b[0], e.height - a[1], b[2]]));
+            ([0, 1, 2].map(|k| lo[k].min(hi[k]) + 0.5), [0, 1, 2].map(|k| lo[k].max(hi[k]) - 0.5))
+        })
+        .collect();
+    let mut crossing = 0;
+    for (a, b, t) in &scene.picks {
+        if !matches!(t, routing_ui::RouteRef::Wire(_)) {
+            continue;
+        }
+        for bx in &busbars {
+            if openecraft_core::parts::vec3::segment_in_box(*a, *b, *bx).is_some() {
+                crossing += 1;
+            }
+        }
+    }
+    assert_eq!(crossing, 0, "wire segments through a busbar");
+}
+
+#[test]
 fn face_summaries_count_openings_apart() {
     let item = |kind: ItemKind, opening: Opening| PanelItem { kind, opening, ..Default::default() };
     let rail = item(ItemKind::Rail, Opening::Cutout);
