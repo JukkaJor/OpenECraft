@@ -23,7 +23,10 @@ line-ups, rooms of the building with their floor-standing equipment and pipe run
   their outer diameter. A cable ends a little before the device it is connected to and
   its cores part from there in smooth curves, each into its connection point from the
   side its wires leave it; through cable glands, wall penetrations and the cable passages
-  between cabinets cables and wires are drawn in one piece, bent round there.
+  between cabinets cables and wires are drawn in one piece, bent round there, several
+  through one gland side by side. Without cable ducts a wire leaves its connection point
+  in the direction it points, runs round the rows of devices (25 mm clear of them) and
+  never behind a device; a short jumper stays at the height of its connection points.
 - Copper **busbar systems** (bars drawn, metres and holders in the BOM) and rectangular
   or round **cutouts** in the mounting plate. A device placed over a busbar system is
   mounted onto its bars; devices on the same busbar system are connected by the bars,
@@ -217,7 +220,9 @@ one through the middle of the roof, which is reported), then through the room. F
 Hoses, tubes and pipes end at the nozzles of the generated models of their devices (the
 suction and the pressure nozzle of a pump, the nozzles of a vessel, both ends of a valve
 or a fitting, the outlets of a manifold): the route comes to a point twice as far out of
-the nozzle as the pipe is thick (at least 30 mm) and goes on straight into it.
+the nozzle as the pipe is thick (at least 30 mm) and goes on straight into it. A valve,
+meter or check valve in a pipe is taken as mounted the way round that brings both of its
+pipes nearer to where they come from.
 The example `pump_room` shows floor-standing pumps, a pipe run and the routes.
 
 In a schematic, the context menu of a placed device shows it in the panel layout (its

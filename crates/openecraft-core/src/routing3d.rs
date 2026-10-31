@@ -498,18 +498,54 @@ fn device_end(prj: &Project, pos: &[V3], tag: &str, pins: &[PinRef]) -> End {
     }
 }
 
-/// A tube at the end `end` at the connection point `pin` of its device ends at the nozzle
-/// of the device's model for it, the route coming to it from `out` mm straight out of it.
-fn at_nozzle(prj: &Project, pos: &[V3], end: &mut End, pin: PinRef, out: f32) {
+/// The nozzles of the device at the end `end` of a tube (layout coordinates: their ends
+/// and the directions out of them) and which of them is for its connection point `pin`.
+fn end_nozzles(prj: &Project, pos: &[V3], end: &End, pin: PinRef) -> Option<(Vec<(V3, V3)>, usize)> {
     let s = &prj.pages[pin.page].symbols[pin.sym];
-    let Some((ei, it)) = panel::locate(prj, &s.tag).filter(|(_, it)| end.item == Some(it.id)) else { return };
-    let name = prj.symbol(&s.sym).and_then(|def| s.pins.get(pin.pin).map(String::as_str).or_else(|| def.pins.get(pin.pin).map(|d| d.label)));
-    let Some((at, dir)) = name.and_then(|n| panel::nozzle(prj, it, n)) else { return };
+    let (ei, it) = panel::locate(prj, &s.tag).filter(|(_, it)| end.item == Some(it.id))?;
+    let def = prj.symbol(&s.sym)?;
+    let name = s.pins.get(pin.pin).map(String::as_str).or_else(|| def.pins.get(pin.pin).map(|d| d.label))?;
+    let all = panel::nozzles(prj, it);
+    let k = all.iter().position(|n| n.0 == name)?;
     let e = &prj.layout.enclosures[ei];
     let in_layout = |q: V3| add(panel::face_point(e, it.face, q), pos[ei]);
-    let tip = in_layout(at);
+    let at = all.iter().map(|(_, at, dir)| (in_layout(*at), sub(in_layout(add(*at, *dir)), in_layout(*at)))).collect();
+    Some((at, k))
+}
+
+/// The two nozzles at the ends of a fitting in a pipe (valve, meter): one opposite the other.
+fn in_line(nozzles: &[(V3, V3)]) -> bool {
+    nozzles.len() == 2 && crate::parts::vec3::dot(nozzles[0].1, nozzles[1].1) < -0.99
+}
+
+/// The fittings in a pipe (see [`in_line`]) that are mounted the other way round, each
+/// pipe at the end it comes from (as near as possible to where its other end is): the
+/// items at the ends of `hoses` that turned are that much nearer.
+fn turned_fittings(prj: &Project, pos: &[V3], hoses: &[(crate::fluid::Hose, [End; 2])]) -> Vec<u64> {
+    let mut ways: HashMap<u64, [f32; 2]> = HashMap::new();
+    for (h, ends) in hoses {
+        for (i, pin) in [h.a, h.b].into_iter().enumerate() {
+            let (Some(item), Some(to)) = (ends[i].item, ends[1 - i].point) else { continue };
+            let Some((at, k)) = end_nozzles(prj, pos, &ends[i], pin).filter(|(at, _)| in_line(at)) else { continue };
+            let way = ways.entry(item).or_default();
+            way[0] += dist(at[k].0, to);
+            way[1] += dist(at[1 - k].0, to);
+        }
+    }
+    let mut turned: Vec<u64> = ways.into_iter().filter(|(_, w)| w[1] + 1.0 < w[0]).map(|(id, _)| id).collect();
+    turned.sort_unstable();
+    turned
+}
+
+/// A tube at the end `end` at the connection point `pin` of its device ends at the nozzle
+/// of the device's model for it (the other end of a fitting `turned` round), the route
+/// coming to it from `out` mm straight out of it.
+fn at_nozzle(prj: &Project, pos: &[V3], end: &mut End, pin: PinRef, out: f32, turned: &[u64]) {
+    let Some((at, k)) = end_nozzles(prj, pos, end, pin) else { return };
+    let k = if in_line(&at) && end.item.is_some_and(|id| turned.contains(&id)) { 1 - k } else { k };
+    let (tip, dir) = at[k];
     end.nozzle = Some(tip);
-    end.point = Some(add(tip, scale(sub(in_layout(add(at, dir)), tip), out)));
+    end.point = Some(add(tip, scale(dir, out)));
 }
 
 /// The schematic connection points of `cores` at the device `tag`.
@@ -766,12 +802,13 @@ fn jobs(prj: &Project, wiring: &[RoutedWire], conns: &[Connection], open: &Netli
     // Hoses, tubes and pipes with their configuration: bend radius, and the insertion
     // depth at both ends for the cut length. They end at the nozzles of their devices,
     // the routes coming to them twice as far straight out of them as they are thick.
-    for h in crate::fluid::hoses(prj, open) {
-        let tag = |p: crate::netlist::PinRef| prj.pages[p.page].symbols[p.sym].tag.clone();
-        let Some(mut ends) = ends_between(prj, &pos, &tag(h.a), &tag(h.b), [&[], &[]]) else { continue };
+    let tag = |p: crate::netlist::PinRef| prj.pages[p.page].symbols[p.sym].tag.clone();
+    let hoses: Vec<(crate::fluid::Hose, [End; 2])> = crate::fluid::hoses(prj, open).into_iter().filter_map(|h| ends_between(prj, &pos, &tag(h.a), &tag(h.b), [&[], &[]]).map(|e| (h, e))).collect();
+    let turned = turned_fittings(prj, &pos, &hoses);
+    for (h, mut ends) in hoses {
         let diameter = tube_diameter(&h.size);
         for (end, pin) in ends.iter_mut().zip([h.a, h.b]) {
-            at_nozzle(prj, &pos, end, pin, (2.0 * diameter).max(NOZZLE_OUT));
+            at_nozzle(prj, &pos, end, pin, (2.0 * diameter).max(NOZZLE_OUT), &turned);
         }
         let label = if h.number.is_empty() { format!("{} – {}", h.from, h.to) } else { h.number.clone() };
         jobs.push(Job {

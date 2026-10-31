@@ -29,6 +29,9 @@ const WIRE_SIDES: usize = 6;
 /// Grid (mm) the wires, cables and tubes running together are found on, to be laid
 /// side by side.
 const LANE_CELL: f32 = 8.0;
+/// Wires without cable ducts shorter than this (mm on the plate) between two connection
+/// points run at their height instead of along the plate.
+const JUMPER: f32 = 200.0;
 /// How long (ms) a scene waits for its layout before it is shown without it.
 const LAYOUT_WAIT: u32 = 30;
 
@@ -50,6 +53,8 @@ struct TubeWay {
     /// nearer to it (see [`Way`]).
     rest: V3,
     below: f32,
+    /// Drawn as it is, not laid beside the others.
+    as_is: bool,
 }
 
 /// A flat face of the view: a triangle of a model or a side of a box.
@@ -360,6 +365,20 @@ fn over(points: &[V3], blockers: &[(V3, V3)], half: f32) -> Vec<V3> {
     out
 }
 
+/// A wire's way along the plate from a connection point of its own device (box `own`)
+/// at `height`: the points of the way inside the device (seen on the plate) left out, it
+/// leaves at that height to above the first one outside, then goes down to it.
+fn leave_device(along: &mut Vec<V3>, own: (V3, V3), height: f32) {
+    let inside = |q: &V3| q[0] > own.0[0] && q[0] < own.1[0] && q[1] > own.0[1] && q[1] < own.1[1];
+    let n = along.iter().take_while(|q| inside(q)).count();
+    if n == 0 || n >= along.len() {
+        return;
+    }
+    along.drain(..n);
+    let q = along[0];
+    along.insert(0, [q[0], q[1], height]);
+}
+
 /// The fingers (indices) a tube passes through: each of `ways` with its radius, the
 /// fingers with the duct they belong to (index into `ducts`) and their box.
 fn fingers_hit(fingers: &[(usize, std::ops::Range<usize>, (V3, V3))], ways: &[(Vec<V3>, f32)], ducts: &[(V3, V3)]) -> Vec<usize> {
@@ -468,6 +487,8 @@ impl PanelUi {
         let mut channels: Vec<Channel> = Vec::new();
         let mut insides: Vec<(V3, V3)> = Vec::new();
         let mut lids: Vec<(V3, V3)> = Vec::new();
+        // What stands on the mounting plates, down to the plates (no way runs behind it).
+        let mut on_plates: Vec<(V3, V3)> = Vec::new();
         // Wire segments among the equipment, cut at the boxes once all of them are known.
         let mut equipment_wires: Vec<SceneLine> = Vec::new();
         // Whether a box is the object's own (not enlarged by a turn of the door or the
@@ -558,6 +579,10 @@ impl PanelUi {
             if !e.is_room() {
                 // The inside of the cabinet: within its walls, roof and bottom.
                 insides.push(seen(up_box(([t, t, PLATE_Z], [w - t, h - t, dpt - t]))));
+            }
+            for it in e.items.iter().filter(|i| i.face == Face::Plate && matches!(i.kind, ItemKind::Device | ItemKind::Busbar | ItemKind::Accessory | ItemKind::Rail)) {
+                let (lo, hi) = panel::item_box(e, it);
+                on_plates.push(seen(up_box(([lo[0], lo[1], lo[2].min(PLATE_Z)], hi))));
             }
             for it in &e.items {
                 // Selected, at the end of the selected wire, with a problem or mounted:
@@ -691,12 +716,16 @@ impl PanelUi {
             // Wires routed in 3D are drawn with the routing below, cores of a cable routed
             // in 3D with their cable.
             let routed_3d = |w: &panel::RoutedWire| prj.layout.routing.wires_3d && w.door == (None, None);
-            // What stands on the plate in the way of the wires along it (by item).
+            // What stands on the plate in the way of the wires along it (by item), down to
+            // the plate: no wire passes behind a device on its rail.
             let blockers: Vec<(u64, (V3, V3))> = e
                 .items
                 .iter()
-                .filter(|i| i.face == Face::Plate && matches!(i.kind, ItemKind::Device | ItemKind::Busbar | ItemKind::Accessory))
-                .map(|i| (i.id, up_box(panel::item_box(e, i))))
+                .filter(|i| i.face == Face::Plate && matches!(i.kind, ItemKind::Device | ItemKind::Busbar | ItemKind::Accessory | ItemKind::Rail))
+                .map(|i| {
+                    let (lo, hi) = up_box(panel::item_box(e, i));
+                    (i.id, ([lo[0], lo[1], lo[2].min(PLATE_Z)], hi))
+                })
                 .collect();
             let in_cable = |w: &panel::RoutedWire| !w.cable.is_empty() && an.routing.item(&w.cable).is_some_and(|c| c.routed());
             for (wi, wire) in an.wiring.iter().enumerate().filter(|(_, wire)| wire.in_enclosure(k) && !routed_3d(wire)) {
@@ -730,7 +759,13 @@ impl PanelUi {
                         .enumerate()
                         .filter(|(_, s)| s.0 == k)
                         .map(|(i, (_, route, entry, exit))| {
-                            let z = if route.via_ducts { panel::DUCT_PROFILE.1 * 0.5 } else { 5.0 };
+                            // In the ducts at half their depth; without them on the plate, a short
+                            // jumper between two connection points at their height.
+                            let jumper = match (entry, exit, a, b, wire.terminals) {
+                                (None, None, None, None, (Some(s), Some(t))) if !route.via_ducts && route.plate_length < JUMPER => Some(s[2].min(t[2]) - PLATE_Z),
+                                _ => None,
+                            };
+                            let z = if route.via_ducts { panel::DUCT_PROFILE.1 * 0.5 } else { jumper.unwrap_or(5.0).max(5.0) };
                             // From the connection points down to the plate.
                             let mut v = match (entry, a) {
                                 (None, Some(a)) => door_end(a, &wire.door_routes.0, route.points.first(), z),
@@ -738,8 +773,18 @@ impl PanelUi {
                                 _ => Vec::new(),
                             };
                             v.extend(entry.map(passage));
-                            // Over what stands in its way along the plate (but its own devices).
-                            let along: Vec<V3> = route.points.iter().map(|q| to3(q.x, q.y, z)).collect();
+                            // Out of its own devices at the height of its connection points,
+                            // over what stands in its way along the plate (but its own devices).
+                            let mut along: Vec<V3> = route.points.iter().map(|q| to3(q.x, q.y, z)).collect();
+                            let own = |id: u64| blockers.iter().find(|b| b.0 == id).map(|b| b.1);
+                            if let (None, None, Some(t), Some(b)) = (entry, a, wire.terminals.0.map(up), own(wire.items.0)) {
+                                leave_device(&mut along, b, t[2]);
+                            }
+                            if let (None, None, Some(t), Some(b)) = (exit, b, wire.terminals.1.map(up), own(wire.items.1)) {
+                                along.reverse();
+                                leave_device(&mut along, b, t[2]);
+                                along.reverse();
+                            }
                             let around: Vec<(V3, V3)> = blockers.iter().filter(|(id, _)| *id != wire.items.0 && *id != wire.items.1).map(|(_, b)| *b).collect();
                             v.extend(over(&along, &around, diameter / 2.0));
                             v.extend(exit.map(passage));
@@ -764,7 +809,7 @@ impl PanelUi {
                     let path: Vec<V3> = path.iter().map(|q| pose.apply(*q)).collect();
                     if diameter > 0.0 {
                         let bends = vec![bend; path.len()];
-                        wire_pieces.push((wi, *i, TubeWay { points: path, bends, diameter, color, stripe, width, on_top: selected, target: RouteRef::Wire(wi), sides: WIRE_SIDES, steps: 2, rest, below }));
+                        wire_pieces.push((wi, *i, TubeWay { points: path, bends, diameter, color, stripe, width, on_top: selected, target: RouteRef::Wire(wi), sides: WIRE_SIDES, steps: 2, rest, below, as_is: false }));
                         continue;
                     }
                     for seg in path.windows(2) {
@@ -827,7 +872,7 @@ impl PanelUi {
         for line in self.routing_lines_3d(prj, an, &keys, &to_view, selected_wire) {
             if line.diameter > 0.0 {
                 let (sides, steps) = if matches!(line.target, RouteRef::Wire(_)) { (WIRE_SIDES, 2) } else { (TUBE_SIDES, 4) };
-                pending.push(TubeWay { points: line.points, bends: line.bends, diameter: line.diameter, color: line.color, stripe: line.stripe, width: line.width, on_top: line.on_top, target: line.target, sides, steps, rest: line.rest, below: line.below });
+                pending.push(TubeWay { points: line.points, bends: line.bends, diameter: line.diameter, color: line.color, stripe: line.stripe, width: line.width, on_top: line.on_top, target: line.target, sides, steps, rest: line.rest, below: line.below, as_is: line.as_is });
                 continue;
             }
             for seg in line.points.windows(2) {
@@ -846,18 +891,22 @@ impl PanelUi {
         // bent round their corners with their bend radius and pushed apart where they still
         // run inside or through each other, as round tubes (a two-colour one with a stripe
         // along it); kept out of the devices, busbars and accessories (their own boxes).
-        // Until that is worked out, as they were routed.
+        // Until that is worked out, as they were routed; the cores where a cable parts as
+        // they are.
         let mut obstacles: Vec<(V3, V3)> = (0..s.objects.len()).filter(|&i| exact[i] && !s.ducts[i]).map(|i| s.objects[i]).collect();
         obstacles.extend(lids);
-        let ways = pending.iter().map(|t| LayoutWay { points: t.points.clone(), bends: t.bends.clone(), diameter: t.diameter, rest: t.rest, below: t.below, steps: t.steps }).collect();
+        obstacles.extend(on_plates);
+        let ways = pending.iter().filter(|t| !t.as_is).map(|t| LayoutWay { points: t.points.clone(), bends: t.bends.clone(), diameter: t.diameter, rest: t.rest, below: t.below, steps: t.steps }).collect();
         let laid = match lay_out(LayoutInput { ways, obstacles, channels, insides }) {
             Ok(ways) => ways,
             Err(key) => {
                 s.waiting = Some(key);
-                Arc::new(pending.iter().map(|t| vec3::fillet_each(&t.points, &t.bends, t.steps)).collect())
+                Arc::new(pending.iter().filter(|t| !t.as_is).map(|t| vec3::fillet_each(&t.points, &t.bends, t.steps)).collect())
             }
         };
-        for (t, points) in pending.iter().zip(laid.iter()) {
+        let mut laid = laid.iter();
+        for t in &pending {
+            let points = if t.as_is { &t.points } else { laid.next().unwrap_or(&t.points) };
             tube_faces(&mut s.tubes, points, t.diameter, t.color, t.stripe, t.sides);
             tube_ways.push((points.clone(), t.diameter / 2.0));
             for seg in points.windows(2) {
@@ -910,4 +959,5 @@ impl PanelUi {
 
 #[cfg(test)]
 mod tests;
+
 

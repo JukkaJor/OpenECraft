@@ -58,14 +58,18 @@ pub fn exit_vector(exit: Exit) -> V3 {
     }
 }
 
-/// The nozzle of the model of a fluid device for its connection point `pin`: its end
-/// and the direction a pipe leaves it in, in the coordinates of the item's face.
-pub fn nozzle(prj: &Project, it: &PanelItem, pin: &str) -> Option<(V3, V3)> {
-    let part = super::part_by_number(prj, &it.part)?;
-    let n = crate::parts::nozzles(part).into_iter().find(|n| n.pin == pin)?;
-    let mesh = part.model_3d.as_deref()?;
-    let (a, b) = (super::place_point(mesh, it, n.at), super::place_point(mesh, it, add(n.at, n.dir)));
-    Some((a, norm(sub(b, a))))
+/// The nozzles of the model of a fluid device: the connection point each is for, its
+/// end and the direction a pipe leaves it in, in the coordinates of the item's face.
+pub fn nozzles(prj: &Project, it: &PanelItem) -> Vec<(String, V3, V3)> {
+    let Some(part) = super::part_by_number(prj, &it.part) else { return Vec::new() };
+    let Some(mesh) = part.model_3d.as_deref() else { return Vec::new() };
+    crate::parts::nozzles(part)
+        .into_iter()
+        .map(|n| {
+            let (a, b) = (super::place_point(mesh, it, n.at), super::place_point(mesh, it, add(n.at, n.dir)));
+            (n.pin, a, norm(sub(b, a)))
+        })
+        .collect()
 }
 
 /// The connection points of a device item, in the coordinates of its face. Terminal

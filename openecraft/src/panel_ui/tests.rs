@@ -368,7 +368,8 @@ fn wires_entering_the_ducts_take_out_the_fingers_they_pass() {
 #[test]
 fn wires_running_together_lie_side_by_side() {
     // In the ducts of the demo cabinet many wires run the same way: no two straight runs
-    // of different wires lie inside each other (but at their ends, inside the devices).
+    // of different wires lie inside each other (but at their ends, where they leave their
+    // devices over them).
     let prj = openecraft_core::sample::demo_project();
     let an = Analysis::build(&prj);
     let mut ui = PanelUi { show_wires: true, ..Default::default() };
@@ -407,7 +408,7 @@ fn wires_running_together_lie_side_by_side() {
             }
         }
     }
-    assert!(together > 10, "{together} runs side by side");
+    assert!(together > 5, "{together} runs side by side");
 }
 
 #[test]
@@ -807,4 +808,26 @@ fn wires_are_laid_out_on_another_thread_with_their_progress_shown() {
     ui.drag = Some(MoveDrag { start: openecraft_core::geom::p(0.0, 0.0), originals: Vec::new() });
     let dragged = ui.scene_3d(&ctx, &moved, &an, 0, &shown);
     assert!(dragged.waiting.is_some() && ui.layouts.progress().is_none());
+}
+
+#[test]
+fn cores_part_from_their_cable_without_lying_in_each_other() {
+    // The five cores of the main cable to the AC distribution part in front of its
+    // terminals: each from its own place in the cable, none inside another where they
+    // start, thinner than half the cable.
+    let prj = openecraft_core::sample::example("building_services").unwrap();
+    let an = Analysis::build(&prj);
+    let acd = prj.layout.enclosures.iter().position(|e| e.name == "+ACD").unwrap();
+    let w12 = an.routing.item("=MD-W12").unwrap();
+    let ui = PanelUi::default();
+    let lines = ui.routing_lines_3d(&prj, &an, &[acd], &|_, q| q, None);
+    let at = w12.ends.iter().find(|e| e.tag == "=ESS+ACD-X0").unwrap();
+    let cores: Vec<_> = lines.iter().filter(|l| l.as_is && at.cores.iter().any(|q| l.points.last() == Some(q))).collect();
+    assert_eq!(cores.len(), 5);
+    for (i, a) in cores.iter().enumerate() {
+        assert!(a.diameter < w12.diameter * 0.5);
+        for b in &cores[i + 1..] {
+            assert!(vec3::dist(a.points[0], b.points[0]) >= a.diameter - 0.01, "{:?} {:?}", a.points[0], b.points[0]);
+        }
+    }
 }

@@ -487,6 +487,11 @@ const SLACK_GROWTH: f32 = 0.01;
 /// Parts the segments of a round of [`separate`] are searched in (on the threads there are).
 const PUSH_PARTS: usize = 16;
 
+/// How far a strand is pushed from where it was routed at most ([`separate`]): this many
+/// times its thickness and [`MOST_MOVE_EXTRA`] mm more.
+const MOST_MOVE: f32 = 4.0;
+const MOST_MOVE_EXTRA: f32 = 20.0;
+
 /// The ways as the 3D view draws them: laid side by side ([`spread_ways`] on a grid of
 /// `cell`), bent round their corners ([`Way::steps`] points per quarter turn) and pushed
 /// apart ([`separate`]); `progress` as for [`separate_with`].
@@ -510,8 +515,8 @@ pub fn lay_out(ways: &[Way], cell: f32, obstacles: &[(V3, V3)], channels: &[Chan
 /// (one over the other where they cross) and the move spread along the strand, round
 /// after round until none overlap (or [`ROUNDS`]). Their ends (twice their thickness
 /// from the connection points, the stretches at the ends where they converge with
-/// others: [`Strand::tails`]) and what lies inside one of the `obstacles` stay; no
-/// sample enters an obstacle it kept out of, comes further out of a channel's inside or
+/// others: [`Strand::tails`]) and what lies inside one of the `obstacles` stay; none
+/// moves further than [`MOST_MOVE`] times its thickness from where it was, no sample enters an obstacle it kept out of, comes further out of a channel's inside or
 /// one of the `insides` (the cabinets) it was in, or nearer to the surface it runs along
 /// than `below`. Straight where they did not move.
 pub fn separate(strands: &[Strand], obstacles: &[(V3, V3)], channels: &[Channel], insides: &[(V3, V3)]) -> Vec<Vec<V3>> {
@@ -533,6 +538,12 @@ pub fn separate_with(strands: &[Strand], obstacles: &[(V3, V3)], channels: &[Cha
     let (wall_cells, obstacle_cells) = (BoxGrid::new(&walls), BoxGrid::new(&grown));
     let keep = |i: usize, mut p: V3| -> V3 {
         let (o, r, st) = (was[i], radius[owner[i]], &strands[owner[i]]);
+        // Never further than a few times its thickness from where it was routed.
+        let (moved, most) = (sub(p, o), MOST_MOVE * st.diameter + MOST_MOVE_EXTRA);
+        let far = dot(moved, moved).sqrt();
+        if far > most {
+            p = add(o, scale(moved, most / far));
+        }
         if st.rest != [0.0; 3] {
             let (h, least) = (dot(sub(p, o), st.rest), -st.below.max(0.0));
             if h < least {

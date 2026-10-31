@@ -264,3 +264,16 @@ fn wires_on_terminals_closer_than_they_are_thick_leave_them_straight() {
     // Stopped, there is none.
     assert!(lay_out(&ways, 8.0, &[], &[], &[], &|_, _| false).is_none());
 }
+
+#[test]
+fn strands_are_pushed_no_further_than_a_few_times_their_thickness() {
+    // Three strands 30 mm thick lying on each other in free air, with an obstacle round
+    // them they started in (so nothing holds them): none goes far from where it was.
+    let same = [[0.0, 0.0, 0.0], [1000.0, 0.0, 0.0]];
+    let strand = || Strand { points: &same, diameter: 30.0, rest: [0.0; 3], below: f32::INFINITY, tails: [0.0; 2] };
+    let apart = separate(&[strand(), strand(), strand()], &[], &[], &[]);
+    let most = MOST_MOVE * 30.0 + MOST_MOVE_EXTRA + 0.01;
+    for q in apart.iter().flatten() {
+        assert!(q[1].hypot(q[2]) <= most, "{q:?}");
+    }
+}
