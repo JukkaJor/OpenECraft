@@ -378,10 +378,11 @@ function rows(pairs) {
 async function showPart(number) {
   document.getElementById("facets").innerHTML = "";
   content('<div class="status">' + esc(t("Loading…")) + "</div>");
-  let p, history = [];
+  let p, history = [], related = { accessories: [], fits: [] };
   try {
     p = await api("/parts/" + encodeURIComponent(number));
     history = await api("/parts/" + encodeURIComponent(number) + "/history").catch(() => []);
+    related = await api("/parts/" + encodeURIComponent(number) + "/accessories").catch(() => related);
   } catch (e) {
     const msg = e.status === 404 ? tf("Part {} not found", number) : esc(e.message);
     content('<div class="status error">' + msg + '</div><div class="status"><a href="#" id="back">← ' + esc(t("Back to the results")) + "</a></div>");
@@ -409,10 +410,14 @@ async function showPart(number) {
     ["Functions", esc((p.functions || []).map(f => key("fn", f.kind) + (f.pins ? " " + f.pins : "")).join("\n"))]]));
   html += box(t("Commercial data") + " / " + t("Mounting data"), rows([
     ["Price", money(p) + (p.price_unit > 1 ? " / " + p.price_unit + " " + esc(p.quantity_unit) : "")], ["Width", mm(p.width)], ["Height", mm(p.height)], ["Depth", mm(p.depth)],
-    ["Weight", p.weight ? p.weight + " kg" : ""], ["Mounting", esc(p.mounting)], ["Accessories", (p.accessories || []).map(partLink).join(", ")],
+    ["Weight", p.weight ? p.weight + " kg" : ""], ["Mounting", esc(p.mounting)],
     ["Power loss", md.power_loss ? md.power_loss + " W" : ""], ["Clearance top", mm(md.clearance_top)], ["Clearance bottom", mm(md.clearance_bottom)],
     ["Mounting holes", (md.holes || []).length ? esc((md.hole_thread || "") + ": " + md.holes.map(h => h[0] + "," + h[1]).join("; ")) : ""],
     ["Door cutout", cutout(md.door_cutout)], ["Cutout", cutout(md.cutout)]]));
+  const relatedList = list => list.map(a => partLink(a.number) + (a.description ? ' <span class="muted">' + esc(a.description) + "</span>" : "")).join("<br>");
+  html += box(t("Accessories"), rows([
+    ["Accessory", p.accessory ? esc(t("Yes")) + " · " + esc(key("mount", p.accessory_mount || "Auto")) : ""],
+    ["Accessories", relatedList(related.accessories || [])], ["Fits", relatedList(related.fits || [])]]));
   const graphics = [];
   if (p.model_2d && (p.model_2d.prims || []).length) {
     graphics.push("<figure><figcaption>" + esc(t("Front view (2D)")) + "</figcaption>" + frontView(p.model_2d) + "</figure>");

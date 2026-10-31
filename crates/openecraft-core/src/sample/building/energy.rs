@@ -116,7 +116,8 @@ pub(super) fn ac_input(prj: &mut Project, section: u64) {
 
 /// Backup outputs of the MultiPlus-II through the residual current device to the
 /// sockets, the rack and the control voltage of the automation cabinet; the AC
-/// outputs of the Inverter RS on sockets of their own.
+/// outputs of the Inverter RS on sockets of their own and the trip lamp of the
+/// residual current device.
 pub(super) fn backup(prj: &mut Project, section: u64) {
     let page = sec_page(prj, section, "3", "Backup distribution", PageKind::Schematic, "ESS", "ACD");
     let mut g = Pg { prj, page };
@@ -162,6 +163,12 @@ pub(super) fn backup(prj: &mut Project, section: u64) {
         g.w(x + 8.0, 156.0, x + 8.0, 196.0).w(x + 16.0, 156.0, x + 16.0, 196.0);
         g.sym("socket", x, 200.0, 0, &format!("-X2{n}"), "", &format!("Socket Inverter RS {n}"));
     }
+    // The signal contact CZ001 beside the residual current device -F10 (its NC closes
+    // when -F10 trips) lights a lamp, fed from Inverter RS 2, which stays on.
+    g.path(&[(340.0, 180.0), (384.0, 180.0), (384.0, 184.0)]);
+    g.sym("nc", 384.0, 188.0, 0, "-F10", "", "").pins(&["21", "22"]).w(384.0, 192.0, 384.0, 200.0);
+    g.sym("lamp", 384.0, 204.0, 0, "-P10", "", "RCD tripped");
+    g.path(&[(384.0, 208.0), (384.0, 216.0), (364.0, 216.0), (364.0, 190.0), (348.0, 190.0)]);
 }
 
 /// VE.Bus, VE.Can, the CAN bus of the batteries and Ethernet: sockets of the devices,

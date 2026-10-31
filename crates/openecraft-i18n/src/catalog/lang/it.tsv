@@ -6371,3 +6371,28 @@ Open cable ducts	Apri canaline
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	Nella vista 3D omette i coperchi di tutte le canaline: i fili al loro interno sono visibili
 {}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: canalina a {} mm troppo piccola: i suoi {} fili non possono essere posati uno accanto all'altro
 Laying out the wires, cables and tubes…	Disposizione di conduttori, cavi e tubi…
+Fits	Compatibile con
+Fits {}	Compatibile con {}
+The accessory fits none of the device's parts	L'accessorio non è compatibile con nessun articolo del dispositivo
+{}: accessory {} fits none of the device's parts	{}: l'accessorio {} non è compatibile con nessun articolo del dispositivo
+Part accessories	Accessori degli articoli
+Unknown device: {}	Dispositivo sconosciuto: {}
+{} fits none of the parts of {}	{} non è compatibile con nessun articolo di {}
+Accessories only work together with the parts they fit. A part lists its accessories, an accessory the parts it fits; either side is enough.	Gli accessori funzionano solo insieme agli articoli con cui sono compatibili. Un articolo elenca i suoi accessori, un accessorio gli articoli con cui è compatibile; basta un lato.
+Accessories of this part	Accessori di questo articolo
+This part is an accessory	Questo articolo è un accessorio
+It only works attached to one of the parts it fits; the project check reports it on a device without such a part	Funziona solo montato su uno degli articoli con cui è compatibile; la verifica del progetto lo segnala su un dispositivo senza tale articolo
+Where the accessory sits on the part it fits, in the panel layout and the 3D view	Dove si trova l'accessorio sull'articolo compatibile, nel layout del quadro e nella vista 3D
+Fits these parts	Compatibile con questi articoli
+➕ Add part	➕ Aggiungi articolo
+Accessory, mounted: {}	Accessorio, montato: {}
+Give a device tag or a part number	Indicare una sigla del dispositivo o un codice articolo
+Lists and renames devices, adds accessories to their parts	Elenca e rinomina i dispositivi, aggiunge accessori ai loro articoli
+Lists the accessories that fit a part or the parts of a device, and the parts an accessory fits (project parts, built-in and bundled catalogs)	Elenca gli accessori compatibili con un articolo o con gli articoli di un dispositivo e gli articoli con cui è compatibile un accessorio (articoli del progetto, cataloghi integrati e inclusi)
+Device tag: the accessories that can still be added to its parts	Sigla del dispositivo: gli accessori che si possono ancora aggiungere ai suoi articoli
+Adds an accessory to a device; it must fit one of the device's parts	Aggiunge un accessorio a un dispositivo; deve essere compatibile con uno degli articoli del dispositivo
+Part number of the accessory	Codice articolo dell'accessorio
+On the front	Sul fronte
+On the left side	Sul lato sinistro
+On the right side	Sul lato destro
+Not mounted	Non montato

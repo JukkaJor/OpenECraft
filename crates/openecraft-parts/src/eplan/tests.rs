@@ -44,14 +44,15 @@ fn parts_and_variants_are_read() {
 
 #[test]
 fn round_trip_through_eplan_xml() {
-    let parts = from_eplan_xml(SAMPLE).unwrap();
+    let mut parts = from_eplan_xml(SAMPLE).unwrap();
+    parts[1].accessory = true;
     let xml = to_eplan_xml(&parts);
     assert!(xml.contains("P_ARTICLE_DESCR1=\"en_US@Power contactor;\""));
     assert!(xml.contains("P_ARTICLE_PRODUCTTOPGROUP=\"1\""));
     let back = from_eplan_xml(&xml).unwrap();
     assert_eq!(back.len(), parts.len());
     for (a, b) in parts.iter().zip(&back) {
-        assert_eq!((&a.number, &a.description, a.price, a.width, &a.group), (&b.number, &b.description, b.price, b.width, &b.group));
+        assert_eq!((&a.number, &a.description, a.price, a.width, &a.group, a.accessory), (&b.number, &b.description, b.price, b.width, &b.group, b.accessory));
     }
 }
 

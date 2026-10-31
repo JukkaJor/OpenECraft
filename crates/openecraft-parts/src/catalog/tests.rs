@@ -5,8 +5,15 @@ fn catalog_numbers_unique_and_accessories_exist() {
     let parts = default_catalog();
     for (i, p) in parts.iter().enumerate() {
         assert!(parts[i + 1..].iter().all(|q| q.number != p.number), "duplicate {}", p.number);
-        for a in &p.accessories {
+        for a in p.accessories.iter().chain(&p.fits) {
             assert!(parts.iter().any(|q| &q.number == a), "{} accessory {a} missing", p.number);
+        }
+        // Accessories are flagged and mounted on their main parts.
+        if p.accessory {
+            assert!(!crate::accessory::mains_of(&parts, p).is_empty(), "{} fits nothing", p.number);
+        }
+        for a in crate::accessory::accessories_of(&parts, p).iter().filter(|a| a.subgroup.starts_with("Auxiliary")) {
+            assert!(a.accessory, "{} is no accessory", a.number);
         }
     }
 }

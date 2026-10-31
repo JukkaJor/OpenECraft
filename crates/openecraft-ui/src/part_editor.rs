@@ -471,6 +471,9 @@ pub fn part_editor(ui: &mut egui::Ui, part: &mut Part, state: &mut EditorState, 
             }
         }
         PartTab::Accessories => {
+            ui.weak(tr("Accessories only work together with the parts they fit. A part lists its accessories, an accessory the parts it fits; either side is enough."));
+            ui.add_space(4.0);
+            ui.label(RichText::new(tr("Accessories of this part")).strong());
             let mut remove = None;
             for (i, a) in part.accessories.iter().enumerate() {
                 ui.horizontal(|ui| {
@@ -494,6 +497,45 @@ pub fn part_editor(ui: &mut egui::Ui, part: &mut Part, state: &mut EditorState, 
             });
             if let Some(n) = add {
                 part.accessories.push(n);
+            }
+            ui.separator();
+            ui.checkbox(&mut part.accessory, tr("This part is an accessory")).on_hover_text(tr("It only works attached to one of the parts it fits; the project check reports it on a device without such a part"));
+            if part.accessory {
+                ui.horizontal(|ui| {
+                    ui.label(tr("Mounted"));
+                    egui::ComboBox::from_id_salt("accmount").selected_text(tr(part.accessory_mount.title())).show_ui(ui, |ui| {
+                        for m in openecraft_parts::AccessoryMount::ALL {
+                            ui.selectable_value(&mut part.accessory_mount, m, tr(m.title()));
+                        }
+                    });
+                })
+                .response
+                .on_hover_text(tr("Where the accessory sits on the part it fits, in the panel layout and the 3D view"));
+                ui.label(RichText::new(tr("Fits these parts")).strong());
+                let mut remove = None;
+                for (i, n) in part.fits.iter().enumerate() {
+                    ui.horizontal(|ui| {
+                        let known = all_numbers.contains(n);
+                        ui.label(RichText::new(n).monospace().color(if known { ui.visuals().text_color() } else { Color32::from_rgb(220, 60, 60) }));
+                        if icons::button(ui, Icon::Delete, tr("Remove")).clicked() {
+                            remove = Some(i);
+                        }
+                    });
+                }
+                if let Some(i) = remove {
+                    part.fits.remove(i);
+                }
+                let mut add = None;
+                egui::ComboBox::from_id_salt("accfits").selected_text(tr("➕ Add part")).width(240.0).show_ui(ui, |ui| {
+                    for n in all_numbers {
+                        if *n != part.number && !part.fits.contains(n) && ui.selectable_label(false, n).clicked() {
+                            add = Some(n.clone());
+                        }
+                    }
+                });
+                if let Some(n) = add {
+                    part.fits.push(n);
+                }
             }
             ui.separator();
             ui.label(RichText::new(tr("Components (assembly)")).strong()).on_hover_text(tr("Parts this part is assembled from; the bill of materials lists them under it"));
@@ -1106,6 +1148,7 @@ pub fn part_summary(ui: &mut egui::Ui, p: &Part) {
             (tr("Dimensions"), if p.width > 0.0 || p.height > 0.0 || p.depth > 0.0 { tr_fmt!("{} × {} × {} mm", p.width, p.height, p.depth) } else { String::new() }),
             (tr("Functions"), p.template_summary()),
             (tr("Accessories"), p.accessories.join(", ")),
+            (tr("Fits"), p.fits.join(", ")),
             (tr("Lifecycle"), if p.lifecycle.is_active() { String::new() } else { tr(p.lifecycle.title()).to_string() }),
             (tr("Successor"), p.successor.clone()),
             (tr("Wall mounting"), if p.wall_mountable() { tr("yes").to_string() } else { String::new() }),

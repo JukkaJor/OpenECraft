@@ -6360,3 +6360,28 @@ Open cable ducts	打开线槽
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	在 3D 视图中省略所有线槽的盖板：可以看到其中的导线
 {}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}：位于 {} mm 处的线槽太小：其中的 {} 根导线无法并排敷设
 Laying out the wires, cables and tubes…	正在排布导线、电缆和管子…
+Fits	适配
+Fits {}	适配 {}
+The accessory fits none of the device's parts	该附件不适配设备的任何部件
+{}: accessory {} fits none of the device's parts	{}：附件 {} 不适配设备的任何部件
+Part accessories	部件附件
+Unknown device: {}	未知设备：{}
+{} fits none of the parts of {}	{} 不适配 {} 的任何部件
+Accessories only work together with the parts they fit. A part lists its accessories, an accessory the parts it fits; either side is enough.	附件只能与其适配的部件配合使用。部件列出其附件，附件列出其适配的部件；任一侧即可。
+Accessories of this part	此部件的附件
+This part is an accessory	此部件是附件
+It only works attached to one of the parts it fits; the project check reports it on a device without such a part	它只有安装在其适配的部件上才能工作；项目检查会在没有此类部件的设备上报告它
+Where the accessory sits on the part it fits, in the panel layout and the 3D view	附件在其适配部件上的位置（在柜体布局和 3D 视图中）
+Fits these parts	适配这些部件
+➕ Add part	➕ 添加部件
+Accessory, mounted: {}	附件，安装：{}
+Give a device tag or a part number	请给出设备标识或部件号
+Lists and renames devices, adds accessories to their parts	列出并重命名设备，为其部件添加附件
+Lists the accessories that fit a part or the parts of a device, and the parts an accessory fits (project parts, built-in and bundled catalogs)	列出适配某部件或某设备部件的附件，以及某附件适配的部件（项目部件、内置和随附目录）
+Device tag: the accessories that can still be added to its parts	设备标识：仍可添加到其部件的附件
+Adds an accessory to a device; it must fit one of the device's parts	向设备添加附件；它必须适配设备的某个部件
+Part number of the accessory	附件的部件号
+On the front	前面
+On the left side	左侧
+On the right side	右侧
+Not mounted	不安装

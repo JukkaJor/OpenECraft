@@ -6,7 +6,7 @@
 
 use openecraft_i18n::{tr, tr_fmt};
 use openecraft_client::{check, decode, ehttp, Call, Connection, Endpoint, PortalKind};
-use openecraft_parts::api::{ImportResult, PartList, PartQuery, ServerInfo, Session, UserUpdate};
+use openecraft_parts::api::{Accessories, ImportResult, PartList, PartQuery, ServerInfo, Session, UserUpdate};
 use openecraft_parts::portal::{AttachmentKind, Catalog, HistoryEntry, SearchResult, User};
 use openecraft_parts::Part;
 use std::collections::HashMap;
@@ -30,6 +30,8 @@ pub enum Reply {
     /// Part number and the whole part (with its models) for the details of the data
     /// portal; `None` if the server does not know it.
     Detail(String, Result<Option<Box<Part>>, String>),
+    /// Part number, its accessories and the parts it fits.
+    Accessories(String, Result<Accessories, String>),
     Catalogs(Result<Vec<Catalog>, String>),
     CatalogSaved(Result<Catalog, String>),
     CatalogDeleted(String, Result<(), String>),
@@ -64,6 +66,7 @@ impl Reply {
             | Reply::Versions(Err(e))
             | Reply::History(_, Err(e))
             | Reply::Detail(_, Err(e))
+            | Reply::Accessories(_, Err(e))
             | Reply::Catalogs(Err(e))
             | Reply::CatalogSaved(Err(e))
             | Reply::CatalogDeleted(_, Err(e))
@@ -327,6 +330,15 @@ impl ServerClient {
         let n = number.to_string();
         let status = self.status.clone();
         self.send(ctx, Ok(call), status, move |r| Reply::Detail(n, r.map(|p| p.map(Box::new))));
+    }
+
+    /// The accessories of a part and the parts it fits, for the details; the status
+    /// line stays.
+    pub fn accessories(&mut self, ctx: &egui::Context, number: &str) {
+        let call = self.connection().accessories(number);
+        let n = number.to_string();
+        let status = self.status.clone();
+        self.send(ctx, Ok(call), status, move |r| Reply::Accessories(n, r));
     }
 
     /// Stores a file with a part.

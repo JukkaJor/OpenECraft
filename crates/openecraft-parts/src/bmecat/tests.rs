@@ -92,6 +92,21 @@ fn bmecat_1_2_articles() {
 }
 
 #[test]
+fn accessory_references() {
+    // The RCCB names its signal contact, a second RCCB is named by the contact.
+    let text = r#"<BMECAT version="2005"><HEADER><SUPPLIER><SUPPLIER_NAME>Hager</SUPPLIER_NAME></SUPPLIER></HEADER><T_NEW_CATALOG>
+      <PRODUCT><SUPPLIER_PID>CDA440D</SUPPLIER_PID><PRODUCT_DETAILS><DESCRIPTION_SHORT>RCCB</DESCRIPTION_SHORT></PRODUCT_DETAILS>
+        <PRODUCT_REFERENCE type="accessories"><PROD_ID_TO>CZ001</PROD_ID_TO></PRODUCT_REFERENCE></PRODUCT>
+      <PRODUCT><SUPPLIER_PID>CZ001</SUPPLIER_PID><PRODUCT_DETAILS><DESCRIPTION_SHORT>Signal contact</DESCRIPTION_SHORT></PRODUCT_DETAILS>
+        <PRODUCT_REFERENCE type="base_product"><PROD_ID_TO>CCA216D</PROD_ID_TO></PRODUCT_REFERENCE>
+        <PRODUCT_REFERENCE type="similar"><PROD_ID_TO>CZ002</PROD_ID_TO></PRODUCT_REFERENCE></PRODUCT>
+    </T_NEW_CATALOG></BMECAT>"#;
+    let parts = from_bmecat(text).unwrap();
+    assert_eq!((parts[0].number.as_str(), parts[0].accessories.clone(), parts[0].accessory), ("HAGER.CDA440D", vec!["HAGER.CZ001".to_string()], false));
+    assert_eq!((parts[1].accessory, parts[1].fits.clone()), (true, vec!["HAGER.CCA216D".to_string()]));
+}
+
+#[test]
 fn other_documents_are_refused() {
     assert!(!is_bmecat("Part number;Description\n"));
     assert!(from_bmecat("<OTHER/>").is_err());

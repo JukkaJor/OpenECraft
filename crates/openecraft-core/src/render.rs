@@ -1169,7 +1169,28 @@ pub fn draw_enclosure(
                 let c = tf(it.x + it.w / 2.0, it.y + it.h / 2.0);
                 // Terminal strips: every element of the strip in its place.
                 let cells = panel::strip_cells(prj, it);
+                let mounted = panel::mounted(prj, it);
                 match model {
+                    Some(_) if mounted.is_some() => {
+                        // Accessories on the main part: each part's front view in its
+                        // box, front accessories over the main part.
+                        let a = mounted.as_ref().unwrap();
+                        for piece in a.pieces() {
+                            let sub = a.piece_item(it, piece);
+                            let (pa, pb) = (tf(sub.x, sub.y), tf(sub.x + sub.w, sub.y + sub.h));
+                            d.rect(pa, pb, 0.0, Ink::Fill, true);
+                            match piece.part.model_2d.as_ref() {
+                                Some(m) => draw_model_2d(d, m, &sub, &tf, k, ink),
+                                None => d.rect(pa, pb, 0.15, ink, false),
+                            }
+                        }
+                        let main = a.piece_item(it, &a.main);
+                        let c = tf(main.x + main.w / 2.0, main.y + main.h / 2.0);
+                        let size = size * 0.8;
+                        let half = p(it.tag.chars().count() as f32 * size * 0.33 + size * 0.2, size * 0.6);
+                        d.rect(c - half, c + half, 0.0, Ink::Plate, true);
+                        d.text(c, &it.tag, size, Anchor::Center, VAnchor::Middle, text_ink);
+                    }
                     Some(_) if !cells.is_empty() => {
                         draw_strip_2d(d, prj, it, &cells, &tf, k, ink);
                         let size = size * 0.8;
