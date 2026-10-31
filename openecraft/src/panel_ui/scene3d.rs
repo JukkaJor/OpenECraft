@@ -42,6 +42,10 @@ struct TubeWay {
     /// Sides of the tube and points per quarter turn of its bends.
     sides: usize,
     steps: usize,
+    /// The direction away from the mounting plate it runs along and how far it may come
+    /// nearer to it (see [`Way`]).
+    rest: V3,
+    below: f32,
 }
 
 /// A flat face of the view: a triangle of a model or a side of a box.
@@ -519,13 +523,19 @@ impl PanelUi {
                         })
                         .collect(),
                 };
-                // Bent round their corners as round tubes.
+                // Bent round their corners as round tubes, laid beside the others in front of
+                // the mounting plate.
                 let bend = prj.layout.routing.bend_radius(RouteKind::Wire, diameter);
+                let on_plate = !e.is_room() && wire.door == (None, None);
                 for path in &paths {
+                    let (rest, below) = match on_plate {
+                        true => (pose.turn([0.0, 0.0, 1.0]), path.iter().map(|q| q[2] - PLATE_Z).fold(f32::INFINITY, f32::min) - diameter / 2.0 - super::routing_ui::PLATE_CLEAR),
+                        false => ([0.0; 3], f32::INFINITY),
+                    };
                     let path: Vec<V3> = path.iter().map(|q| pose.apply(*q)).collect();
                     if diameter > 0.0 {
                         let bends = vec![bend; path.len()];
-                        pending.push(TubeWay { points: path, bends, diameter, color, stripe, width, on_top: selected, target: RouteRef::Wire(wi), sides: WIRE_SIDES, steps: 2 });
+                        pending.push(TubeWay { points: path, bends, diameter, color, stripe, width, on_top: selected, target: RouteRef::Wire(wi), sides: WIRE_SIDES, steps: 2, rest, below });
                         continue;
                     }
                     for seg in path.windows(2) {
@@ -573,7 +583,7 @@ impl PanelUi {
         for line in self.routing_lines_3d(prj, an, &keys, &to_view, selected_wire) {
             if line.diameter > 0.0 {
                 let (sides, steps) = if matches!(line.target, RouteRef::Wire(_)) { (WIRE_SIDES, 2) } else { (TUBE_SIDES, 4) };
-                pending.push(TubeWay { points: line.points, bends: line.bends, diameter: line.diameter, color: line.color, stripe: line.stripe, width: line.width, on_top: line.on_top, target: line.target, sides, steps });
+                pending.push(TubeWay { points: line.points, bends: line.bends, diameter: line.diameter, color: line.color, stripe: line.stripe, width: line.width, on_top: line.on_top, target: line.target, sides, steps, rest: line.rest, below: line.below });
                 continue;
             }
             for seg in line.points.windows(2) {
@@ -591,7 +601,7 @@ impl PanelUi {
         // Wires, cables and tubes that run together side by side, each on a lane of its own,
         // bent round their corners with their bend radius as round tubes (a two-colour one
         // with a stripe along it).
-        let ways: Vec<Way> = pending.iter().map(|t| Way { points: &t.points, radii: &t.bends, diameter: t.diameter }).collect();
+        let ways: Vec<Way> = pending.iter().map(|t| Way { points: &t.points, radii: &t.bends, diameter: t.diameter, rest: t.rest, below: t.below }).collect();
         let laid = bundles::spread_ways(&ways, LANE_CELL);
         for (t, (points, bends)) in pending.iter().zip(laid) {
             let points = vec3::fillet_each(&points, &bends, t.steps);

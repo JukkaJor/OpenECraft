@@ -85,23 +85,46 @@ fn items_of_a_bundle_lie_side_by_side_and_do_not_cross() {
         item("B", Class::Power, 10.0, route.clone()),
         item("C", Class::Power, 10.0, vec![[0.0, 2000.0, 0.0], [500.0, 2000.0, 0.0], [500.0, 2500.0, 0.0]]),
     ];
-    let ways: Vec<Way> = items.iter().map(|it| Way { points: &it.points, radii: &it.radii, diameter: it.diameter }).collect();
+    let ways: Vec<Way> = items.iter().map(|it| Way { points: &it.points, radii: &it.radii, diameter: it.diameter, rest: [0.0; 3], below: f32::INFINITY }).collect();
     let laid = spread_ways(&ways, 25.0);
     let (a, b) = (&laid[0].0, &laid[1].0);
     assert_eq!(laid[2].0, items[2].points, "alone it stays as it is");
-    // The ends stay where they are.
-    assert_eq!((a[0], a[a.len() - 1], b[0]), (route[0], route[4], route[0]));
-    assert_eq!((a.len(), b.len()), (5, 5));
-    // Every corner a lane apart (the thickest item and 1 mm): side by side all along,
-    // never crossing.
-    for k in 1..4 {
-        let d = crate::parts::vec3::dist(a[k], b[k]);
-        assert!((d - 11.0).abs() < 0.01, "corner {k}: {a:?} {b:?}");
+    // The ends and the stretches at the ends stay where they are.
+    assert_eq!((a[0], a[a.len() - 1], b[0], a[1], b[1]), (route[0], route[4], route[0], route[1], route[1]));
+    // Along the shared stretches (x 0 .. 500, then y 0 .. 500) they run a lane apart (the
+    // thickest item and 1 mm), parallel: side by side, never crossing.
+    let middle = |p: &[V3], axis: usize| {
+        let s = p.windows(2).find(|s| (s[1][axis] - s[0][axis]).abs() > 400.0).unwrap_or_else(|| panic!("{p:?}"));
+        assert_eq!((0..3).filter(|&k| (s[0][k] - s[1][k]).abs() > 1e-3).count(), 1, "{p:?}");
+        [0, 1, 2].map(|k| (s[0][k] + s[1][k]) / 2.0)
+    };
+    for axis in [0, 1] {
+        let d = crate::parts::vec3::dist(middle(a, axis), middle(b, axis));
+        assert!((d - 11.0).abs() < 0.01, "{axis}: {a:?} {b:?}");
     }
-    // Each stretch moved as a whole: still straight along its axis.
-    for p in [a, b] {
-        for k in 1..3 {
-            assert_eq!((0..3).filter(|&i| (p[k][i] - p[k + 1][i]).abs() > 1e-3).count(), 1, "{p:?}");
-        }
+}
+
+#[test]
+fn lanes_keep_off_the_surface_the_ways_run_along() {
+    // Five wires lying 5 mm in front of a plate (z 0) that may come 3 mm nearer to it:
+    // two rows away from it, side by side along it.
+    let line = vec![[0.0, 0.0, 5.0], [500.0, 0.0, 5.0], [500.0, 300.0, 5.0], [800.0, 300.0, 5.0]];
+    let ways: Vec<Way> = (0..5).map(|_| Way { points: &line, radii: &[], diameter: 3.0, rest: [0.0, 0.0, 1.0], below: 3.0 }).collect();
+    let laid = spread_ways(&ways, 8.0);
+    for (points, _) in &laid {
+        assert!(points.iter().all(|q| q[2] >= 2.0 - 0.01), "{points:?}");
     }
+    // Along the middle stretch apart from each other.
+    let middles: Vec<V3> = laid
+        .iter()
+        .map(|(p, _)| {
+            let s = p.windows(2).find(|s| (s[1][1] - s[0][1]).abs() > 250.0).unwrap_or_else(|| panic!("{p:?}"));
+            [0, 1, 2].map(|k| (s[0][k] + s[1][k]) / 2.0)
+        })
+        .collect();
+    for (i, a) in middles.iter().enumerate() {
+        assert!(middles[i + 1..].iter().all(|b| crate::parts::vec3::dist(*a, *b) >= 3.99), "{middles:?}");
+    }
+    let rows: std::collections::BTreeSet<i32> = middles.iter().map(|q| (q[2] * 10.0).round() as i32).collect();
+    assert_eq!(rows.len(), 2, "{middles:?}");
 }

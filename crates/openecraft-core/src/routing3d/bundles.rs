@@ -166,20 +166,26 @@ pub fn find(items: &[RoutedItem], cell: f32) -> (Vec<Bundle>, Vec<Branch>) {
 }
 
 /// A polyline laid out with others by [`spread_ways`]: its corners, their bend radii, its
-/// outer diameter.
+/// outer diameter, and the surface it runs along (the mounting plate): the direction
+/// away from it (none: free) and how far it may come nearer to it.
 pub struct Way<'a> {
     pub points: &'a [V3],
     pub radii: &'a [f32],
     pub diameter: f32,
+    pub rest: V3,
+    pub below: f32,
 }
 
 /// The ways drawn apart from those they run together with, with the bend radius of each
 /// corner. Straight stretches along the same axis that overlap and lie closer than
 /// their thicknesses together (or to one that does) form a group with a lane for each,
 /// the lanes side by side around the middle of the group as far apart as its thickest
-/// way and turned like the bundles round their corners (traced through a grid of
-/// `cell`), so that no two ways run inside each other; at its corners a way steps from
-/// lane to lane, its ends stay where they are.
+/// way, so that no two ways run inside each other. Along a surface (the mounting plate)
+/// the lanes lie in rows away from it as far as the ways may move towards it and away
+/// (as deep as they lie in front of it), each row side by side along the surface;
+/// elsewhere they form a square turned like the bundles round their corners (traced
+/// through a grid of `cell`). At its corners a way steps from lane to lane, its ends
+/// stay where they are, the stretches at its ends too.
 pub fn spread_ways(ways: &[Way], cell: f32) -> Vec<(Vec<V3>, Vec<f32>)> {
     let stretches: Vec<(usize, &[V3])> = ways.iter().enumerate().map(|(i, w)| (i, w.points)).collect();
     let (_, chains) = chains(&stretches, cell);
@@ -209,10 +215,12 @@ pub fn spread_ways(ways: &[Way], cell: f32) -> Vec<(Vec<V3>, Vec<f32>)> {
             across.entry(line_of(&(chain[j].min(chain[j + 1]), chain[j].max(chain[j + 1])))).or_insert((u, v));
         }
     }
-    // The straight stretches along an axis: way, stretch, axis, from, to, the point.
+    // The straight stretches along an axis: way, stretch, axis, from, to, the point. The
+    // stretches at the ends (from the connection points) stay where they are.
     let mut runs: Vec<(usize, usize, usize, f32, f32, V3)> = Vec::new();
     for (i, way) in ways.iter().enumerate() {
-        for (j, s) in way.points.windows(2).enumerate() {
+        let last = way.points.len().saturating_sub(2);
+        for (j, s) in way.points.windows(2).enumerate().filter(|(j, _)| *j > 0 && *j < last) {
             let moving: Vec<usize> = (0..3).filter(|&k| (s[0][k] - s[1][k]).abs() > 1e-3).collect();
             if let [axis] = moving[..] {
                 runs.push((i, j, axis, s[0][axis].min(s[1][axis]), s[0][axis].max(s[1][axis]), s[0]));
@@ -262,15 +270,47 @@ pub fn spread_ways(ways: &[Way], cell: f32) -> Vec<(Vec<V3>, Vec<f32>)> {
             k[axis] = 0;
             k
         });
-        let (u, v) = across.get(&line).copied().unwrap_or((unit((axis + 1) % 3), unit((axis + 2) % 3)));
         let gap = members.iter().map(|&r| ways[runs[r].0].diameter).fold(0.0, f32::max) + 1.0;
-        let cols = (members.len() as f32).sqrt().ceil() as usize;
-        let rows = members.len().div_ceil(cols);
-        for (k, &r) in members.iter().enumerate() {
-            let (c, row) = ((k % cols) as f32 - (cols - 1) as f32 / 2.0, (k / cols) as f32 - (rows - 1) as f32 / 2.0);
-            let lane = add(middle, add(scale(u, c * gap), scale(v, row * gap)));
-            let mut to = sub(lane, runs[r].5);
-            to[axis] = 0.0;
+        // The surface the ways run along, across their axis.
+        let rest = members.iter().map(|&r| ways[runs[r].0].rest).find(|n| *n != [0.0; 3]).map(|mut n| {
+            n[axis] = 0.0;
+            n
+        });
+        let (u, v, cols, rows) = match rest.filter(|n| dot(*n, *n) > 0.25).map(norm) {
+            Some(n) => {
+                let below = members.iter().map(|&r| ways[runs[r].0].below).fold(f32::INFINITY, f32::min).max(0.0);
+                let rows = ((2.0 * below / gap).floor() as usize + 1).min(members.len());
+                (norm(cross(unit(axis), n)), n, members.len().div_ceil(rows), rows)
+            }
+            None => {
+                let (u, v) = across.get(&line).copied().unwrap_or((unit((axis + 1) % 3), unit((axis + 2) % 3)));
+                let cols = (members.len() as f32).sqrt().ceil() as usize;
+                (u, v, cols, members.len().div_ceil(cols))
+            }
+        };
+        let mut tos: Vec<V3> = members
+            .iter()
+            .enumerate()
+            .map(|(k, &r)| {
+                let (c, row) = ((k % cols) as f32 - (cols - 1) as f32 / 2.0, (k / cols) as f32 - (rows - 1) as f32 / 2.0);
+                let mut to = sub(add(middle, add(scale(u, c * gap), scale(v, row * gap))), runs[r].5);
+                to[axis] = 0.0;
+                to
+            })
+            .collect();
+        // Away from the surface the ways run along as far as one of them would come too
+        // near to it.
+        let rest = members.iter().map(|&r| ways[runs[r].0].rest).find(|n| *n != [0.0; 3]).map(|mut n| {
+            n[axis] = 0.0;
+            n
+        });
+        if let Some(n) = rest.filter(|n| dot(*n, *n) > 0.25).map(norm) {
+            let shift = members.iter().zip(&tos).map(|(&r, to)| -ways[runs[r].0].below - dot(*to, n)).fold(0.0, f32::max);
+            for to in &mut tos {
+                *to = add(*to, scale(n, shift));
+            }
+        }
+        for (&r, to) in members.iter().zip(tos) {
             moves.insert((runs[r].0, runs[r].1), to);
         }
     }
@@ -295,31 +335,29 @@ fn scale(a: V3, f: f32) -> V3 {
 }
 
 /// The polyline with its straight stretches moved by `offsets` (one per stretch), the
-/// ends kept: a corner where both moved stretches meet, otherwise both of their ends
-/// with the step between them.
+/// ends kept: a corner where both moved stretches meet, otherwise the corner on the first
+/// one and a step across both onto the second (never back).
 fn lay(points: &[V3], radii: &[f32], offsets: &[V3]) -> (Vec<V3>, Vec<f32>) {
     let n = points.len();
     if n < 3 || offsets.iter().all(|o| *o == [0.0; 3]) {
         return (points.to_vec(), radii.to_vec());
     }
-    let (mut out, mut bends) = (vec![points[0]], vec![0.0]);
+    let mut out: Vec<(V3, f32)> = vec![(points[0], 0.0)];
     for j in 1..n - 1 {
         let (o1, o2) = (offsets[j - 1], offsets[j]);
         let (d1, d2) = (norm(sub(points[j], points[j - 1])), norm(sub(points[j + 1], points[j])));
         let r = radii.get(j).copied().unwrap_or(0.0);
         let corner = add(points[j], add(o1, scale(d1, dot(sub(o2, o1), d1))));
-        let off_line = cross(sub(corner, add(points[j], o2)), d2);
-        if dot(off_line, off_line) < 0.25 {
-            out.push(corner);
-            bends.push(r);
-        } else {
-            out.extend([add(points[j], o1), add(points[j], o2)]);
-            bends.extend([r, r]);
+        let to_second = sub(add(points[j], o2), corner);
+        let step = sub(to_second, scale(d2, dot(to_second, d2)));
+        out.push((corner, r));
+        if dot(step, step) >= 0.25 {
+            out.push((add(corner, step), r));
         }
     }
-    out.push(points[n - 1]);
-    bends.push(0.0);
-    (out, bends)
+    out.push((points[n - 1], 0.0));
+    out.dedup_by(|a, b| dot(sub(a.0, b.0), sub(a.0, b.0)) < 0.0025);
+    out.into_iter().unzip()
 }
 
 fn same(a: V3, b: V3) -> bool {

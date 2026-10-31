@@ -289,7 +289,7 @@ pub fn fillet_each(points: &[V3], radii: &[f32], steps: usize) -> Vec<V3> {
         }
     }
     out.push(points[n - 1]);
-    out.dedup_by(|x, y| length(sub(*x, *y)) < 1e-4);
+    out.dedup_by(|x, y| length(sub(*x, *y)) < 1e-2);
     out
 }
 
@@ -297,6 +297,9 @@ pub fn fillet_each(points: &[V3], radii: &[f32], steps: usize) -> Vec<V3> {
 /// facing outwards, each with the side it lies on (the caps on side 0). The rings keep
 /// their orientation along the path (no twist).
 pub fn tube(path: &[V3], r: f32, sides: usize) -> Vec<(Tri, usize)> {
+    let mut path = path.to_vec();
+    path.dedup_by(|a, b| length(sub(*a, *b)) < 1e-3);
+    let path = path.as_slice();
     if path.len() < 2 || r <= 0.0 {
         return Vec::new();
     }
@@ -315,8 +318,8 @@ pub fn tube(path: &[V3], r: f32, sides: usize) -> Vec<(Tri, usize)> {
         let t = if t == [0.0; 3] { dout } else { t };
         normal = norm(sub(normal, scale(t, dot(normal, t))));
         let side = cross(t, normal);
-        // A sharp corner keeps the tube's width (mitre).
-        let mitre = 1.0 / dot(t, dout).max(0.3);
+        // A corner keeps the tube's width (mitre), a sharp one only so far.
+        let mitre = 1.0 / dot(t, dout).max(0.6);
         rings.push(
             (0..sides)
                 .map(|k| {

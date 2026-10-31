@@ -42,6 +42,10 @@ pub(super) struct RouteLine {
     pub diameter: f32,
     /// Bend radius (mm) each corner is rounded with (one per point); none: sharp corners.
     pub bends: Vec<f32>,
+    /// In a cabinet: the direction away from its mounting plate and how far the line
+    /// may come nearer to it (when it is laid beside others); none in a room.
+    pub rest: [f32; 3],
+    pub below: f32,
     pub on_top: bool,
     pub target: RouteRef,
 }
@@ -62,6 +66,10 @@ fn kind_choice(ui: &mut egui::Ui, salt: &str, kind: &mut PathKind) {
         }
     });
 }
+
+/// Room (mm) wires and cables laid side by side keep from the mounting plate (beyond
+/// half their thickness): the base of the cable ducts and a little more.
+pub(super) const PLATE_CLEAR: f32 = 3.0;
 
 /// Colour of the pipe runs of rooms.
 pub(super) const PIPE_COLOR: Color32 = Color32::from_rgb(40, 150, 200);
@@ -198,7 +206,7 @@ impl PanelUi {
             for path in &e.paths {
                 let selected = self.selected_object == Some(path.id);
                 let color = if path.face.is_some() { PIPE_COLOR } else { PATH_COLOR };
-                out.push(RouteLine { points: path.points.iter().map(|q| g(*q)).collect(), color, stripe: None, width: if selected { 3.0 } else { 1.5 }, diameter: 0.0, bends: Vec::new(), on_top: selected, target: RouteRef::None });
+                out.push(RouteLine { points: path.points.iter().map(|q| g(*q)).collect(), color, stripe: None, width: if selected { 3.0 } else { 1.5 }, diameter: 0.0, bends: Vec::new(), rest: [0.0; 3], below: f32::INFINITY, on_top: selected, target: RouteRef::None });
             }
             for r in &e.reservations {
                 let color = match r.mode {
@@ -222,7 +230,7 @@ impl PanelUi {
                     ((0, 1, 0), (0, 1, 1)),
                     ((1, 1, 0), (1, 1, 1)),
                 ] {
-                    out.push(RouteLine { points: vec![c(s.0, s.1, s.2), c(t.0, t.1, t.2)], color, stripe: None, width: 1.0, diameter: 0.0, bends: Vec::new(), on_top: false, target: RouteRef::None });
+                    out.push(RouteLine { points: vec![c(s.0, s.1, s.2), c(t.0, t.1, t.2)], color, stripe: None, width: 1.0, diameter: 0.0, bends: Vec::new(), rest: [0.0; 3], below: f32::INFINITY, on_top: false, target: RouteRef::None });
                 }
             }
         }
@@ -253,6 +261,14 @@ impl PanelUi {
                     bends = bends.get(..n - 1).unwrap_or(bends);
                 }
                 let bends = bends.to_vec();
+                // In a cabinet the mounting plate is behind it: how far it lies in front.
+                let in_room = leg.is_some_and(|k| prj.layout.enclosures[k].is_room());
+                let cabinet = |q: &[f32; 3]| it.enclosures.iter().copied().find(|&k| !prj.layout.enclosures[k].is_room() && q[0] >= pos[k][0] && q[0] <= pos[k][0] + prj.layout.enclosures[k].width);
+                let front = points.iter().filter_map(|q| cabinet(q).map(|k| q[2] - pos[k][2] - PLATE_Z)).fold(f32::INFINITY, f32::min);
+                let (rest, below) = match points.first() {
+                    Some(q) if !in_room && front.is_finite() => (openecraft_core::parts::vec3::norm(openecraft_core::parts::vec3::sub(to_view(leg, [q[0], q[1], q[2] + 1.0]), to_view(leg, *q))), front - it.diameter / 2.0 - PLATE_CLEAR),
+                    _ => ([0.0; 3], f32::INFINITY),
+                };
                 let cores: Vec<[[f32; 3]; 2]> = cores.into_iter().map(|c| c.map(|q| to_view(leg, q))).collect();
                 let points: Vec<[f32; 3]> = points.iter().map(|q| to_view(leg, *q)).collect();
                 match (it.kind, it.wire) {
@@ -265,7 +281,7 @@ impl PanelUi {
                         let wire = &an.wiring[wi];
                         let (color, stripe, width) = super::wire_look(&wire.color, selected, done, selected_wire.is_some());
                         let diameter = openecraft_core::harness::outer_diameter(&wire.cross_section);
-                        out.push(RouteLine { points, color, stripe, width, diameter, bends, on_top: selected, target: RouteRef::Wire(wi) });
+                        out.push(RouteLine { points, color, stripe, width, diameter, bends, rest, below, on_top: selected, target: RouteRef::Wire(wi) });
                     }
                     (RouteKind::Wire, _) => {}
                     _ => {
@@ -275,9 +291,9 @@ impl PanelUi {
                         }
                         // In the colour of its class, as thick as it is.
                         let (color, width) = if selected { (WIRE_HIGHLIGHT, 4.0) } else { (class_color(it.class), 2.0) };
-                        out.push(RouteLine { points, color, stripe: None, width, diameter: it.diameter, bends, on_top: selected, target: RouteRef::Item(it.key.clone()) });
+                        out.push(RouteLine { points, color, stripe: None, width, diameter: it.diameter, bends, rest, below, on_top: selected, target: RouteRef::Item(it.key.clone()) });
                         for core in cores {
-                            out.push(RouteLine { points: core.to_vec(), color, stripe: None, width: width * 0.5, diameter: it.diameter * 0.5, bends: Vec::new(), on_top: selected, target: RouteRef::Item(it.key.clone()) });
+                            out.push(RouteLine { points: core.to_vec(), color, stripe: None, width: width * 0.5, diameter: it.diameter * 0.5, bends: Vec::new(), rest: [0.0; 3], below: f32::INFINITY, on_top: selected, target: RouteRef::Item(it.key.clone()) });
                         }
                     }
                 }

@@ -304,7 +304,7 @@ fn wires_entering_the_ducts_take_out_the_fingers_they_pass() {
 #[test]
 fn wires_running_together_lie_side_by_side() {
     // In the ducts of the demo cabinet many wires run the same way: no two straight runs
-    // of different wires lie inside each other.
+    // of different wires lie inside each other (but at their ends, inside the devices).
     let prj = openecraft_core::sample::demo_project();
     let an = Analysis::build(&prj);
     let mut ui = PanelUi { show_wires: true, ..Default::default() };
@@ -314,13 +314,19 @@ fn wires_running_together_lie_side_by_side() {
         let along: Vec<usize> = (0..3).filter(|&k| (a[k] - b[k]).abs() > 0.01).collect();
         (along.len() == 1 && (a[along[0]] - b[along[0]]).abs() > 30.0).then(|| along[0])
     };
-    let runs: Vec<(usize, usize, [f32; 3], [f32; 3])> = scene
-        .picks
+    // The pieces of each wire without the stretch at either end of each piece.
+    type Segment = ([f32; 3], [f32; 3]);
+    let mut pieces: Vec<(usize, Vec<Segment>)> = Vec::new();
+    for (a, b, t) in &scene.picks {
+        let routing_ui::RouteRef::Wire(wi) = t else { continue };
+        match pieces.last_mut() {
+            Some((w, segs)) if w == wi && segs.last().is_some_and(|s| s.1 == *a) => segs.push((*a, *b)),
+            _ => pieces.push((*wi, vec![(*a, *b)])),
+        }
+    }
+    let runs: Vec<(usize, usize, [f32; 3], [f32; 3])> = pieces
         .iter()
-        .filter_map(|(a, b, t)| match t {
-            routing_ui::RouteRef::Wire(wi) => axis(*a, *b).map(|k| (*wi, k, *a, *b)),
-            _ => None,
-        })
+        .flat_map(|(wi, segs)| segs.iter().skip(1).take(segs.len().saturating_sub(2)).filter_map(move |(a, b)| axis(*a, *b).map(|k| (*wi, k, *a, *b))))
         .collect();
     let radius = |wi: usize| openecraft_core::harness::outer_diameter(&an.wiring[wi].cross_section) / 2.0;
     let mut together = 0;
@@ -338,6 +344,37 @@ fn wires_running_together_lie_side_by_side() {
         }
     }
     assert!(together > 10, "{together} runs side by side");
+}
+
+#[test]
+fn wires_and_cables_laid_side_by_side_keep_in_front_of_the_plate() {
+    // In the cabinets of the demo and of the building (their view: the plate in front of
+    // z 0) every wire and cable drawn inside stays in front of the mounting plate with
+    // its whole thickness.
+    let demo = openecraft_core::sample::demo_project();
+    let building = openecraft_core::sample::example("building_services").unwrap();
+    for (prj, name) in [(&demo, "+CAB1"), (&building, "+CC1")] {
+        let an = Analysis::build(prj);
+        let ei = prj.layout.enclosures.iter().position(|e| e.name.ends_with(name)).unwrap();
+        let e = &prj.layout.enclosures[ei];
+        let mut ui = PanelUi { enclosure: ei, show_wires: true, ..Default::default() };
+        let shown = ui.shown_3d(prj, ei);
+        let scene = ui.scene_3d(prj, &an, ei, &shown);
+        let inside = |q: &[f32; 3]| q[0] > 0.0 && q[0] < e.width && q[1] > 0.0 && q[1] < e.height && q[2] < e.depth;
+        let mut checked = 0;
+        for (a, b, t) in &scene.picks {
+            let radius = match t {
+                routing_ui::RouteRef::Wire(wi) if an.wiring[*wi].door == (None, None) => openecraft_core::harness::outer_diameter(&an.wiring[*wi].cross_section) / 2.0,
+                routing_ui::RouteRef::Item(key) => an.routing.item(key).map_or(0.0, |i| i.diameter / 2.0),
+                _ => continue,
+            };
+            for q in [a, b].into_iter().filter(|q| inside(q)) {
+                assert!(q[2] >= PLATE_Z + radius - 0.01, "{name}: {q:?} behind the plate (a cable: {})", matches!(t, routing_ui::RouteRef::Item(_)));
+                checked += 1;
+            }
+        }
+        assert!(checked > 100, "{name}: {checked}");
+    }
 }
 
 #[test]
