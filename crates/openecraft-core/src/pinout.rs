@@ -168,7 +168,7 @@ pub fn pinout(prj: &Project, plug: &str, nl: &Netlist, open: &Netlist) -> Pinout
         }
     }
     let layout = parts.first().and_then(|p| PinLayout::of_part(p));
-    let pl = layout.unwrap_or(PinLayout { layout: Layout::fallback(labels.len()), pe: false });
+    let pl = layout.clone().unwrap_or(PinLayout { layout: Layout::fallback(labels.len()), pe: false });
     let pitch = parts.first().and_then(|p| connector::pitch_of(p)).unwrap_or(0.0);
     let mut slots = connector::assign(&labels[..own.min(labels.len())], pl.slots());
     slots.resize(labels.len(), None);
@@ -192,7 +192,7 @@ pub fn pinout(prj: &Project, plug: &str, nl: &Netlist, open: &Netlist) -> Pinout
         plug: plug.to_string(),
         parts: parts.iter().map(|p| (p.number.clone(), p.description.clone(), p.tech_value("Gender").unwrap_or_default().to_string())).collect(),
         layout,
-        face: connector::face(pl, pitch),
+        face: connector::face(&pl, pitch),
         coding: parts.iter().find_map(|p| p.tech_value("Coding")).unwrap_or_default().to_string(),
         pins,
     }
@@ -361,13 +361,13 @@ pub fn draw_face(d: &mut dyn Draw, po: &Pinout, side: Side, centre: P, scale: f3
     }
 }
 
-/// Caption under a face: side and gender of the parts.
+/// Caption under a face: side and the part of that gender (hermaphroditic parts fit both).
 fn caption(po: &Pinout, side: Side) -> String {
     let gender = match side {
         Side::Pin => "male",
         Side::Socket => "female",
     };
-    match po.parts.iter().find(|p| p.2 == gender) {
+    match po.parts.iter().find(|p| p.2 == gender || p.2 == "hermaphroditic") {
         Some(part) => format!("{}  {}", side.title(), part.0),
         None => side.title().to_string(),
     }
@@ -394,7 +394,7 @@ const FACE: f32 = 56.0;
 fn header_lines(po: &Pinout) -> Vec<String> {
     let mut v: Vec<String> = po.parts.iter().map(|p| format!("{}   {}", p.0, p.1)).collect();
     let mut facts = Vec::new();
-    if let Some(l) = po.layout {
+    if let Some(l) = &po.layout {
         facts.push(tr_fmt!("Pin layout: {}", l.text()));
     }
     if !po.coding.is_empty() {

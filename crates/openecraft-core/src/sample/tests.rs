@@ -353,14 +353,14 @@ fn connectors_show_their_pin_outs_and_the_ribbon_cable() {
     let po = |plug: &str| crate::pinout::pinout(&prj, plug, &an.netlist, &an.open);
     // M12: the field cable's core colours on the socket side, pins 2 and 3 spare.
     let m12 = po("-X11");
-    assert_eq!(m12.layout.map(|l| l.text()), Some("circle 4".to_string()));
+    assert_eq!(m12.layout.as_ref().map(|l| l.text()), Some("circle 4".to_string()));
     let v: Vec<(&str, bool, &str)> = m12.pins.iter().map(|p| (p.label.as_str(), p.used(), p.socket.color.as_str())).collect();
     assert_eq!(v, [("1", true, "BN"), ("2", false, ""), ("3", false, ""), ("4", true, "BK")]);
     assert_eq!(m12.pins[0].socket.core, "-W11:BN");
     // M8 3-pin: designations 1, 3, 4 on a face of four places.
     assert_eq!(po("-X12").pins.iter().map(|p| p.slot).collect::<Vec<_>>(), [Some(0), Some(2), Some(3)]);
     for (plug, layout) in [("-X13", "circle 4"), ("-X14", "circle 3"), ("-X15", "dsub 9"), ("-X20", "zigzag 10")] {
-        assert_eq!(po(plug).layout.map(|l| l.text()).as_deref(), Some(layout), "{plug}");
+        assert_eq!(po(plug).layout.as_ref().map(|l| l.text()).as_deref(), Some(layout), "{plug}");
     }
     // The ribbon cable: core n on pin n at both IDC sockets, core 1 red, the others grey.
     for plug in ["-X20", "-X21"] {

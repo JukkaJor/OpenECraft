@@ -50,7 +50,7 @@ fn the_face_shows_the_pins_of_the_part_with_the_spares() {
     assign(&mut prj, "-X1", "GEN.CON-M8-3M");
     let (nl, open) = nets(&prj);
     let po = pinout(&prj, "-X1", &nl, &open);
-    assert_eq!(po.layout.map(|l| l.text()), Some("circle 4".to_string()));
+    assert_eq!(po.layout.as_ref().map(|l| l.text()), Some("circle 4".to_string()));
     assert_eq!(po.coding, "A");
     let v: Vec<(&str, Option<usize>, bool)> = po.pins.iter().map(|p| (p.label.as_str(), p.slot, p.used())).collect();
     assert_eq!(v, [("1", Some(0), true), ("3", Some(2), false), ("4", Some(3), true)]);
@@ -141,4 +141,25 @@ fn the_svg_drawing_shows_every_plug_with_its_faces_and_table() {
     // Two faces of 4 + 9 pins each, the GX outline and its inner ring.
     assert!(svg.matches("<circle").count() > 2 * (4 + 9) * 2);
     assert!(svg.contains("spare"));
+}
+
+
+#[test]
+fn hermaphroditic_parts_name_both_faces() {
+    let mut prj = Project::default();
+    pairs(&mut prj, "-X5", &["1", "2"]);
+    assign(&mut prj, "-X5", "GEN.CON-BAT-50");
+    let (nl, open) = nets(&prj);
+    let po = pinout(&prj, "-X5", &nl, &open);
+    assert_eq!(caption(&po, Side::Pin), format!("{}  GEN.CON-BAT-50", Side::Pin.title()));
+    assert_eq!(caption(&po, Side::Socket), format!("{}  GEN.CON-BAT-50", Side::Socket.title()));
+    // Free positions of an appliance inlet: earth contact above line and neutral.
+    let mut prj = Project::default();
+    assign(&mut prj, "-X6", "GEN.CON-IEC-C14");
+    pairs(&mut prj, "-X6", &["L", "N", "PE"]);
+    let (nl, open) = nets(&prj);
+    let po = pinout(&prj, "-X6", &nl, &open);
+    assert_eq!(po.pins.iter().map(|p| p.slot).collect::<Vec<_>>(), [Some(0), Some(1), Some(2)]);
+    assert!(po.face.slots[2][1] < po.face.slots[0][1]);
+    assert!(problems(&prj).is_empty());
 }

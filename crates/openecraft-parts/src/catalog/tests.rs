@@ -159,14 +159,20 @@ fn connectors_have_a_pin_layout_for_every_pin() {
     use crate::connector::PinLayout;
     let parts = default_catalog();
     let connectors: Vec<&Part> = parts.iter().filter(|p| p.group == "Connectors").collect();
-    assert!(connectors.len() > 100, "{}", connectors.len());
+    assert!(connectors.len() > 400, "{}", connectors.len());
     for p in &connectors {
         let layout = PinLayout::of_part(p).unwrap_or_else(|| panic!("{} has no pin layout", p.number));
         let pins = p.functions.iter().filter(|f| f.kind == FnKind::PlugPin).count();
         assert!(pins <= layout.slots() && pins > 0, "{}: {pins} pins, {} positions", p.number, layout.slots());
-        assert!(matches!(p.tech_value("Gender"), Some("male" | "female")), "{}", p.number);
+        assert!(matches!(p.tech_value("Gender"), Some("male" | "female" | "hermaphroditic")), "{}", p.number);
+        assert!(p.functions.iter().map(|f| &f.pins).enumerate().all(|(i, a)| p.functions[i + 1..].iter().all(|f| &f.pins != a)), "{}: pins named twice", p.number);
     }
-    for series in ["GX12", "GX16", "GX20", "M8", "M12", "D-sub", "IDC 2.54", "RJ45", "Heavy duty"] {
+    let series = [
+        "GX12", "GX16", "GX20", "M5", "M8", "M12", "M16", "M23", "M23 power", "M40 power", "7/8\"", "DIN EN 175301-803", "D-sub", "IDC 2.54", "RJ11", "RJ12", "RJ45",
+        "Heavy duty", "DT", "Sealed 1.5", "DIN 41612", "PLC front connector", "Single row 2.5", "Dual row 3.0", "Dual row 4.2", "Pluggable 3.5", "Pluggable 5.08",
+        "Pluggable 7.62", "IEC 60309", "IEC 60320", "Mains plug", "Installation plug connector", "PV", "Battery connector", "Banana 4 mm", "Thermocouple", "BNC",
+    ];
+    for series in series {
         assert!(connectors.iter().any(|p| p.tech_value("Series") == Some(series)), "{series}");
     }
     // A ribbon cable for every IDC socket.

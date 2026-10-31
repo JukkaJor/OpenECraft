@@ -126,7 +126,7 @@ impl App {
             egui::ScrollArea::both().auto_shrink([false, false]).show(ui, |ui| {
                 egui::CollapsingHeader::new(RichText::new(tr("Pin-out")).strong()).id_salt("pinout").default_open(true).show(ui, |ui| {
                     ui.horizontal_wrapped(|ui| {
-                        match po.layout {
+                        match &po.layout {
                             Some(l) => ui.label(tr_fmt!("Pin layout: {}", l.text())),
                             None => ui.weak(tr("No pin layout in the technical data of the part: the pins are shown in a row (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).")),
                         };

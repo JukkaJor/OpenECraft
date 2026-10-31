@@ -115,7 +115,7 @@ fn get_pinout(prj: &mut Project, a: &Args) -> Result<Value, String> {
         })
         .collect();
     let parts: Vec<Value> = po.parts.iter().map(|(n, d, g)| json!({ "part": n, "description": d, "gender": g })).collect();
-    Ok(json!({ "plug": plug, "parts": parts, "layout": po.layout.map(|l| l.text()), "coding": po.coding, "pins": pins }))
+    Ok(json!({ "plug": plug, "parts": parts, "layout": po.layout.as_ref().map(|l| l.text()), "coding": po.coding, "pins": pins }))
 }
 
 fn connect_flat_cable(prj: &mut Project, a: &Args) -> Result<Value, String> {
