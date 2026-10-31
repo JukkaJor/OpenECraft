@@ -64,7 +64,10 @@ with a command line, an MCP server, a parts server and a project server.
   connection points; cable cores are drawn with their cable. The title bar can show
   the frame time and the frames per second (Settings › Appearance). A placed device is shown in the
   panel layout or the 3D view from its context menu in the schematic. Pumps, tanks
-  and other parts marked for floor mounting stand on the floor of a room, pipe runs
+  and other parts marked for floor mounting stand on the floor of a room; a pump or
+  compressor without its own motor names its motor (property "Driven by") and is drawn
+  coupled to it: through a shaft coupling (or a gear unit) in line, through V-belts (or a
+  gear case) side by side, the motor turned towards it and raised on a riser. Pipe runs
   go on its walls, ceiling and floor, and hoses, pipes and cables are routed in 3D
   through the room and from its cabinets through their cable glands. Wall
   penetrations join neighbouring rooms: routes run from room to room through them

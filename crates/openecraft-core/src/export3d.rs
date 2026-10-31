@@ -1,7 +1,7 @@
 //! 3D export of the panel layout for MCAD / PLM / BIM: the enclosures with their
 //! components (body or frame, walls, side panels, door, mounting plate, gland plate,
 //! plinth), accessories, rails, ducts, busbars and devices (the parts' 3D
-//! models or boxes) as glTF 2.0 (JSON with embedded buffer, metres, y up) and – in
+//! models or boxes) with the drives of the machines on the floor as glTF 2.0 (JSON with embedded buffer, metres, y up) and – in
 //! millimetres, z up – as STEP AP214 (faceted solids with colours), IGES 5.3
 //! (manifold solid B-rep objects with planar faces), IFC4 (distribution boards with
 //! triangulated elements), JT (tri-strip meshes) and – in metres – Parasolid XT
@@ -98,6 +98,11 @@ pub fn enclosure_solids(prj: &Project, e: &Enclosure) -> Vec<Solid> {
             }
         };
         solid(name, color(it.kind), false, tris);
+    }
+    // The drives of the machines on the floor (shafts, couplings, belts, gear cases).
+    for d in panel::drives(prj, e) {
+        let name = e.items.iter().find(|i| i.id == d.machine).map_or_else(|| "Drive".to_string(), |i| format!("{} drive", i.tag));
+        solid(&name, [112, 116, 124], false, d.triangles.into_iter().map(|(t, _)| t.map(up)).collect());
     }
     out
 }

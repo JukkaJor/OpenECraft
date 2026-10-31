@@ -335,3 +335,13 @@ fn terminal_strips_are_drawn_with_their_models() {
     }
     assert!(strips > 20, "{strips}");
 }
+
+#[test]
+fn pumps_and_the_compressor_are_driven_by_their_motors() {
+    use crate::panel::{drives, DriveKind};
+    let kinds = |prj: &Project| -> Vec<DriveKind> { prj.layout.enclosures.iter().flat_map(|e| drives(prj, e)).map(|d| d.kind).collect() };
+    assert_eq!(kinds(&example("pump_room").unwrap()), [DriveKind::Coupling]);
+    let building = kinds(&example("building_services").unwrap());
+    let count = |k: DriveKind| building.iter().filter(|b| **b == k).count();
+    assert_eq!((count(DriveKind::Coupling), count(DriveKind::Belt)), (2, 1), "{building:?}");
+}

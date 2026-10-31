@@ -369,6 +369,27 @@ impl PanelUi {
                 let decal = it.kind == ItemKind::Cutout && !it.face.is_wall();
                 add_box(&mut s, layer, side, obj, min, max, base, Some(it.id), on_door, decal);
             }
+            // The drives on the floor: shafts and couplings, pulleys and belts, gear
+            // cases; picked as their machine.
+            for d in panel::drives(prj, e).into_iter().filter(|d| !d.triangles.is_empty()) {
+                let selected = k == ei && self.selection.contains(&d.machine);
+                let pts: Vec<V3> = d.triangles.iter().flat_map(|(t, _)| t.map(|q| pose.apply(up(q)))).collect();
+                s.objects.push(bounds(&pts));
+                s.ducts.push(false);
+                exact.push(false);
+                let obj = Some(s.objects.len() - 1);
+                for (tri, [r, g, b]) in d.triangles {
+                    let w = tri.map(up);
+                    let n = norm(cross(sub(w[1], w[0]), sub(w[2], w[0])));
+                    if n == [0.0; 3] {
+                        continue;
+                    }
+                    let normal = pose.turn(n);
+                    let base = if selected { Color32::from_rgb(255, 150, 40) } else { Color32::from_rgb(r, g, b) };
+                    let w = w.map(|q| pose.apply(q));
+                    s.faces.push(SceneFace { pts: [w[0], w[1], w[2], w[2]], n: 3, normal, color: lit(base, normal), layer: EQUIPMENT, side: None, obj, item: Some((k, d.machine)), outline: false, decal: false });
+                }
+            }
             // Wires inside the ducts; the selected one is drawn on top of everything.
             // Wires routed in 3D are drawn with the routing below, cores of a cable routed
             // in 3D with their cable.

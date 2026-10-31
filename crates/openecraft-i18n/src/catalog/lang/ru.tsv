@@ -6363,3 +6363,5 @@ Exporting {}	Экспорт {}
 Reading {}	Чтение {}
 Reading the parts file	Чтение файла изделий
 {} stopped with an error: {}	{} остановлено с ошибкой: {}
+Driven by	Приводится от
+Drive type	Тип привода

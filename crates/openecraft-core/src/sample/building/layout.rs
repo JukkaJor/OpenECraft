@@ -326,14 +326,14 @@ fn technical_room(prj: &mut Project, [cc1, rack, acd, gak]: [usize; 4]) {
     ] {
         panel::mount_on_wall(prj, tr, tag, Face::Wall(1), p(x, y)).unwrap_or_else(|e| panic!("{tag}: {e}"));
     }
-    // Floor: the storage tank, the booster pumps with their motors beside them, the
-    // pressure vessel; front wall: the valves along a pipe run.
+    // Floor: the storage tank, the booster pumps with their motors in line in front of
+    // them, the pressure vessel; front wall: the valves along a pipe run.
     for (tag, x, z) in [
         ("=WAT+TR-CM1", 3600.0, 3300.0),
-        ("=WAT+TR-GP1", 5600.0, 3200.0),
-        ("=WAT+TR-M1", 5250.0, 3200.0),
-        ("=WAT+TR-GP2", 5600.0, 4000.0),
-        ("=WAT+TR-M2", 5250.0, 4000.0),
+        ("=WAT+TR-GP1", 5100.0, 3000.0),
+        ("=WAT+TR-M1", 5135.0, 3690.0),
+        ("=WAT+TR-GP2", 5600.0, 3000.0),
+        ("=WAT+TR-M2", 5635.0, 3690.0),
         ("=WAT+TR-CM2", 6300.0, 3600.0),
         ("=AIR+TR-GQ1", 300.0, 1400.0),
         ("=AIR+TR-M1", 1500.0, 1500.0),
@@ -343,6 +343,11 @@ fn technical_room(prj: &mut Project, [cc1, rack, acd, gak]: [usize; 4]) {
         ("=HEAT+TR-EQ1", 6100.0, 1400.0),
     ] {
         panel::mount_on_wall(prj, tr, tag, Face::Bottom, p(x, z)).unwrap_or_else(|e| panic!("{tag}: {e}"));
+    }
+    // The pumps are coupled to their motors, raised on risers to the pumps' shaft
+    // height; the compressor beside its motor is belt-driven.
+    for (machine, motor, riser) in [("=WAT+TR-GP1", "=WAT+TR-M1", 27.0), ("=WAT+TR-GP2", "=WAT+TR-M2", 27.0), ("=AIR+TR-GQ1", "=AIR+TR-M1", 0.0)] {
+        crate::sample::drive(prj, tr, machine, motor, riser);
     }
     fittings(prj, tr, Face::Wall(2), 1560.0, &[("=WAT+TR-QM3", 3000.0), ("=WAT+TR-RM2", 2200.0), ("=WAT+TR-RM3", 1800.0), ("=WAT+TR-QM4", 1000.0), ("=WAT+TR-UM2", 300.0)]);
     // Hot water: cold water inlet, circulation and distribution beside them.

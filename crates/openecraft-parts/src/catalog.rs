@@ -417,7 +417,7 @@ Breaking capacity: 100 kA".into();
     c.add("GEN.THROTTLE-G18", "One-way flow control valve G1/8", fl, "Service unit", "RN", 12.0, (0.0, 0.0, 0.0, 0.05), &[(FluidComponent, "1 2")]);
     // Standing on the floor of a room (Layout space › Insert › Floor-standing part).
     for (number, desc, subgroup, ident, price, dims, function) in [
-        ("GEN.PUMP-CENT-DN25", "Centrifugal pump DN25, 2.2 kW, on base frame", "Pump", "GP", 980.0, (320.0, 420.0, 640.0, 38.0), (Pump, "S P")),
+        ("GEN.PUMP-CENT-DN25", "Centrifugal pump DN25, bare shaft, on base frame, without motor", "Pump", "GP", 980.0, (320.0, 420.0, 640.0, 31.0), (Pump, "S P")),
         ("GEN.TANK-200L", "Vessel 200 l, stainless steel, on feet", "Vessel", "CM", 1450.0, (650.0, 1200.0, 650.0, 62.0), (FluidComponent, "N1 N2")),
     ] {
         let p = c.add(number, desc, fl, subgroup, ident, price, dims, &[function]);
@@ -425,7 +425,7 @@ Breaking capacity: 100 kA".into();
         p.mounting_data.floor_mount = true;
     }
     for (number, desc, subgroup, ident, price, dims, function) in [
-        ("GEN.PUMP-BOOST-DN32", "Multistage booster pump DN32, 6 m³/h at 50 m, vertical, on base plate", "Pump", "GP", 1240.0, (260.0, 720.0, 360.0, 34.0), (Pump, "S P")),
+        ("GEN.PUMP-BOOST-DN32", "Multistage booster pump DN32, 6 m³/h at 50 m, horizontal, bare shaft, on base frame, without motor", "Pump", "GP", 1240.0, (300.0, 330.0, 620.0, 29.0), (Pump, "S P")),
         ("GEN.TANK-1000L", "Storage tank 1000 l, PE, for drinking water, with overflow and inspection opening", "Vessel", "CM", 890.0, (1100.0, 1650.0, 1100.0, 55.0), (FluidComponent, "N1 N2")),
         ("GEN.TANK-PRESS-100L", "Diaphragm pressure vessel 100 l, 10 bar, flow-through, for drinking water", "Vessel", "CM", 420.0, (450.0, 760.0, 450.0, 21.0), (FluidComponent, "N1 N2")),
         ("GEN.TANK-BUFFER-500L", "Buffer storage tank 500 l for hot water, 4 connections, insulated", "Vessel", "CM", 1180.0, (800.0, 1750.0, 800.0, 95.0), (FluidComponent, "N1 N2 N3 N4")),
@@ -967,6 +967,8 @@ const PUSHER: [u8; 3] = [236, 116, 34];
 
 mod models;
 mod mounting;
+
+pub use models::{shaft, Shaft};
 
 #[cfg(test)]
 mod tests;

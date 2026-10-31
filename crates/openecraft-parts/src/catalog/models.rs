@@ -24,15 +24,25 @@ const VICTRON: [u8; 3] = [26, 94, 172];
 /// Segments of round bodies.
 const ROUND: usize = 16;
 
+/// The end of the shaft of a motor or of a machine without its own motor and the
+/// direction it points in, in the coordinates of the part's model.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Shaft {
+    pub at: [f32; 3],
+    pub dir: [f32; 3],
+}
+
 /// What a part is modelled as.
 #[derive(Clone, Copy, Debug, PartialEq)]
 enum Kind {
-    Pump,
+    /// `bare`: without its own motor, the shaft end out of its bearing bracket.
+    Pump { bare: bool },
     WallPump,
     Motor,
     Vessel([u8; 3]),
     HeatPump,
-    Compressor,
+    /// `motor`: with its own motor on the receiver.
+    Compressor { motor: bool },
     /// A floor-standing unit in a cabinet housing (refrigeration dryer).
     Unit,
     Valve { actuator: bool },
@@ -61,10 +71,11 @@ fn kind_of(p: &Part) -> Option<Kind> {
     let floor = p.floor_standing();
     let has = |text: &str| p.description.to_lowercase().contains(text);
     let rack = (p.width - crate::mechanics::RACK_WIDTH).abs() < 1.0;
+    let bare = has("without motor") || has("bare shaft");
     Some(match p.subgroup.as_str() {
         "Pump" | "Compressor" if !floor => Kind::WallPump,
-        "Pump" => Kind::Pump,
-        "Compressor" => Kind::Compressor,
+        "Pump" => Kind::Pump { bare },
+        "Compressor" => Kind::Compressor { motor: !bare },
         "Three-phase motor" | "Motor" if floor => Kind::Motor,
         "Vessel" | "Air receiver" | "Buffer tank" if floor => Kind::Vessel(if p.subgroup == "Air receiver" {
             [150, 156, 164]
@@ -102,23 +113,36 @@ fn kind_of(p: &Part) -> Option<Kind> {
 /// The 3D model and front view of a part that is one of the kinds above, or of a
 /// device of the bundled catalogs drawn after its photos ([`brands`]).
 pub(super) fn model(p: &Part) -> Option<(Model2d, Mesh3d)> {
+    build(p).map(|(m2, m3, _)| (m2, m3))
+}
+
+/// The shaft of the generated model of a motor or of a pump or compressor without its
+/// own motor.
+pub fn shaft(p: &Part) -> Option<Shaft> {
+    build(p)?.2
+}
+
+#[allow(clippy::too_many_lines)]
+fn build(p: &Part) -> Option<(Model2d, Mesh3d, Option<Shaft>)> {
     let (w, h, d) = (p.width, p.height, p.depth);
     if let Some(brand) = brands::brand_of(p) {
         let mut f = brands::Frac::new(w, h, d, p.connection_points_or_default().0);
         brands::draw(&mut f, brand);
-        fit(&mut f.m, [w, h, d]);
+        fit(&mut f.m, [w, h, d], &mut []);
         let mut prims = vec![Prim2d::Rect { min: [0.0, 0.0], max: [w, h], fill: false }];
         prims.append(&mut f.prims);
-        return Some((Model2d { width: w, height: h, prims }, f.m));
+        return Some((Model2d { width: w, height: h, prims }, f.m, None));
     }
     let kind = kind_of(p)?;
     let mut m = Mesh3d::default();
     // Front view: the outline, from above for floor-standing parts.
-    let floor = matches!(kind, Kind::Pump | Kind::Motor | Kind::Vessel(_) | Kind::HeatPump | Kind::Compressor | Kind::Unit);
+    let floor = matches!(kind, Kind::Pump { .. } | Kind::Motor | Kind::Vessel(_) | Kind::HeatPump | Kind::Compressor { .. } | Kind::Unit);
     let mut prims = Vec::new();
     let circle = |prims: &mut Vec<Prim2d>, c: [f32; 2], r: f32| prims.push(Prim2d::Circle { c, r, fill: false });
+    // The shaft end and a point one millimetre further out.
+    let mut shaft: Option<[[f32; 3]; 2]> = None;
     match kind {
-        Kind::Pump if h >= w.max(d) => {
+        Kind::Pump { .. } if h >= w.max(d) => {
             // Vertical multistage pump: base, pump body with the pipe stubs, motor on top.
             let (cx, cy) = (w / 2.0, d / 2.0);
             let r = 0.36 * w.min(d);
@@ -134,7 +158,28 @@ pub(super) fn model(p: &Part) -> Option<(Model2d, Mesh3d)> {
             m.add_painted_box([cx - 0.3 * r, cy + 0.9 * r, 0.7 * h], [cx + 0.3 * r, cy + 1.35 * r, 0.82 * h], DARK);
             circle(&mut prims, [cx, cy], 1.15 * r);
         }
-        Kind::Pump => {
+        Kind::Pump { bare: true } => {
+            // Bare-shaft pump on its base frame lying along its longer side: the shaft
+            // end out of the bearing bracket at the front (left), the volute casing,
+            // the suction nozzle at the back and the discharge nozzle on top.
+            let along_y = d >= w;
+            let (len, across) = if along_y { (d, w) } else { (w, d) };
+            let r = (across / 2.0).min(0.4 * h) * 0.85;
+            let zc = 0.08 * h + r;
+            let at = |s: f32, c: f32, z: f32| if along_y { [c, s, z] } else { [s, c, z] };
+            let axis = if along_y { 1 } else { 0 };
+            let span = |a: [f32; 3], b: [f32; 3]| ([0, 1, 2].map(|k| a[k].min(b[k])), [0, 1, 2].map(|k| a[k].max(b[k])));
+            m.add_painted_box([0.0, 0.0, 0.0], [w, d, 0.08 * h], DARK);
+            m.add_cylinder(at(0.0, across / 2.0, zc), axis, 0.15 * r, 0.1 * len, ROUND, STEEL);
+            m.add_cylinder(at(0.1 * len, across / 2.0, zc), axis, 0.5 * r, 0.32 * len, ROUND, PUMP);
+            let (a, b) = span(at(0.18 * len, 0.3 * across, 0.08 * h), at(0.36 * len, 0.7 * across, zc));
+            m.add_painted_box(a, b, PUMP);
+            m.add_cylinder(at(0.42 * len, across / 2.0, zc), axis, (1.15 * r).min(across / 2.0), 0.3 * len, ROUND + 8, PUMP);
+            m.add_cylinder(at(0.72 * len, across / 2.0, zc), axis, 0.4 * r, 0.28 * len, ROUND, STEEL);
+            m.add_cylinder(at(0.57 * len, across / 2.0, zc), 2, 0.3 * r, h - zc, ROUND, STEEL);
+            shaft = Some([at(0.0, across / 2.0, zc), at(-1.0, across / 2.0, zc)]);
+        }
+        Kind::Pump { bare: false } => {
             // Horizontal pump on a base frame: motor, pump casing, stubs.
             let r = (d / 2.0).min(0.4 * h) * 0.85;
             let zc = 0.08 * h + r;
@@ -177,6 +222,7 @@ pub(super) fn model(p: &Part) -> Option<(Model2d, Mesh3d)> {
             m.add_frustum(at(0.82 * len, across / 2.0, zc), axis, r, 0.85 * r, 0.18 * len, ROUND, DARK);
             let (a, b) = (at(0.35 * len, across / 2.0 - 0.35 * r, zc), at(0.6 * len, across / 2.0 + 0.35 * r, h));
             m.add_painted_box([a[0].min(b[0]), a[1].min(b[1]), zc + 0.7 * r], [a[0].max(b[0]), a[1].max(b[1]), h], MOTOR);
+            shaft = Some([at(0.0, across / 2.0, zc), at(-1.0, across / 2.0, zc)]);
         }
         Kind::Vessel(color) => {
             // Vertical vessel on legs: shell, dished head, nozzles.
@@ -218,9 +264,10 @@ pub(super) fn model(p: &Part) -> Option<(Model2d, Mesh3d)> {
                 m.add_cylinder([x, 0.97 * d, 0.12 * h], 1, 0.05 * w, 0.03 * d, ROUND, STEEL);
             }
         }
-        Kind::Compressor => {
+        Kind::Compressor { motor } => {
             // Piston compressor on its horizontal receiver: feet, tank, motor, belt
-            // guard and compressor block on top.
+            // guard and compressor block on top; without a motor the crankshaft comes
+            // out of the block at the front.
             let r = (d / 2.0).min(0.3 * h) * 0.95;
             let zc = 0.07 * h + r;
             for x in [0.12 * w, 0.82 * w] {
@@ -230,9 +277,15 @@ pub(super) fn model(p: &Part) -> Option<(Model2d, Mesh3d)> {
             m.add_cylinder([0.05 * w, d / 2.0, zc], 0, r, 0.9 * w, ROUND + 8, RED);
             m.add_frustum([0.95 * w, d / 2.0, zc], 0, r, 0.6 * r, 0.05 * w, ROUND + 8, RED);
             let top = zc + r;
-            let rm = (0.16 * (h - top)).max(0.1 * d).min(0.3 * d);
-            m.add_cylinder([0.12 * w, d / 2.0, top + rm], 0, rm, 0.3 * w, ROUND, MOTOR);
-            m.add_painted_box([0.43 * w, 0.15 * d, top], [0.5 * w, 0.85 * d, 0.9 * h], RED);
+            if motor {
+                let rm = (0.16 * (h - top)).max(0.1 * d).min(0.3 * d);
+                m.add_cylinder([0.12 * w, d / 2.0, top + rm], 0, rm, 0.3 * w, ROUND, MOTOR);
+                m.add_painted_box([0.43 * w, 0.15 * d, top], [0.5 * w, 0.85 * d, 0.9 * h], RED);
+            } else {
+                let zk = top + 0.3 * (0.75 * h - top);
+                m.add_cylinder([0.65 * w, 0.0, zk], 1, 0.035 * d, 0.25 * d, ROUND, STEEL);
+                shaft = Some([[0.65 * w, 0.0, zk], [0.65 * w, -1.0, zk]]);
+            }
             m.add_painted_box([0.52 * w, 0.25 * d, top], [0.78 * w, 0.75 * d, 0.75 * h], STEEL);
             m.add_cylinder([0.65 * w, d / 2.0, 0.75 * h], 2, 0.1 * d, 0.25 * h, ROUND, DARK);
             m.add_cylinder([0.86 * w, 0.0, top + 0.1 * h], 1, 0.06 * h, 0.1 * d, ROUND, WHITE);
@@ -447,23 +500,29 @@ pub(super) fn model(p: &Part) -> Option<(Model2d, Mesh3d)> {
             prims.push(Prim2d::Rect { min: [0.04 * w, 0.12 * h], max: [0.96 * w, 0.88 * h], fill: false });
         }
     }
+    let mut ends = shaft.unwrap_or_default();
     if floor {
         // Upright: the height along y, the front (y 0 of the floor) at z = depth; the
         // front view shows the outline only.
-        for v in &mut m.vertices {
+        for v in m.vertices.iter_mut().chain(&mut ends) {
             *v = [v[0], v[2], d - v[1]];
         }
         prims.clear();
     }
-    fit(&mut m, [w, h, d]);
+    fit(&mut m, [w, h, d], &mut ends);
     prims.insert(0, Prim2d::Rect { min: [0.0, 0.0], max: [w, h], fill: false });
-    Some((Model2d { width: w, height: h, prims }, m))
+    let shaft = shaft.map(|_| {
+        let dir = crate::vec3::norm(crate::vec3::sub(ends[1], ends[0]));
+        Shaft { at: ends[0], dir }
+    });
+    Some((Model2d { width: w, height: h, prims }, m, shaft))
 }
 
-/// Stretches the mesh to fill the box from the origin to `size` exactly.
-fn fit(m: &mut Mesh3d, size: [f32; 3]) {
+/// Stretches the mesh to fill the box from the origin to `size` exactly, and `points`
+/// with it.
+fn fit(m: &mut Mesh3d, size: [f32; 3], points: &mut [[f32; 3]]) {
     let (lo, hi) = m.bounds();
-    for v in &mut m.vertices {
+    for v in m.vertices.iter_mut().chain(points) {
         for k in 0..3 {
             let span = hi[k] - lo[k];
             v[k] = if span > 0.0 { (v[k] - lo[k]) / span * size[k] } else { 0.0 };

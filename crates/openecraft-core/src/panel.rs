@@ -19,6 +19,7 @@ use crate::parts::{Exit, FnKind};
 use std::collections::{BTreeSet, HashMap, HashSet};
 
 mod checks;
+mod drives;
 mod fastening;
 mod fill;
 mod lineup;
@@ -31,6 +32,7 @@ mod rooms;
 mod system;
 pub mod thermal;
 pub use checks::{box_gap, class_collisions, class_title, clearances, data_number, device_class, device_kinds, floor_height, heights, item_class, item_name, validate, CheckKind, ClassRule, Clearances, Finding, PanelRules, CLASSES};
+pub use drives::{drives, Drive, DriveKind, DRIVE, DRIVEN_BY};
 pub use fastening::{fastening_material, Fastening};
 pub use fill::{duct_fill, wire_area, DuctFill, DuctLoads, OVERFILL_COST};
 pub use lineup::{add_facing_cutout, add_passage, bay_right_of, lineup_of, lineups, neighbours, next_passage_place, passages, positions, route_across, set_site, site_poses, unbay, Leg, Passage, SitePlace, SitePose, LINEUP_GAP, PASSAGE_DIAMETER};
@@ -688,31 +690,41 @@ pub fn place_mesh(mesh: &crate::parts::Mesh3d, it: &PanelItem) -> Vec<[[f32; 3];
 /// A part's 3D model fitted into the stretch `at .. at + len` along a device (along
 /// x, or along y for rotated devices) and the full height and depth.
 pub fn place_mesh_in(mesh: &crate::parts::Mesh3d, it: &PanelItem, at: f32, len: f32) -> Vec<[[f32; 3]; 3]> {
-    let (min, _) = mesh.bounds();
     let [mw, mh, md] = mesh.size();
     if mw <= 0.0 || mh <= 0.0 || md <= 0.0 {
         return Vec::new();
     }
+    let (min, _) = mesh.bounds();
+    let tf = |v: [f32; 3]| place_vertex(it, min, [mw, mh, md], at, len, v);
+    mesh.triangles.iter().map(|t| [tf(mesh.vertices[t[0] as usize]), tf(mesh.vertices[t[1] as usize]), tf(mesh.vertices[t[2] as usize])]).collect()
+}
+
+/// A point of a part's 3D model placed like [`place_mesh`] places the model.
+pub fn place_point(mesh: &crate::parts::Mesh3d, it: &PanelItem, v: V3) -> V3 {
+    let [mw, mh, md] = mesh.size();
+    let len = if it.face == Face::Bottom && item_rotated(it, md) { it.h } else { it.w };
+    place_vertex(it, mesh.bounds().0, [mw, mh, md].map(|s| s.max(1e-3)), 0.0, len, v)
+}
+
+/// A vertex of a model with the bounds `min` and the size `[mw, mh, md]` placed into
+/// the stretch `at .. at + len` along the item (see [`place_mesh_in`]).
+fn place_vertex(it: &PanelItem, min: V3, [mw, mh, md]: [f32; 3], at: f32, len: f32, v: V3) -> V3 {
     let rotated = item_rotated(it, mh);
-    let sz = it.d / md;
     // On the floor the model stands up out of it with its front (z) towards the
     // larger y of the floor plan; turned, its depth lies along x.
     let floor = it.face == Face::Bottom;
     let turned = floor && item_rotated(it, md);
-    let tf = |v: [f32; 3]| {
-        let (x, y_up, z) = (v[0] - min[0], v[1] - min[1], v[2] - min[2]);
-        if turned {
-            [it.x + z * (it.w / md), it.y + at + (mw - x) * (len / mw), it.z + y_up * (it.d / mh)]
-        } else if floor {
-            [it.x + at + x * (len / mw), it.y + z * (it.h / md), it.z + y_up * (it.d / mh)]
-        } else if rotated {
-            // Quarter turn: model up becomes plate right, model right becomes plate down.
-            [it.x + y_up * (it.w / mh), it.y + at + x * (len / mw), it.z + z * sz]
-        } else {
-            [it.x + at + x * (len / mw), it.y + (mh - y_up) * (it.h / mh), it.z + z * sz]
-        }
-    };
-    mesh.triangles.iter().map(|t| [tf(mesh.vertices[t[0] as usize]), tf(mesh.vertices[t[1] as usize]), tf(mesh.vertices[t[2] as usize])]).collect()
+    let (x, y_up, z) = (v[0] - min[0], v[1] - min[1], v[2] - min[2]);
+    if turned {
+        [it.x + z * (it.w / md), it.y + at + (mw - x) * (len / mw), it.z + y_up * (it.d / mh)]
+    } else if floor {
+        [it.x + at + x * (len / mw), it.y + z * (it.h / md), it.z + y_up * (it.d / mh)]
+    } else if rotated {
+        // Quarter turn: model up becomes plate right, model right becomes plate down.
+        [it.x + y_up * (it.w / mh), it.y + at + x * (len / mw), it.z + z * (it.d / md)]
+    } else {
+        [it.x + at + x * (len / mw), it.y + (mh - y_up) * (it.h / mh), it.z + z * (it.d / md)]
+    }
 }
 
 /// A place along a device for one part: offset and length along the device (along
@@ -809,7 +821,15 @@ pub fn device_mesh_painted(prj: &Project, it: &PanelItem) -> Option<Vec<(Tri, Op
     let cells = strip_cells(prj, it);
     if cells.is_empty() {
         let mesh = part_by_number(prj, &it.part)?.model_3d.as_ref()?;
-        let tris = painted(mesh, place_mesh(mesh, it));
+        let mut tris = place_mesh(mesh, it);
+        // A motor turned end for end by its drive (its shaft towards the machine).
+        if let Some((k, c)) = drives::turned_motor(prj, it) {
+            tris = tris.into_iter().map(|t| t.map(|mut v| {
+                v[k] = 2.0 * c - v[k];
+                v
+            })).map(|t| [t[0], t[2], t[1]]).collect();
+        }
+        let tris = painted(mesh, tris);
         return (!tris.is_empty()).then_some(tris);
     }
     let rotated = part_by_number(prj, &it.part).and_then(|p| p.size()).is_some_and(|s| item_rotated(it, s[1]));
