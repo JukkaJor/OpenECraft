@@ -516,6 +516,27 @@ struct Job {
     set_length: f32,
 }
 
+impl Job {
+    /// Cross-section (mm²) and smallest bend radius (mm).
+    fn area_radius(&self, rules: &RoutingRules) -> (f32, f32) {
+        let area = std::f32::consts::PI / 4.0 * self.diameter * self.diameter;
+        (area, if self.bend > 0.0 { self.bend } else { rules.bend(self.kind) * self.diameter })
+    }
+
+    /// The items a leg may pass through: the devices at the ends, its cable glands.
+    fn ignore(&self, leg: &room::LegPlan) -> Vec<u64> {
+        self.ends.iter().filter_map(|e| e.item).chain(leg.ignore.iter().copied()).collect()
+    }
+}
+
+/// The legs of a route, whether it enters a cabinet through its roof, the length through
+/// the walls.
+type LegsPlan = (Vec<room::LegPlan>, bool, f32);
+
+/// Threads the searches of one class are spread over: each keeps arrays as large as the
+/// largest space it searches.
+const ROUTING_THREADS: usize = 4;
+
 /// The two end tags of a cable: the device most of its cores start at, and the one
 /// most of them end at.
 fn cable_ends(prj: &Project, conns: &[&Connection]) -> Option<(String, String)> {
@@ -640,7 +661,7 @@ pub fn analyse_cached(prj: &Project, wiring: &mut [RoutedWire], conns: &[Connect
         Err(key) => {
             let (rest, lang, jobs) = *key;
             let before = wiring.to_vec();
-            let routing = route(prj, wiring, jobs.clone(), progress);
+            let routing = route(prj, wiring, jobs.clone(), progress, crate::parallel::threads().min(ROUTING_THREADS));
             cache.last = Some(Box::new(Last { prj: rest, lang, jobs, wiring: before, routed: wiring.to_vec(), routing: routing.clone() }));
             routing
         }
@@ -757,9 +778,10 @@ fn jobs(prj: &Project, wiring: &[RoutedWire], conns: &[Connection], open: &Netli
     jobs
 }
 
-/// Routes the `jobs` one after the other.
+/// Routes the `jobs` one after the other, the searches of a class on up to `workers`
+/// threads at the same time (with the same routes).
 #[allow(clippy::too_many_lines)]
-fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, progress: &dyn Fn(usize, usize)) -> Routing {
+fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, progress: &dyn Fn(usize, usize), workers: usize) -> Routing {
     let rules = &prj.layout.routing;
     let pos = panel::positions(&prj.layout);
     let lineups = panel::lineups(&prj.layout);
@@ -777,10 +799,80 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, progress: &dy
     let mut problems: Vec<Problem> = Vec::new();
     let mut roof_entries: Vec<String> = Vec::new();
     let total = jobs.len();
-    for (n, job) in jobs.into_iter().enumerate() {
+    let make_space = |lu: usize| if is_room(lu) { room::room_space(prj, lineups[lu][0], &pos, &poses, rules) } else { grid::Space::build(prj, &lineups[lu], &pos, rules) };
+    // The legs of each job: in one line-up (or room) at once, otherwise through the rooms
+    // the ends are in and the wall penetrations between them (with whether it enters a
+    // cabinet through its roof and the length through the walls); or why not.
+    let plans: Vec<Result<LegsPlan, String>> = jobs
+        .iter()
+        .map(|job| {
+            let known = job.fixed.is_some();
+            let lu = job.ends.iter().find_map(|e| e.enclosure).and_then(lineup_of);
+            let (Some(lu), Some(a), Some(b)) = (lu, job.ends[0].point.or(known.then_some([0.0; 3])), job.ends[1].point.or(known.then_some([0.0; 3]))) else {
+                return Err(tr("not in the panel layout").to_string());
+            };
+            if job.ends.iter().filter_map(|e| e.enclosure).all(|ei| lineup_of(ei) == Some(lu)) {
+                return Ok((vec![room::LegPlan { lineup: lu, a, b, ignore: Vec::new() }], false, 0.0));
+            }
+            let rooms: Vec<Option<usize>> = job.ends.iter().map(|e| e.enclosure.and_then(room_of_end)).collect();
+            match (rooms[0], rooms[1]) {
+                (Some(r), Some(other)) if !known && job.kind != RouteKind::Wire => {
+                    room::plan_legs(prj, &pos, &poses, &lineup_of, [r, other], &links, &job.ends).ok_or_else(|| if r != other { tr("no wall penetration leads from room to room") } else { tr("not in the same line-up or room") }.to_string())
+                }
+                _ => Err(tr("not in the same line-up or room").to_string()),
+            }
+        })
+        .collect();
+    // The legs of a frozen job as frozen, where the route is still the same.
+    let thawed = |job: &Job, legs: &[room::LegPlan]| frozen.get(job.key.as_str()).and_then(|f| thaw(prj, &pos, f)).filter(|t| t.len() == legs.len()).unwrap_or_default();
+    let thawed_ok = |points: &[V3], leg: &room::LegPlan, space: &grid::Space, req: &grid::Request| {
+        let near = |q: Option<&V3>, e: V3| q.is_some_and(|q| manhattan(*q, e) <= 2.0 * space.cell);
+        near(points.first(), leg.a) && near(points.last(), leg.b) && space.still_free(points, req)
+    };
+    // The searches of a class run at the same time against the spaces as they are when
+    // the class begins: within a class a route changes the next ones only through the
+    // routing paths it fills, so a way found ahead is taken where none of the paths
+    // became full for it since, otherwise it is searched again (the same routes as one
+    // after the other).
+    let mut ahead: HashMap<(usize, usize), Option<grid::Way>> = HashMap::new();
+    let mut paths_before: HashMap<usize, Vec<f32>> = HashMap::new();
+    for (n, job) in jobs.iter().enumerate() {
         progress(n, total);
-        let start = job.ends.iter().find_map(|e| e.enclosure);
-        let lu = start.and_then(lineup_of);
+        if workers > 1 && (n == 0 || jobs[n - 1].class != job.class) {
+            let batch = n..jobs[n..].iter().position(|j| j.class != job.class).map_or(jobs.len(), |k| n + k);
+            for leg in batch.clone().filter_map(|k| plans[k].as_ref().ok()).flat_map(|p| &p.0) {
+                let space = spaces.entry(leg.lineup).or_insert_with(|| make_space(leg.lineup));
+                if zoned.get(&leg.lineup) != Some(&job.class) {
+                    space.update_zones(rules.segregation);
+                    zoned.insert(leg.lineup, job.class);
+                }
+            }
+            let mut tasks: Vec<(usize, usize)> = Vec::new();
+            for k in batch.filter(|&k| jobs[k].fixed.is_none()) {
+                let Ok((legs, ..)) = &plans[k] else { continue };
+                let (area, radius) = jobs[k].area_radius(rules);
+                let frozen_legs = thawed(&jobs[k], legs);
+                for (i, leg) in legs.iter().enumerate() {
+                    let space = &spaces[&leg.lineup];
+                    let ignore = jobs[k].ignore(leg);
+                    let req = grid::Request { kind: jobs[k].kind, class: jobs[k].class, ignore: &ignore, at: [leg.a, leg.b], area, turn: (space.cell * 0.5).max(radius) };
+                    if !frozen_legs.get(i).is_some_and(|p| thawed_ok(p, leg, space, &req)) {
+                        tasks.push((k, i));
+                    }
+                }
+            }
+            let spaces_now = &spaces;
+            let found = crate::parallel::par_map_n(&tasks, workers, |&(k, i)| {
+                let (job, leg) = (&jobs[k], &plans[k].as_ref().map(|p| &p.0[i]).expect("planned"));
+                let space = &spaces_now[&leg.lineup];
+                let (area, radius) = job.area_radius(rules);
+                let ignore = job.ignore(leg);
+                let req = grid::Request { kind: job.kind, class: job.class, ignore: &ignore, at: [leg.a, leg.b], area, turn: (space.cell * 0.5).max(radius) };
+                space.route(leg.a, leg.b, &req, rules)
+            });
+            ahead = tasks.into_iter().zip(found).collect();
+            paths_before = spaces.iter().map(|(k, s)| (*k, s.paths.iter().map(|p| p.used).collect())).collect();
+        }
         let mut item = RoutedItem {
             kind: job.kind,
             key: job.key.clone(),
@@ -801,60 +893,41 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, progress: &dy
         };
         // Wires through the cable ducts are routed already (also those on the door).
         let known = job.fixed.is_some();
-        let (Some(lu), Some(a), Some(b)) = (lu, job.ends[0].point.or(known.then_some([0.0; 3])), job.ends[1].point.or(known.then_some([0.0; 3]))) else {
-            item.status = Status::Unrouted(tr("not in the panel layout").to_string());
-            items.push(item);
-            continue;
-        };
-        // In one line-up (or room) at once, otherwise in legs through the rooms the
-        // ends are in and the wall penetrations between them.
-        let mut through_walls = 0.0;
-        let legs = if job.ends.iter().filter_map(|e| e.enclosure).all(|ei| lineup_of(ei) == Some(lu)) {
-            vec![room::LegPlan { lineup: lu, a, b, ignore: Vec::new() }]
-        } else {
-            let rooms: Vec<Option<usize>> = job.ends.iter().map(|e| e.enclosure.and_then(room_of_end)).collect();
-            let planned = match (rooms[0], rooms[1]) {
-                (Some(r), Some(other)) if !known && job.kind != RouteKind::Wire => room::plan_legs(prj, &pos, &poses, &lineup_of, [r, other], &links, &job.ends),
-                _ => None,
-            };
-            let Some((legs, roof, walls)) = planned else {
-                let why = match (rooms[0], rooms[1]) {
-                    (Some(r), Some(other)) if r != other && !known && job.kind != RouteKind::Wire => tr("no wall penetration leads from room to room"),
-                    _ => tr("not in the same line-up or room"),
-                };
-                item.status = Status::Unrouted(why.to_string());
+        let (legs, through_walls) = match &plans[n] {
+            Ok((legs, roof, walls)) => {
+                if *roof {
+                    roof_entries.push(job.key.clone());
+                }
+                (legs, *walls)
+            }
+            Err(why) => {
+                item.status = Status::Unrouted(why.clone());
                 items.push(item);
                 continue;
-            };
-            if roof {
-                roof_entries.push(job.key.clone());
             }
-            through_walls = walls;
-            legs
         };
-        let area = std::f32::consts::PI / 4.0 * job.diameter * job.diameter;
-        let radius = if job.bend > 0.0 { job.bend } else { rules.bend(job.kind) * job.diameter };
+        let (area, radius) = job.area_radius(rules);
         let is_frozen = frozen.contains_key(job.key.as_str());
-        let thawed = frozen.get(job.key.as_str()).and_then(|f| thaw(prj, &pos, f)).filter(|t| t.len() == legs.len()).unwrap_or_default();
+        let thawed = thawed(job, legs);
         let mut ways: Vec<(usize, Vec<V3>, f32)> = Vec::new();
         let mut rerouted = false;
         for (i, leg) in legs.iter().enumerate() {
-            let space = spaces.entry(leg.lineup).or_insert_with(|| if is_room(leg.lineup) { room::room_space(prj, lineups[leg.lineup][0], &pos, &poses, rules) } else { grid::Space::build(prj, &lineups[leg.lineup], &pos, rules) });
+            let space = spaces.entry(leg.lineup).or_insert_with(|| make_space(leg.lineup));
             // Classes that come later keep apart from those routed before them.
             if zoned.get(&leg.lineup) != Some(&job.class) {
                 space.update_zones(rules.segregation);
                 zoned.insert(leg.lineup, job.class);
             }
-            let ignore: Vec<u64> = job.ends.iter().filter_map(|e| e.item).chain(leg.ignore.iter().copied()).collect();
+            let ignore = job.ignore(leg);
             let req = grid::Request { kind: job.kind, class: job.class, ignore: &ignore, at: [leg.a, leg.b], area, turn: (space.cell * 0.5).max(radius) };
-            let cell = space.cell;
-            let near = |q: Option<&V3>, e: V3| q.is_some_and(|q| manhattan(*q, e) <= 2.0 * cell);
             let way = match (&job.fixed, thawed.get(i)) {
                 (Some(points), _) => Some((points.clone(), space.cells_along(points), 0.0)),
-                (None, Some(points)) if near(points.first(), leg.a) && near(points.last(), leg.b) && space.still_free(points, &req) => Some((points.clone(), space.cells_along(points), 0.0)),
+                (None, Some(points)) if thawed_ok(points, leg, space, &req) => Some((points.clone(), space.cells_along(points), 0.0)),
                 (None, _) => {
                     rerouted |= is_frozen;
-                    space.route(leg.a, leg.b, &req, rules).map(|w| (w.points, w.cells, w.free))
+                    let before = paths_before.get(&leg.lineup);
+                    let found = ahead.remove(&(n, i)).filter(|_| before.is_some_and(|b| space.paths_full_as(b, area)));
+                    found.unwrap_or_else(|| space.route(leg.a, leg.b, &req, rules)).map(|w| (w.points, w.cells, w.free))
                 }
             };
             let Some((points, cells, free)) = way else {

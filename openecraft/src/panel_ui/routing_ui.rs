@@ -264,7 +264,6 @@ impl PanelUi {
             for &i in here.iter().filter(|&&i| !r.items[i].routed() && r.items[i].kind != RouteKind::Wire) {
                 ui.colored_label(Color32::from_rgb(220, 120, 0), format!("{} {}: {}", r.items[i].kind.title(), r.items[i].label, r.items[i].status_text()));
             }
-            self.selected_route_details(ui, prj, an);
             ui.separator();
             // Cables and tubes of the enclosure.
             ui.label(RichText::new(tr("Cables and tubes")).strong());
@@ -295,10 +294,11 @@ impl PanelUi {
         });
     }
 
-    fn selected_route_details(&mut self, ui: &mut egui::Ui, prj: &mut Project, an: &Analysis) {
+    /// Properties of the selected cable or tube (as those of a selected wire): its route,
+    /// shield and freezing, the devices at its ends.
+    pub(super) fn route_properties(&mut self, ui: &mut egui::Ui, prj: &mut Project, an: &Analysis) {
         let r = &an.routing;
         let Some((idx, it)) = self.selected_route.as_ref().and_then(|k| r.items.iter().enumerate().find(|(_, i)| &i.key == k)) else { return };
-        ui.separator();
         ui.label(RichText::new(format!("{} {}", it.kind.title(), it.label)).strong().color(WIRE_HIGHLIGHT));
         egui::Grid::new("rroute").num_columns(2).spacing([10.0, 4.0]).show(ui, |ui| {
             ui.label(tr("From / to"));
@@ -361,6 +361,25 @@ impl PanelUi {
                 self.selected_route = None;
             }
         });
+        ui.separator();
+        ui.label(RichText::new(tr("Connected devices")).strong());
+        let mut select = None;
+        for end in &it.ends {
+            let (Some(ei), Some(id)) = (end.enclosure, end.item) else { continue };
+            let Some(item) = prj.layout.enclosures.get(ei).and_then(|e| e.item(id)).filter(|i| !i.tag.is_empty()) else { continue };
+            ui.horizontal(|ui| {
+                if ui.link(RichText::new(&item.tag).monospace()).on_hover_text(tr("Select device")).clicked() {
+                    select = Some((ei, id));
+                }
+                if ui.small_button(tr("Show in schematic")).clicked() {
+                    self.goto_schematic = Some(item.tag.clone());
+                }
+            });
+        }
+        if let Some((ei, id)) = select {
+            self.enclosure = ei;
+            self.select_item(id);
+        }
     }
 
     fn paths_and_reservations(&mut self, ui: &mut egui::Ui, prj: &mut Project, an: &Analysis, ei: usize) {

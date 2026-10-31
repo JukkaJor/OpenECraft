@@ -148,6 +148,7 @@ const CORE_RULES: &[(&str, &[&str])] = &[
     ("table", &["params"]),
     ("issue", &[]),
     ("ttf", &[]),
+    ("parallel", &[]),
     // 2 symbols
     ("symbols", &["geom"]),
     ("symlib", &["geom", "model", "symbols"]),
@@ -179,7 +180,7 @@ const CORE_RULES: &[(&str, &[&str])] = &[
     ("climate", &["model", "panel", "parts"]),
     ("manufacturing", &["geom", "model", "panel", "parts", "production"]),
     ("routing", &["geom", "model", "symbols", "symlib"]),
-    ("routing3d", &["fluid", "geom", "harness", "model", "netlist", "panel", "parts", "plc_hw", "potentials"]),
+    ("routing3d", &["fluid", "geom", "harness", "model", "netlist", "panel", "parallel", "parts", "plc_hw", "potentials"]),
     ("field", &["geom", "issue", "model", "netlist", "panel", "parts", "production", "render", "routing3d", "structure", "svg", "symbols"]),
     ("strips", &["frame", "model", "netlist", "parts", "symbols", "text"]),
     ("plugs", &["frame", "model", "netlist", "parts", "symbols", "text"]),
@@ -220,7 +221,7 @@ const CORE_RULES: &[(&str, &[&str])] = &[
     ("report_blocks", &["analysis", "ext", "forms", "model", "ops", "reports", "strips"]),
     ("testkit", &["analysis", "geom", "model", "parts", "symbols"]),
     // 6 derived data, checks, reports, registry
-    ("analysis", &["ext", "field", "index", "issue", "model", "netlist", "panel", "revision", "routing3d", "table"]),
+    ("analysis", &["ext", "field", "index", "issue", "model", "netlist", "panel", "parallel", "revision", "routing3d", "table"]),
     ("checks", &["analysis", "cabledef", "climate", "conndef", "electrofluid", "emc", "ext", "fluid", "frame", "harness", "index", "integration", "issue", "loads", "model", "mounting", "netlist", "panel", "parts", "plc", "plc_hw", "plugs", "potentials", "preplanning", "process", "production", "reports", "routing3d", "rules", "safety", "shortcircuit", "singleline", "sizing", "strips", "structure", "symbols", "translation", "wirenum", "wiring"]),
     ("reports", &["analysis", "checks", "climate", "electrofluid", "ext", "field", "fluid", "frame", "geom", "harness", "index", "issue", "loads", "marking", "model", "netlist", "panel", "params", "parts", "plc", "plc_hw", "plugs", "process", "production", "revision", "routing3d", "rules", "safety", "shortcircuit", "sizing", "strips", "symbols", "table", "text"]),
     ("ext", &["analysis", "issue", "model", "params", "table"]),

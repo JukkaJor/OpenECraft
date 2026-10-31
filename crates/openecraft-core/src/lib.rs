@@ -53,6 +53,7 @@ pub mod options;
 pub mod page_templates;
 pub mod panel;
 pub mod params;
+pub mod parallel;
 pub mod parts;
 pub mod nailboard;
 pub mod page_select;

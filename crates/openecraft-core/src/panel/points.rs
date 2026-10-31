@@ -5,7 +5,7 @@
 use super::{ItemKind, PanelItem};
 use crate::model::{Project, SymbolInst};
 use crate::parts::vec3::V3;
-use crate::parts::{Exit, FnKind, Part};
+use crate::parts::{Exit, Part};
 use crate::symbols::Func;
 
 /// A connection point of a placed device.
@@ -67,7 +67,10 @@ pub fn device_points(prj: &Project, it: &PanelItem) -> Vec<PlacedPoint> {
             }
         }
     }
-    let strip = !main.functions.is_empty() && main.functions.iter().all(|f| f.kind == FnKind::Terminal);
+    let strip = super::is_strip_part(main);
+    if strip {
+        depth = super::strip_depth(&parts);
+    }
     // Rotated by a quarter turn: the part's height lies along x.
     let rotated = !same(it.h, mh) && same(it.w, mh);
     let along = if rotated { it.h } else { it.w };

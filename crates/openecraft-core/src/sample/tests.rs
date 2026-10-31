@@ -323,6 +323,9 @@ fn terminal_strips_are_drawn_with_their_models() {
             for c in &cells {
                 assert!(part_by_number(&prj, &c.part).is_some_and(|p| p.model_3d.is_some()), "{}: {} {:?}", ex.key, it.tag, c.part);
             }
+            // Side by side on the rail: the strip is as deep as its deepest part.
+            let deepest = cells.iter().filter_map(|c| part_by_number(&prj, &c.part).and_then(|p| p.size())).map(|s| s[2]).fold(0.0, f32::max);
+            assert!((it.d - deepest).abs() < 0.01, "{}: {} {} deep, parts {}", ex.key, it.tag, it.d, deepest);
             // Strips on a rail end in end brackets.
             if part_by_number(&prj, &it.part).is_some_and(|p| p.mounting.starts_with("Mounting rail")) {
                 let bracket = |c: &crate::panel::Cell| part_by_number(&prj, &c.part).is_some_and(|p| p.subgroup == "End bracket");

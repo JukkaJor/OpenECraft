@@ -55,7 +55,9 @@ with a command line, an MCP server, a parts server and a project server.
   D-ST, D-PT and CLIPFIX), between end plates and end brackets at both ends of every strip, and cable ducts with slotted walls and their
   cover; cables in the 3D routing end at the
   connection points their cores land on and part into their cores there; routes leave the devices they end at
-  instead of running through them. The 3D view hides the walls in front of the camera or the
+  instead of running through them; the routes of a class are searched on several threads
+  at once (with the same result), a selected cable or tube shows its properties like a
+  wire. The 3D view hides the walls in front of the camera or the
   ceiling on request; the opacity of the walls is a setting. Wires are drawn in their
   colours and, like cables and tubes, in their real thickness, from the plate up to their
   connection points; cable cores are drawn with their cable. The title bar can show

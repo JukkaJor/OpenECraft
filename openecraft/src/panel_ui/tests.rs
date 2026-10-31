@@ -504,3 +504,32 @@ fn clicking_in_the_3d_view_picks_from_the_scene_with_the_graphics_card_too() {
         assert!(ui.selection.contains(&id), "gpu {gpu_3d}");
     }
 }
+
+#[test]
+fn a_selected_cable_shows_its_properties() {
+    // As a selected wire: the panel shows the cable with its route and the devices at
+    // its ends, not the properties of the enclosure.
+    let mut prj = openecraft_core::sample::demo_project();
+    let an = Analysis::checked(&prj);
+    let cable = an.routing.items.iter().find(|i| i.kind == routing3d::RouteKind::Cable && i.routed()).expect("a routed cable");
+    let device = cable.ends.iter().filter_map(|e| prj.layout.enclosures.get(e.enclosure?)?.item(e.item?)).find(|i| !i.tag.is_empty()).expect("a device at an end").tag.clone();
+    let mut ui = PanelUi { selected_route: Some(cable.key.clone()), ..Default::default() };
+    let ctx = egui::Context::default();
+    let mut out = ctx.run_ui(egui::RawInput::default(), |c| {
+        egui::CentralPanel::default().show(c, |u| ui.properties(u, &mut prj, &an, &PartsDb::default()));
+    });
+    fn texts(s: &egui::Shape, out: &mut Vec<String>) {
+        match s {
+            egui::Shape::Text(t) => out.push(t.galley.job.text.clone()),
+            egui::Shape::Vec(v) => v.iter().for_each(|s| texts(s, out)),
+            _ => {}
+        }
+    }
+    out.textures_delta.clear();
+    let mut shown = Vec::new();
+    out.shapes.iter().for_each(|c| texts(&c.shape, &mut shown));
+    for want in [cable.label.as_str(), tr("Free air"), tr("Connected devices"), device.as_str()] {
+        assert!(shown.iter().any(|t| t.contains(want)), "{want} in {shown:?}");
+    }
+    assert!(!shown.iter().any(|t| t == tr("Enclosure")), "{shown:?}");
+}

@@ -231,3 +231,21 @@ fn a_kept_routing_is_only_taken_from_the_cache() {
     assert!(!kept.routes_pending);
     assert!(kept.routing == routed.routing && kept.wiring == routed.wiring);
 }
+
+#[test]
+fn searches_at_the_same_time_give_the_same_routes() {
+    // The pump room: cables of several classes, pipes along its pipe runs (routing
+    // paths that fill up), legs through the room into the cabinets.
+    let prj = crate::sample::example("pump_room").unwrap();
+    let an = Analysis::build(&prj);
+    let route_on = |workers: usize| {
+        let mut wiring = crate::panel::virtual_wiring(&prj, &an.connections).0;
+        let jobs = jobs(&prj, &wiring, &an.connections, &an.open);
+        let routing = route(&prj, &mut wiring, jobs, &|_, _| {}, workers);
+        (routing, wiring)
+    };
+    let (one, four) = (route_on(1), route_on(4));
+    assert!(one.0.items.iter().filter(|i| i.kind != RouteKind::Wire && i.routed()).count() > 5);
+    assert!(one.0.paths.iter().any(|u| u.items > 1), "{:?}", one.0.paths);
+    assert!(one == four);
+}

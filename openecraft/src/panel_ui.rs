@@ -966,6 +966,10 @@ impl PanelUi {
             self.wire_properties(ui, prj, an, wi);
             return;
         }
+        if self.selected_route.as_ref().is_some_and(|k| an.routing.item(k).is_some()) {
+            self.route_properties(ui, prj, an);
+            return;
+        }
         let sel: Vec<u64> = self.selection.iter().copied().collect();
         if sel.len() > 1 {
             ui.label(tr_fmt!("{} items selected", sel.len()));

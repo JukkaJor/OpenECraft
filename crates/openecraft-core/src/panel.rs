@@ -832,7 +832,8 @@ pub fn device_mesh_painted(prj: &Project, it: &PanelItem) -> Option<Vec<(Tri, Op
 
 /// Footprint of a device from its parts: the first part with mounting data gives
 /// width / height; further parts (e.g. auxiliary blocks) add their depth. Terminal
-/// strips are as long as their strip layout (terminals and spare terminals).
+/// strips are as long as their strip layout (terminals and spare terminals) and as deep
+/// as their deepest part.
 pub fn device_size(prj: &Project, tag: &str) -> Option<DeviceSize> {
     let Some(data) = prj.devices.get(tag) else { return group_size(prj, tag) };
     let parts: Vec<_> = data
@@ -842,14 +843,15 @@ pub fn device_size(prj: &Project, tag: &str) -> Option<DeviceSize> {
         .collect();
     let (main, [mw, mh, md]) = parts.iter().find_map(|(pd, _)| pd.size().map(|dims| (*pd, dims)))?;
     let mut w = mw;
-    if !main.functions.is_empty() && main.functions.iter().all(|f| f.kind == FnKind::Terminal) {
-        let strip: f32 = crate::strips::strip_layout(prj, tag).iter().map(|e| e.width).sum();
-        if strip > 0.0 {
-            w = strip;
+    let strip = is_strip_part(main);
+    if strip {
+        let length: f32 = crate::strips::strip_layout(prj, tag).iter().map(|e| e.width).sum();
+        if length > 0.0 {
+            w = length;
         }
     }
-    let mut d = md;
-    for (pd, count) in &parts {
+    let mut d = if strip { strip_depth(&parts) } else { md };
+    for (pd, count) in parts.iter().filter(|_| !strip) {
         if let (true, Some([aw, _, ad])) = (pd.number != main.number, pd.size()) {
             if aw <= mw + 1.0 {
                 d += ad * *count as f32;
@@ -857,6 +859,17 @@ pub fn device_size(prj: &Project, tag: &str) -> Option<DeviceSize> {
         }
     }
     Some(DeviceSize { tag: tag.into(), part: main.number.clone(), w, h: mh, d, from_part: true })
+}
+
+/// The main part of a terminal strip: all its functions are terminals.
+pub(crate) fn is_strip_part(main: &crate::parts::Part) -> bool {
+    !main.functions.is_empty() && main.functions.iter().all(|f| f.kind == FnKind::Terminal)
+}
+
+/// Depth of a terminal strip: its parts stand side by side on the rail, the deepest
+/// counts.
+pub(crate) fn strip_depth(parts: &[(&crate::parts::Part, u32)]) -> f32 {
+    parts.iter().filter_map(|(p, _)| p.size()).map(|s| s[2]).fold(0.0, f32::max)
 }
 
 /// Footprint of a fluid device group (valve terminal, service unit) placed as one

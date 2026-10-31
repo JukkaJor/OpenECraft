@@ -726,6 +726,13 @@ impl Space {
         reach
     }
 
+    /// For a route of cross-section `area`, the routing paths are full or not as they
+    /// were with the cross-sections `before` in them (`used` of [`Space::paths`]).
+    pub fn paths_full_as(&self, before: &[f32], area: f32) -> bool {
+        let full = |used: f32, p: &PathCells| p.capacity > 0.0 && used + area > p.capacity;
+        before.len() == self.paths.len() && self.paths.iter().zip(before).all(|(p, &used)| full(used, p) == full(p.used, p))
+    }
+
     /// A way that was routed before (frozen) is still possible: its cells are passable
     /// and it does not cross a wall outside the passages.
     pub fn still_free(&self, points: &[V3], req: &Request) -> bool {
