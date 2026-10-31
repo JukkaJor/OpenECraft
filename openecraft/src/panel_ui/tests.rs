@@ -211,6 +211,209 @@ fn wires_routed_through_ducts_lie_inside_the_duct_boxes() {
 }
 
 #[test]
+fn cable_cores_are_drawn_with_their_cable() {
+    // The link cable between two batteries in the rack is drawn by the 3D routing; its
+    // cores are not drawn again as wires over the rear of the rack.
+    let prj = openecraft_core::sample::example("building_services").unwrap();
+    let an = Analysis::checked(&prj);
+    let rack = prj.layout.enclosures.iter().position(|e| e.name == "+RACK").unwrap();
+    assert!(an.wiring.iter().any(|w| w.cable == "=ESS-W97" && w.in_enclosure(rack)));
+    assert!(an.routing.item("=ESS-W97").is_some_and(|c| c.routed()));
+    let mut ui = PanelUi::default();
+    let shown = ui.shown_3d(&prj, rack);
+    let scene = ui.scene_3d(&prj, &an, rack, &shown);
+    let cores = scene.picks.iter().filter(|(_, _, t)| matches!(t, routing_ui::RouteRef::Wire(wi) if an.wiring[*wi].cable == "=ESS-W97")).count();
+    assert_eq!(cores, 0);
+    assert!(scene.picks.iter().any(|(_, _, t)| matches!(t, routing_ui::RouteRef::Item(key) if key == "=ESS-W97")));
+    // The battery cable parts in front of the battery into its cores to + and -; they
+    // are seen without the cable being selected.
+    let w71 = an.routing.item("=ESS-W71").unwrap();
+    let end = w71.ends.iter().find(|e| e.tag == "=ESS+RACK-G1").unwrap();
+    assert_eq!(end.cores.len(), 2);
+    let approach = w71.stretches()[0].1[1];
+    let lines = ui.routing_lines_3d(&prj, &an, &[rack], &|_, q| q, None);
+    let (pos, (_, pose)) = (panel::positions(&prj.layout)[rack], shown[0]);
+    let view = |q: [f32; 3]| pose.apply([q[0] - pos[0], prj.layout.enclosures[rack].height - (q[1] - pos[1]), q[2] - pos[2]]);
+    for core in &end.cores {
+        assert!(lines.iter().any(|l| matches!(&l.target, routing_ui::RouteRef::Item(k) if k == "=ESS-W71") && l.points == [approach, *core]), "{core:?}");
+        let at = view(*core);
+        assert!(scene.wires.iter().any(|w| [w.line.a, w.line.b].iter().any(|q| (0..3).all(|k| (q[k] - at[k]).abs() < 0.5)) && w.line.a != w.line.b), "{core:?} not drawn");
+    }
+}
+
+#[test]
+fn routed_pipes_are_round_tubes_bent_round_their_corners() {
+    let prj = openecraft_core::sample::example("pump_room").unwrap();
+    let an = Analysis::build(&prj);
+    let room = prj.layout.enclosures.iter().position(|e| e.is_room()).unwrap();
+    let pipe = an.routing.items.iter().find(|i| i.kind == routing3d::RouteKind::Tube && i.routed() && i.points.len() > 3).expect("a pipe with corners");
+    let mut ui = PanelUi { show_wires: true, ..Default::default() };
+    let shown = ui.shown_3d(&prj, room);
+    let scene = ui.scene_3d(&prj, &an, room, &shown);
+    assert!(!scene.tubes.is_empty());
+    // Its corners are arcs: more segments than the route has corners.
+    let segments: Vec<_> = scene.picks.iter().filter(|(_, _, t)| matches!(t, routing_ui::RouteRef::Item(k) if *k == pipe.key)).collect();
+    assert!(segments.len() > pipe.points.len(), "{} segments, {} points", segments.len(), pipe.points.len());
+    assert!(scene.wires.iter().any(|w| w.line.tube && w.line.diameter == pipe.diameter));
+}
+
+#[test]
+fn cables_are_picked_on_the_plate_like_wires() {
+    let prj = openecraft_core::sample::demo_project();
+    let an = Analysis::checked(&prj);
+    let pos = panel::positions(&prj.layout);
+    // The middle of a segment of a cable's route over the plate of a cabinet.
+    let (ei, index, q) = an
+        .routing
+        .items
+        .iter()
+        .enumerate()
+        .filter(|(_, it)| it.kind == routing3d::RouteKind::Cable && it.routed())
+        .find_map(|(i, it)| {
+            let ei = *it.enclosures.first()?;
+            let pts = it.stretches_in_lineup(&prj.layout, ei).into_iter().find(|s| s.len() >= 2)?;
+            let (a, b) = (pts[0], pts[1]);
+            Some((ei, i, p((a[0] + b[0]) / 2.0 - pos[ei][0] - PLATE_MARGIN, (a[1] + b[1]) / 2.0 - pos[ei][1] - PLATE_MARGIN)))
+        })
+        .expect("a cable over a plate");
+    let mut ui = PanelUi::default();
+    assert!(ui.cables_at(&prj, &an, ei, q, 2.0).contains(&index));
+    assert!(ui.cables_at(&prj, &an, ei, p(-5000.0, -5000.0), 2.0).is_empty());
+    // Picked, it is shown as in the 3D view: no wire or item selected with it.
+    ui.selection.insert(7);
+    ui.selected_wire = Some(("-K1:A1".into(), "-K2:A1".into()));
+    ui.select_route(&an, &an.routing.items[index].key);
+    assert_eq!(ui.selected_route.as_deref(), Some(an.routing.items[index].key.as_str()));
+    assert!(ui.selected_wire.is_none() && ui.selection.is_empty() && ui.status.contains(&an.routing.items[index].label));
+}
+
+#[test]
+fn wires_entering_the_ducts_take_out_the_fingers_they_pass() {
+    // Shown, the wires pass through the walls of the ducts: the fingers there are left out.
+    let prj = openecraft_core::sample::demo_project();
+    let an = Analysis::build(&prj);
+    let faces = |show_wires: bool| {
+        let mut ui = PanelUi { show_wires, ..Default::default() };
+        let shown = ui.shown_3d(&prj, 0);
+        ui.scene_3d(&prj, &an, 0, &shown).faces.len()
+    };
+    let (hidden, shown) = (faces(false), faces(true));
+    assert!(shown < hidden && (hidden - shown) % 6 == 0, "{hidden} faces, {shown} with the wires");
+}
+
+#[test]
+fn wires_running_together_lie_side_by_side() {
+    // In the ducts of the demo cabinet many wires run the same way: no two straight runs
+    // of different wires lie inside each other (but at their ends, inside the devices).
+    let prj = openecraft_core::sample::demo_project();
+    let an = Analysis::build(&prj);
+    let mut ui = PanelUi { show_wires: true, ..Default::default() };
+    let shown = ui.shown_3d(&prj, 0);
+    let scene = ui.scene_3d(&prj, &an, 0, &shown);
+    let axis = |a: [f32; 3], b: [f32; 3]| {
+        let along: Vec<usize> = (0..3).filter(|&k| (a[k] - b[k]).abs() > 0.01).collect();
+        (along.len() == 1 && (a[along[0]] - b[along[0]]).abs() > 30.0).then(|| along[0])
+    };
+    // The pieces of each wire without the stretch at either end of each piece.
+    type Segment = ([f32; 3], [f32; 3]);
+    let mut pieces: Vec<(usize, Vec<Segment>)> = Vec::new();
+    for (a, b, t) in &scene.picks {
+        let routing_ui::RouteRef::Wire(wi) = t else { continue };
+        match pieces.last_mut() {
+            Some((w, segs)) if w == wi && segs.last().is_some_and(|s| s.1 == *a) => segs.push((*a, *b)),
+            _ => pieces.push((*wi, vec![(*a, *b)])),
+        }
+    }
+    let runs: Vec<(usize, usize, [f32; 3], [f32; 3])> = pieces
+        .iter()
+        .flat_map(|(wi, segs)| segs.iter().skip(1).take(segs.len().saturating_sub(2)).filter_map(move |(a, b)| axis(*a, *b).map(|k| (*wi, k, *a, *b))))
+        .collect();
+    let radius = |wi: usize| openecraft_core::harness::outer_diameter(&an.wiring[wi].cross_section) / 2.0;
+    let mut together = 0;
+    for (i, &(w1, k1, a1, b1)) in runs.iter().enumerate() {
+        for &(w2, k2, a2, b2) in &runs[i + 1..] {
+            if w1 == w2 || k1 != k2 {
+                continue;
+            }
+            let overlap = a1[k1].max(b1[k1]).min(a2[k1].max(b2[k1])) - a1[k1].min(b1[k1]).max(a2[k1].min(b2[k1]));
+            let apart = (0..3).filter(|&k| k != k1).map(|k| (a1[k] - a2[k]).powi(2)).sum::<f32>().sqrt();
+            if overlap > 10.0 && apart < radius(w1) + radius(w2) + 2.0 {
+                together += 1;
+                assert!(apart >= radius(w1) + radius(w2) - 0.01, "{} and {} inside each other: {a1:?} {b1:?} / {a2:?} {b2:?}", an.wiring[w1].number, an.wiring[w2].number);
+            }
+        }
+    }
+    assert!(together > 10, "{together} runs side by side");
+}
+
+#[test]
+fn wires_and_cables_laid_side_by_side_keep_in_front_of_the_plate() {
+    // In the cabinets of the demo and of the building (their view: the plate in front of
+    // z 0) every wire and cable drawn inside stays in front of the mounting plate with
+    // its whole thickness.
+    let demo = openecraft_core::sample::demo_project();
+    let building = openecraft_core::sample::example("building_services").unwrap();
+    for (prj, name) in [(&demo, "+CAB1"), (&building, "+CC1")] {
+        let an = Analysis::build(prj);
+        let ei = prj.layout.enclosures.iter().position(|e| e.name.ends_with(name)).unwrap();
+        let e = &prj.layout.enclosures[ei];
+        let mut ui = PanelUi { enclosure: ei, show_wires: true, ..Default::default() };
+        let shown = ui.shown_3d(prj, ei);
+        let scene = ui.scene_3d(prj, &an, ei, &shown);
+        let inside = |q: &[f32; 3]| q[0] > 0.0 && q[0] < e.width && q[1] > 0.0 && q[1] < e.height && q[2] < e.depth;
+        let mut checked = 0;
+        for (a, b, t) in &scene.picks {
+            let radius = match t {
+                routing_ui::RouteRef::Wire(wi) if an.wiring[*wi].door == (None, None) => openecraft_core::harness::outer_diameter(&an.wiring[*wi].cross_section) / 2.0,
+                routing_ui::RouteRef::Item(key) => an.routing.item(key).map_or(0.0, |i| i.diameter / 2.0),
+                _ => continue,
+            };
+            for q in [a, b].into_iter().filter(|q| inside(q)) {
+                assert!(q[2] >= PLATE_Z + radius - 0.01, "{name}: {q:?} behind the plate (a cable: {})", matches!(t, routing_ui::RouteRef::Item(_)));
+                checked += 1;
+            }
+        }
+        assert!(checked > 100, "{name}: {checked}");
+    }
+}
+
+#[test]
+fn wires_pass_in_front_of_the_busbars() {
+    // In the main distribution of the building the wires from the circuit breakers to
+    // the duct above them cross the busbar: in front of it, not through it.
+    let prj = openecraft_core::sample::example("building_services").unwrap();
+    let an = Analysis::build(&prj);
+    let ei = prj.layout.enclosures.iter().position(|e| e.items.iter().any(|i| i.kind == ItemKind::Busbar)).expect("busbars");
+    let e = &prj.layout.enclosures[ei];
+    let mut ui = PanelUi { enclosure: ei, show_wires: true, ..Default::default() };
+    let shown = ui.shown_3d(&prj, ei);
+    let pose = shown.iter().find(|s| s.0 == ei).unwrap().1;
+    let scene = ui.scene_3d(&prj, &an, ei, &shown);
+    let busbars: Vec<([f32; 3], [f32; 3])> = e
+        .items
+        .iter()
+        .filter(|i| i.kind == ItemKind::Busbar)
+        .map(|i| {
+            let (a, b) = panel::item_box(e, i);
+            let (lo, hi) = (pose.apply([a[0], e.height - b[1], a[2]]), pose.apply([b[0], e.height - a[1], b[2]]));
+            ([0, 1, 2].map(|k| lo[k].min(hi[k]) + 0.5), [0, 1, 2].map(|k| lo[k].max(hi[k]) - 0.5))
+        })
+        .collect();
+    let mut crossing = 0;
+    for (a, b, t) in &scene.picks {
+        if !matches!(t, routing_ui::RouteRef::Wire(_)) {
+            continue;
+        }
+        for bx in &busbars {
+            if openecraft_core::parts::vec3::segment_in_box(*a, *b, *bx).is_some() {
+                crossing += 1;
+            }
+        }
+    }
+    assert_eq!(crossing, 0, "wire segments through a busbar");
+}
+
+#[test]
 fn face_summaries_count_openings_apart() {
     let item = |kind: ItemKind, opening: Opening| PanelItem { kind, opening, ..Default::default() };
     let rail = item(ItemKind::Rail, Opening::Cutout);
@@ -472,4 +675,36 @@ fn clicking_in_the_3d_view_picks_from_the_scene_with_the_graphics_card_too() {
         }
         assert!(ui.selection.contains(&id), "gpu {gpu_3d}");
     }
+}
+
+#[test]
+fn a_selected_cable_shows_its_properties() {
+    // As a selected wire: the panel shows the cable with its route and the devices at
+    // its ends, not the properties of the enclosure.
+    let mut prj = openecraft_core::sample::demo_project();
+    let an = Analysis::checked(&prj);
+    let cable = an.routing.items.iter().find(|i| i.kind == routing3d::RouteKind::Cable && i.routed()).expect("a routed cable");
+    let device = cable.ends.iter().filter_map(|e| prj.layout.enclosures.get(e.enclosure?)?.item(e.item?)).find(|i| !i.tag.is_empty()).expect("a device at an end").tag.clone();
+    // Its cores with the connection points they join.
+    let core = an.connections.iter().find(|c| c.cable == cable.key).expect("a core of the cable");
+    let points = [core.a, core.b].map(|pin| openecraft_core::netlist::pin_designation(&prj, pin));
+    let mut ui = PanelUi { selected_route: Some(cable.key.clone()), ..Default::default() };
+    let ctx = egui::Context::default();
+    let mut out = ctx.run_ui(egui::RawInput::default(), |c| {
+        egui::CentralPanel::default().show(c, |u| ui.properties(u, &mut prj, &an, &PartsDb::default()));
+    });
+    fn texts(s: &egui::Shape, out: &mut Vec<String>) {
+        match s {
+            egui::Shape::Text(t) => out.push(t.galley.job.text.clone()),
+            egui::Shape::Vec(v) => v.iter().for_each(|s| texts(s, out)),
+            _ => {}
+        }
+    }
+    out.textures_delta.clear();
+    let mut shown = Vec::new();
+    out.shapes.iter().for_each(|c| texts(&c.shape, &mut shown));
+    for want in [cable.label.as_str(), tr("Free air"), tr("Connected devices"), device.as_str(), tr("Cores"), points[0].as_str(), points[1].as_str()] {
+        assert!(shown.iter().any(|t| t.contains(want)), "{want} in {shown:?}");
+    }
+    assert!(!shown.iter().any(|t| t == tr("Enclosure")), "{shown:?}");
 }

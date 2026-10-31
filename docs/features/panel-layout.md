@@ -22,7 +22,9 @@ line-ups, rooms of the building with their floor-standing equipment and pipe run
   wires such as green-yellow with a stripe) and, like cables and tubes, as thick as
   their outer diameter.
 - Copper **busbar systems** (bars drawn, metres and holders in the BOM) and rectangular
-  or round **cutouts** in the mounting plate.
+  or round **cutouts** in the mounting plate. A device placed over a busbar system is
+  mounted onto its bars; devices on the same busbar system are connected by the bars,
+  not by wires.
 - Mounting layout pages (scaled 2D model view with dimensions) for printing / SVG;
   rails and ducts appear in the BOM by cut length, enclosures per piece.
 - Jump between a device in the schematic and its place in the panel layout.

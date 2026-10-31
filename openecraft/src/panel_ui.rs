@@ -436,6 +436,8 @@ pub struct PanelUi {
     pub hide_front_walls: bool,
     /// The 3D view leaves out the ceilings of the rooms.
     pub hide_ceiling: bool,
+    /// The 3D view leaves out the covers of the cable ducts.
+    pub open_ducts: bool,
     /// Opacity of the walls seen from the outside in the 3D view, 0 … 1.
     pub wall_opacity: f32,
     /// The 3D view is drawn by the graphics card where it can (set by the application).
@@ -443,6 +445,9 @@ pub struct PanelUi {
     gpu: gpu3d::Gpu,
     /// What the 3D view shows, kept while it does not change.
     scene: Option<Arc<scene3d::Scene3d>>,
+    /// The wires, cables and tubes of the 3D view pushed apart, kept while they do not
+    /// change (by a hash of what they were laid out from).
+    apart: Option<(u64, Arc<Vec<Vec<openecraft_core::parts::vec3::V3>>>)>,
     offset: Vec2,
     zoom: f32,
     fit_pending: bool,
@@ -517,10 +522,12 @@ impl Default for PanelUi {
             show_site: false,
             hide_front_walls: false,
             hide_ceiling: false,
+            open_ducts: false,
             wall_opacity: WALL_OPACITY,
             gpu_3d: false,
             gpu: gpu3d::Gpu::default(),
             scene: None,
+            apart: None,
             offset: vec2(20.0, 20.0),
             zoom: 0.5,
             fit_pending: true,
@@ -618,17 +625,27 @@ impl PanelUi {
     fn select_item(&mut self, id: u64) {
         self.selection = [id].into_iter().collect();
         self.selected_wire = None;
+        self.selected_route = None;
     }
 
     /// Selects an item with the other members of its assembly.
     fn select_assembly(&mut self, e: &Enclosure, id: u64) {
         self.selection = with_group(e, id).into_iter().collect();
         self.selected_wire = None;
+        self.selected_route = None;
     }
 
     fn select_wire(&mut self, key: (String, String)) {
         self.selected_wire = Some(key);
         self.selection.clear();
+        self.selected_route = None;
+    }
+
+    /// Clears the selection: items, the wire and the cable or tube.
+    fn deselect(&mut self) {
+        self.selection.clear();
+        self.selected_wire = None;
+        self.selected_route = None;
     }
 
     /// Index of the selected wire in the current analysis.
@@ -729,6 +746,15 @@ impl PanelUi {
 
     pub fn reset_camera(&mut self) {
         self.cam = None;
+    }
+
+    /// Shows another enclosure (a cabinet clicked in its room), fitted into the view.
+    fn switch_enclosure(&mut self, ei: usize) {
+        if self.enclosure != ei {
+            self.enclosure = ei;
+            self.fit_pending = true;
+            self.cam = None;
+        }
     }
 
     /// Selects a wire and turns the 3D camera towards it (wiring assistant).
@@ -954,6 +980,10 @@ impl PanelUi {
         let Some(ei) = self.enclosure_index(prj) else { return };
         if let Some(wi) = self.wire_index(an) {
             self.wire_properties(ui, prj, an, wi);
+            return;
+        }
+        if self.selected_route.as_ref().is_some_and(|k| an.routing.item(k).is_some()) {
+            self.route_properties(ui, prj, an);
             return;
         }
         let sel: Vec<u64> = self.selection.iter().copied().collect();
@@ -1904,7 +1934,7 @@ impl PanelUi {
             }
         }
         if let Some((ei, id)) = select {
-            self.enclosure = ei;
+            self.switch_enclosure(ei);
             self.select_item(id);
         }
     }
@@ -2483,8 +2513,7 @@ impl PanelUi {
                 } else if self.tool != Tool::Select {
                     self.set_tool(Tool::Select);
                 } else {
-                    self.selection.clear();
-                    self.selected_wire = None;
+                    self.deselect();
                 }
             }
             if !self.tool_allowed(&self.tool) {
@@ -2925,6 +2954,13 @@ impl PanelUi {
                         self.pick_wire(an, &candidates);
                         return;
                     }
+                    // Cables and tubes under the wires; clicking again steps through them.
+                    let cables = if face == Face::Plate { self.cables_at(prj, an, ei, q, tol) } else { Vec::new() };
+                    let current = self.selected_route.as_ref().and_then(|k| an.routing.items.iter().position(|i| &i.key == k));
+                    if let Some(i) = panel::next_candidate(&cables, current) {
+                        self.select_route(an, &an.routing.items[i].key);
+                        return;
+                    }
                 }
                 self.selected_wire = None;
                 let alt = ui.input(|i| i.modifiers.alt);
@@ -2937,7 +2973,7 @@ impl PanelUi {
                     // Alt: the single item of an assembly.
                     Some(id) if alt => self.select_item(id),
                     Some(id) => self.select_assembly(e, id),
-                    None if !shift => self.selection.clear(),
+                    None if !shift => self.deselect(),
                     None => {}
                 }
             }

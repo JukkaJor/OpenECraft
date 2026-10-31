@@ -157,3 +157,51 @@ fn a_wire_leaving_a_duct_stays_over_it_seen_from_below() {
     let between = (at(t0), at(t1));
     assert_eq!(wire_place(hiders(&between), &rank), Some((0, true)));
 }
+
+#[test]
+fn corners_are_rounded_with_the_bend_radius() {
+    let path = [[0.0, 0.0, 0.0], [1000.0, 0.0, 0.0], [1000.0, 1000.0, 0.0]];
+    let round = fillet(&path, 100.0, 4);
+    assert!(!round.contains(&path[1]), "the corner is cut off");
+    assert_eq!((round[0], round[round.len() - 1]), (path[0], path[2]));
+    let arc = &round[1..round.len() - 1];
+    assert!(arc.len() >= 3);
+    assert!(arc.iter().all(|q| (dist(*q, [900.0, 100.0, 0.0]) - 100.0).abs() < 0.01), "{arc:?}");
+    assert!(dist(arc[0], [900.0, 0.0, 0.0]) < 0.01 && dist(arc[arc.len() - 1], [1000.0, 100.0, 0.0]) < 0.01);
+    // Between two corners close together each arc takes half of the segment.
+    let zigzag = [[0.0, 0.0, 0.0], [100.0, 0.0, 0.0], [100.0, 100.0, 0.0], [200.0, 100.0, 0.0]];
+    let round = fillet(&zigzag, 500.0, 4);
+    assert!(round.iter().all(|q| q[1] <= 100.0 && q[0] >= 0.0 && q[0] <= 200.0));
+    assert!(round.iter().any(|q| dist(*q, [100.0, 50.0, 0.0]) < 0.01), "the arcs meet half way: {round:?}");
+    // Straight lines stay as they are.
+    assert_eq!(fillet(&[[0.0; 3], [10.0, 0.0, 0.0], [20.0, 0.0, 0.0]], 50.0, 4).len(), 3);
+}
+
+#[test]
+fn tubes_are_closed_round_and_face_outwards() {
+    let enclosed = |tris: &[(Tri, usize)]| tris.iter().map(|([a, b, c], _)| dot(*a, cross(*b, *c)) / 6.0).sum::<f32>();
+    let straight = tube(&[[0.0, 0.0, 0.0], [0.0, 0.0, 1000.0]], 10.0, 12);
+    assert_eq!(straight.len(), 12 * 2 + 2 * 12);
+    // A twelve-sided prism: 3 r² per mm.
+    assert!((enclosed(&straight) - 3.0 * 100.0 * 1000.0).abs() < 1.0, "{}", enclosed(&straight));
+    // Bent round a corner every ring stays at the radius from the path.
+    let path = fillet(&[[0.0, 0.0, 0.0], [500.0, 0.0, 0.0], [500.0, 0.0, 500.0], [500.0, 400.0, 500.0]], 100.0, 4);
+    let bent = tube(&path, 10.0, 10);
+    assert!(enclosed(&bent) > 0.0);
+    for ([a, b, c], _) in &bent {
+        for q in [a, b, c] {
+            let near = path.iter().map(|p| dist(*p, *q)).fold(f32::INFINITY, f32::min);
+            assert!(near <= 10.5, "{q:?} {near}");
+        }
+    }
+    assert!(bent.iter().any(|(_, k)| *k == 9));
+}
+
+#[test]
+fn each_corner_gets_its_own_radius() {
+    let path = [[0.0, 0.0, 0.0], [500.0, 0.0, 0.0], [500.0, 500.0, 0.0], [0.0, 500.0, 0.0]];
+    let round = fillet_each(&path, &[0.0, 50.0, 0.0, 0.0], 4);
+    assert!(!round.contains(&path[1]) && round.contains(&path[2]), "{round:?}");
+    assert!(round.iter().any(|q| dist(*q, [450.0, 0.0, 0.0]) < 0.01));
+    assert_eq!(fillet_each(&path, &[], 4), path.to_vec());
+}

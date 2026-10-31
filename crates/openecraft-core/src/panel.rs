@@ -19,6 +19,7 @@ use crate::parts::{Exit, FnKind};
 use std::collections::{BTreeSet, HashMap, HashSet};
 
 mod checks;
+mod drives;
 mod fastening;
 mod fill;
 mod lineup;
@@ -31,8 +32,9 @@ mod rooms;
 mod system;
 pub mod thermal;
 pub use checks::{box_gap, class_collisions, class_title, clearances, data_number, device_class, device_kinds, floor_height, heights, item_class, item_name, validate, CheckKind, ClassRule, Clearances, Finding, PanelRules, CLASSES};
+pub use drives::{drives, Drive, DriveKind, DRIVE, DRIVEN_BY};
 pub use fastening::{fastening_material, Fastening};
-pub use fill::{duct_fill, wire_area, DuctFill, DuctLoads, OVERFILL_COST};
+pub use fill::{duct_fill, duct_inside, duct_lanes, wire_area, DuctFill, DuctLoads, LANE_GAP, OVERFILL_COST};
 pub use lineup::{add_facing_cutout, add_passage, bay_right_of, lineup_of, lineups, neighbours, next_passage_place, passages, positions, route_across, set_site, site_poses, unbay, Leg, Passage, SitePlace, SitePose, LINEUP_GAP, PASSAGE_DIAMETER};
 pub use macros::{all_macros, builtin_macros, group_members, insert_macro, macro_from_items, ItemGroup, PanelMacro};
 pub use placement::{align, apply_anchors, apply_one_anchor, arrange_on_rail, capture_anchors, distribute, pattern_copy, Align, AlignTo, Anchor};
@@ -688,31 +690,41 @@ pub fn place_mesh(mesh: &crate::parts::Mesh3d, it: &PanelItem) -> Vec<[[f32; 3];
 /// A part's 3D model fitted into the stretch `at .. at + len` along a device (along
 /// x, or along y for rotated devices) and the full height and depth.
 pub fn place_mesh_in(mesh: &crate::parts::Mesh3d, it: &PanelItem, at: f32, len: f32) -> Vec<[[f32; 3]; 3]> {
-    let (min, _) = mesh.bounds();
     let [mw, mh, md] = mesh.size();
     if mw <= 0.0 || mh <= 0.0 || md <= 0.0 {
         return Vec::new();
     }
+    let (min, _) = mesh.bounds();
+    let tf = |v: [f32; 3]| place_vertex(it, min, [mw, mh, md], at, len, v);
+    mesh.triangles.iter().map(|t| [tf(mesh.vertices[t[0] as usize]), tf(mesh.vertices[t[1] as usize]), tf(mesh.vertices[t[2] as usize])]).collect()
+}
+
+/// A point of a part's 3D model placed like [`place_mesh`] places the model.
+pub fn place_point(mesh: &crate::parts::Mesh3d, it: &PanelItem, v: V3) -> V3 {
+    let [mw, mh, md] = mesh.size();
+    let len = if it.face == Face::Bottom && item_rotated(it, md) { it.h } else { it.w };
+    place_vertex(it, mesh.bounds().0, [mw, mh, md].map(|s| s.max(1e-3)), 0.0, len, v)
+}
+
+/// A vertex of a model with the bounds `min` and the size `[mw, mh, md]` placed into
+/// the stretch `at .. at + len` along the item (see [`place_mesh_in`]).
+fn place_vertex(it: &PanelItem, min: V3, [mw, mh, md]: [f32; 3], at: f32, len: f32, v: V3) -> V3 {
     let rotated = item_rotated(it, mh);
-    let sz = it.d / md;
     // On the floor the model stands up out of it with its front (z) towards the
     // larger y of the floor plan; turned, its depth lies along x.
     let floor = it.face == Face::Bottom;
     let turned = floor && item_rotated(it, md);
-    let tf = |v: [f32; 3]| {
-        let (x, y_up, z) = (v[0] - min[0], v[1] - min[1], v[2] - min[2]);
-        if turned {
-            [it.x + z * (it.w / md), it.y + at + (mw - x) * (len / mw), it.z + y_up * (it.d / mh)]
-        } else if floor {
-            [it.x + at + x * (len / mw), it.y + z * (it.h / md), it.z + y_up * (it.d / mh)]
-        } else if rotated {
-            // Quarter turn: model up becomes plate right, model right becomes plate down.
-            [it.x + y_up * (it.w / mh), it.y + at + x * (len / mw), it.z + z * sz]
-        } else {
-            [it.x + at + x * (len / mw), it.y + (mh - y_up) * (it.h / mh), it.z + z * sz]
-        }
-    };
-    mesh.triangles.iter().map(|t| [tf(mesh.vertices[t[0] as usize]), tf(mesh.vertices[t[1] as usize]), tf(mesh.vertices[t[2] as usize])]).collect()
+    let (x, y_up, z) = (v[0] - min[0], v[1] - min[1], v[2] - min[2]);
+    if turned {
+        [it.x + z * (it.w / md), it.y + at + (mw - x) * (len / mw), it.z + y_up * (it.d / mh)]
+    } else if floor {
+        [it.x + at + x * (len / mw), it.y + z * (it.h / md), it.z + y_up * (it.d / mh)]
+    } else if rotated {
+        // Quarter turn: model up becomes plate right, model right becomes plate down.
+        [it.x + y_up * (it.w / mh), it.y + at + x * (len / mw), it.z + z * (it.d / md)]
+    } else {
+        [it.x + at + x * (len / mw), it.y + (mh - y_up) * (it.h / mh), it.z + z * (it.d / md)]
+    }
 }
 
 /// A place along a device for one part: offset and length along the device (along
@@ -753,6 +765,45 @@ pub fn strip_cells(prj: &Project, it: &PanelItem) -> Vec<Cell> {
         .collect()
 }
 
+/// Colours of a slotted cable duct and its cover.
+const DUCT_COLORS: ([u8; 3], [u8; 3]) = ([150, 153, 150], [166, 169, 166]);
+
+/// The parts of a slotted cable duct (enclosure coordinates, colour, whether it is a
+/// finger): the base, the side walls slotted into fingers above a closed rim, and the
+/// `cover` on top.
+pub fn duct_boxes(e: &Enclosure, it: &PanelItem, cover: bool) -> Vec<((V3, V3), [u8; 3], bool)> {
+    let (wall, cover_color) = DUCT_COLORS;
+    let frame = face_frame(e, it.face);
+    let along_x = it.w >= it.h;
+    let (len, width) = if along_x { (it.w, it.h) } else { (it.h, it.w) };
+    let t = 2.0f32.min(width / 4.0).min(it.d / 4.0);
+    let (rim, top) = ((it.d * 0.25).max(t), it.d - 2.5f32.min(it.d / 4.0));
+    let mut out = Vec::new();
+    // A box from ranges along, across and above the face.
+    let mut add = |a: (f32, f32), c: (f32, f32), z: (f32, f32), color: [u8; 3], finger: bool| {
+        let (x, y) = if along_x { (a, c) } else { (c, a) };
+        let p = in_frame(&frame, [it.x + x.0, it.y + y.0, it.z + z.0]);
+        let q = in_frame(&frame, [it.x + x.1, it.y + y.1, it.z + z.1]);
+        out.push((([0, 1, 2].map(|k| p[k].min(q[k])), [0, 1, 2].map(|k| p[k].max(q[k]))), color, finger));
+    };
+    add((0.0, len), (0.0, width), (0.0, t), wall, false);
+    // Fingers about every 12.5 mm with the slots between them, one at each end.
+    let finger = 6.0f32.min(len);
+    let n = ((len - finger) / 12.5).floor().max(0.0) as usize + 1;
+    let step = if n > 1 { (len - finger) / (n - 1) as f32 } else { 0.0 };
+    for c in [(0.0, t), (width - t, width)] {
+        add((0.0, len), c, (t, rim), wall, false);
+        for i in 0..n {
+            let a = i as f32 * step;
+            add((a, a + finger), c, (rim, top), wall, true);
+        }
+    }
+    if cover {
+        add((0.0, len), (0.0, width), (top, it.d), cover_color, false);
+    }
+    out
+}
+
 /// The 3D model of a device in plate coordinates: the part's model, for terminal
 /// strips the model of every element in its cell (a box where a part has none).
 /// `None` for items without a model.
@@ -773,7 +824,15 @@ pub fn device_mesh_painted(prj: &Project, it: &PanelItem) -> Option<Vec<(Tri, Op
     let cells = strip_cells(prj, it);
     if cells.is_empty() {
         let mesh = part_by_number(prj, &it.part)?.model_3d.as_ref()?;
-        let tris = painted(mesh, place_mesh(mesh, it));
+        let mut tris = place_mesh(mesh, it);
+        // A motor turned end for end by its drive (its shaft towards the machine).
+        if let Some((k, c)) = drives::turned_motor(prj, it) {
+            tris = tris.into_iter().map(|t| t.map(|mut v| {
+                v[k] = 2.0 * c - v[k];
+                v
+            })).map(|t| [t[0], t[2], t[1]]).collect();
+        }
+        let tris = painted(mesh, tris);
         return (!tris.is_empty()).then_some(tris);
     }
     let rotated = part_by_number(prj, &it.part).and_then(|p| p.size()).is_some_and(|s| item_rotated(it, s[1]));
@@ -796,7 +855,8 @@ pub fn device_mesh_painted(prj: &Project, it: &PanelItem) -> Option<Vec<(Tri, Op
 
 /// Footprint of a device from its parts: the first part with mounting data gives
 /// width / height; further parts (e.g. auxiliary blocks) add their depth. Terminal
-/// strips are as long as their strip layout (terminals and spare terminals).
+/// strips are as long as their strip layout (terminals and spare terminals) and as deep
+/// as their deepest part.
 pub fn device_size(prj: &Project, tag: &str) -> Option<DeviceSize> {
     let Some(data) = prj.devices.get(tag) else { return group_size(prj, tag) };
     let parts: Vec<_> = data
@@ -806,14 +866,15 @@ pub fn device_size(prj: &Project, tag: &str) -> Option<DeviceSize> {
         .collect();
     let (main, [mw, mh, md]) = parts.iter().find_map(|(pd, _)| pd.size().map(|dims| (*pd, dims)))?;
     let mut w = mw;
-    if !main.functions.is_empty() && main.functions.iter().all(|f| f.kind == FnKind::Terminal) {
-        let strip: f32 = crate::strips::strip_layout(prj, tag).iter().map(|e| e.width).sum();
-        if strip > 0.0 {
-            w = strip;
+    let strip = is_strip_part(main);
+    if strip {
+        let length: f32 = crate::strips::strip_layout(prj, tag).iter().map(|e| e.width).sum();
+        if length > 0.0 {
+            w = length;
         }
     }
-    let mut d = md;
-    for (pd, count) in &parts {
+    let mut d = if strip { strip_depth(&parts) } else { md };
+    for (pd, count) in parts.iter().filter(|_| !strip) {
         if let (true, Some([aw, _, ad])) = (pd.number != main.number, pd.size()) {
             if aw <= mw + 1.0 {
                 d += ad * *count as f32;
@@ -821,6 +882,17 @@ pub fn device_size(prj: &Project, tag: &str) -> Option<DeviceSize> {
         }
     }
     Some(DeviceSize { tag: tag.into(), part: main.number.clone(), w, h: mh, d, from_part: true })
+}
+
+/// The main part of a terminal strip: all its functions are terminals.
+pub(crate) fn is_strip_part(main: &crate::parts::Part) -> bool {
+    !main.functions.is_empty() && main.functions.iter().all(|f| f.kind == FnKind::Terminal)
+}
+
+/// Depth of a terminal strip: its parts stand side by side on the rail, the deepest
+/// counts.
+pub(crate) fn strip_depth(parts: &[(&crate::parts::Part, u32)]) -> f32 {
+    parts.iter().filter_map(|(p, _)| p.size()).map(|s| s[2]).fold(0.0, f32::max)
 }
 
 /// Footprint of a fluid device group (valve terminal, service unit) placed as one
@@ -963,8 +1035,30 @@ pub fn snap_to_rail(e: &Enclosure, item: &mut PanelItem) {
             item.y = r.center().y - item.h / 2.0;
             item.z = r.z + r.d;
         }
-        None => item.z = 0.0,
+        // Over a busbar system: mounted onto its bars.
+        None => {
+            let on = busbars(e, item).next().map_or(0.0, |b| b.z + b.d);
+            item.z = on;
+        }
     }
+}
+
+/// The busbar systems of the item's face it lies over.
+fn busbars<'a>(e: &'a Enclosure, item: &'a PanelItem) -> impl Iterator<Item = &'a PanelItem> {
+    let r = item.rect();
+    e.items.iter().filter(move |b| {
+        let rb = b.rect();
+        b.kind == ItemKind::Busbar && b.face == item.face && b.id != item.id && r.min.x < rb.max.x && rb.min.x < r.max.x && r.min.y < rb.max.y && rb.min.y < r.max.y
+    })
+}
+
+/// The busbar system a device is mounted on (by id): one it lies over, the device in
+/// front of its bars. Devices on the same busbar system are connected by its bars.
+pub fn busbar_of(e: &Enclosure, item: &PanelItem) -> Option<u64> {
+    if item.kind != ItemKind::Device {
+        return None;
+    }
+    busbars(e, item).find(|b| item.z >= b.z + b.d - 0.5).map(|b| b.id)
 }
 
 // ---------------------------------------------------------------------- checks
@@ -1294,6 +1388,8 @@ pub struct RoutedWire {
     pub cross_section: String,
     /// Wire number of the connection.
     pub number: String,
+    /// Cable the wire is a core of; empty for a single wire.
+    pub cable: String,
     pub route: Route,
     /// Total length including the way down to the plate and the reserve.
     pub length: f32,
@@ -1308,6 +1404,9 @@ pub struct RoutedWire {
     /// to the hinge; between two door devices the whole wire is the first one. The
     /// second end is in the last enclosure of the wire.
     pub door_routes: (Option<Route>, Option<Route>),
+    /// Connection point of an end on the plate or a wall (enclosure coordinates; the
+    /// middle of the device front without one): the wire runs from there to the plate.
+    pub terminals: (Option<V3>, Option<V3>),
     /// Further stretches through cable passages into neighbouring enclosures of the
     /// line-up; empty if the wire stays in `enclosure`.
     pub legs: Vec<Leg>,
@@ -1439,7 +1538,8 @@ pub struct OpenWire {
 }
 
 /// Virtual wiring: routes the point-to-point connections of the schematic (see
-/// [`connections`]) between placed devices through the cable ducts.
+/// [`connections`]) between placed devices through the cable ducts. Devices mounted
+/// on the same busbar system are connected by its bars, not by a wire.
 pub fn virtual_wiring(prj: &Project, conns: &[Connection]) -> (Vec<RoutedWire>, Vec<OpenWire>) {
     let mut routed = Vec::new();
     let mut ends = Vec::new();
@@ -1458,6 +1558,9 @@ pub fn virtual_wiring(prj: &Project, conns: &[Connection]) -> (Vec<RoutedWire>, 
             open.push(OpenWire { from, to, net: c.net.clone(), reason: "device not placed" });
             continue;
         };
+        if ea == eb && busbar_of(&prj.layout.enclosures[ea], ia).is_some_and(|bar| busbar_of(&prj.layout.enclosures[eb], ib) == Some(bar)) {
+            continue; // connected by the bars of the busbar system both are mounted on
+        }
         let mut end = |ei: usize, it: &PanelItem, s, pin| {
             let e = &prj.layout.enclosures[ei];
             let placed = points.entry(it.id).or_insert_with(|| device_points(prj, it));
@@ -1469,10 +1572,13 @@ pub fn virtual_wiring(prj: &Project, conns: &[Connection]) -> (Vec<RoutedWire>, 
             };
             let (w, extra, door_route) = wiring_end(e, it, point);
             let door = (it.face == Face::Door).then(|| door_point(e, it, point));
-            (w, extra, kind, door, door_route)
+            let c = it.center();
+            let at = point.map(|pt| pt.pos).unwrap_or([c.x, c.y, it.z + it.d]);
+            let terminal = (it.face != Face::Door).then(|| face_point(e, it.face, at));
+            (w, extra, kind, door, door_route, terminal)
         };
-        let (pa, la, ka, da, ra) = end(ea, ia, sa, c.a.pin);
-        let (pb, lb, kb, db, rb) = end(eb, ib, sb, c.b.pin);
+        let (pa, la, ka, da, ra, ta) = end(ea, ia, sa, c.a.pin);
+        let (pb, lb, kb, db, rb, tb) = end(eb, ib, sb, c.b.pin);
         let e = &prj.layout.enclosures[ea];
         let (r, length, door_routes, legs) = match (da, db) {
             // Both ends on the door: along the door, not into the cabinet.
@@ -1509,12 +1615,14 @@ pub fn virtual_wiring(prj: &Project, conns: &[Connection]) -> (Vec<RoutedWire>, 
             color: c.color.clone(),
             cross_section: c.cross_section.clone(),
             number: c.number.clone(),
+            cable: c.cable.clone(),
             route: r,
             length,
             items: (ia.id, ib.id),
             ends: (ka, kb),
             door: (da, db),
             door_routes,
+            terminals: (ta, tb),
             legs,
         });
     }

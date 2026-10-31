@@ -11,6 +11,7 @@ fn item(key: &str, class: Class, diameter: f32, points: Vec<V3>) -> RoutedItem {
         ends: [End::default(), End::default()],
         enclosures: vec![0],
         points,
+        radii: Vec::new(),
         legs: Vec::new(),
         length: 0.0,
         cut: 0.0,
@@ -40,7 +41,7 @@ fn terminations_and_problems() {
     let e = crate::panel::new_enclosure(&mut prj, "", "+A");
     prj.layout.enclosures.push(e);
     prj.cables.push(Cable { tag: "-W5".into(), bus: Some(crate::devdesc::BusKind::Profinet), ..Default::default() });
-    let device = |tag: &str, x: f32| End { tag: tag.into(), enclosure: Some(0), point: Some([x, 400.0, 100.0]), item: Some(1) };
+    let device = |tag: &str, x: f32| End { tag: tag.into(), enclosure: Some(0), point: Some([x, 400.0, 100.0]), item: Some(1), ..Default::default() };
     let mut it = item("-W5", Class::Signal, 7.0, vec![[100.0, 400.0, 100.0], [500.0, 400.0, 100.0]]);
     it.shielded = true;
     // The device ends are no placed devices of the project: give them ids that are not

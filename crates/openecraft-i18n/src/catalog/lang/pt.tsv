@@ -6364,3 +6364,9 @@ Exporting {}	Exportando {}
 Reading {}	Lendo {}
 Reading the parts file	Lendo o arquivo de peças
 {} stopped with an error: {}	{} parou com um erro: {}
+Driven by	Acionado por
+Drive type	Tipo de acionamento
+Select wire	Selecionar fio
+Open cable ducts	Abrir canaletas
+Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	Na vista 3D, omitir as tampas de todas as canaletas: os fios nelas ficam visíveis
+{}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: canaleta em {} mm pequena demais: seus {} fios não podem ser passados lado a lado

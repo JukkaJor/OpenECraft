@@ -323,30 +323,31 @@ Breaking capacity: 100 kA".into();
     p.voltage = "230 V AC".into();
     p.power = "100 W".into();
 
-    let p = c.add("GEN.TB-2.5", "Feed-through terminal 2.5 mm², grey", "Terminals", "Feed-through terminal", "X", 0.95, (5.2, 48.0, 36.0, 0.006), &[(Terminal, "")]);
+    let p = c.add("GEN.TB-2.5", "Feed-through terminal 2.5 mm², grey", "Terminals", "Feed-through terminal", "X", 0.95, (5.2, 48.6, 29.3, 0.006), &[(Terminal, "")]);
     p.tech_data = "End bracket: GEN.EB-35\nEnd plate: GEN.TB-END\nJumper: GEN.JMP-2.5-2, GEN.JMP-2.5-3, GEN.JMP-2.5-10".into();
     p.accessories = vec!["GEN.TB-END".into(), "GEN.EB-35".into(), "GEN.JMP-2.5-2".into(), "GEN.JMP-2.5-3".into(), "GEN.JMP-2.5-10".into()];
-    let p = c.add("GEN.TB-PE-2.5", "Protective earth terminal 2.5 mm², green-yellow", "Terminals", "PE terminal", "X", 1.8, (5.2, 48.0, 36.0, 0.01), &[(Terminal, "")]);
+    let p = c.add("GEN.TB-PE-2.5", "Protective earth terminal 2.5 mm², green-yellow", "Terminals", "PE terminal", "X", 1.8, (5.2, 48.5, 29.3, 0.01), &[(Terminal, "")]);
     p.tech_data = "Terminal type: PE\nEnd bracket: GEN.EB-35\nEnd plate: GEN.TB-END".into();
     p.accessories = vec!["GEN.TB-END".into(), "GEN.EB-35".into()];
-    let p = c.add("GEN.TB-N-2.5", "Neutral terminal 2.5 mm², blue", "Terminals", "N terminal", "X", 1.0, (5.2, 48.0, 36.0, 0.006), &[(Terminal, "")]);
+    let p = c.add("GEN.TB-N-2.5", "Neutral terminal 2.5 mm², blue", "Terminals", "N terminal", "X", 1.0, (5.2, 48.6, 29.3, 0.006), &[(Terminal, "")]);
     p.tech_data = "Terminal type: N\nEnd bracket: GEN.EB-35\nEnd plate: GEN.TB-END".into();
     p.accessories = vec!["GEN.TB-END".into(), "GEN.EB-35".into()];
     let p = c.add("GEN.TB-DISC-4", "Disconnect terminal 4 mm², knife disconnect, grey", "Terminals", "Disconnect terminal", "X", 2.6, (6.2, 60.0, 42.0, 0.01), &[(Terminal, "")]);
     p.tech_data = "Terminal type: Disconnect\nEnd bracket: GEN.EB-35".into();
     p.accessories = vec!["GEN.EB-35".into()];
-    let p = c.add("GEN.TB-FUSE-4", "Fuse terminal 4 mm² for fuses 5 x 20 mm, with LED 24 V", "Terminals", "Fuse terminal", "X", 3.9, (8.2, 70.0, 50.0, 0.02), &[(Terminal, "")]);
+    let p = c.add("GEN.TB-FUSE-4", "Fuse terminal 4 mm² for fuses 5 x 20 mm, with LED 24 V", "Terminals", "Fuse terminal", "X", 3.9, (6.2, 55.9, 57.4, 0.02), &[(Terminal, "")]);
     p.tech_data = "Terminal type: Fuse\nEnd bracket: GEN.EB-35".into();
     p.accessories = vec!["GEN.EB-35".into()];
-    // Terminals for the cables between enclosures and from the field.
+    // Terminals for the cables between enclosures and from the field (sizes after Phoenix
+    // Contact PT 16 N, PTPOWER 35 and PT 6).
     for (number, desc, subgroup, price, dims) in [
-        ("GEN.TB-16", "Feed-through terminal 16 mm², grey", "Feed-through terminal", 3.4, (12.2, 70.0, 50.0, 0.03)),
-        ("GEN.TB-N-16", "Neutral terminal 16 mm², blue", "N terminal", 3.6, (12.2, 70.0, 50.0, 0.03)),
-        ("GEN.TB-PE-16", "Protective earth terminal 16 mm², green-yellow", "PE terminal", 6.8, (12.2, 70.0, 50.0, 0.05)),
-        ("GEN.TB-35", "Feed-through terminal 35 mm², grey", "Feed-through terminal", 7.9, (16.0, 85.0, 60.0, 0.06)),
-        ("GEN.TB-N-35", "Neutral terminal 35 mm², blue", "N terminal", 8.2, (16.0, 85.0, 60.0, 0.06)),
-        ("GEN.TB-PE-35", "Protective earth terminal 35 mm², green-yellow", "PE terminal", 12.5, (16.0, 85.0, 60.0, 0.09)),
-        ("GEN.TB-PV-6", "PV feed-through terminal 6 mm², 1000 V DC, grey", "Feed-through terminal", 2.9, (8.2, 60.0, 45.0, 0.02)),
+        ("GEN.TB-16", "Feed-through terminal 16 mm², grey", "Feed-through terminal", 3.4, (12.2, 75.4, 45.1, 0.03)),
+        ("GEN.TB-N-16", "Neutral terminal 16 mm², blue", "N terminal", 3.6, (12.2, 75.4, 45.1, 0.03)),
+        ("GEN.TB-PE-16", "Protective earth terminal 16 mm², green-yellow", "PE terminal", 6.8, (12.2, 75.4, 45.1, 0.05)),
+        ("GEN.TB-35", "Feed-through terminal 35 mm², grey", "Feed-through terminal", 7.9, (16.0, 91.6, 62.3, 0.06)),
+        ("GEN.TB-N-35", "Neutral terminal 35 mm², blue", "N terminal", 8.2, (16.0, 91.6, 62.3, 0.06)),
+        ("GEN.TB-PE-35", "Protective earth terminal 35 mm², green-yellow", "PE terminal", 12.5, (16.0, 91.6, 62.3, 0.09)),
+        ("GEN.TB-PV-6", "PV feed-through terminal 6 mm², 1000 V DC, grey", "Feed-through terminal", 2.9, (8.2, 57.7, 36.0, 0.02)),
         ("GEN.BB-FEED-185", "Busbar feed-in terminal 1-pole, up to 185 mm², for 60 mm busbar systems", "Feed-through terminal", 38.0, (40.0, 90.0, 70.0, 0.4)),
         ("GEN.TB-240", "Feed-through terminal 240 mm², for cable distribution cabinets", "Feed-through terminal", 24.0, (0.0, 0.0, 0.0, 0.5)),
         ("GEN.TB-PEN-150", "PEN terminal 150 mm², green-yellow with blue marking", "PE terminal", 19.0, (0.0, 0.0, 0.0, 0.4)),
@@ -354,10 +355,20 @@ Breaking capacity: 100 kA".into();
         let p = c.add(number, desc, "Terminals", subgroup, "X", price, dims, &[(Terminal, "")]);
         if number == "GEN.BB-FEED-185" {
             p.mounting = "Busbar 60 mm".into();
+        } else if dims.0 > 0.0 {
+            // On the rail between end brackets, 6 and 16 mm² with an end plate.
+            let plate = if number.ends_with("-16") { Some("GEN.TB-END-16") } else if number == "GEN.TB-PV-6" { Some("GEN.TB-END-6") } else { None };
+            p.tech_data = match plate {
+                Some(plate) => format!("End bracket: GEN.EB-35\nEnd plate: {plate}"),
+                None => "End bracket: GEN.EB-35".into(),
+            };
+            p.accessories = plate.into_iter().chain(["GEN.EB-35"]).map(String::from).collect();
         }
     }
-    c.add("GEN.TB-END", "End plate for terminal 2.5 mm²", "Terminals", "Accessories", "X", 0.3, (1.5, 48.0, 36.0, 0.002), &[]);
-    c.add("GEN.EB-35", "End bracket for TS 35 mounting rail", "Terminals", "End bracket", "X", 1.1, (9.0, 40.0, 36.0, 0.01), &[]);
+    c.add("GEN.TB-END", "End plate for terminal 2.5 mm²", "Terminals", "Accessories", "X", 0.3, (2.2, 48.6, 29.1, 0.002), &[]);
+    c.add("GEN.TB-END-6", "End plate for terminal 6 mm²", "Terminals", "Accessories", "X", 0.4, (2.2, 57.7, 36.0, 0.003), &[]);
+    c.add("GEN.TB-END-16", "End plate for terminal 16 mm²", "Terminals", "Accessories", "X", 0.6, (2.2, 75.4, 45.1, 0.005), &[]);
+    c.add("GEN.EB-35", "End bracket for TS 35 mounting rail", "Terminals", "End bracket", "X", 1.1, (9.5, 54.6, 26.0, 0.01), &[]);
     for poles in [2, 3, 10] {
         let number = format!("GEN.JMP-2.5-{poles}");
         let desc = format!("Plug-in jumper {poles} poles for terminal 2.5 mm²");
@@ -406,7 +417,7 @@ Breaking capacity: 100 kA".into();
     c.add("GEN.THROTTLE-G18", "One-way flow control valve G1/8", fl, "Service unit", "RN", 12.0, (0.0, 0.0, 0.0, 0.05), &[(FluidComponent, "1 2")]);
     // Standing on the floor of a room (Layout space › Insert › Floor-standing part).
     for (number, desc, subgroup, ident, price, dims, function) in [
-        ("GEN.PUMP-CENT-DN25", "Centrifugal pump DN25, 2.2 kW, on base frame", "Pump", "GP", 980.0, (320.0, 420.0, 640.0, 38.0), (Pump, "S P")),
+        ("GEN.PUMP-CENT-DN25", "Centrifugal pump DN25, bare shaft, on base frame, without motor", "Pump", "GP", 980.0, (320.0, 420.0, 640.0, 31.0), (Pump, "S P")),
         ("GEN.TANK-200L", "Vessel 200 l, stainless steel, on feet", "Vessel", "CM", 1450.0, (650.0, 1200.0, 650.0, 62.0), (FluidComponent, "N1 N2")),
     ] {
         let p = c.add(number, desc, fl, subgroup, ident, price, dims, &[function]);
@@ -414,7 +425,7 @@ Breaking capacity: 100 kA".into();
         p.mounting_data.floor_mount = true;
     }
     for (number, desc, subgroup, ident, price, dims, function) in [
-        ("GEN.PUMP-BOOST-DN32", "Multistage booster pump DN32, 6 m³/h at 50 m, vertical, on base plate", "Pump", "GP", 1240.0, (260.0, 720.0, 360.0, 34.0), (Pump, "S P")),
+        ("GEN.PUMP-BOOST-DN32", "Multistage booster pump DN32, 6 m³/h at 50 m, horizontal, bare shaft, on base frame, without motor", "Pump", "GP", 1240.0, (300.0, 330.0, 620.0, 29.0), (Pump, "S P")),
         ("GEN.TANK-1000L", "Storage tank 1000 l, PE, for drinking water, with overflow and inspection opening", "Vessel", "CM", 890.0, (1100.0, 1650.0, 1100.0, 55.0), (FluidComponent, "N1 N2")),
         ("GEN.TANK-PRESS-100L", "Diaphragm pressure vessel 100 l, 10 bar, flow-through, for drinking water", "Vessel", "CM", 420.0, (450.0, 760.0, 450.0, 21.0), (FluidComponent, "N1 N2")),
         ("GEN.TANK-BUFFER-500L", "Buffer storage tank 500 l for hot water, 4 connections, insulated", "Vessel", "CM", 1180.0, (800.0, 1750.0, 800.0, 95.0), (FluidComponent, "N1 N2 N3 N4")),
@@ -481,6 +492,7 @@ Breaking capacity: 100 kA".into();
         ("GEN.DUCT-60X80", "Cable duct 60 x 80 mm, 2 m", 15.9, (2000.0, 60.0, 80.0, 1.3)),
         ("GEN.DUCT-80X80", "Cable duct 80 x 80 mm, 2 m", 18.7, (2000.0, 80.0, 80.0, 1.5)),
         ("GEN.DUCT-100X80", "Cable duct 100 x 80 mm, 2 m", 22.4, (2000.0, 100.0, 80.0, 1.8)),
+        ("GEN.DUCT-100X120", "Cable duct 100 x 120 mm, 2 m", 31.5, (2000.0, 100.0, 120.0, 2.4)),
     ] {
         let p = c.add(number, desc, "Mounting", "Cable duct", "", price, dims, &[]);
         p.pack_quantity = 10;
@@ -700,8 +712,12 @@ fn accessories(c: &mut C) {
 enum Shape {
     /// DIN rail device: base, raised front, screw terminals top and bottom.
     Din { toggle: bool, display: bool },
-    /// Feed-through terminal: thin block with two screws.
+    /// Feed-through terminal: a slice with the stepped profile of a terminal block.
     Terminal,
+    /// End plate of a terminal block: the profile without openings.
+    EndPlate,
+    /// End bracket: low clamp on the rail with its screw.
+    EndBracket,
     /// PLC I/O module: tall block with an LED / connector column.
     Plc,
     /// Contactor or relay: DIN device with a dark front cap and the switch position
@@ -716,7 +732,9 @@ fn shape_of(p: &Part) -> Option<Shape> {
         return None;
     }
     Some(match p.subgroup.as_str() {
-        "Feed-through terminal" | "PE terminal" | "N terminal" | "Disconnect terminal" | "Fuse terminal" | "Accessories" | "End bracket" => Shape::Terminal,
+        "Feed-through terminal" | "PE terminal" | "N terminal" | "Disconnect terminal" | "Fuse terminal" => Shape::Terminal,
+        "Accessories" if p.group == "Terminals" => Shape::EndPlate,
+        "End bracket" => Shape::EndBracket,
         "Digital input module" | "Digital output module" | "Analog input module" | "Analog output module" | "CPU" => Shape::Plc,
         "Circuit breaker" | "Residual current device" | "Motor protection switch" | "Auxiliary switch" | "Main switch" => Shape::Din { toggle: true, display: false },
         "Power supply" | "Timer relay" | "Safety relay" | "Frequency converter" | "Soft starter" => Shape::Din { toggle: false, display: true },
@@ -780,20 +798,38 @@ fn generated_models(p: &Part) -> Option<(Model2d, Mesh3d)> {
                 prims.push(Prim2d::Circle { c: [cx, h - h * 0.42], r: (w * 0.08).min(3.0), fill: false });
             }
         }
-        Shape::Terminal => {
-            // Grey; protective earth green, neutral blue.
-            let color = match p.subgroup.as_str() {
-                "PE terminal" => [96, 168, 72],
-                "N terminal" => [70, 120, 200],
-                _ => [150, 156, 162],
+        Shape::Terminal | Shape::EndPlate => {
+            // Grey; protective earth green with a yellow marker field, neutral blue; end
+            // plates darker, without openings.
+            let (color, marker) = match p.subgroup.as_str() {
+                "PE terminal" => ([84, 160, 64], [232, 204, 48]),
+                "N terminal" => ([66, 118, 196], models::WHITE),
+                _ if shape == Shape::EndPlate => ([118, 122, 128], [118, 122, 128]),
+                _ => ([168, 172, 174], models::WHITE),
             };
-            m3.add_painted_box([0.0, 0.0, 0.0], [w, h, d * 0.7], color);
-            m3.add_painted_box([w * 0.1, h * 0.35, d * 0.7], [w * 0.9, h * 0.65, d], color);
-            let r = (w * 0.3).min(2.0);
-            for cy in [h * 0.18, h * 0.82] {
-                prims.push(Prim2d::Circle { c: [w / 2.0, h - cy], r, fill: false });
+            // Screw terminals where the part says so, push-in otherwise.
+            let clamp = if p.description.to_lowercase().contains("screw") { Clamp::Screw } else { Clamp::PushIn };
+            terminal_slice(&mut m3, w, h, d, color, (shape == Shape::Terminal).then_some((marker, clamp)));
+            if shape == Shape::Terminal {
+                let r = (w * 0.3).min(2.0);
+                for cy in [h * 0.2, h * 0.8] {
+                    prims.push(Prim2d::Circle { c: [w / 2.0, h - cy], r, fill: false });
+                }
+                rect(&mut prims, w * 0.15, h * 0.42, w * 0.85, h * 0.58, true);
             }
-            rect(&mut prims, w * 0.1, h * 0.35, w * 0.9, h * 0.65, false);
+            rect(&mut prims, 0.0, h * 0.28, w, h * 0.72, false);
+        }
+        Shape::EndBracket => {
+            // Dark clamp over the rail with a raised middle and its clamping screw.
+            let c = [92, 96, 104];
+            m3.add_painted_box([0.0, 0.0, 0.0], [w, h, d * 0.3], c);
+            m3.add_painted_box([0.0, h * 0.1, d * 0.3], [w, h * 0.9, d * 0.55], c);
+            m3.add_painted_box([w * 0.1, h * 0.3, d * 0.55], [w * 0.9, h * 0.7, d * 0.94], c);
+            let s = (w * 0.3).min(2.5);
+            m3.add_painted_box([w / 2.0 - s, h / 2.0 - s, d * 0.94], [w / 2.0 + s, h / 2.0 + s, d], models::STEEL);
+            rect(&mut prims, 0.0, h * 0.1, w, h * 0.9, false);
+            rect(&mut prims, w * 0.1, h * 0.3, w * 0.9, h * 0.7, false);
+            prims.push(Prim2d::Circle { c: [w / 2.0, h / 2.0], r: s, fill: false });
         }
         Shape::Plc => {
             // Dark housing, the front connector with its LED column and terminal block.
@@ -834,8 +870,106 @@ fn generated_models(p: &Part) -> Option<(Model2d, Mesh3d)> {
     Some((Model2d { width: w, height: h, prims }, m3))
 }
 
+/// How the conductors of a terminal are clamped.
+#[derive(Clone, Copy, PartialEq)]
+enum Clamp {
+    /// Push-in: the wire entry in the end face, the pusher on the step behind it.
+    PushIn,
+    /// Screw: the wire entry in the end face, the screw in an opening of the step.
+    Screw,
+}
+
+/// Height of the end of a terminal (wire entries), of its steps (pushers or screws) and
+/// of the middle, from the rail to the front, as parts of the depth.
+const TERMINAL_PROFILE: [f32; 3] = [0.6, 0.82, 1.0];
+
+/// A terminal slice (x across, y along with the rail in the middle, z to the front):
+/// low ends with the wire entries, steps with the pushers or the recessed screws, the
+/// high middle with the marker field and the jumper shafts (`front`: the marker colour
+/// and the clamp; none on an end plate). Above the foot a hairline gap is left on both
+/// sides, so that the slices of a strip are seen.
+fn terminal_slice(m: &mut Mesh3d, w: f32, h: f32, d: f32, c: [u8; 3], front: Option<([u8; 3], Clamp)>) {
+    let [end, step, _] = TERMINAL_PROFILE.map(|f| f * d);
+    let g = (w * 0.03).min(0.15);
+    let (x0, x1) = (g, w - g);
+    let (hx0, hx1) = (w * 0.22, w * 0.78);
+    let mut b = |min: [f32; 3], max: [f32; 3], c: [u8; 3]| m.add_painted_box(min, max, c);
+    // Foot over the rail (the whole width: the slices touch there).
+    b([0.0, 0.0, 0.0], [w, h, d * 0.25], c);
+    // Ends (y from both sides): the wire entry in the end face, the screw step behind it.
+    let mirror = |y: f32, upper: bool| if upper { h - y } else { y };
+    for upper in [false, true] {
+        let y = |a: f32, z: f32| {
+            let (p, q) = (mirror(a, upper), mirror(z, upper));
+            (p.min(q), p.max(q))
+        };
+        let (e0, e1) = y(0.0, h * 0.14);
+        let (s0, s1) = y(h * 0.14, h * 0.28);
+        let Some((_, clamp)) = front else {
+            b([x0, e0, d * 0.25], [x1, e1, end], c);
+            b([x0, s0, d * 0.25], [x1, s1, step], c);
+            continue;
+        };
+        // Wire entry in the end face: walls beside, below and above the opening, its
+        // dark inside.
+        let (o0, o1) = y(h * 0.03, h * 0.14);
+        let (z0, z1) = (d * 0.3, end - d * 0.1);
+        b([x0, e0, d * 0.25], [hx0, e1, end], c);
+        b([hx1, e0, d * 0.25], [x1, e1, end], c);
+        b([hx0, e0, d * 0.25], [hx1, e1, z0], c);
+        b([hx0, e0, z1], [hx1, e1, end], c);
+        b([hx0, o0, z0], [hx1, o1, z1], DARK_INSIDE);
+        match clamp {
+            // The orange pusher on the step.
+            Clamp::PushIn => {
+                let (q0, q1) = y(h * 0.16, h * 0.26);
+                b([x0, s0, d * 0.25], [x1, s1, step - d * 0.06], c);
+                b([x0, s0, step - d * 0.06], [x1, q0, step], c);
+                b([x0, q1, step - d * 0.06], [x1, s1, step], c);
+                b([x0, q0, step - d * 0.06], [hx0, q1, step], c);
+                b([hx1, q0, step - d * 0.06], [x1, q1, step], c);
+                b([hx0, q0, step - d * 0.06], [hx1, q1, step - d * 0.01], PUSHER);
+            }
+            // Walls around the screw opening, the screw head with its slot at its bottom.
+            Clamp::Screw => {
+                let (q0, q1) = y(h * 0.15, h * 0.24);
+                let floor = step - d * 0.12;
+                b([x0, s0, d * 0.25], [x1, s1, floor], c);
+                b([x0, s0, floor], [hx0, s1, step], c);
+                b([hx1, s0, floor], [x1, s1, step], c);
+                b([hx0, s0, floor], [hx1, q0, step], c);
+                b([hx0, q1, floor], [hx1, s1, step], c);
+                b([hx0, q0, floor - d * 0.02], [hx1, q1, floor], models::STEEL);
+                let (qm, sl) = ((q0 + q1) / 2.0, h * 0.008);
+                b([hx0, qm - sl, floor], [hx1, qm + sl, floor + d * 0.01], models::DARK);
+            }
+        }
+    }
+    // The high middle with the marker field and the jumper shafts beside it.
+    let (m0, m1) = (h * 0.28, h * 0.72);
+    match front {
+        Some((mc, _)) => {
+            b([x0, m0, d * 0.25], [x1, m1, d * 0.96], c);
+            b([x0, m0, d * 0.96], [x1, h * 0.4, d], c);
+            b([x0, h * 0.6, d * 0.96], [x1, m1, d], c);
+            b([w * 0.15, h * 0.4, d * 0.96], [w * 0.85, h * 0.6, d], mc);
+            for y in [h * 0.33, h * 0.67] {
+                b([hx0, y - h * 0.015, d * 0.96], [hx1, y + h * 0.015, d * 0.965], DARK_INSIDE);
+            }
+        }
+        None => b([x0, m0, d * 0.25], [x1, m1, d], c),
+    }
+}
+
+/// The inside of the openings of a terminal (wire entries, jumper shafts).
+const DARK_INSIDE: [u8; 3] = [46, 48, 52];
+/// The pushers of push-in terminals.
+const PUSHER: [u8; 3] = [236, 116, 34];
+
 mod models;
 mod mounting;
+
+pub use models::{shaft, Shaft};
 
 #[cfg(test)]
 mod tests;

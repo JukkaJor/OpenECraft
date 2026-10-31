@@ -23,19 +23,22 @@ pub(super) fn project() -> Project {
     water_circuit(&mut prj);
     let db = PartsDb::default();
     assign_parts(&mut prj, &db, &[("=P1+ER1-CM1", &[VESSEL][..]), ("=P1+ER1-QM1", &[VALVE]), ("=P1+ER1-GP1", &[PUMP]), ("=P1+ER1-QM2", &[VALVE]), ("=P1+ER1-BP1", &[GAUGE])]);
-    // The motors are foot-mounted: they stand on the floor beside their pumps.
+    // The motors are foot-mounted: they stand on the floor.
     if let Some(m) = prj.parts.iter_mut().find(|m| m.number == MOTOR) {
         (m.width, m.height, m.depth) = (230.0, 240.0, 330.0);
         m.mounting = "Floor".into();
         m.mounting_data.floor_mount = true;
+        crate::parts::add_generated_models(m);
     }
     let r = prj.layout.enclosures.iter().position(|e| e.is_room()).expect("room");
     // Floor: walls 0 rear, 1 right, 2 front (right part), 3 and 4 the cut-out corner,
-    // 5 left; the floor in plan coordinates. The vessel right of the pump, the motors
-    // left of it, clear of the door swing in the front wall.
-    for (what, x, z) in [("=P1+ER1-CM1", 4400.0, 2300.0), ("=P1+ER1-GP1", 3500.0, 2300.0), ("=P1+FLD-M1", 3240.0, 2300.0), ("=P2+FLD-M1", 3240.0, 1200.0)] {
+    // 5 left; the floor in plan coordinates. The vessel right of the pump, its motor in
+    // line in front of it on a riser (coupled at the pump's shaft height), the other
+    // motor left of it, clear of the door swing in the front wall.
+    for (what, x, z) in [("=P1+ER1-CM1", 4400.0, 2300.0), ("=P1+ER1-GP1", 3500.0, 2300.0), ("=P1+FLD-M1", 3545.0, 3000.0), ("=P2+FLD-M1", 3240.0, 1200.0)] {
         panel::mount_on_wall(&mut prj, r, what, Face::Bottom, p(x, z)).expect("pump room");
     }
+    drive(&mut prj, r, "=P1+ER1-GP1", "=P1+FLD-M1", 62.0);
     // Front wall (seen from inside its left end is at x 6000): the valves and the gauge
     // about 1.4 m above the floor beside the door, the pipe run past them in front.
     for (what, x, y) in [("=P1+ER1-QM1", 3300.0, 1500.0), ("=P1+ER1-QM2", 2500.0, 1500.0), ("=P1+ER1-BP1", 2000.0, 1500.0)] {

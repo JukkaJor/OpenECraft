@@ -238,6 +238,123 @@ pub fn wire_place(hiders: impl IntoIterator<Item = (usize, bool)>, rank: &[usize
     }
 }
 
+fn scale(a: V3, f: f32) -> V3 {
+    [a[0] * f, a[1] * f, a[2] * f]
+}
+
+fn length(a: V3) -> f32 {
+    dot(a, a).sqrt()
+}
+
+/// The polyline with each corner rounded by an arc of `radius` (smaller where its
+/// segments are too short: an arc takes at most half of a segment between two corners
+/// and all of an end segment), `steps` points per quarter turn.
+pub fn fillet(points: &[V3], radius: f32, steps: usize) -> Vec<V3> {
+    fillet_each(points, &vec![radius; points.len()], steps)
+}
+
+/// [`fillet`] with a radius for each corner (`radii[i]` for `points[i]`; missing ones
+/// keep their corner).
+pub fn fillet_each(points: &[V3], radii: &[f32], steps: usize) -> Vec<V3> {
+    if points.len() < 3 {
+        return points.to_vec();
+    }
+    let n = points.len();
+    let mut out = vec![points[0]];
+    for i in 1..n - 1 {
+        let (a, p, b) = (points[i - 1], points[i], points[i + 1]);
+        let (la, lb) = (length(sub(p, a)), length(sub(b, p)));
+        let radius = radii.get(i).copied().unwrap_or(0.0);
+        if la < 1e-4 || lb < 1e-4 || radius <= 0.0 {
+            out.push(p);
+            continue;
+        }
+        let (u, v) = (scale(sub(p, a), 1.0 / la), scale(sub(b, p), 1.0 / lb));
+        let turn = dot(u, v).clamp(-1.0, 1.0).acos();
+        if turn < 1e-3 || turn > 3.0 {
+            out.push(p);
+            continue;
+        }
+        let half = (turn / 2.0).tan();
+        let room = (if i == 1 { la } else { la / 2.0 }).min(if i == n - 2 { lb } else { lb / 2.0 });
+        let t = (radius * half).min(room);
+        let r = t / half;
+        let s = sub(p, scale(u, t));
+        let w = norm(sub(v, scale(u, dot(u, v))));
+        let c = add(s, scale(w, r));
+        let k = ((turn / std::f32::consts::FRAC_PI_2 * steps as f32).ceil() as usize).max(2);
+        for j in 0..=k {
+            let phi = turn * j as f32 / k as f32;
+            out.push(add(c, add(scale(w, -r * phi.cos()), scale(u, r * phi.sin()))));
+        }
+    }
+    out.push(points[n - 1]);
+    out.dedup_by(|x, y| length(sub(*x, *y)) < 1e-2);
+    out
+}
+
+/// A round tube of radius `r` with `sides` along `path`, its ends closed: triangles
+/// facing outwards, each with the side it lies on (the caps on side 0). The rings keep
+/// their orientation along the path (no twist).
+pub fn tube(path: &[V3], r: f32, sides: usize) -> Vec<(Tri, usize)> {
+    let mut path = path.to_vec();
+    path.dedup_by(|a, b| length(sub(*a, *b)) < 1e-3);
+    let path = path.as_slice();
+    if path.len() < 2 || r <= 0.0 {
+        return Vec::new();
+    }
+    let sides = sides.max(3);
+    let n = path.len();
+    let dir = |i: usize| norm(sub(path[(i + 1).min(n - 1)], path[i.min(n - 2)]));
+    let mut normal = {
+        let t = dir(0);
+        let other = if t[1].abs() < 0.9 { [0.0, 1.0, 0.0] } else { [1.0, 0.0, 0.0] };
+        norm(cross(t, other))
+    };
+    let mut rings: Vec<Vec<V3>> = Vec::with_capacity(n);
+    for (i, &at) in path.iter().enumerate() {
+        let (din, dout) = (dir(i.saturating_sub(1)), dir(i));
+        let t = norm(add(din, dout));
+        let t = if t == [0.0; 3] { dout } else { t };
+        normal = norm(sub(normal, scale(t, dot(normal, t))));
+        let side = cross(t, normal);
+        // A corner keeps the tube's width (mitre), a sharp one only so far.
+        let mitre = 1.0 / dot(t, dout).max(0.6);
+        rings.push(
+            (0..sides)
+                .map(|k| {
+                    let a = k as f32 / sides as f32 * std::f32::consts::TAU;
+                    add(at, scale(add(scale(normal, a.cos()), scale(side, a.sin())), r * mitre))
+                })
+                .collect(),
+        );
+    }
+    let mut out = Vec::new();
+    let quad = |q: [V3; 4], out_dir: V3, k: usize, out: &mut Vec<(Tri, usize)>| {
+        let facing = dot(cross(sub(q[1], q[0]), sub(q[2], q[0])), out_dir) >= 0.0;
+        let q = if facing { q } else { [q[3], q[2], q[1], q[0]] };
+        out.push(([q[0], q[1], q[2]], k));
+        out.push(([q[0], q[2], q[3]], k));
+    };
+    for i in 0..n - 1 {
+        let mid = scale(add(path[i], path[i + 1]), 0.5);
+        for k in 0..sides {
+            let k1 = (k + 1) % sides;
+            let q = [rings[i][k], rings[i + 1][k], rings[i + 1][k1], rings[i][k1]];
+            let centre = scale(add(add(q[0], q[1]), add(q[2], q[3])), 0.25);
+            quad(q, sub(centre, mid), k, &mut out);
+        }
+    }
+    for (ring, centre, out_dir) in [(&rings[0], path[0], scale(dir(0), -1.0)), (&rings[n - 1], path[n - 1], dir(n - 2))] {
+        for k in 0..sides {
+            let t = [centre, ring[k], ring[(k + 1) % sides]];
+            let t = if dot(cross(sub(t[1], t[0]), sub(t[2], t[0])), out_dir) >= 0.0 { t } else { [t[0], t[2], t[1]] };
+            out.push((t, 0));
+        }
+    }
+    out
+}
+
 /// Camera orbiting around `target` (y up).
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Orbit {

@@ -10,6 +10,7 @@ fn item(key: &str, class: Class, diameter: f32, points: Vec<V3>) -> RoutedItem {
         ends: [End::default(), End::default()],
         enclosures: vec![0],
         points,
+        radii: Vec::new(),
         legs: Vec::new(),
         length: 0.0,
         cut: 0.0,
@@ -64,7 +65,7 @@ fn legs_are_bundled_on_their_own() {
     // elsewhere in the layout (x 5000 – 5100): the jump between the legs is no stretch.
     let leg = |item: &mut RoutedItem, legs: [Vec<V3>; 2]| {
         item.points = legs.concat();
-        item.legs = legs.into_iter().enumerate().map(|(k, points)| RouteLeg { enclosure: k, points }).collect();
+        item.legs = legs.into_iter().enumerate().map(|(k, points)| RouteLeg { enclosure: k, points, radii: Vec::new() }).collect();
     };
     let mut a = item("A", Class::Control, 6.0, Vec::new());
     leg(&mut a, [vec![[0.0, 0.0, 0.0], [100.0, 0.0, 0.0]], vec![[5000.0, 0.0, 0.0], [5100.0, 0.0, 0.0]]]);
@@ -73,4 +74,152 @@ fn legs_are_bundled_on_their_own() {
     assert_eq!(a.stretches().len(), 2);
     let (bundles, _) = find(&[a, b], 25.0);
     assert!(bundles.iter().all(|x| x.length < 200.0), "{bundles:?}");
+}
+
+#[test]
+fn items_of_a_bundle_lie_side_by_side_and_do_not_cross() {
+    // A and B run the same way round two corners; C on its own.
+    let route = vec![[0.0, -300.0, 0.0], [0.0, 0.0, 0.0], [500.0, 0.0, 0.0], [500.0, 500.0, 0.0], [900.0, 500.0, 0.0]];
+    let items = [
+        item("A", Class::Power, 10.0, route.clone()),
+        item("B", Class::Power, 10.0, route.clone()),
+        item("C", Class::Power, 10.0, vec![[0.0, 2000.0, 0.0], [500.0, 2000.0, 0.0], [500.0, 2500.0, 0.0]]),
+    ];
+    let ways: Vec<Way> = items.iter().map(|it| Way { points: &it.points, radii: &it.radii, diameter: it.diameter, rest: [0.0; 3], below: f32::INFINITY }).collect();
+    let laid = spread_ways(&ways, 25.0, &[], &[], &[]);
+    let (a, b) = (&laid[0].0, &laid[1].0);
+    assert_eq!(laid[2].0, items[2].points, "alone it stays as it is");
+    // The ends and the stretches at the ends stay where they are.
+    assert_eq!((a[0], a[a.len() - 1], b[0], a[1], b[1]), (route[0], route[4], route[0], route[1], route[1]));
+    // Along the shared stretches (x 0 .. 500, then y 0 .. 500) they run a lane apart (the
+    // thickest item and 1 mm), parallel: side by side, never crossing.
+    let middle = |p: &[V3], axis: usize| {
+        let s = p.windows(2).find(|s| (s[1][axis] - s[0][axis]).abs() > 400.0).unwrap_or_else(|| panic!("{p:?}"));
+        assert_eq!((0..3).filter(|&k| (s[0][k] - s[1][k]).abs() > 1e-3).count(), 1, "{p:?}");
+        [0, 1, 2].map(|k| (s[0][k] + s[1][k]) / 2.0)
+    };
+    for axis in [0, 1] {
+        let d = crate::parts::vec3::dist(middle(a, axis), middle(b, axis));
+        assert!((d - 11.0).abs() < 0.01, "{axis}: {a:?} {b:?}");
+    }
+}
+
+#[test]
+fn lanes_keep_off_the_surface_the_ways_run_along() {
+    // Five wires lying 5 mm in front of a plate (z 0) that may come 3 mm nearer to it:
+    // two rows away from it, side by side along it.
+    let line = vec![[0.0, 0.0, 5.0], [500.0, 0.0, 5.0], [500.0, 300.0, 5.0], [800.0, 300.0, 5.0]];
+    let ways: Vec<Way> = (0..5).map(|_| Way { points: &line, radii: &[], diameter: 3.0, rest: [0.0, 0.0, 1.0], below: 3.0 }).collect();
+    let laid = spread_ways(&ways, 8.0, &[], &[], &[]);
+    for (points, _) in &laid {
+        assert!(points.iter().all(|q| q[2] >= 2.0 - 0.01), "{points:?}");
+    }
+    // Along the middle stretch apart from each other.
+    let middles: Vec<V3> = laid
+        .iter()
+        .map(|(p, _)| {
+            let s = p.windows(2).find(|s| (s[1][1] - s[0][1]).abs() > 250.0).unwrap_or_else(|| panic!("{p:?}"));
+            [0, 1, 2].map(|k| (s[0][k] + s[1][k]) / 2.0)
+        })
+        .collect();
+    for (i, a) in middles.iter().enumerate() {
+        assert!(middles[i + 1..].iter().all(|b| crate::parts::vec3::dist(*a, *b) >= 3.99), "{middles:?}");
+    }
+    let rows: std::collections::BTreeSet<i32> = middles.iter().map(|q| (q[2] * 10.0).round() as i32).collect();
+    assert_eq!(rows.len(), 2, "{middles:?}");
+}
+
+#[test]
+fn lanes_keep_out_of_devices_beside_them() {
+    // Three cables run together along x; a device lies right beside them on one side
+    // (y below -6): centred, a lane would run through it, so they go to the other side.
+    let line = vec![[0.0, -300.0, 0.0], [0.0, 0.0, 0.0], [500.0, 0.0, 0.0], [500.0, 300.0, 0.0]];
+    let ways: Vec<Way> = (0..3).map(|_| Way { points: &line, radii: &[], diameter: 10.0, rest: [0.0; 3], below: f32::INFINITY }).collect();
+    let device = ([100.0, -100.0, -50.0], [400.0, -6.0, 50.0]);
+    let middle = |p: &[V3]| p.windows(2).find(|s| (s[1][0] - s[0][0]).abs() > 400.0).map(|s| [0, 1, 2].map(|k| (s[0][k] + s[1][k]) / 2.0)).unwrap();
+    let free = spread_ways(&ways, 25.0, &[], &[], &[]);
+    let kept = spread_ways(&ways, 25.0, &[device], &[], &[]);
+    let inside = |q: V3| (0..3).all(|k| q[k] > device.0[k] - 5.0 && q[k] < device.1[k] + 5.0);
+    assert!(free.iter().any(|(p, _)| inside(middle(p))), "centred one lane runs through it");
+    assert!(kept.iter().all(|(p, _)| !inside(middle(p))), "{kept:?}");
+    // Still apart from each other.
+    let middles: Vec<V3> = kept.iter().map(|(p, _)| middle(p)).collect();
+    for (i, a) in middles.iter().enumerate() {
+        assert!(middles[i + 1..].iter().all(|b| crate::parts::vec3::dist(*a, *b) >= 10.99), "{middles:?}");
+    }
+    // Hemmed in on both sides they stay as they are.
+    let other = ([100.0, 6.0, -50.0], [400.0, 100.0, 50.0]);
+    let below = ([100.0, -100.0, -100.0], [400.0, 100.0, -6.0]);
+    let above = ([100.0, -100.0, 6.0], [400.0, 100.0, 100.0]);
+    let stuck = spread_ways(&ways, 25.0, &[device, other, below, above], &[], &[]);
+    assert!(stuck.iter().all(|(p, _)| *p == line), "{stuck:?}");
+}
+
+#[test]
+fn ways_along_a_duct_lie_inside_it() {
+    // Six wires along a duct (x 0 .. 500), inside 40 wide (y) and 30 deep (z) on a
+    // plate at z 0; all on the duct's middle line.
+    let line = vec![[-50.0, 20.0, -100.0], [-50.0, 20.0, 15.0], [550.0, 20.0, 15.0], [550.0, 200.0, 15.0]];
+    let ways: Vec<Way> = (0..6).map(|_| Way { points: &line, radii: &[], diameter: 8.0, rest: [0.0; 3], below: f32::INFINITY }).collect();
+    let duct = Channel { inside: ([0.0, 0.0, 0.0], [500.0, 40.0, 30.0]), floor: [0.0, 0.0, 1.0] };
+    let laid = spread_ways(&ways, 8.0, &[], &[duct], &[]);
+    let middles: Vec<V3> = laid.iter().map(|(p, _)| p.windows(2).find(|s| (s[1][0] - s[0][0]).abs() > 500.0).map(|s| [0, 1, 2].map(|k| (s[0][k] + s[1][k]) / 2.0)).unwrap()).collect();
+    for q in &middles {
+        assert!(q[1] >= 4.0 - 0.01 && q[1] <= 36.0 + 0.01 && q[2] >= 4.0 - 0.01 && q[2] <= 26.0 + 0.01, "{middles:?}");
+    }
+    for (i, a) in middles.iter().enumerate() {
+        assert!(middles[i + 1..].iter().all(|b| crate::parts::vec3::dist(*a, *b) >= 8.0), "{middles:?}");
+    }
+}
+
+#[test]
+fn strands_through_each_other_are_pushed_apart() {
+    // Least distance between the two, but within 30 mm of the ends (x 0 and 400).
+    let gap = |a: &[V3], b: &[V3]| {
+        let mut least = f32::INFINITY;
+        for s in a.windows(2) {
+            for t in b.windows(2) {
+                for k in 0..=20 {
+                    let p = crate::parts::vec3::add(s[0], crate::parts::vec3::sub(s[1], s[0]).map(|v| v * k as f32 / 20.0));
+                    if p[0] < 30.0 || p[0] > 370.0 {
+                        continue;
+                    }
+                    let ab = crate::parts::vec3::sub(t[1], t[0]);
+                    let u = (dot(crate::parts::vec3::sub(p, t[0]), ab) / dot(ab, ab)).clamp(0.0, 1.0);
+                    least = least.min(crate::parts::vec3::dist(p, crate::parts::vec3::add(t[0], ab.map(|v| v * u))));
+                }
+            }
+        }
+        least
+    };
+    // Two wires 6 mm thick lying on a plate (z 0, may not come nearer): one along x,
+    // one across it, both at z 3.
+    fn strand(points: &[V3], rest: V3, below: f32) -> Strand<'_> {
+        Strand { points, diameter: 6.0, rest, below }
+    }
+    let along = [[0.0, 0.0, 3.0], [400.0, 0.0, 3.0]];
+    let across = [[200.0, -200.0, 3.0], [200.0, 200.0, 3.0]];
+    let on_plate = ([0.0, 0.0, 1.0], 0.0);
+    let apart = separate(&[strand(&along, on_plate.0, on_plate.1), strand(&across, on_plate.0, on_plate.1)], &[], &[], &[]);
+    assert!(gap(&apart[0], &apart[1]) >= 6.0 - 0.1, "{apart:?}");
+    // One goes over the other, none into the plate; the ends stay.
+    assert!(apart.iter().flatten().all(|q| q[2] >= 3.0 - 1e-3));
+    assert_eq!((apart[0][0], *apart[0].last().unwrap()), (along[0], along[1]));
+    // Where they did not move they stay straight.
+    assert!(apart[0].len() < 20 && apart[1].len() < 20, "{apart:?}");
+
+    // Two lying on each other in a channel (60 wide, 20 deep) move apart inside it.
+    let same = [[0.0, 30.0, 10.0], [400.0, 30.0, 10.0]];
+    let channel = || Channel { inside: ([-10.0, 0.0, 0.0], [410.0, 60.0, 20.0]), floor: [0.0, 0.0, 1.0] };
+    let free = [strand(&same, [0.0; 3], f32::INFINITY), strand(&same, [0.0; 3], f32::INFINITY)];
+    let apart = separate(&free, &[], &[channel()], &[]);
+    assert!(gap(&apart[0], &apart[1]) >= 6.0 - 0.1, "{apart:?}");
+    assert!(apart.iter().flatten().all(|q| q[1] >= 3.0 - 1e-3 && q[1] <= 57.0 + 1e-3 && q[2] >= 3.0 - 1e-3 && q[2] <= 17.0 + 1e-3), "{apart:?}");
+
+    // A device in the way is kept out of.
+    let device = ([150.0, 33.5, 0.0], [250.0, 100.0, 50.0]);
+    let apart = separate(&free, &[device], &[channel()], &[]);
+    for q in apart.iter().flatten() {
+        assert!(!(q[0] > 150.0 && q[0] < 250.0 && q[1] + 3.0 > 33.5 + 1e-3), "{q:?}");
+    }
 }

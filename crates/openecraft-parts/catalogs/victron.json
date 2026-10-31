@@ -264,7 +264,7 @@
       "identifier": "F",
       "voltage": "max. 48 V DC",
       "current": "1000 A busbar",
-      "tech_data": "Fuses: 4 x MEGA, max. 250 A each\nConnection: M10 studs\nFuse monitoring: LED and VE.Can via Lynx Smart BMS",
+      "tech_data": "Fuses: 4 x MEGA, max. 250 A each\nConnection: M10 studs, negative busbar with 4 x M8 studs (N1 - N4)\nFuse monitoring: LED and VE.Can via Lynx Smart BMS",
       "width": 180,
       "height": 190,
       "depth": 80,
@@ -293,7 +293,11 @@
         { "pin": "F1", "pos": [36, 190, 20], "exit": "Down" },
         { "pin": "F2", "pos": [72, 190, 20], "exit": "Down" },
         { "pin": "F3", "pos": [108, 190, 20], "exit": "Down" },
-        { "pin": "F4", "pos": [144, 190, 20], "exit": "Down" }
+        { "pin": "F4", "pos": [144, 190, 20], "exit": "Down" },
+        { "pin": "N1", "pos": [54, 190, 20], "exit": "Down" },
+        { "pin": "N2", "pos": [90, 190, 20], "exit": "Down" },
+        { "pin": "N3", "pos": [126, 190, 20], "exit": "Down" },
+        { "pin": "N4", "pos": [162, 190, 20], "exit": "Down" }
       ],
       "mounting_data": {
         "wall_mount": true

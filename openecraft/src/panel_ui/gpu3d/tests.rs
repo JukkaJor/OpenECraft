@@ -57,7 +57,7 @@ fn face(n: u8, side: Option<usize>, obj: Option<usize>, decal: bool) -> SceneFac
 }
 
 fn line(stripe: Option<Color32>) -> SceneLine {
-    SceneLine { a: [0.0; 3], b: [100.0, 0.0, 0.0], color: Color32::BLUE, stripe, least: 1.5, diameter: 2.4 }
+    SceneLine { a: [0.0; 3], b: [100.0, 0.0, 0.0], color: Color32::BLUE, stripe, least: 1.5, diameter: 2.4, tube: false }
 }
 
 #[test]
@@ -85,3 +85,20 @@ fn the_scene_goes_to_the_graphics_card_in_parts() {
     assert_eq!([at(3), at(4), at(5)], [0.0, 0.0, 1.0]);
     assert_eq!(&g.faces[24..28], &Color32::RED.to_array());
 }
+
+#[test]
+fn tubes_are_drawn_as_faces_instead_of_their_lines() {
+    let tube = SceneLine { tube: true, ..line(Some(Color32::YELLOW)) };
+    let scene = Scene3d { tubes: vec![face(3, None, None, false)], wires: vec![SceneWire { line: tube.clone(), inside: None }, SceneWire { line: line(None), inside: None }], lines: vec![tube], ..Default::default() };
+    let g = geometry(&scene);
+    let s = &g.spans;
+    assert_eq!(s.base.count, 3);
+    assert_eq!((s.wires.count, s.stripes.count, s.top.count), (6, 0, 6));
+    // A selected tube stays on top as a thin line (no diameter).
+    let diameter = |vertex: i32| {
+        let i = vertex as usize * LINE_STRIDE as usize + 40;
+        f32::from_ne_bytes(g.lines[i..i + 4].try_into().unwrap())
+    };
+    assert_eq!((diameter(s.wires.first), diameter(s.top.first)), (2.4, 0.0));
+}
+

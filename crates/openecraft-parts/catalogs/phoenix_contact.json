@@ -16,6 +16,9 @@
       "group": "Terminals",
       "subgroup": "Feed-through terminal",
       "identifier": "X",
+      "width": 5.2,
+      "height": 48.6,
+      "depth": 29.3,
       "mounting": "Mounting rail 35 mm",
       "functions": [
         {
@@ -34,6 +37,9 @@
       "group": "Terminals",
       "subgroup": "N terminal",
       "identifier": "X",
+      "width": 5.2,
+      "height": 48.6,
+      "depth": 29.3,
       "mounting": "Mounting rail 35 mm",
       "functions": [
         {
@@ -52,6 +58,9 @@
       "group": "Terminals",
       "subgroup": "PE terminal",
       "identifier": "X",
+      "width": 5.2,
+      "height": 48.5,
+      "depth": 29.3,
       "mounting": "Mounting rail 35 mm",
       "functions": [
         {
@@ -70,6 +79,9 @@
       "group": "Terminals",
       "subgroup": "Feed-through terminal",
       "identifier": "X",
+      "width": 5.2,
+      "height": 47.7,
+      "depth": 40,
       "mounting": "Mounting rail 35 mm",
       "functions": [
         {
@@ -88,6 +100,9 @@
       "group": "Terminals",
       "subgroup": "PE terminal",
       "identifier": "X",
+      "width": 5.2,
+      "height": 47.7,
+      "depth": 40,
       "mounting": "Mounting rail 35 mm",
       "functions": [
         {
@@ -106,6 +121,9 @@
       "group": "Terminals",
       "subgroup": "Feed-through terminal",
       "identifier": "X",
+      "width": 6.2,
+      "height": 47.7,
+      "depth": 40,
       "mounting": "Mounting rail 35 mm",
       "functions": [
         {
@@ -153,6 +171,9 @@
       "group": "Terminals",
       "subgroup": "Accessories",
       "identifier": "X",
+      "width": 2.2,
+      "height": 47,
+      "depth": 39.8,
       "functions": []
     },
     {
@@ -164,6 +185,9 @@
       "group": "Terminals",
       "subgroup": "End bracket",
       "identifier": "X",
+      "width": 9.5,
+      "height": 54.6,
+      "depth": 26,
       "mounting": "Mounting rail 35 mm",
       "functions": []
     },

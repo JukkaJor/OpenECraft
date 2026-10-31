@@ -6363,3 +6363,9 @@ Exporting {}	Экспорт {}
 Reading {}	Чтение {}
 Reading the parts file	Чтение файла изделий
 {} stopped with an error: {}	{} остановлено с ошибкой: {}
+Driven by	Приводится от
+Drive type	Тип привода
+Select wire	Выбрать провод
+Open cable ducts	Открыть кабельные каналы
+Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	В 3D-виде не показывать крышки всех кабельных каналов: провода в них становятся видны
+{}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: кабельный канал на {} мм слишком мал: его {} проводов нельзя проложить рядом друг с другом

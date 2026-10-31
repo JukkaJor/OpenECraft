@@ -1,0 +1,63 @@
+use super::*;
+
+#[test]
+fn a_click_into_the_air_clears_the_selected_cable() {
+    let prj = Project::default();
+    let an = Analysis::build(&prj);
+    let mut ui = PanelUi { selected_route: Some("=MD-W11".into()), selected_wire: Some(("-K1:A1".into(), "-K2:A1".into())), ..Default::default() };
+    ui.selection.insert(7);
+    assert!(!ui.pick_3d(&prj, &an, &Scene3d::default(), &[], &|_| None, Pos2::ZERO));
+    assert!(ui.selected_route.is_none() && ui.selected_wire.is_none() && ui.selection.is_empty());
+}
+
+#[test]
+fn selecting_a_device_or_wire_drops_the_selected_cable() {
+    let mut ui = PanelUi { selected_route: Some("=MD-W11".into()), ..Default::default() };
+    ui.select_item(7);
+    assert!(ui.selected_route.is_none());
+    ui.selected_route = Some("=MD-W11".into());
+    ui.select_wire(("-K1:A1".into(), "-K2:A1".into()));
+    assert!(ui.selected_route.is_none() && ui.selection.is_empty());
+}
+
+#[test]
+fn a_cable_in_front_of_a_device_is_picked_one_behind_it_not() {
+    use openecraft_core::panel::{Enclosure, PanelItem};
+    let mut prj = Project::default();
+    prj.layout.enclosures.push(Enclosure { items: vec![PanelItem { id: 7, kind: ItemKind::Device, ..Default::default() }], ..Default::default() });
+    let an = Analysis::build(&prj);
+    // A device face around the pointer, 1000 mm away; a cable across it in front or behind.
+    let pts = [Pos2::new(0.0, 0.0), Pos2::new(100.0, 0.0), Pos2::new(100.0, 100.0), Pos2::new(0.0, 100.0)];
+    let prims = [Prim::Face { pts, z: [1000.0; 4], n: 4, color: Color32::GRAY, item: Some((0, 7)), outline: false }];
+    let view = |q: V3| Some((Pos2::new(q[0], q[1]), q[2]));
+    for (depth, cable) in [(900.0, true), (1100.0, false)] {
+        let mut scene = Scene3d::default();
+        scene.picks.push(([0.0, 50.0, depth], [100.0, 50.0, depth], RouteRef::Item("=W1".into())));
+        let mut ui = PanelUi::default();
+        ui.pick_3d(&prj, &an, &scene, &prims, &view, Pos2::new(50.0, 51.0));
+        assert_eq!(ui.selected_route.is_some(), cable, "{depth}");
+        assert_eq!(ui.selection.contains(&7), !cable, "{depth}");
+    }
+}
+
+#[test]
+fn a_device_clicked_in_another_cabinet_shows_that_cabinet_fitted() {
+    use openecraft_core::panel::PanelItem;
+    let mut prj = openecraft_core::sample::example("building_services").unwrap();
+    let room = prj.layout.enclosures.iter().position(|e| e.is_room()).unwrap();
+    let cabinet = panel::cabinets_in(&prj.layout, room)[0];
+    prj.layout.enclosures[cabinet].items.push(PanelItem { id: 9_999, kind: ItemKind::Device, ..Default::default() });
+    let an = Analysis::build(&prj);
+    let pts = [Pos2::new(0.0, 0.0), Pos2::new(100.0, 0.0), Pos2::new(100.0, 100.0), Pos2::new(0.0, 100.0)];
+    let prims = [Prim::Face { pts, z: [1000.0; 4], n: 4, color: Color32::GRAY, item: Some((cabinet, 9_999)), outline: false }];
+    let mut ui = PanelUi { enclosure: room, fit_pending: false, ..Default::default() };
+    ui.cam = Some(default_cam(&prj, &ui.shown_3d(&prj, room)));
+    ui.pick_3d(&prj, &an, &Scene3d::default(), &prims, &|_| None, Pos2::new(50.0, 50.0));
+    assert_eq!(ui.enclosure, cabinet);
+    assert!(ui.selection.contains(&9_999) && ui.cam.is_none() && ui.fit_pending);
+    // A device of the cabinet shown keeps the camera.
+    ui.cam = Some(default_cam(&prj, &ui.shown_3d(&prj, cabinet)));
+    ui.fit_pending = false;
+    ui.pick_3d(&prj, &an, &Scene3d::default(), &prims, &|_| None, Pos2::new(50.0, 50.0));
+    assert!(ui.cam.is_some() && !ui.fit_pending);
+}

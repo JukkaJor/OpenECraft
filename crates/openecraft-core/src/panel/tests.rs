@@ -17,9 +17,9 @@ fn device_size_from_parts() {
     let k1 = device_size(&prj, "-K1").unwrap();
     assert_eq!((k1.w, k1.h, k1.d), (45.0, 74.0, 113.0));
     assert_eq!(k1.part, "GEN.CT-9A-24DC");
-    // Terminal strip: 4 terminals of 5.2 mm, 2 end plates of 1.5 mm, 2 end brackets of 9 mm
+    // Terminal strip: 4 terminals of 5.2 mm, 2 end plates of 2.2 mm, 2 end brackets of 9.5 mm
     let x1 = device_size(&prj, "-X1").unwrap();
-    assert!((x1.w - 41.8).abs() < 0.01, "{}", x1.w);
+    assert!((x1.w - 44.2).abs() < 0.01, "{}", x1.w);
     // Motors have no mounting data: not placeable
     assert!(device_size(&prj, "-M1").is_none());
 }
@@ -91,6 +91,10 @@ fn virtual_wiring_of_demo() {
     // The motor is in the field: its connections stay open.
     let report = &an.report(&prj, crate::model::ReportKind::PanelWiring).unwrap();
     assert!(report.rows.iter().any(|r| r[3].starts_with("-M1") && r[8] == "device not placed"));
+    // Plate ends know their connection point: above the start of the route on the plate.
+    let w = an.wiring.iter().find(|w| w.door.0.is_none() && !w.route.points.is_empty()).expect("plate wire");
+    let (t, q) = (w.terminals.0.expect("terminal"), w.route.points[0]);
+    assert!((t[0] - PLATE_MARGIN - q.x).abs() < 0.01 && (t[1] - PLATE_MARGIN - q.y).abs() < 0.01 && t[2] > PLATE_Z, "{t:?} {q:?}");
 }
 
 #[test]
@@ -595,4 +599,68 @@ fn placed_models_follow_the_frame_of_their_face() {
     }
     // On the plate and the door of cabinets, on the floor and the walls of rooms.
     assert!(faces.contains(&(false, "Plate".into())) && faces.contains(&(true, "Bottom".into())), "{faces:?}");
+}
+
+#[test]
+fn cable_ducts_have_slotted_walls_and_a_cover() {
+    let prj = demo_project();
+    let e = &prj.layout.enclosures[0];
+    let mut checked = 0;
+    for it in e.items.iter().filter(|i| i.kind == ItemKind::Duct) {
+        let (lo, hi) = item_box(e, it);
+        let boxes = duct_boxes(e, it, true);
+        assert!(boxes.iter().all(|((a, b), _, _)| (0..3).all(|k| a[k] >= lo[k] - 0.01 && b[k] <= hi[k] + 0.01)), "{it:?}");
+        // The cover closes the duct at the front (plate ducts face the door, door ducts
+        // the inside of the enclosure).
+        let (wall, cover) = DUCT_COLORS;
+        let front = if it.face == Face::Door { lo[2] } else { hi[2] };
+        assert!(boxes.iter().any(|((a, b), c, _)| *c == cover && (a[2] - front).abs().min((b[2] - front).abs()) < 0.01), "{it:?}");
+        // Fingers with slots between them on both walls.
+        let (len, along) = if it.w >= it.h { (it.w, 0) } else { (it.h, 1) };
+        let fingers: Vec<_> = boxes.iter().filter(|(_, _, finger)| *finger).collect();
+        assert!(fingers.iter().all(|((a, b), c, _)| *c == wall && b[along] - a[along] < len / 2.0));
+        assert!(fingers.len() >= 2 * (len / 15.0) as usize, "{it:?}: {} fingers", fingers.len());
+        let mut starts: Vec<f32> = fingers.iter().map(|((a, _), _, _)| a[along]).collect();
+        starts.sort_by(f32::total_cmp);
+        starts.dedup();
+        let width = fingers[0].0 .1[along] - fingers[0].0 .0[along];
+        assert!(starts.windows(2).all(|s| s[1] - s[0] > width + 1.0), "slots between the fingers");
+        // Opened, the same without the cover.
+        let open = duct_boxes(e, it, false);
+        assert!(open.len() == boxes.len() - 1 && !open.iter().any(|(_, c, _)| *c == cover), "{it:?}");
+        checked += 1;
+    }
+    assert!(checked > 2);
+}
+
+#[test]
+fn devices_on_a_busbar_are_connected_by_its_bars() {
+    // Placed over the bars, a device is mounted onto them.
+    let mut e = Enclosure::default();
+    e.items.push(PanelItem { id: 1, kind: ItemKind::Busbar, x: 0.0, y: 100.0, w: 600.0, h: 90.0, d: 40.0, ..Default::default() });
+    let mut q = device(2, 100.0, 80.0, 50.0, 200.0, 0.0, 100.0);
+    snap_to_rail(&e, &mut q);
+    assert_eq!(q.z, 40.0);
+    assert_eq!(busbar_of(&e, &q), Some(1));
+    // Below the bars it is not.
+    let mut x = device(3, 100.0, 300.0, 50.0, 50.0, 0.0, 100.0);
+    snap_to_rail(&e, &mut x);
+    assert_eq!((x.z, busbar_of(&e, &x)), (0.0, None));
+
+    // The main distribution of the building: the fuse switch disconnectors on the
+    // busbar are not wired to each other, the incoming terminals to the first of them.
+    let prj = crate::sample::example("building_services").unwrap();
+    let (md, _) = prj.layout.find_device("=MD+MD-Q1").unwrap();
+    let on_bars: Vec<&str> = ["=MD+MD-Q1", "=MD+MD-Q2", "=MD+MD-Q3"].into();
+    for tag in &on_bars {
+        let (_, it) = prj.layout.find_device(tag).unwrap();
+        assert!(busbar_of(&prj.layout.enclosures[md], it).is_some(), "{tag}");
+    }
+    let (nl, open) = (crate::netlist::Netlist::build(&prj, true), crate::netlist::Netlist::build(&prj, false));
+    let conns = crate::netlist::connections(&prj, &nl, &open);
+    let (wiring, _) = virtual_wiring(&prj, &conns);
+    let device = |end: &str| end.rsplit_once(':').map_or(end, |(d, _)| d).to_string();
+    assert!(!wiring.iter().any(|w| on_bars.contains(&device(&w.from).as_str()) && on_bars.contains(&device(&w.to).as_str())));
+    let feeds = wiring.iter().filter(|w| [device(&w.from), device(&w.to)] == ["=MD+MD-X0", "=MD+MD-Q1"] || [device(&w.from), device(&w.to)] == ["=MD+MD-Q1", "=MD+MD-X0"]).count();
+    assert_eq!(feeds, 3);
 }

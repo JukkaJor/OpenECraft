@@ -315,6 +315,8 @@ pub(super) const ROWS: &[Row] = &[
     r("device.min_clearance", tr_const!("Minimum clearance"), Device, Mechanical, Real, "mm"),
     r("device.housing_material", tr_const!("Housing material"), Device, Mechanical, Text, ""),
     r("device.housing_colour", tr_const!("Housing colour"), Device, Mechanical, Text, ""),
+    r("device.driven_by", tr_const!("Driven by"), Device, Mechanical, Text, ""),
+    r("device.drive", tr_const!("Drive type"), Device, Mechanical, Choice, "").of(&["Coupling", "Belt", "Gear"]),
     // Environment
     r("device.ip", tr_const!("Degree of protection"), Device, Environment, Choice, "").of(IP),
     r("device.ik", tr_const!("Impact protection (IK)"), Device, Environment, Text, ""),

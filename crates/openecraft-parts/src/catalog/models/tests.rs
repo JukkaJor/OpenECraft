@@ -184,3 +184,20 @@ fn din_rail_devices_have_a_screw_at_every_connection_point() {
     }
     assert!(checked > 50, "{checked} devices");
 }
+
+#[test]
+fn motors_and_machines_without_a_motor_have_a_shaft_end() {
+    let parts = default_catalog();
+    let get = |n: &str| parts.iter().find(|p| p.number == n).unwrap_or_else(|| panic!("{n}"));
+    // On the floor the shaft comes out of the front (z = depth), below the top.
+    for n in ["GEN.MOT-2.2KW", "GEN.PUMP-CENT-DN25", "GEN.PUMP-BOOST-DN32", "GEN.COMP-PISTON-450"] {
+        let p = get(n);
+        let s = shaft(p).unwrap_or_else(|| panic!("{n}"));
+        assert_eq!(s.dir, [0.0, 0.0, 1.0], "{n}");
+        assert!((s.at[2] - p.depth).abs() < 0.01 && s.at[1] > 0.0 && s.at[1] < 0.8 * p.height, "{n}: {:?}", s.at);
+    }
+    // Machines with their own motor have none.
+    let mut own = get("GEN.COMP-PISTON-450").clone();
+    own.description = "Piston compressor 10 bar on its receiver".into();
+    assert!(shaft(&own).is_none() && shaft(get("GEN.PUMP-CIRC-DN25")).is_none());
+}

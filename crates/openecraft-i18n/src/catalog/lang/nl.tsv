@@ -6364,3 +6364,9 @@ Exporting {}	{} exporteren
 Reading {}	{} lezen
 Reading the parts file	Onderdelenbestand lezen
 {} stopped with an error: {}	{} gestopt met een fout: {}
+Driven by	Aangedreven door
+Drive type	Aandrijftype
+Select wire	Draad selecteren
+Open cable ducts	Kabelgoten openen
+Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	In de 3D-weergave de deksels van alle kabelgoten weglaten: de draden erin zijn zichtbaar
+{}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: kabelgoot bij {} mm te klein: de {} draden kunnen niet naast elkaar worden gelegd

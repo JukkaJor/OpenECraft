@@ -20,6 +20,7 @@ fn wire(cross_section: &str, runs: &[(f32, f32)]) -> RoutedWire {
         color: String::new(),
         cross_section: cross_section.into(),
         number: String::new(),
+        cable: String::new(),
         route: Route {
             points: Vec::new(),
             plate_length: 0.0,
@@ -31,6 +32,7 @@ fn wire(cross_section: &str, runs: &[(f32, f32)]) -> RoutedWire {
         ends: (EndKind::Generated, EndKind::Generated),
         door: (None, None),
         door_routes: (None, None),
+        terminals: (None, None),
         legs: Vec::new(),
     }
 }
@@ -133,3 +135,33 @@ fn wires_avoid_overfull_ducts() {
     }
 }
 
+#[test]
+fn wires_lie_in_rows_from_the_base_of_the_duct() {
+    // Inside of a duct 40 wide and 60 deep: walls of 2 mm, the cover 2.5 mm.
+    let it = PanelItem { kind: ItemKind::Duct, w: 400.0, h: 40.0, d: 60.0, ..Default::default() };
+    assert_eq!(duct_inside(&it), (36.0, 55.5));
+    // Three 11.8 mm wires a row, centred across the duct, the next row on top.
+    let (lanes, fits) = duct_lanes(36.0, 55.5, &[11.8; 5]);
+    assert!(fits);
+    for (i, a) in lanes.iter().enumerate() {
+        assert!(a[0].abs() + 5.9 <= 18.0 + 1e-3 && a[1] >= 5.9, "{lanes:?}");
+        assert!(lanes[i + 1..].iter().all(|b| (a[0] - b[0]).hypot(a[1] - b[1]) >= 11.8), "{lanes:?}");
+    }
+    assert_eq!(lanes.iter().filter(|l| l[1] < 11.8).count(), 3);
+    // The thickest at the base.
+    let (lanes, _) = duct_lanes(36.0, 55.5, &[5.0, 30.0, 5.0]);
+    assert!((lanes[1][1] - 15.05).abs() < 1e-3 && lanes[0][1] < lanes[1][1] && lanes[2][1] > 30.1, "{lanes:?}");
+    // Five rows of them do not fit 55.5 mm.
+    assert!(!duct_lanes(36.0, 55.5, &[11.8; 13]).1);
+    // Wider than the duct: never.
+    assert!(!duct_lanes(36.0, 55.5, &[40.0]).1);
+}
+
+#[test]
+fn the_fill_knows_the_thickness_of_every_wire() {
+    let prj = project_with_duct("NONE");
+    let fill = duct_fill(&prj, &[wire("300 mm²", &[(0.0, 100.0)]), wire("1.5 mm²", &[(200.0, 300.0)])]);
+    let mut d = fill[0].diameters.clone();
+    d.sort_by(f32::total_cmp);
+    assert_eq!(d, vec![crate::harness::outer_diameter("1.5 mm²"), crate::harness::outer_diameter("300 mm²")]);
+}

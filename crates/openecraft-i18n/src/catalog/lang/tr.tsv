@@ -6364,3 +6364,9 @@ Exporting {}	{} dışa aktarılıyor
 Reading {}	{} okunuyor
 Reading the parts file	Parça dosyası okunuyor
 {} stopped with an error: {}	{} bir hatayla durdu: {}
+Driven by	Tahrik eden
+Drive type	Tahrik türü
+Select wire	Teli seç
+Open cable ducts	Kablo kanallarını aç
+Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	3B görünümde tüm kablo kanallarının kapaklarını gösterme: içlerindeki teller görünür
+{}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: {} mm'deki kablo kanalı çok küçük: {} tel yan yana döşenemez

@@ -6351,3 +6351,9 @@ Pipe run on a wall, the ceiling or the floor of the room, along which hoses, tub
 10 · Pump room	10 · 펌프실
 The room of the line-up with its pumps: pump motors fed through cable glands in the roofs of the cabinets, a pump and a vessel standing on the floor, ball valves and a gauge on the wall, and the DN25 pipes of the water circuit routed in 3D along a pipe run on the wall.	열 배치와 펌프가 있는 방: 외함 지붕의 케이블 글랜드를 통해 전원을 받는 펌프 모터, 바닥에 놓인 펌프와 탱크, 벽의 볼 밸브와 압력계, 벽의 배관 경로를 따라 3D로 배선된 물 회로의 DN25 배관.
 Room floor	방 바닥
+Driven by	구동 장치
+Drive type	구동 방식
+Select wire	전선 선택
+Open cable ducts	케이블 덕트 열기
+Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	3D 보기에서 모든 케이블 덕트의 덮개를 생략합니다: 안의 전선이 보입니다
+{}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{0}: {1} mm 위치의 케이블 덕트가 너무 작습니다: 전선 {2}개를 나란히 배선할 수 없습니다

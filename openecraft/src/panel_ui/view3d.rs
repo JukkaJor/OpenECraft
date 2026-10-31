@@ -153,16 +153,24 @@ impl PanelUi {
     fn pick_3d(&mut self, prj: &Project, an: &Analysis, scene: &Scene3d, prims: &[Prim], project_view: &dyn Fn(V3) -> Option<(Pos2, f32)>, ptr: Pos2) -> bool {
         // Faces are in drawing order: the last one under the pointer is visible.
         let hit = prims.iter().rev().find_map(|prim| match prim {
-            Prim::Face { pts, n, item: Some(item), .. } if point_in_convex(ptr, &pts[..*n as usize]) => Some(*item),
+            Prim::Face { pts, z, n, item: Some(item), .. } if point_in_convex(ptr, &pts[..*n as usize]) => Some((*item, depth_at(ptr, &pts[..*n as usize], z))),
             _ => None,
         });
-        let on_device = hit.and_then(|(k, id)| prj.layout.enclosures[k].item(id)).map(|i| i.kind == ItemKind::Device).unwrap_or(false);
+        let on_device = hit.and_then(|((k, id), _)| prj.layout.enclosures[k].item(id)).map(|i| i.kind == ItemKind::Device).unwrap_or(false);
+        // Wires, cables and tubes in front of a device clicked are picked, those behind it not.
+        let device_depth = hit.filter(|_| on_device).map(|(_, z)| z);
+        let hit = hit.map(|(item, _)| item);
         let mut candidates: Vec<(usize, f32)> = Vec::new();
         let mut near_route: Option<(&str, f32)> = None;
         for (a, b, target) in &scene.picks {
             let (Some(pa), Some(pb)) = (project_view(*a), project_view(*b)) else { continue };
             let d = openecraft_core::geom::dist_to_segment(p(ptr.x, ptr.y), p(pa.0.x, pa.0.y), p(pb.0.x, pb.0.y));
             if d > 6.0 {
+                continue;
+            }
+            let ab = pb.0 - pa.0;
+            let t = if ab.length_sq() > 0.0 { ((ptr - pa.0).dot(ab) / ab.length_sq()).clamp(0.0, 1.0) } else { 0.0 };
+            if device_depth.is_some_and(|dz| pa.1 + (pb.1 - pa.1) * t > dz - 1.0) {
                 continue;
             }
             match target {
@@ -177,30 +185,20 @@ impl PanelUi {
         candidates.sort_by(|a, b| a.1.total_cmp(&b.1).then(a.0.cmp(&b.0)));
         let candidates: Vec<usize> = candidates.into_iter().map(|c| c.0).collect();
         match (hit, near_route) {
-            (Some((k, id)), _) if on_device => {
-                self.enclosure = k;
-                self.select_item(id);
-            }
             _ if !candidates.is_empty() => {
                 self.pick_wire(an, &candidates);
                 return true;
             }
             // Cables and tubes of the 3D routing.
             (_, Some((key, _))) => {
-                self.status = an.routing.item(key).map(|i| format!("{} {}  {:.0} mm", i.kind.title(), i.label, i.length)).unwrap_or_default();
-                self.selected_route = Some(key.to_string());
-                self.selected_wire = None;
-                self.selection.clear();
+                self.select_route(an, key);
                 return true;
             }
             (Some((k, id)), None) => {
-                self.enclosure = k;
+                self.switch_enclosure(k);
                 self.select_item(id);
             }
-            (None, None) => {
-                self.selection.clear();
-                self.selected_wire = None;
-            }
+            (None, None) => self.deselect(),
         }
         false
     }
@@ -208,8 +206,8 @@ impl PanelUi {
 
 /// A projected face or line of one frame.
 pub(super) enum Prim {
-    /// `item`: enclosure and item id for picking.
-    Face { pts: [Pos2; 4], n: u8, color: Color32, item: Option<(usize, u64)>, outline: bool },
+    /// `item`: enclosure and item id for picking; `z`: depth of the corners.
+    Face { pts: [Pos2; 4], z: [f32; 4], n: u8, color: Color32, item: Option<(usize, u64)>, outline: bool },
     Line { a: Pos2, b: Pos2, color: Color32, width: f32 },
 }
 
@@ -312,24 +310,21 @@ pub(super) fn project(scene: &Scene3d, camera: &Camera, rect: Rect, opacity: f32
             continue; // back face
         }
         let n = face.n as usize;
-        let mut pts = [Pos2::ZERO; 4];
-        let mut depth = 0.0;
+        let (mut pts, mut zs) = ([Pos2::ZERO; 4], [0.0; 4]);
         let mut seen = true;
-        for (corner, pt) in face.pts[..n].iter().zip(pts.iter_mut()) {
+        for (i, corner) in face.pts[..n].iter().enumerate() {
             match project_view(*corner) {
-                Some((q, z)) => {
-                    *pt = q;
-                    depth += z;
-                }
+                Some((q, z)) => (pts[i], zs[i]) = (q, z),
                 None => seen = false,
             }
         }
+        let depth: f32 = zs[..n].iter().sum();
         if !seen {
             continue;
         }
         let color = if layer == OUTER_WALLS { face.color.gamma_multiply(opacity) } else { face.color };
         let k = key(layer, face.obj.map(|o| (o, 1)), depth / n as f32);
-        push(&mut prims, k, Prim::Face { pts, n: face.n, color, item: face.item, outline: face.outline });
+        push(&mut prims, k, Prim::Face { pts, z: zs, n: face.n, color, item: face.item, outline: face.outline });
     }
     for l in &scene.lines {
         if let (Some(pa), Some(pb)) = (project_view(l.a), project_view(l.b)) {
@@ -438,6 +433,23 @@ pub(super) fn default_cam(prj: &Project, shown: &[(usize, SitePose)]) -> Orbit {
     Orbit { yaw: 0.55, pitch: 0.3, dist: size * 1.9, target }
 }
 
+/// Depth at `q` of a convex face with the corners `pts` at the depths `z`.
+fn depth_at(q: Pos2, pts: &[Pos2], z: &[f32; 4]) -> f32 {
+    for i in 1..pts.len().saturating_sub(1) {
+        let (a, b, c) = (pts[0], pts[i], pts[i + 1]);
+        let det = (b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y);
+        if det.abs() < 1e-6 {
+            continue;
+        }
+        let u = ((q.x - a.x) * (c.y - a.y) - (c.x - a.x) * (q.y - a.y)) / det;
+        let v = ((b.x - a.x) * (q.y - a.y) - (q.x - a.x) * (b.y - a.y)) / det;
+        if u >= -1e-3 && v >= -1e-3 && u + v <= 1.0 + 1e-3 {
+            return z[0] + u * (z[i] - z[0]) + v * (z[i + 1] - z[0]);
+        }
+    }
+    z[..pts.len()].iter().sum::<f32>() / pts.len().max(1) as f32
+}
+
 pub(super) fn point_in_convex(q: Pos2, pts: &[Pos2]) -> bool {
     let mut sign = 0.0f32;
     for i in 0..pts.len() {
@@ -454,3 +466,6 @@ pub(super) fn point_in_convex(q: Pos2, pts: &[Pos2]) -> bool {
     }
     true
 }
+
+#[cfg(test)]
+mod tests;

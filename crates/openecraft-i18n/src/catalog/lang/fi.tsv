@@ -6364,3 +6364,9 @@ Exporting {}	Viedään {}
 Reading {}	Luetaan {}
 Reading the parts file	Luetaan osatiedostoa
 {} stopped with an error: {}	{} keskeytyi virheeseen: {}
+Driven by	Käyttävä laite
+Drive type	Käytön tyyppi
+Select wire	Valitse johdin
+Open cable ducts	Avaa johtokanavat
+Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	Jätä kaikkien johtokanavien kannet pois 3D-näkymästä: niissä olevat johtimet näkyvät
+{}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: johtokouru kohdassa {} mm liian pieni: sen {} johdinta ei voi asentaa rinnakkain

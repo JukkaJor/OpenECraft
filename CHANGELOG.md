@@ -49,13 +49,35 @@ with a command line, an MCP server, a parts server and a project server.
   to the power terminals and ports on their front, the Victron devices from below,
   the Cerbo GX at its row of connectors, Beckhoff terminals at their spring contacts,
   surge arresters with the earth at the bottom, 19-inch devices at the rear; DIN rail
-  models have a screw at every connection point; cables in the 3D routing end at the
-  connection points their cores land on. The 3D view hides the walls in front of the camera or the
+  models have a screw at every connection point; terminal blocks are drawn slice by
+  slice with their stepped profile, wire entries, pushers or screws and marker fields
+  (generic terminals, end covers and end brackets sized after Phoenix Contact PT, PTPOWER,
+  D-ST, D-PT and CLIPFIX), between end plates and end brackets at both ends of every strip, and cable ducts with slotted walls and their
+  cover; cables in the 3D routing end at the
+  connection points their cores land on and part into their cores there; routes leave the devices they end at
+  instead of running through them; the routes of a class are searched on several threads
+  at once (with the same result), a selected cable or tube shows its properties like a
+  wire with its cores and the connection points they join (picked in the 3D view and on the plate); a cabinet opened from its room is fitted into the view. The 3D view hides the
+  walls in front of the camera or the
   ceiling on request; the opacity of the walls is a setting. Wires are drawn in their
-  colours and, like cables and tubes, in their real thickness. The title bar can show
+  colours and, like cables and tubes, in their real thickness as round tubes bent round
+  their corners with their bend radius, from the plate up to their
+  connection points; cable cores are drawn with their cable. Routes keep half their
+  thickness from what is around them and turn where their bends have room, cables keep
+  out of cable ducts too small for them; View › Open cable ducts leaves out the covers
+  of the ducts. Wires, cables and tubes that run together lie side by side, each on a lane of its own
+  (in a cable duct packed in rows from its base, never over its cover), and where wires and cables pass
+  through the wall of a duct its fingers are left out; where they would still run inside or through each
+  other they are pushed apart, one over the other where they cross, inside the walls of their cabinet and
+  out of its devices. Cables and tubes keep apart from each other in free air already when they are
+  routed. A cable duct too small for its wires to lie side by side is an error of the project check.
+  Devices mounted on a busbar system are connected by its bars instead of wires. The title bar can show
   the frame time and the frames per second (Settings › Appearance). A placed device is shown in the
   panel layout or the 3D view from its context menu in the schematic. Pumps, tanks
-  and other parts marked for floor mounting stand on the floor of a room, pipe runs
+  and other parts marked for floor mounting stand on the floor of a room; a pump or
+  compressor without its own motor names its motor (property "Driven by") and is drawn
+  coupled to it: through a shaft coupling (or a gear unit) in line, through V-belts (or a
+  gear case) side by side, the motor turned towards it and raised on a riser. Pipe runs
   go on its walls, ceiling and floor, and hoses, pipes and cables are routed in 3D
   through the room and from its cabinets through their cable glands. Wall
   penetrations join neighbouring rooms: routes run from room to room through them

@@ -6364,3 +6364,9 @@ Exporting {}	Exporterar {}
 Reading {}	Läser {}
 Reading the parts file	Läser artikelfilen
 {} stopped with an error: {}	{} avbröts med ett fel: {}
+Driven by	Drivs av
+Drive type	Drivtyp
+Select wire	Välj ledare
+Open cable ducts	Öppna kabelkanaler
+Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	Utelämna locken på alla kabelkanaler i 3D-vyn: ledarna i dem syns
+{}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: kabelkanal vid {} mm för liten: dess {} ledare kan inte dras bredvid varandra

@@ -6364,3 +6364,9 @@ Exporting {}	Esportazione di {}
 Reading {}	Lettura di {}
 Reading the parts file	Lettura del file degli articoli
 {} stopped with an error: {}	{} interrotto da un errore: {}
+Driven by	Azionato da
+Drive type	Tipo di trasmissione
+Select wire	Seleziona filo
+Open cable ducts	Apri canaline
+Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	Nella vista 3D omette i coperchi di tutte le canaline: i fili al loro interno sono visibili
+{}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: canalina a {} mm troppo piccola: i suoi {} fili non possono essere posati uno accanto all'altro

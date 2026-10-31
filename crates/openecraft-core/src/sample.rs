@@ -421,5 +421,13 @@ fn add_panel_layout(prj: &mut Project, db: &PartsDb) {
     prj.pages.push(Page::new(id, &(at + 1).to_string(), "Mounting layout +CAB1", PageKind::Mounting(enc_id)));
 }
 
+/// `motor` drives `machine` on the floor of enclosure `ei`, raised by `riser` mm.
+fn drive(prj: &mut Project, ei: usize, machine: &str, motor: &str, riser: f32) {
+    prj.devices.entry(machine.into()).or_default().values.insert(crate::panel::DRIVEN_BY.into(), motor.into());
+    if let Some(it) = prj.layout.enclosures[ei].items.iter_mut().find(|i| i.tag == motor) {
+        it.z = riser;
+    }
+}
+
 #[cfg(test)]
 mod tests;

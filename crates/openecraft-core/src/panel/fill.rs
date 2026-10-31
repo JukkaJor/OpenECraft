@@ -1,7 +1,8 @@
 //! Fill levels of the cable ducts: the cross sections of the routed wires (with their
-//! insulation) against the cross section of the duct, at the fullest stretch.
+//! insulation) against the cross section of the duct, at the fullest stretch; and the
+//! lanes the wires lie on side by side inside a duct ([`duct_lanes`]).
 
-use super::{profile, ItemKind, Route, RoutedWire};
+use super::{profile, ItemKind, PanelItem, Route, RoutedWire};
 use crate::model::Project;
 use std::collections::HashMap;
 pub use crate::model::panel::Stretch;
@@ -23,6 +24,56 @@ pub struct DuctFill {
     pub wires: usize,
     /// All wires that run through the duct somewhere.
     pub total_wires: usize,
+    /// Outer diameters of all of them, mm.
+    pub diameters: Vec<f32>,
+}
+
+/// Room (mm) between two wires lying side by side in a duct.
+pub const LANE_GAP: f32 = 0.1;
+
+/// The inside of a cable duct: its width across and its depth between base and cover
+/// (as [`super::duct_boxes`] draws its walls).
+pub fn duct_inside(it: &PanelItem) -> (f32, f32) {
+    let width = it.w.min(it.h);
+    let t = 2.0f32.min(width / 4.0).min(it.d / 4.0);
+    (width - 2.0 * t, it.d - 2.5f32.min(it.d / 4.0) - t)
+}
+
+/// Where wires of the outer `diameters` lie side by side inside a duct `width` wide and
+/// `depth` deep (with [`LANE_GAP`] between them): in rows from its base, the thickest
+/// first, each row as high as its thickest wire and centred across the duct. The
+/// position of each (across from the middle, its middle above the base, in the order
+/// given) and whether all fit.
+pub fn duct_lanes(width: f32, depth: f32, diameters: &[f32]) -> (Vec<[f32; 2]>, bool) {
+    let mut order: Vec<usize> = (0..diameters.len()).collect();
+    order.sort_by(|&a, &b| diameters[b].total_cmp(&diameters[a]).then(a.cmp(&b)));
+    let mut out = vec![[0.0f32; 2]; diameters.len()];
+    // Rows: the wires in them, their width, height and base.
+    let mut rows: Vec<(Vec<usize>, f32, f32, f32)> = Vec::new();
+    for i in order {
+        let d = diameters[i] + LANE_GAP;
+        match rows.last_mut() {
+            Some(row) if row.1 + d <= width + 1e-3 => {
+                row.0.push(i);
+                row.1 += d;
+            }
+            _ => {
+                let base = rows.last().map_or(0.0, |r| r.3 + r.2);
+                rows.push((vec![i], d, d, base));
+            }
+        }
+    }
+    let mut fits = true;
+    for (wires, row_width, height, base) in &rows {
+        fits &= *row_width <= width + 1e-3 && base + height <= depth + 1e-3;
+        let mut x = -row_width / 2.0;
+        for &i in wires {
+            let d = diameters[i] + LANE_GAP;
+            out[i] = [x + d / 2.0, base + d / 2.0];
+            x += d;
+        }
+    }
+    (out, fits)
 }
 
 /// The fullest stretch of a duct: (wire area, from, to, number of wires). At the same
@@ -64,14 +115,17 @@ pub fn wire_area(cross_section: &str) -> f32 {
 
 /// Fill levels of all ducts that wires run through, by enclosure and duct order.
 pub fn duct_fill(prj: &Project, wiring: &[RoutedWire]) -> Vec<DuctFill> {
-    // (enclosure, duct id) -> stretches of the wires
+    // (enclosure, duct id) -> stretches of the wires, the wires (by index)
     let mut runs: HashMap<(usize, u64), Vec<Stretch>> = HashMap::new();
-    for w in wiring {
+    let mut through: HashMap<(usize, u64), std::collections::BTreeMap<usize, f32>> = HashMap::new();
+    for (wi, w) in wiring.iter().enumerate() {
         let area = wire_area(&w.cross_section);
+        let diameter = crate::harness::outer_diameter(&w.cross_section);
         let door = [(w.enclosure, &w.door_routes.0), (w.last_enclosure(), &w.door_routes.1)].into_iter().filter_map(|(e, r)| r.as_ref().map(|r| (e, r)));
         for (ei, route) in w.stretches().chain(door) {
             for r in route.runs.iter().filter(|r| r.to - r.from > 0.01) {
                 runs.entry((ei, r.duct)).or_default().push(Stretch { from: r.from, to: r.to, area });
+                through.entry((ei, r.duct)).or_default().insert(wi, diameter);
             }
         }
     }
@@ -91,6 +145,7 @@ pub fn duct_fill(prj: &Project, wiring: &[RoutedWire]) -> Vec<DuctFill> {
                 to: best.2,
                 wires: best.3,
                 total_wires: list.len(),
+                diameters: through.get(&(ei, d.id)).map(|t| t.values().copied().collect()).unwrap_or_default(),
             });
         }
     }

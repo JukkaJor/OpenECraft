@@ -479,11 +479,22 @@ fn check_strips_and_plc(prj: &Project, nl: &Netlist) -> Vec<Issue> {
     v
 }
 
-/// Ducts above the fill limit (warning) or close to it (above 80 % of it, hint).
+/// Ducts above the fill limit (warning) or close to it (above 80 % of it, hint); too
+/// small for their wires to lie side by side (error).
 fn check_duct_fill(prj: &Project, fill: &[panel::DuctFill]) -> Vec<Issue> {
     let limit = prj.layout.duct_fill_limit;
     let mut v = Vec::new();
     for f in fill {
+        let duct = prj.layout.enclosures[f.enclosure].item(f.duct);
+        if let Some((width, depth)) = duct.map(panel::duct_inside) {
+            if !panel::duct_lanes(width, depth, &f.diameters).1 {
+                let at = fill_spot(prj, f);
+                let name = &prj.layout.enclosures[f.enclosure].name;
+                let message = tr_fmt!("{}: cable duct at {} mm too small: its {} wires cannot be routed side by side", name, format!("{:.0} / {:.0}", at.x, at.y), f.diameters.len());
+                v.push(Issue::plain(Severity::Error, message, None));
+                continue;
+            }
+        }
         let severity = if f.percent > limit {
             Severity::Warning
         } else if f.percent > 0.8 * limit {

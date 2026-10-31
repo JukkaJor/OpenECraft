@@ -10,6 +10,8 @@ use openecraft_core::analysis::Analysis;
 use openecraft_core::model::Project;
 use openecraft_core::panel::{self, Face, ItemKind, Opening, Role, SitePose, PLATE_MARGIN, PLATE_Z};
 use openecraft_core::parts::vec3::{self, cross, dot, norm, sub, V3};
+use openecraft_core::routing3d::bundles::{self, Channel, Strand, Way};
+use openecraft_core::routing3d::RouteKind;
 use egui::Color32;
 use std::hash::{Hash, Hasher};
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -19,6 +21,32 @@ use std::sync::Arc;
 pub(super) const EQUIPMENT: u8 = 5;
 /// Layer of what is drawn over everything (the selected wire or route).
 pub(super) const ON_TOP: u8 = OUTER_WALLS + 1;
+/// Sides of the round tubes of cables and tubes, and of the many thin wires.
+const TUBE_SIDES: usize = 10;
+const WIRE_SIDES: usize = 6;
+/// Grid (mm) the wires, cables and tubes running together are found on, to be laid
+/// side by side.
+const LANE_CELL: f32 = 8.0;
+
+/// A wire, cable or tube drawn as a round tube, before it is laid beside the others it
+/// runs with: its corners and their bend radii, how it looks and what it is.
+struct TubeWay {
+    points: Vec<V3>,
+    bends: Vec<f32>,
+    diameter: f32,
+    color: Color32,
+    stripe: Option<Color32>,
+    width: f32,
+    on_top: bool,
+    target: RouteRef,
+    /// Sides of the tube and points per quarter turn of its bends.
+    sides: usize,
+    steps: usize,
+    /// The direction away from the mounting plate it runs along and how far it may come
+    /// nearer to it (see [`Way`]).
+    rest: V3,
+    below: f32,
+}
 
 /// A flat face of the view: a triangle of a model or a side of a box.
 pub(super) struct SceneFace {
@@ -83,6 +111,8 @@ pub(super) struct SceneLine {
     pub least: f32,
     /// Outer diameter (mm), drawn in perspective; 0 for none.
     pub diameter: f32,
+    /// Drawn as a round tube by the graphics card ([`Scene3d::tubes`]).
+    pub tube: bool,
 }
 
 /// A piece of a line among the equipment, cut where it enters and leaves the ducts.
@@ -117,6 +147,9 @@ pub(super) struct Scene3d {
     pub lines: Vec<SceneLine>,
     /// Lines among the equipment.
     pub wires: Vec<SceneWire>,
+    /// The lines with a diameter as round tubes, bent round their corners, for the
+    /// graphics card (the processor draws the lines).
+    pub tubes: Vec<SceneFace>,
     /// Boxes (min, max) of the equipment, and which of them are ducts.
     pub objects: Vec<(V3, V3)>,
     pub ducts: Vec<bool>,
@@ -144,6 +177,63 @@ fn unordered<T: Hash>(items: impl Iterator<Item = T>) -> u64 {
         .fold(0u64, u64::wrapping_add)
 }
 
+/// A wire's way along the plate lifted over the boxes it would pass through: just
+/// before one it rises in front of it (half its thickness and a little more), just
+/// after it it goes down again.
+fn over(points: &[V3], blockers: &[(V3, V3)], half: f32) -> Vec<V3> {
+    let margin = half + 1.0;
+    let mut out: Vec<V3> = points.first().copied().into_iter().collect();
+    for s in points.windows(2) {
+        let (a, b) = (s[0], s[1]);
+        let at = |t: f32| [0, 1, 2].map(|k| a[k] + (b[k] - a[k]) * t);
+        // The stretches inside the boxes (grown by the wire) and how far in front of the
+        // plate their fronts are, joined where they overlap.
+        let mut hits: Vec<(f32, f32, f32)> = blockers
+            .iter()
+            .filter_map(|(lo, hi)| vec3::segment_in_box(a, b, (lo.map(|v| v - margin), hi.map(|v| v + margin))).map(|(t0, t1)| (t0, t1, hi[2] + margin)))
+            .filter(|h| h.2 > a[2].max(b[2]))
+            .collect();
+        hits.sort_by(|x, y| x.0.total_cmp(&y.0));
+        let mut joined: Vec<(f32, f32, f32)> = Vec::new();
+        for h in hits {
+            match joined.last_mut() {
+                Some(last) if h.0 <= last.1 => *last = (last.0, last.1.max(h.1), last.2.max(h.2)),
+                _ => joined.push(h),
+            }
+        }
+        for (t0, t1, front) in joined {
+            let (p, q) = (at(t0), at(t1));
+            out.extend([p, [p[0], p[1], front], [q[0], q[1], front], q]);
+        }
+        out.push(b);
+    }
+    out.dedup_by(|x, y| vec3::dist(*x, *y) < 0.01);
+    out
+}
+
+/// The fingers (indices) a tube passes through: each of `ways` with its radius, the
+/// fingers with the duct they belong to (index into `ducts`) and their box.
+fn fingers_hit(fingers: &[(usize, std::ops::Range<usize>, (V3, V3))], ways: &[(Vec<V3>, f32)], ducts: &[(V3, V3)]) -> Vec<usize> {
+    let grow = |(lo, hi): (V3, V3), r: f32| (lo.map(|v| v - r), hi.map(|v| v + r));
+    let meet = |a: (V3, V3), b: (V3, V3)| (0..3).all(|k| a.0[k] <= b.1[k] && b.0[k] <= a.1[k]);
+    let way_boxes: Vec<(V3, V3)> = ways.iter().map(|(pts, r)| grow(bounds(pts), *r)).collect();
+    // The ways near each duct.
+    let mut near: std::collections::HashMap<usize, Vec<usize>> = std::collections::HashMap::new();
+    let mut hit = Vec::new();
+    for (f, (duct, _, bx)) in fingers.iter().enumerate() {
+        let close = near.entry(*duct).or_insert_with(|| (0..ways.len()).filter(|&w| meet(way_boxes[w], ducts[*duct])).collect());
+        let through = close.iter().any(|&w| {
+            let (pts, r) = &ways[w];
+            let bx = grow(*bx, *r);
+            meet(way_boxes[w], bx) && pts.windows(2).any(|s| vec3::segment_in_box(s[0], s[1], bx).is_some())
+        });
+        if through {
+            hit.push(f);
+        }
+    }
+    hit
+}
+
 fn bounds(pts: &[V3]) -> (V3, V3) {
     let lo = [0, 1, 2].map(|k| pts.iter().map(|q| q[k]).fold(f32::INFINITY, f32::min));
     let hi = [0, 1, 2].map(|k| pts.iter().map(|q| q[k]).fold(f32::NEG_INFINITY, f32::max));
@@ -159,7 +249,9 @@ impl PanelUi {
         if let Some(s) = self.scene.as_ref().filter(|s| !self.busy() && s.analysis == an.id && s.state == state && s.layout == prj.layout) {
             return s.clone();
         }
-        let s = Arc::new(self.build_scene(prj, an, ei, shown, state));
+        let mut apart = self.apart.take();
+        let s = Arc::new(self.build_scene(prj, an, ei, shown, state, &mut apart));
+        self.apart = apart;
         self.scene = Some(s.clone());
         s
     }
@@ -175,7 +267,7 @@ impl PanelUi {
         }
         self.selection.hash(&mut h);
         self.wire_index(an).hash(&mut h);
-        (self.show_wires, self.hide_ceiling, self.door_angle.to_bits()).hash(&mut h);
+        (self.show_wires, self.hide_ceiling, self.open_ducts, self.door_angle.to_bits()).hash(&mut h);
         (&self.selected_route, self.selected_object).hash(&mut h);
         unordered(self.done_items.iter()).hash(&mut h);
         unordered(self.done_wires.iter()).hash(&mut h);
@@ -183,7 +275,9 @@ impl PanelUi {
     }
 
     #[allow(clippy::too_many_lines)]
-    fn build_scene(&self, prj: &Project, an: &Analysis, ei: usize, shown: &[(usize, SitePose)], state: u64) -> Scene3d {
+    /// `apart`: the wires, cables and tubes pushed apart before and what they were laid
+    /// out from (a hash), taken again while that does not change.
+    fn build_scene(&self, prj: &Project, an: &Analysis, ei: usize, shown: &[(usize, SitePose)], state: u64, apart: &mut Option<(u64, Arc<Vec<Vec<V3>>>)>) -> Scene3d {
         let mut s = Scene3d { id: NEXT_SCENE.fetch_add(1, Ordering::Relaxed), analysis: an.id, layout: prj.layout.clone(), state, ..Default::default() };
         let pos = panel::positions(&prj.layout);
         let (sin, cos) = self.door_angle.sin_cos();
@@ -194,6 +288,29 @@ impl PanelUi {
             let shade = 0.55 + 0.45 * dot(n, light).max(0.0);
             Color32::from_rgb((base.r() as f32 * shade) as u8, (base.g() as f32 * shade) as u8, (base.b() as f32 * shade) as u8)
         };
+        // Round tubes of a wire, cable or tube (a two-colour one with a stripe along it).
+        let tube_faces = |tubes: &mut Vec<SceneFace>, path: &[V3], diameter: f32, color: Color32, stripe: Option<Color32>, sides: usize| {
+            for (tri, side) in vec3::tube(path, diameter / 2.0, sides) {
+                let normal = norm(cross(sub(tri[1], tri[0]), sub(tri[2], tri[0])));
+                let base = match stripe {
+                    Some(stripe) if side < sides / 3 => stripe,
+                    _ => color,
+                };
+                tubes.push(SceneFace { pts: [tri[0], tri[1], tri[2], tri[2]], n: 3, normal, color: lit(base, normal), layer: EQUIPMENT, side: None, obj: None, item: None, outline: false, decal: false });
+            }
+        };
+        // The fingers of the cable ducts (the duct, their faces, their box) and the
+        // wires, cables and tubes drawn as tubes (their way and radius): fingers a tube
+        // passes through are left out.
+        let mut fingers: Vec<(usize, std::ops::Range<usize>, (V3, V3))> = Vec::new();
+        let mut tube_ways: Vec<(Vec<V3>, f32)> = Vec::new();
+        // The wires, cables and tubes drawn as tubes, laid side by side once all are known:
+        // in the ducts of the cabinets (never over their covers), elsewhere inside their
+        // walls.
+        let mut pending: Vec<TubeWay> = Vec::new();
+        let mut channels: Vec<Channel> = Vec::new();
+        let mut insides: Vec<(V3, V3)> = Vec::new();
+        let mut lids: Vec<(V3, V3)> = Vec::new();
         // Wire segments among the equipment, cut at the boxes once all of them are known.
         let mut equipment_wires: Vec<SceneLine> = Vec::new();
         // Whether a box is the object's own (not enlarged by a turn of the door or the
@@ -279,6 +396,12 @@ impl PanelUi {
                 }
             }
             let to3 = |x: f32, y: f32, z: f32| [PLATE_MARGIN + x, h - PLATE_MARGIN - y, PLATE_Z + z];
+            // A box (up coordinates) as seen in the view.
+            let seen = |(lo, hi): (V3, V3)| bounds(&(0..8).map(|c| pose.apply([[lo[0], hi[0]][c & 1], [lo[1], hi[1]][c >> 1 & 1], [lo[2], hi[2]][c >> 2]])).collect::<Vec<V3>>());
+            if !e.is_room() {
+                // The inside of the cabinet: within its walls, roof and bottom.
+                insides.push(seen(up_box(([t, t, PLATE_Z], [w - t, h - t, dpt - t]))));
+            }
             for it in &e.items {
                 // Selected, at the end of the selected wire, with a problem or mounted:
                 // the whole item in that colour, its model's own colours otherwise.
@@ -352,6 +475,31 @@ impl PanelUi {
                     }
                     continue;
                 }
+                // Cable ducts of a cabinet: slotted walls and the cover.
+                if it.kind == ItemKind::Duct && !e.is_room() {
+                    if it.face == Face::Plate {
+                        // Its inside, between the walls and from the base to the cover.
+                        let (b0, b1) = panel::item_box(e, it);
+                        let (width, depth) = panel::duct_inside(it);
+                        let side = (it.w.min(it.h) - width) / 2.0;
+                        let (mut lo, mut hi) = (b0, b1);
+                        let across = if it.w >= it.h { 1 } else { 0 };
+                        (lo[across], hi[across]) = (b0[across] + side, b1[across] - side);
+                        (lo[2], hi[2]) = (b0[2] + side, b0[2] + side + depth);
+                        channels.push(Channel { inside: seen(up_box((lo, hi))), floor: pose.turn([0.0, 0.0, 1.0]) });
+                        lids.push(seen(up_box(([b0[0], b0[1], b1[2]], [b1[0], b1[1], b1[2] + dpt]))));
+                    }
+                    for (bx, [r, g, b], finger) in panel::duct_boxes(e, it, !self.open_ducts) {
+                        let (min, max) = up_box(bx);
+                        let first = s.faces.len();
+                        add_box(&mut s, EQUIPMENT, None, obj, min, max, highlight.unwrap_or(Color32::from_rgb(r, g, b)), Some(it.id), on_door, false);
+                        if let (true, false, Some(duct)) = (finger, on_door, obj) {
+                            let corners: Vec<V3> = (0..8).map(|c| pose.apply([[min[0], max[0]][c & 1], [min[1], max[1]][c >> 1 & 1], [min[2], max[2]][c >> 2]])).collect();
+                            fingers.push((duct, first..s.faces.len(), bounds(&corners)));
+                        }
+                    }
+                    continue;
+                }
                 let (layer, side) = match it.kind {
                     ItemKind::Cutout if it.face.is_wall() => (0, wall_side(&mut s, it.face, (b0, b1), false, true)),
                     ItemKind::Cutout => (1, None),
@@ -361,11 +509,44 @@ impl PanelUi {
                 let decal = it.kind == ItemKind::Cutout && !it.face.is_wall();
                 add_box(&mut s, layer, side, obj, min, max, base, Some(it.id), on_door, decal);
             }
+            // The drives on the floor: shafts and couplings, pulleys and belts, gear
+            // cases; picked as their machine.
+            for d in panel::drives(prj, e).into_iter().filter(|d| !d.triangles.is_empty()) {
+                let selected = k == ei && self.selection.contains(&d.machine);
+                let pts: Vec<V3> = d.triangles.iter().flat_map(|(t, _)| t.map(|q| pose.apply(up(q)))).collect();
+                s.objects.push(bounds(&pts));
+                s.ducts.push(false);
+                exact.push(false);
+                let obj = Some(s.objects.len() - 1);
+                for (tri, [r, g, b]) in d.triangles {
+                    let w = tri.map(up);
+                    let n = norm(cross(sub(w[1], w[0]), sub(w[2], w[0])));
+                    if n == [0.0; 3] {
+                        continue;
+                    }
+                    let normal = pose.turn(n);
+                    let base = if selected { Color32::from_rgb(255, 150, 40) } else { Color32::from_rgb(r, g, b) };
+                    let w = w.map(|q| pose.apply(q));
+                    s.faces.push(SceneFace { pts: [w[0], w[1], w[2], w[2]], n: 3, normal, color: lit(base, normal), layer: EQUIPMENT, side: None, obj, item: Some((k, d.machine)), outline: false, decal: false });
+                }
+            }
             // Wires inside the ducts; the selected one is drawn on top of everything.
-            // Wires routed in 3D are drawn with the routing below.
+            // Wires routed in 3D are drawn with the routing below, cores of a cable routed
+            // in 3D with their cable.
             let routed_3d = |w: &panel::RoutedWire| prj.layout.routing.wires_3d && w.door == (None, None);
+            // What stands on the plate in the way of the wires along it (by item).
+            let blockers: Vec<(u64, (V3, V3))> = e
+                .items
+                .iter()
+                .filter(|i| i.face == Face::Plate && matches!(i.kind, ItemKind::Device | ItemKind::Busbar | ItemKind::Accessory))
+                .map(|i| (i.id, up_box(panel::item_box(e, i))))
+                .collect();
+            let in_cable = |w: &panel::RoutedWire| !w.cable.is_empty() && an.routing.item(&w.cable).is_some_and(|c| c.routed());
             for (wi, wire) in an.wiring.iter().enumerate().filter(|(_, wire)| wire.in_enclosure(k) && !routed_3d(wire)) {
                 let selected = Some(wi) == selected_wire;
+                if in_cable(wire) && !selected {
+                    continue;
+                }
                 let done = self.done_wires.contains(&wire.key());
                 if !self.show_wires && !selected && !done {
                     continue;
@@ -392,28 +573,51 @@ impl PanelUi {
                         .filter(|s| s.0 == k)
                         .map(|(_, route, entry, exit)| {
                             let z = if route.via_ducts { panel::DUCT_PROFILE.1 * 0.5 } else { 5.0 };
+                            // From the connection points down to the plate.
                             let mut v = match (entry, a) {
                                 (None, Some(a)) => door_end(a, &wire.door_routes.0, route.points.first(), z),
+                                (None, None) => wire.terminals.0.map(up).into_iter().collect(),
                                 _ => Vec::new(),
                             };
                             v.extend(entry.map(passage));
-                            v.extend(route.points.iter().map(|q| to3(q.x, q.y, z)));
+                            // Over what stands in its way along the plate (but its own devices).
+                            let along: Vec<V3> = route.points.iter().map(|q| to3(q.x, q.y, z)).collect();
+                            let around: Vec<(V3, V3)> = blockers.iter().filter(|(id, _)| *id != wire.items.0 && *id != wire.items.1).map(|(_, b)| *b).collect();
+                            v.extend(over(&along, &around, diameter / 2.0));
                             v.extend(exit.map(passage));
-                            if let (None, Some(b)) = (exit, b) {
-                                v.extend(door_end(b, &wire.door_routes.1, route.points.last(), z).into_iter().rev());
+                            match (exit, b) {
+                                (None, Some(b)) => v.extend(door_end(b, &wire.door_routes.1, route.points.last(), z).into_iter().rev()),
+                                (None, None) => v.extend(wire.terminals.1.map(up)),
+                                _ => {}
                             }
                             v
                         })
                         .collect(),
                 };
-                for seg in paths.iter().flat_map(|p| p.windows(2)) {
-                    let (a, b) = (pose.apply(seg[0]), pose.apply(seg[1]));
-                    if selected {
-                        s.lines.push(SceneLine { a, b, color, stripe: None, least: width, diameter });
-                    } else {
-                        equipment_wires.push(SceneLine { a, b, color, stripe, least: width, diameter });
+                // Bent round their corners as round tubes, laid beside the others in front of
+                // the mounting plate.
+                let bend = prj.layout.routing.bend_radius(RouteKind::Wire, diameter);
+                let on_plate = !e.is_room() && wire.door == (None, None);
+                for path in &paths {
+                    let (rest, below) = match on_plate {
+                        true => (pose.turn([0.0, 0.0, 1.0]), path.iter().map(|q| q[2] - PLATE_Z).fold(f32::INFINITY, f32::min) - diameter / 2.0 - super::routing_ui::PLATE_CLEAR),
+                        false => ([0.0; 3], f32::INFINITY),
+                    };
+                    let path: Vec<V3> = path.iter().map(|q| pose.apply(*q)).collect();
+                    if diameter > 0.0 {
+                        let bends = vec![bend; path.len()];
+                        pending.push(TubeWay { points: path, bends, diameter, color, stripe, width, on_top: selected, target: RouteRef::Wire(wi), sides: WIRE_SIDES, steps: 2, rest, below });
+                        continue;
                     }
-                    s.picks.push((a, b, RouteRef::Wire(wi)));
+                    for seg in path.windows(2) {
+                        let (a, b) = (seg[0], seg[1]);
+                        if selected {
+                            s.lines.push(SceneLine { a, b, color, stripe: None, least: width, diameter, tube: false });
+                        } else {
+                            equipment_wires.push(SceneLine { a, b, color, stripe, least: width, diameter, tube: false });
+                        }
+                        s.picks.push((a, b, RouteRef::Wire(wi)));
+                    }
                 }
             }
             // Enclosure outline (the front of a cabinet; rooms show their walls)
@@ -448,8 +652,13 @@ impl PanelUi {
         };
         let keys: Vec<usize> = shown.iter().map(|s| s.0).collect();
         for line in self.routing_lines_3d(prj, an, &keys, &to_view, selected_wire) {
+            if line.diameter > 0.0 {
+                let (sides, steps) = if matches!(line.target, RouteRef::Wire(_)) { (WIRE_SIDES, 2) } else { (TUBE_SIDES, 4) };
+                pending.push(TubeWay { points: line.points, bends: line.bends, diameter: line.diameter, color: line.color, stripe: line.stripe, width: line.width, on_top: line.on_top, target: line.target, sides, steps, rest: line.rest, below: line.below });
+                continue;
+            }
             for seg in line.points.windows(2) {
-                let l = SceneLine { a: seg[0], b: seg[1], color: line.color, stripe: line.stripe, least: line.width, diameter: line.diameter };
+                let l = SceneLine { a: seg[0], b: seg[1], color: line.color, stripe: line.stripe, least: line.width, diameter: 0.0, tube: false };
                 if line.on_top {
                     s.lines.push(SceneLine { stripe: None, ..l });
                 } else {
@@ -457,6 +666,48 @@ impl PanelUi {
                 }
                 if !matches!(line.target, RouteRef::None) {
                     s.picks.push((seg[0], seg[1], line.target.clone()));
+                }
+            }
+        }
+        // Wires, cables and tubes that run together side by side, each on a lane of its own,
+        // bent round their corners with their bend radius as round tubes (a two-colour one
+        // with a stripe along it).
+        let ways: Vec<Way> = pending.iter().map(|t| Way { points: &t.points, radii: &t.bends, diameter: t.diameter, rest: t.rest, below: t.below }).collect();
+        // Kept out of the devices, busbars and accessories (their own boxes).
+        let mut obstacles: Vec<(V3, V3)> = (0..s.objects.len()).filter(|&i| exact[i] && !s.ducts[i]).map(|i| s.objects[i]).collect();
+        obstacles.extend(lids);
+        let laid = bundles::spread_ways(&ways, LANE_CELL, &obstacles, &channels, &insides);
+        // Bent round their corners, pushed apart where they still run inside or through
+        // each other.
+        let bent: Vec<Vec<V3>> = pending.iter().zip(&laid).map(|(t, (points, bends))| vec3::fillet_each(points, bends, t.steps)).collect();
+        let strands: Vec<Strand> = pending.iter().zip(&bent).map(|(t, points)| Strand { points, diameter: t.diameter, rest: t.rest, below: t.below }).collect();
+        let mut h = std::collections::hash_map::DefaultHasher::new();
+        for st in &strands {
+            st.points.iter().flatten().chain(&st.rest).chain([&st.diameter, &st.below]).for_each(|v| v.to_bits().hash(&mut h));
+        }
+        let boxes = obstacles.iter().chain(&insides).chain(channels.iter().map(|c| &c.inside));
+        boxes.flat_map(|(lo, hi)| lo.iter().chain(hi)).for_each(|v| v.to_bits().hash(&mut h));
+        let key = h.finish();
+        let laid_apart = match apart.as_ref().filter(|(k, _)| *k == key) {
+            Some((_, ways)) => ways.clone(),
+            None => {
+                let ways = Arc::new(bundles::separate(&strands, &obstacles, &channels, &insides));
+                *apart = Some((key, ways.clone()));
+                ways
+            }
+        };
+        for (t, points) in pending.iter().zip(laid_apart.iter()) {
+            tube_faces(&mut s.tubes, points, t.diameter, t.color, t.stripe, t.sides);
+            tube_ways.push((points.clone(), t.diameter / 2.0));
+            for seg in points.windows(2) {
+                let l = SceneLine { a: seg[0], b: seg[1], color: t.color, stripe: t.stripe, least: t.width, diameter: t.diameter, tube: true };
+                if t.on_top {
+                    s.lines.push(SceneLine { stripe: None, ..l });
+                } else {
+                    equipment_wires.push(l);
+                }
+                if !matches!(t.target, RouteRef::None) {
+                    s.picks.push((seg[0], seg[1], t.target.clone()));
                 }
             }
         }
@@ -478,8 +729,23 @@ impl PanelUi {
                 s.wires.push(SceneWire { line: SceneLine { a: at(t0), b: at(t1), ..l.clone() }, inside });
             }
         }
+        let hit = fingers_hit(&fingers, &tube_ways, &s.objects);
+        if !hit.is_empty() {
+            let mut keep = vec![true; s.faces.len()];
+            for i in hit.into_iter().flat_map(|f| fingers[f].1.clone()) {
+                keep[i] = false;
+            }
+            let mut i = 0;
+            s.faces.retain(|_| {
+                i += 1;
+                keep[i - 1]
+            });
+        }
         let pts: Vec<V3> = s.faces.iter().flat_map(|f| f.pts).chain(s.wires.iter().flat_map(|w| [w.line.a, w.line.b])).chain(s.lines.iter().flat_map(|l| [l.a, l.b])).collect();
         s.bounds = if pts.is_empty() { ([0.0; 3], [0.0; 3]) } else { bounds(&pts) };
         s
     }
 }
+
+#[cfg(test)]
+mod tests;

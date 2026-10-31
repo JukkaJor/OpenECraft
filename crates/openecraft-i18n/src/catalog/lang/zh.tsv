@@ -6353,3 +6353,9 @@ Pipe run on a wall, the ceiling or the floor of the room, along which hoses, tub
 10 · Pump room	10 · 泵房
 The room of the line-up with its pumps: pump motors fed through cable glands in the roofs of the cabinets, a pump and a vessel standing on the floor, ball valves and a gauge on the wall, and the DN25 pipes of the water circuit routed in 3D along a pipe run on the wall.	并柜排列所在的房间及其泵：泵电机经柜顶的电缆密封接头供电，泵和储罐落地放置，球阀和压力表装在墙上，水回路的 DN25 管道沿墙面管道走线进行 3D 布线。
 Room floor	房间地面
+Driven by	驱动设备
+Drive type	传动方式
+Select wire	选择导线
+Open cable ducts	打开线槽
+Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	在 3D 视图中省略所有线槽的盖板：可以看到其中的导线
+{}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}：位于 {} mm 处的线槽太小：其中的 {} 根导线无法并排敷设

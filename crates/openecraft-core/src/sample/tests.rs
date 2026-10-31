@@ -246,19 +246,56 @@ fn building_services_route_from_room_to_room() {
     // Batteries and network in the 19-inch rack.
     let rack = l.enclosures.iter().position(crate::panel::is_rack).expect("rack");
     assert_eq!(crate::panel::rack::occupied(&l.enclosures[rack]).len(), 9);
-    // The battery cable ends at the + terminal of its battery, the BMS cable at its CAN
-    // port (the connection points of the part, not the middle of the front).
+    // The BMS cable ends at the CAN port of the battery (a connection point of the
+    // part, not the middle of the front); the battery cable carries + and - and parts at
+    // both ends: to + and - of the battery, to the fuse F1 and the stud N1 of the
+    // negative busbar of the Lynx distributor.
     let pos = crate::panel::positions(l);
     let point = |tag: &str, pin: &str| {
         let (ei, it) = crate::panel::locate(&prj, tag).expect(tag);
         let q = crate::panel::device_points(&prj, it).into_iter().find(|p| p.pin == pin).expect(pin).pos;
         crate::parts::vec3::add(crate::panel::face_point(&l.enclosures[ei], it.face, q), pos[ei])
     };
-    for (cable, pin) in [("=ESS-W71", "+"), ("=ESS-W96", "CAN")] {
+    let bms = an.routing.item("=ESS-W96").expect("=ESS-W96");
+    assert!(bms.routed() && bms.ends.iter().any(|e| e.tag == "=ESS+RACK-G1" && e.point == Some(point("=ESS+RACK-G1", "CAN")) && e.cores.is_empty()));
+    // So do the DC cables of the inverters.
+    for (cable, tag, pins) in [
+        ("=ESS-W71", "=ESS+RACK-G1", ["+", "-"]),
+        ("=ESS-W71", "=ESS+TR-F1", ["F1", "N1"]),
+        ("=ESS-W81", "=ESS+TR-F2", ["F1", "N1"]),
+        ("=ESS-W81", "=ESS+TR-T1", ["DC+", "DC-"]),
+        ("=ESS-W85", "=ESS+TR-F3", ["F1", "N1"]),
+    ] {
         let c = an.routing.item(cable).expect(cable);
-        let end = c.ends.iter().find(|e| e.tag == "=ESS+RACK-G1").expect("battery end");
-        assert_eq!(end.point, Some(point("=ESS+RACK-G1", pin)), "{cable}");
         assert!(c.routed(), "{cable}: {:?}", c.status);
+        let end = c.ends.iter().find(|e| e.tag == tag).unwrap_or_else(|| panic!("{cable} {tag}: {:?}", c.ends));
+        let cores: Vec<_> = pins.iter().map(|p| point(tag, p)).collect();
+        assert_eq!(end.cores, cores, "{cable} {tag}");
+        let middle = crate::parts::vec3::add(cores[0], cores[1]).map(|v| v / 2.0);
+        assert!(end.point.is_some_and(|q| (0..3).all(|k| (q[k] - middle[k]).abs() < 0.01)), "{tag}: {:?}", end.point);
+    }
+    // The battery cables leave their battery at the front and run past the others, not
+    // through them (a device is passable only where a route leaves it).
+    let racked = &l.enclosures[rack];
+    let batteries: Vec<_> = racked.items.iter().filter(|i| i.tag.contains("RACK-G")).map(|i| crate::panel::item_box(racked, i)).collect();
+    for cable in ["=ESS-W71", "=ESS-W72", "=ESS-W73", "=ESS-W74"] {
+        let c = an.routing.item(cable).expect(cable);
+        let (_, points) = c.stretches().into_iter().find(|(leg, _)| *leg == Some(rack)).expect("rack leg");
+        for seg in points[1..].windows(2) {
+            let mid = [0, 1, 2].map(|k| (seg[0][k] + seg[1][k]) / 2.0 - pos[rack][k]);
+            assert!(!batteries.iter().any(|(lo, hi)| (0..3).all(|k| mid[k] > lo[k] && mid[k] < hi[k])), "{cable}: {seg:?}");
+        }
+    }
+    // The plate view of a cabinet shows the legs of its line-up only: the cable from
+    // the main distribution to the PLC cabinet stays on the plate of each.
+    let w11 = an.routing.item("=MD-W11").expect("=MD-W11");
+    assert_eq!(w11.legs.len(), 4, "{:?}", w11.enclosures);
+    for name in ["+MD", "+CC1"] {
+        let ei = l.enclosures.iter().position(|e| e.name == name).expect(name);
+        let lineup = crate::panel::lineup_of(l, ei);
+        let x = (pos[lineup[0]][0], lineup.iter().map(|&k| pos[k][0] + l.enclosures[k].width).fold(0.0, f32::max));
+        let points: Vec<_> = w11.stretches_in_lineup(l, ei).concat();
+        assert!(!points.is_empty() && points.iter().all(|q| q[0] >= x.0 && q[0] <= x.1), "{name}: {points:?}");
     }
     // PLC cards and EtherCAT terminals, NH fuse switches of three sizes.
     let plc = an.report(&prj, ReportKind::PlcAssignment).unwrap();
@@ -268,4 +305,43 @@ fn building_services_route_from_room_to_room() {
     let idx = Index::build(&prj);
     let devices = crate::singleline::devices(&prj, &idx);
     assert!(devices.iter().filter(|d| d.status == crate::singleline::Status::Engineered).count() >= 12);
+}
+
+#[test]
+fn terminal_strips_are_drawn_with_their_models() {
+    use crate::panel::{part_by_number, strip_cells, ItemKind};
+    let mut strips = 0;
+    for ex in &EXAMPLES {
+        let prj = example(ex.key).unwrap();
+        for it in prj.layout.enclosures.iter().flat_map(|e| &e.items).filter(|i| i.kind == ItemKind::Device) {
+            let cells = strip_cells(&prj, it);
+            if cells.is_empty() {
+                continue;
+            }
+            strips += 1;
+            // Every terminal, end plate and end bracket has its 3D model (no plain box).
+            for c in &cells {
+                assert!(part_by_number(&prj, &c.part).is_some_and(|p| p.model_3d.is_some()), "{}: {} {:?}", ex.key, it.tag, c.part);
+            }
+            // Side by side on the rail: the strip is as deep as its deepest part.
+            let deepest = cells.iter().filter_map(|c| part_by_number(&prj, &c.part).and_then(|p| p.size())).map(|s| s[2]).fold(0.0, f32::max);
+            assert!((it.d - deepest).abs() < 0.01, "{}: {} {} deep, parts {}", ex.key, it.tag, it.d, deepest);
+            // Strips on a rail end in end brackets.
+            if part_by_number(&prj, &it.part).is_some_and(|p| p.mounting.starts_with("Mounting rail")) {
+                let bracket = |c: &crate::panel::Cell| part_by_number(&prj, &c.part).is_some_and(|p| p.subgroup == "End bracket");
+                assert!(bracket(&cells[0]) && bracket(&cells[cells.len() - 1]), "{}: {}", ex.key, it.tag);
+            }
+        }
+    }
+    assert!(strips > 20, "{strips}");
+}
+
+#[test]
+fn pumps_and_the_compressor_are_driven_by_their_motors() {
+    use crate::panel::{drives, DriveKind};
+    let kinds = |prj: &Project| -> Vec<DriveKind> { prj.layout.enclosures.iter().flat_map(|e| drives(prj, e)).map(|d| d.kind).collect() };
+    assert_eq!(kinds(&example("pump_room").unwrap()), [DriveKind::Coupling]);
+    let building = kinds(&example("building_services").unwrap());
+    let count = |k: DriveKind| building.iter().filter(|b| **b == k).count();
+    assert_eq!((count(DriveKind::Coupling), count(DriveKind::Belt)), (2, 1), "{building:?}");
 }

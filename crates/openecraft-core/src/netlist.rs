@@ -442,7 +442,8 @@ pub struct Connection {
 /// `open` (terminal sides apart) are chained in schematic order (potentials and
 /// connectors are not physical wire ends). Devices placed in the same enclosure are
 /// chained first, so the wiring stays inside the cabinet and one wire leaves for the
-/// devices outside; connections assigned to a harness stay as they are
+/// devices outside, those on the same busbar system one after the other after the
+/// first of the others (its bars connect them, see [`crate::panel::virtual_wiring`]); connections assigned to a harness stay as they are
 /// ([`crate::harness::keep_assigned`]). Potential names come from `nl`. Fluid nets are left out (see
 /// [`crate::fluid::hoses`]).
 pub fn connections(prj: &Project, nl: &Netlist, open: &Netlist) -> Vec<Connection> {
@@ -450,8 +451,23 @@ pub fn connections(prj: &Project, nl: &Netlist, open: &Netlist) -> Vec<Connectio
     let assigned = crate::harness::assigned(prj);
     for net in open.nets.iter().filter(|n| !n.fluid) {
         let mut pins = chained_pins(prj, net);
-        let enclosure = |p: &PinRef| crate::panel::locate(prj, &prj.pages[p.page].symbols[p.sym].tag).map(|(e, _)| e).unwrap_or(usize::MAX);
-        pins.sort_by_key(enclosure);
+        let place = |p: &PinRef| match crate::panel::locate(prj, &prj.pages[p.page].symbols[p.sym].tag) {
+            Some((e, it)) => (e, crate::panel::busbar_of(&prj.layout.enclosures[e], it)),
+            None => (usize::MAX, None),
+        };
+        pins.sort_by_key(|p| place(p).0);
+        // In an enclosure the devices on a busbar system one after the other, after the
+        // first of the others.
+        let mut start = 0;
+        while start < pins.len() {
+            let e = place(&pins[start]).0;
+            let end = (start..pins.len()).find(|&j| place(&pins[j]).0 != e).unwrap_or(pins.len());
+            let (mut on_bars, others): (Vec<PinRef>, Vec<PinRef>) = pins[start..end].iter().partition(|p| place(p).1.is_some());
+            on_bars.sort_by_key(|p| place(p).1);
+            let order: Vec<PinRef> = others.iter().take(1).chain(&on_bars).chain(others.iter().skip(1)).copied().collect();
+            pins[start..end].copy_from_slice(&order);
+            start = end;
+        }
         let pins = crate::harness::keep_assigned(prj, &assigned, pins);
         if pins.len() < 2 {
             continue;

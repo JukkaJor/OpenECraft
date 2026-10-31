@@ -5,7 +5,7 @@
 use super::{PanelUi, PATH_COLOR, RESERVE_COLOR, WIRE_HIGHLIGHT};
 use openecraft_core::geom::{p, P};
 use openecraft_core::model::Project;
-use openecraft_core::panel::{PLATE_MARGIN, PLATE_Z};
+use openecraft_core::panel::{self, PLATE_MARGIN, PLATE_Z};
 use openecraft_core::analysis::Analysis;
 use openecraft_core::routing3d::{self, Class, PathKind, ReserveMode, Reservation, RouteKind, RoutingPath, ShieldEnds};
 use egui::{Color32, Pos2, Rect, RichText, Shape, Stroke};
@@ -40,6 +40,12 @@ pub(super) struct RouteLine {
     pub width: f32,
     /// Outer diameter (mm) of a wire, cable or tube, drawn in perspective; 0 for none.
     pub diameter: f32,
+    /// Bend radius (mm) each corner is rounded with (one per point); none: sharp corners.
+    pub bends: Vec<f32>,
+    /// In a cabinet: the direction away from its mounting plate and how far the line
+    /// may come nearer to it (when it is laid beside others); none in a room.
+    pub rest: [f32; 3],
+    pub below: f32,
     pub on_top: bool,
     pub target: RouteRef,
 }
@@ -60,6 +66,10 @@ fn kind_choice(ui: &mut egui::Ui, salt: &str, kind: &mut PathKind) {
         }
     });
 }
+
+/// Room (mm) wires and cables laid side by side keep from the mounting plate (beyond
+/// half their thickness): the base of the cable ducts and a little more.
+pub(super) const PLATE_CLEAR: f32 = 3.0;
 
 /// Colour of the pipe runs of rooms.
 pub(super) const PIPE_COLOR: Color32 = Color32::from_rgb(40, 150, 200);
@@ -147,12 +157,41 @@ impl PanelUi {
                 continue;
             }
             let (color, width) = if selected { (WIRE_HIGHLIGHT, 3.0) } else { (class_color(it.class), (it.diameter * self.zoom * 0.5).clamp(1.5, 6.0)) };
-            // The legs in the line-up, not those through a room.
-            for (_, points) in it.stretches().into_iter().filter(|(leg, _)| leg.is_none_or(|k| !prj.layout.enclosures[k].is_room())) {
+            // The legs in this line-up, not those through a room or another line-up.
+            for points in it.stretches_in_lineup(&prj.layout, ei) {
                 let pts: Vec<Pos2> = points.iter().map(|q| plate([q[0] - pos[ei][0], q[1] - pos[ei][1], q[2]])).collect();
                 painter.add(Shape::line(pts, Stroke::new(width, color.gamma_multiply(0.8))));
             }
         }
+    }
+
+    /// Selects a cable or tube: the properties show it, the status its length.
+    pub(super) fn select_route(&mut self, an: &Analysis, key: &str) {
+        self.status = an.routing.item(key).map(|i| format!("{} {}  {:.0} mm", i.kind.title(), i.label, i.length)).unwrap_or_default();
+        self.selected_route = Some(key.to_string());
+        self.selected_wire = None;
+        self.selection.clear();
+    }
+
+    /// The cables and tubes drawn over the plate of enclosure `ei` within `tol` of the
+    /// plate point `q` (from their outline), nearest first (indices into the routing).
+    pub(super) fn cables_at(&self, prj: &Project, an: &Analysis, ei: usize, q: P, tol: f32) -> Vec<usize> {
+        let pos = panel::positions(&prj.layout);
+        let plate = |v: &[f32; 3]| p(v[0] - pos[ei][0] - PLATE_MARGIN, v[1] - pos[ei][1] - PLATE_MARGIN);
+        let mut near: Vec<(usize, f32)> = an
+            .routing
+            .items
+            .iter()
+            .enumerate()
+            .filter(|(_, it)| it.kind != RouteKind::Wire && it.enclosures.contains(&ei))
+            .filter_map(|(i, it)| {
+                let d = it.stretches_in_lineup(&prj.layout, ei).into_iter().map(|pts| panel::route_distance(&pts.iter().map(plate).collect::<Vec<P>>(), q)).fold(f32::INFINITY, f32::min);
+                let d = d - it.diameter / 2.0;
+                (d <= tol).then_some((i, d))
+            })
+            .collect();
+        near.sort_by(|a, b| a.1.total_cmp(&b.1).then(a.0.cmp(&b.0)));
+        near.into_iter().map(|(i, _)| i).collect()
     }
 
     /// Lines of the 3D routing in view coordinates (`to_view`: layout to view
@@ -167,7 +206,7 @@ impl PanelUi {
             for path in &e.paths {
                 let selected = self.selected_object == Some(path.id);
                 let color = if path.face.is_some() { PIPE_COLOR } else { PATH_COLOR };
-                out.push(RouteLine { points: path.points.iter().map(|q| g(*q)).collect(), color, stripe: None, width: if selected { 3.0 } else { 1.5 }, diameter: 0.0, on_top: selected, target: RouteRef::None });
+                out.push(RouteLine { points: path.points.iter().map(|q| g(*q)).collect(), color, stripe: None, width: if selected { 3.0 } else { 1.5 }, diameter: 0.0, bends: Vec::new(), rest: [0.0; 3], below: f32::INFINITY, on_top: selected, target: RouteRef::None });
             }
             for r in &e.reservations {
                 let color = match r.mode {
@@ -191,17 +230,46 @@ impl PanelUi {
                     ((0, 1, 0), (0, 1, 1)),
                     ((1, 1, 0), (1, 1, 1)),
                 ] {
-                    out.push(RouteLine { points: vec![c(s.0, s.1, s.2), c(t.0, t.1, t.2)], color, stripe: None, width: 1.0, diameter: 0.0, on_top: false, target: RouteRef::None });
+                    out.push(RouteLine { points: vec![c(s.0, s.1, s.2), c(t.0, t.1, t.2)], color, stripe: None, width: 1.0, diameter: 0.0, bends: Vec::new(), rest: [0.0; 3], below: f32::INFINITY, on_top: false, target: RouteRef::None });
                 }
             }
         }
         let wires_3d = prj.layout.routing.wires_3d;
         for it in an.routing.items.iter().filter(|i| i.routed() && i.enclosures.iter().any(|k| shown.contains(k))) {
             // Leg by leg; legs through an enclosure not shown are left out.
-            for (leg, points) in it.stretches() {
+            let stretches = it.stretches();
+            let radii = it.stretch_radii();
+            let last = stretches.len().saturating_sub(1);
+            for (s, (leg, points)) in stretches.into_iter().enumerate() {
+                let mut bends = radii.get(s).copied().unwrap_or_default();
                 if leg.is_some_and(|k| !shown.contains(&k)) {
                     continue;
                 }
+                // The cores part where the cable comes up to the device at the ends of the
+                // first and the last stretch (off its face, so the device does not hide them).
+                let mut points = points;
+                let mut cores: Vec<[[f32; 3]; 2]> = Vec::new();
+                if s == 0 && !it.ends[0].cores.is_empty() && points.len() > 2 {
+                    cores.extend(it.ends[0].cores.iter().map(|q| [points[1], *q]));
+                    points = &points[1..];
+                    bends = bends.get(1..).unwrap_or_default();
+                }
+                if s == last && !it.ends[1].cores.is_empty() && points.len() > 2 {
+                    let n = points.len();
+                    cores.extend(it.ends[1].cores.iter().map(|q| [points[n - 2], *q]));
+                    points = &points[..n - 1];
+                    bends = bends.get(..n - 1).unwrap_or(bends);
+                }
+                let bends = bends.to_vec();
+                // In a cabinet the mounting plate is behind it: how far it lies in front.
+                let in_room = leg.is_some_and(|k| prj.layout.enclosures[k].is_room());
+                let cabinet = |q: &[f32; 3]| it.enclosures.iter().copied().find(|&k| !prj.layout.enclosures[k].is_room() && q[0] >= pos[k][0] && q[0] <= pos[k][0] + prj.layout.enclosures[k].width);
+                let front = points.iter().filter_map(|q| cabinet(q).map(|k| q[2] - pos[k][2] - PLATE_Z)).fold(f32::INFINITY, f32::min);
+                let (rest, below) = match points.first() {
+                    Some(q) if !in_room && front.is_finite() => (openecraft_core::parts::vec3::norm(openecraft_core::parts::vec3::sub(to_view(leg, [q[0], q[1], q[2] + 1.0]), to_view(leg, *q))), front - it.diameter / 2.0 - PLATE_CLEAR),
+                    _ => ([0.0; 3], f32::INFINITY),
+                };
+                let cores: Vec<[[f32; 3]; 2]> = cores.into_iter().map(|c| c.map(|q| to_view(leg, q))).collect();
                 let points: Vec<[f32; 3]> = points.iter().map(|q| to_view(leg, *q)).collect();
                 match (it.kind, it.wire) {
                     (RouteKind::Wire, Some(wi)) if wires_3d => {
@@ -213,7 +281,7 @@ impl PanelUi {
                         let wire = &an.wiring[wi];
                         let (color, stripe, width) = super::wire_look(&wire.color, selected, done, selected_wire.is_some());
                         let diameter = openecraft_core::harness::outer_diameter(&wire.cross_section);
-                        out.push(RouteLine { points, color, stripe, width, diameter, on_top: selected, target: RouteRef::Wire(wi) });
+                        out.push(RouteLine { points, color, stripe, width, diameter, bends, rest, below, on_top: selected, target: RouteRef::Wire(wi) });
                     }
                     (RouteKind::Wire, _) => {}
                     _ => {
@@ -223,7 +291,10 @@ impl PanelUi {
                         }
                         // In the colour of its class, as thick as it is.
                         let (color, width) = if selected { (WIRE_HIGHLIGHT, 4.0) } else { (class_color(it.class), 2.0) };
-                        out.push(RouteLine { points, color, stripe: None, width, diameter: it.diameter, on_top: selected, target: RouteRef::Item(it.key.clone()) });
+                        out.push(RouteLine { points, color, stripe: None, width, diameter: it.diameter, bends, rest, below, on_top: selected, target: RouteRef::Item(it.key.clone()) });
+                        for core in cores {
+                            out.push(RouteLine { points: core.to_vec(), color, stripe: None, width: width * 0.5, diameter: it.diameter * 0.5, bends: Vec::new(), rest: [0.0; 3], below: f32::INFINITY, on_top: selected, target: RouteRef::Item(it.key.clone()) });
+                        }
                     }
                 }
             }
@@ -245,7 +316,6 @@ impl PanelUi {
             for &i in here.iter().filter(|&&i| !r.items[i].routed() && r.items[i].kind != RouteKind::Wire) {
                 ui.colored_label(Color32::from_rgb(220, 120, 0), format!("{} {}: {}", r.items[i].kind.title(), r.items[i].label, r.items[i].status_text()));
             }
-            self.selected_route_details(ui, prj, an);
             ui.separator();
             // Cables and tubes of the enclosure.
             ui.label(RichText::new(tr("Cables and tubes")).strong());
@@ -276,10 +346,11 @@ impl PanelUi {
         });
     }
 
-    fn selected_route_details(&mut self, ui: &mut egui::Ui, prj: &mut Project, an: &Analysis) {
+    /// Properties of the selected cable or tube (as those of a selected wire): its route,
+    /// shield and freezing, the devices at its ends.
+    pub(super) fn route_properties(&mut self, ui: &mut egui::Ui, prj: &mut Project, an: &Analysis) {
         let r = &an.routing;
         let Some((idx, it)) = self.selected_route.as_ref().and_then(|k| r.items.iter().enumerate().find(|(_, i)| &i.key == k)) else { return };
-        ui.separator();
         ui.label(RichText::new(format!("{} {}", it.kind.title(), it.label)).strong().color(WIRE_HIGHLIGHT));
         egui::Grid::new("rroute").num_columns(2).spacing([10.0, 4.0]).show(ui, |ui| {
             ui.label(tr("From / to"));
@@ -304,6 +375,9 @@ impl PanelUi {
             ui.label(it.status_text());
             ui.end_row();
         });
+        if it.kind == RouteKind::Cable {
+            self.cable_cores(ui, prj, an, &it.key);
+        }
         if let Some(s) = r.shields.iter().find(|s| s.cable == it.key) {
             ui.label(RichText::new(tr("Shield")).strong());
             for e in &s.ends {
@@ -342,6 +416,84 @@ impl PanelUi {
                 self.selected_route = None;
             }
         });
+        ui.separator();
+        ui.label(RichText::new(tr("Connected devices")).strong());
+        let mut select = None;
+        for end in &it.ends {
+            let (Some(ei), Some(id)) = (end.enclosure, end.item) else { continue };
+            let Some(item) = prj.layout.enclosures.get(ei).and_then(|e| e.item(id)).filter(|i| !i.tag.is_empty()) else { continue };
+            ui.horizontal(|ui| {
+                if ui.link(RichText::new(&item.tag).monospace()).on_hover_text(tr("Select device")).clicked() {
+                    select = Some((ei, id));
+                }
+                if ui.small_button(tr("Show in schematic")).clicked() {
+                    self.goto_schematic = Some(item.tag.clone());
+                }
+            });
+        }
+        if let Some((ei, id)) = select {
+            self.switch_enclosure(ei);
+            self.select_item(id);
+        }
+    }
+
+    /// The cores of a cable with the connection points each joins: a core selects its
+    /// wire, a connection point its device.
+    fn cable_cores(&mut self, ui: &mut egui::Ui, prj: &Project, an: &Analysis, cable: &str) {
+        let cores: Vec<_> = an.connections.iter().filter(|c| c.cable == cable).collect();
+        if cores.is_empty() {
+            return;
+        }
+        ui.separator();
+        ui.label(RichText::new(tr("Cores")).strong());
+        let mut wire = None;
+        let mut device = None;
+        egui::Grid::new("rcores").striped(true).num_columns(4).spacing([10.0, 4.0]).show(ui, |ui| {
+            for title in [tr("Core"), tr("Cross-section"), tr("From"), tr("To")] {
+                ui.label(RichText::new(title).weak());
+            }
+            ui.end_row();
+            for c in cores {
+                let (from, to) = (openecraft_core::netlist::pin_designation(prj, c.a), openecraft_core::netlist::pin_designation(prj, c.b));
+                let name = match (c.core.is_empty(), c.color.is_empty()) {
+                    (false, false) => format!("{} ({})", c.core, c.color),
+                    (false, true) => c.core.clone(),
+                    _ => c.color.clone(),
+                };
+                match an.wiring.iter().find(|w| (w.from == from && w.to == to) || (w.from == to && w.to == from)) {
+                    Some(w) => {
+                        if ui.link(name).on_hover_text(tr("Select wire")).clicked() {
+                            wire = Some(w.key());
+                        }
+                    }
+                    None => {
+                        ui.label(name);
+                    }
+                }
+                ui.label(&c.cross_section);
+                for (pin, label) in [(c.a, from), (c.b, to)] {
+                    let tag = &prj.pages[pin.page].symbols[pin.sym].tag;
+                    match panel::locate(prj, tag) {
+                        Some((ei, item)) => {
+                            if ui.link(RichText::new(label).monospace()).on_hover_text(tr("Select device")).clicked() {
+                                device = Some((ei, item.id));
+                            }
+                        }
+                        None => {
+                            ui.label(RichText::new(label).monospace());
+                        }
+                    }
+                }
+                ui.end_row();
+            }
+        });
+        if let Some(key) = wire {
+            self.select_wire(key);
+        }
+        if let Some((ei, id)) = device {
+            self.switch_enclosure(ei);
+            self.select_item(id);
+        }
     }
 
     fn paths_and_reservations(&mut self, ui: &mut egui::Ui, prj: &mut Project, an: &Analysis, ei: usize) {
