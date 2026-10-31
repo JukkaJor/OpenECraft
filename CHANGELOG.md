@@ -57,7 +57,7 @@ with a command line, an MCP server, a parts server and a project server.
   connection points their cores land on and part into their cores there; routes leave the devices they end at
   instead of running through them; the routes of a class are searched on several threads
   at once (with the same result), a selected cable or tube shows its properties like a
-  wire with its cores and the connection points they join; a cabinet opened from its room is fitted into the view. The 3D view hides the
+  wire with its cores and the connection points they join (picked in the 3D view and on the plate); a cabinet opened from its room is fitted into the view. The 3D view hides the
   walls in front of the camera or the
   ceiling on request; the opacity of the walls is a setting. Wires are drawn in their
   colours and, like cables and tubes, in their real thickness as round tubes bent round

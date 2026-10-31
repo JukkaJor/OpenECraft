@@ -258,6 +258,36 @@ fn routed_pipes_are_round_tubes_bent_round_their_corners() {
 }
 
 #[test]
+fn cables_are_picked_on_the_plate_like_wires() {
+    let prj = openecraft_core::sample::demo_project();
+    let an = Analysis::checked(&prj);
+    let pos = panel::positions(&prj.layout);
+    // The middle of a segment of a cable's route over the plate of a cabinet.
+    let (ei, index, q) = an
+        .routing
+        .items
+        .iter()
+        .enumerate()
+        .filter(|(_, it)| it.kind == routing3d::RouteKind::Cable && it.routed())
+        .find_map(|(i, it)| {
+            let ei = *it.enclosures.first()?;
+            let pts = it.stretches_in_lineup(&prj.layout, ei).into_iter().find(|s| s.len() >= 2)?;
+            let (a, b) = (pts[0], pts[1]);
+            Some((ei, i, p((a[0] + b[0]) / 2.0 - pos[ei][0] - PLATE_MARGIN, (a[1] + b[1]) / 2.0 - pos[ei][1] - PLATE_MARGIN)))
+        })
+        .expect("a cable over a plate");
+    let mut ui = PanelUi::default();
+    assert!(ui.cables_at(&prj, &an, ei, q, 2.0).contains(&index));
+    assert!(ui.cables_at(&prj, &an, ei, p(-5000.0, -5000.0), 2.0).is_empty());
+    // Picked, it is shown as in the 3D view: no wire or item selected with it.
+    ui.selection.insert(7);
+    ui.selected_wire = Some(("-K1:A1".into(), "-K2:A1".into()));
+    ui.select_route(&an, &an.routing.items[index].key);
+    assert_eq!(ui.selected_route.as_deref(), Some(an.routing.items[index].key.as_str()));
+    assert!(ui.selected_wire.is_none() && ui.selection.is_empty() && ui.status.contains(&an.routing.items[index].label));
+}
+
+#[test]
 fn face_summaries_count_openings_apart() {
     let item = |kind: ItemKind, opening: Opening| PanelItem { kind, opening, ..Default::default() };
     let rail = item(ItemKind::Rail, Opening::Cutout);

@@ -191,10 +191,7 @@ impl PanelUi {
             }
             // Cables and tubes of the 3D routing.
             (_, Some((key, _))) => {
-                self.status = an.routing.item(key).map(|i| format!("{} {}  {:.0} mm", i.kind.title(), i.label, i.length)).unwrap_or_default();
-                self.selected_route = Some(key.to_string());
-                self.selected_wire = None;
-                self.selection.clear();
+                self.select_route(an, key);
                 return true;
             }
             (Some((k, id)), None) => {

@@ -2947,6 +2947,13 @@ impl PanelUi {
                         self.pick_wire(an, &candidates);
                         return;
                     }
+                    // Cables and tubes under the wires; clicking again steps through them.
+                    let cables = if face == Face::Plate { self.cables_at(prj, an, ei, q, tol) } else { Vec::new() };
+                    let current = self.selected_route.as_ref().and_then(|k| an.routing.items.iter().position(|i| &i.key == k));
+                    if let Some(i) = panel::next_candidate(&cables, current) {
+                        self.select_route(an, &an.routing.items[i].key);
+                        return;
+                    }
                 }
                 self.selected_wire = None;
                 let alt = ui.input(|i| i.modifiers.alt);

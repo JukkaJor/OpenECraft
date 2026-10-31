@@ -157,6 +157,35 @@ impl PanelUi {
         }
     }
 
+    /// Selects a cable or tube: the properties show it, the status its length.
+    pub(super) fn select_route(&mut self, an: &Analysis, key: &str) {
+        self.status = an.routing.item(key).map(|i| format!("{} {}  {:.0} mm", i.kind.title(), i.label, i.length)).unwrap_or_default();
+        self.selected_route = Some(key.to_string());
+        self.selected_wire = None;
+        self.selection.clear();
+    }
+
+    /// The cables and tubes drawn over the plate of enclosure `ei` within `tol` of the
+    /// plate point `q` (from their outline), nearest first (indices into the routing).
+    pub(super) fn cables_at(&self, prj: &Project, an: &Analysis, ei: usize, q: P, tol: f32) -> Vec<usize> {
+        let pos = panel::positions(&prj.layout);
+        let plate = |v: &[f32; 3]| p(v[0] - pos[ei][0] - PLATE_MARGIN, v[1] - pos[ei][1] - PLATE_MARGIN);
+        let mut near: Vec<(usize, f32)> = an
+            .routing
+            .items
+            .iter()
+            .enumerate()
+            .filter(|(_, it)| it.kind != RouteKind::Wire && it.enclosures.contains(&ei))
+            .filter_map(|(i, it)| {
+                let d = it.stretches_in_lineup(&prj.layout, ei).into_iter().map(|pts| panel::route_distance(&pts.iter().map(plate).collect::<Vec<P>>(), q)).fold(f32::INFINITY, f32::min);
+                let d = d - it.diameter / 2.0;
+                (d <= tol).then_some((i, d))
+            })
+            .collect();
+        near.sort_by(|a, b| a.1.total_cmp(&b.1).then(a.0.cmp(&b.0)));
+        near.into_iter().map(|(i, _)| i).collect()
+    }
+
     /// Lines of the 3D routing in view coordinates (`to_view`: layout to view
     /// coordinates, through a room for points of the room): routing paths and reservations of the enclosures shown, the routed
     /// cables and tubes, and the wires when they are routed in 3D.
