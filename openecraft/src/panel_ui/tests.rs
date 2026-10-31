@@ -288,6 +288,20 @@ fn cables_are_picked_on_the_plate_like_wires() {
 }
 
 #[test]
+fn wires_entering_the_ducts_take_out_the_fingers_they_pass() {
+    // Shown, the wires pass through the walls of the ducts: the fingers there are left out.
+    let prj = openecraft_core::sample::demo_project();
+    let an = Analysis::build(&prj);
+    let faces = |show_wires: bool| {
+        let mut ui = PanelUi { show_wires, ..Default::default() };
+        let shown = ui.shown_3d(&prj, 0);
+        ui.scene_3d(&prj, &an, 0, &shown).faces.len()
+    };
+    let (hidden, shown) = (faces(false), faces(true));
+    assert!(shown < hidden && (hidden - shown) % 6 == 0, "{hidden} faces, {shown} with the wires");
+}
+
+#[test]
 fn face_summaries_count_openings_apart() {
     let item = |kind: ItemKind, opening: Opening| PanelItem { kind, opening, ..Default::default() };
     let rail = item(ItemKind::Rail, Opening::Cutout);

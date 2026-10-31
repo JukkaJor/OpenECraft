@@ -227,13 +227,15 @@ impl PanelUi {
             }
         }
         let wires_3d = prj.layout.routing.wires_3d;
-        for it in an.routing.items.iter().filter(|i| i.routed() && i.enclosures.iter().any(|k| shown.contains(k))) {
+        // Routes that share a stretch side by side, each on its lane of the bundle.
+        let laid = routing3d::bundles::spread(&an.routing.items, prj.layout.routing.grid.max(5.0));
+        for (i, it) in an.routing.items.iter().enumerate().filter(|(_, i)| i.routed() && i.enclosures.iter().any(|k| shown.contains(k))) {
             // Leg by leg; legs through an enclosure not shown are left out.
             let stretches = it.stretches();
-            let radii = it.stretch_radii();
             let last = stretches.len().saturating_sub(1);
-            for (s, (leg, points)) in stretches.into_iter().enumerate() {
-                let mut bends = radii.get(s).copied().unwrap_or_default();
+            for (s, (leg, _)) in stretches.into_iter().enumerate() {
+                let Some((points, bends)) = laid[i].get(s) else { continue };
+                let (points, mut bends) = (points.as_slice(), bends.as_slice());
                 if leg.is_some_and(|k| !shown.contains(&k)) {
                     continue;
                 }

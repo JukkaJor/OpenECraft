@@ -768,9 +768,10 @@ pub fn strip_cells(prj: &Project, it: &PanelItem) -> Vec<Cell> {
 /// Colours of a slotted cable duct and its cover.
 const DUCT_COLORS: ([u8; 3], [u8; 3]) = ([150, 153, 150], [166, 169, 166]);
 
-/// The parts of a slotted cable duct (enclosure coordinates, colour): the base, the
-/// side walls slotted into fingers above a closed rim, and the `cover` on top.
-pub fn duct_boxes(e: &Enclosure, it: &PanelItem, cover: bool) -> Vec<((V3, V3), [u8; 3])> {
+/// The parts of a slotted cable duct (enclosure coordinates, colour, whether it is a
+/// finger): the base, the side walls slotted into fingers above a closed rim, and the
+/// `cover` on top.
+pub fn duct_boxes(e: &Enclosure, it: &PanelItem, cover: bool) -> Vec<((V3, V3), [u8; 3], bool)> {
     let (wall, cover_color) = DUCT_COLORS;
     let frame = face_frame(e, it.face);
     let along_x = it.w >= it.h;
@@ -779,26 +780,26 @@ pub fn duct_boxes(e: &Enclosure, it: &PanelItem, cover: bool) -> Vec<((V3, V3), 
     let (rim, top) = ((it.d * 0.25).max(t), it.d - 2.5f32.min(it.d / 4.0));
     let mut out = Vec::new();
     // A box from ranges along, across and above the face.
-    let mut add = |a: (f32, f32), c: (f32, f32), z: (f32, f32), color: [u8; 3]| {
+    let mut add = |a: (f32, f32), c: (f32, f32), z: (f32, f32), color: [u8; 3], finger: bool| {
         let (x, y) = if along_x { (a, c) } else { (c, a) };
         let p = in_frame(&frame, [it.x + x.0, it.y + y.0, it.z + z.0]);
         let q = in_frame(&frame, [it.x + x.1, it.y + y.1, it.z + z.1]);
-        out.push((([0, 1, 2].map(|k| p[k].min(q[k])), [0, 1, 2].map(|k| p[k].max(q[k]))), color));
+        out.push((([0, 1, 2].map(|k| p[k].min(q[k])), [0, 1, 2].map(|k| p[k].max(q[k]))), color, finger));
     };
-    add((0.0, len), (0.0, width), (0.0, t), wall);
+    add((0.0, len), (0.0, width), (0.0, t), wall, false);
     // Fingers about every 12.5 mm with the slots between them, one at each end.
     let finger = 6.0f32.min(len);
     let n = ((len - finger) / 12.5).floor().max(0.0) as usize + 1;
     let step = if n > 1 { (len - finger) / (n - 1) as f32 } else { 0.0 };
     for c in [(0.0, t), (width - t, width)] {
-        add((0.0, len), c, (t, rim), wall);
+        add((0.0, len), c, (t, rim), wall, false);
         for i in 0..n {
             let a = i as f32 * step;
-            add((a, a + finger), c, (rim, top), wall);
+            add((a, a + finger), c, (rim, top), wall, true);
         }
     }
     if cover {
-        add((0.0, len), (0.0, width), (top, it.d), cover_color);
+        add((0.0, len), (0.0, width), (top, it.d), cover_color, false);
     }
     out
 }

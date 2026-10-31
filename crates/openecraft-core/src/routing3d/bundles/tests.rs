@@ -75,3 +75,32 @@ fn legs_are_bundled_on_their_own() {
     let (bundles, _) = find(&[a, b], 25.0);
     assert!(bundles.iter().all(|x| x.length < 200.0), "{bundles:?}");
 }
+
+#[test]
+fn items_of_a_bundle_lie_side_by_side_and_do_not_cross() {
+    // A and B run the same way round two corners; C on its own.
+    let route = vec![[0.0, -300.0, 0.0], [0.0, 0.0, 0.0], [500.0, 0.0, 0.0], [500.0, 500.0, 0.0], [900.0, 500.0, 0.0]];
+    let items = vec![
+        item("A", Class::Power, 10.0, route.clone()),
+        item("B", Class::Power, 10.0, route.clone()),
+        item("C", Class::Power, 10.0, vec![[0.0, 2000.0, 0.0], [500.0, 2000.0, 0.0], [500.0, 2500.0, 0.0]]),
+    ];
+    let laid = spread(&items, 25.0);
+    let (a, b) = (&laid[0][0].0, &laid[1][0].0);
+    assert_eq!(laid[2][0].0, items[2].points, "alone it stays as it is");
+    // The ends stay where they are.
+    assert_eq!((a[0], a[a.len() - 1], b[0]), (route[0], route[4], route[0]));
+    assert_eq!((a.len(), b.len()), (5, 5));
+    // Every corner a lane apart (the thickest item and 1 mm): side by side all along,
+    // never crossing.
+    for k in 1..4 {
+        let d = crate::parts::vec3::dist(a[k], b[k]);
+        assert!((d - 11.0).abs() < 0.01, "corner {k}: {a:?} {b:?}");
+    }
+    // Each stretch moved as a whole: still straight along its axis.
+    for p in [a, b] {
+        for k in 1..3 {
+            assert_eq!((0..3).filter(|&i| (p[k][i] - p[k + 1][i]).abs() > 1e-3).count(), 1, "{p:?}");
+        }
+    }
+}
