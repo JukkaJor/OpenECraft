@@ -32,6 +32,16 @@ pub struct Shaft {
     pub dir: [f32; 3],
 }
 
+/// A nozzle (pipe stub, port) of the model of a fluid device: the connection point of
+/// the part named `pin` (in the order of its functions), its end and the direction a
+/// pipe leaves it in, in the coordinates of the part's model.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Nozzle {
+    pub pin: String,
+    pub at: [f32; 3],
+    pub dir: [f32; 3],
+}
+
 /// What a part is modelled as.
 #[derive(Clone, Copy, Debug, PartialEq)]
 enum Kind {
@@ -113,7 +123,7 @@ fn kind_of(p: &Part) -> Option<Kind> {
 /// The 3D model and front view of a part that is one of the kinds above, or of a
 /// device of the bundled catalogs drawn after its photos ([`brands`]).
 pub(super) fn model(p: &Part) -> Option<(Model2d, Mesh3d)> {
-    build(p).map(|(m2, m3, _)| (m2, m3))
+    build(p).map(|(m2, m3, ..)| (m2, m3))
 }
 
 /// The shaft of the generated model of a motor or of a pump or compressor without its
@@ -122,8 +132,14 @@ pub fn shaft(p: &Part) -> Option<Shaft> {
     build(p)?.2
 }
 
+/// The nozzles of the generated model of a pump, vessel, valve or pipe fitting, one
+/// per connection point of the part as far as the model has them.
+pub fn nozzles(p: &Part) -> Vec<Nozzle> {
+    build(p).map(|b| b.3).unwrap_or_default()
+}
+
 #[allow(clippy::too_many_lines)]
-fn build(p: &Part) -> Option<(Model2d, Mesh3d, Option<Shaft>)> {
+fn build(p: &Part) -> Option<(Model2d, Mesh3d, Option<Shaft>, Vec<Nozzle>)> {
     let (w, h, d) = (p.width, p.height, p.depth);
     if let Some(brand) = brands::brand_of(p) {
         let mut f = brands::Frac::new(w, h, d, p.connection_points_or_default().0);
@@ -131,7 +147,7 @@ fn build(p: &Part) -> Option<(Model2d, Mesh3d, Option<Shaft>)> {
         fit(&mut f.m, [w, h, d], &mut []);
         let mut prims = vec![Prim2d::Rect { min: [0.0, 0.0], max: [w, h], fill: false }];
         prims.append(&mut f.prims);
-        return Some((Model2d { width: w, height: h, prims }, f.m, None));
+        return Some((Model2d { width: w, height: h, prims }, f.m, None, Vec::new()));
     }
     let kind = kind_of(p)?;
     let mut m = Mesh3d::default();
@@ -141,6 +157,9 @@ fn build(p: &Part) -> Option<(Model2d, Mesh3d, Option<Shaft>)> {
     let circle = |prims: &mut Vec<Prim2d>, c: [f32; 2], r: f32| prims.push(Prim2d::Circle { c, r, fill: false });
     // The shaft end and a point one millimetre further out.
     let mut shaft: Option<[[f32; 3]; 2]> = None;
+    // The ends of the nozzles and the directions out of them, in the order of the pins.
+    let mut ports: Vec<([f32; 3], [f32; 3])> = Vec::new();
+    let pins = p.functions.iter().flat_map(|f| f.pin_list()).count();
     match kind {
         Kind::Pump { .. } if h >= w.max(d) => {
             // Vertical multistage pump: base, pump body with the pipe stubs, motor on top.
@@ -152,6 +171,7 @@ fn build(p: &Part) -> Option<(Model2d, Mesh3d, Option<Shaft>)> {
             for x in [0.0, 0.94 * w] {
                 m.add_cylinder([x, cy, 0.16 * h], 0, 0.5 * r, 0.06 * w, ROUND, DARK);
             }
+            ports = vec![([0.0, cy, 0.16 * h], [-1.0, 0.0, 0.0]), ([w, cy, 0.16 * h], [1.0, 0.0, 0.0])];
             m.add_cylinder([cx, cy, 0.56 * h], 2, 0.5 * r, 0.02 * h, ROUND, DARK);
             m.add_cylinder([cx, cy, 0.58 * h], 2, 1.15 * r, 0.36 * h, ROUND, MOTOR);
             m.add_frustum([cx, cy, 0.94 * h], 2, 1.15 * r, 0.8 * r, 0.06 * h, ROUND, DARK);
@@ -178,6 +198,7 @@ fn build(p: &Part) -> Option<(Model2d, Mesh3d, Option<Shaft>)> {
             m.add_cylinder(at(0.72 * len, across / 2.0, zc), axis, 0.4 * r, 0.28 * len, ROUND, STEEL);
             m.add_cylinder(at(0.57 * len, across / 2.0, zc), 2, 0.3 * r, h - zc, ROUND, STEEL);
             shaft = Some([at(0.0, across / 2.0, zc), at(-1.0, across / 2.0, zc)]);
+            ports = vec![(at(len, across / 2.0, zc), at(1.0, 0.0, 0.0)), (at(0.57 * len, across / 2.0, h), [0.0, 0.0, 1.0])];
         }
         Kind::Pump { bare: false } => {
             // Horizontal pump on a base frame: motor, pump casing, stubs.
@@ -189,6 +210,7 @@ fn build(p: &Part) -> Option<(Model2d, Mesh3d, Option<Shaft>)> {
             m.add_cylinder([0.64 * w, d / 2.0, zc], 0, (1.15 * r).min(d / 2.0), 0.28 * w, ROUND, PUMP);
             m.add_cylinder([0.92 * w, d / 2.0, zc], 0, 0.35 * r, 0.08 * w, ROUND, STEEL);
             m.add_cylinder([0.78 * w, d / 2.0, zc], 2, 0.3 * r, h - zc, ROUND, STEEL);
+            ports = vec![([w, d / 2.0, zc], [1.0, 0.0, 0.0]), ([0.78 * w, d / 2.0, h], [0.0, 0.0, 1.0])];
             prims.push(Prim2d::Rect { min: [0.04 * w, d / 2.0 - r], max: [0.59 * w, d / 2.0 + r], fill: false });
         }
         Kind::WallPump => {
@@ -197,6 +219,7 @@ fn build(p: &Part) -> Option<(Model2d, Mesh3d, Option<Shaft>)> {
             let (cx, rp) = (w / 2.0, 0.1 * w.min(h));
             m.add_painted_box([0.1 * w, 0.45 * h, 0.0], [0.9 * w, 0.55 * h, 0.12 * d], DARK);
             m.add_cylinder([cx, 0.0, 0.32 * d], 1, rp, h, ROUND, STEEL);
+            ports = vec![([cx, 0.0, 0.32 * d], [0.0, -1.0, 0.0]), ([cx, h, 0.32 * d], [0.0, 1.0, 0.0])];
             m.add_cylinder([cx, 0.33 * h, 0.32 * d], 1, 0.3 * w, 0.34 * h, ROUND, PUMP);
             let rm = (0.32 * w.min(h)).min(0.5 * w);
             m.add_cylinder([cx, 0.5 * h, 0.32 * d], 2, rm, 0.5 * d, ROUND, PUMP);
@@ -237,8 +260,16 @@ fn build(p: &Part) -> Option<(Model2d, Mesh3d, Option<Shaft>)> {
             m.add_frustum([cx, cy, 0.86 * h], 2, r, 0.72 * r, 0.08 * h, ROUND + 8, color);
             m.add_frustum([cx, cy, 0.94 * h], 2, 0.72 * r, 0.3 * r, 0.04 * h, ROUND + 8, color);
             m.add_cylinder([cx, cy, 0.98 * h], 2, 0.12 * r, 0.02 * h, ROUND, STEEL);
-            for z in [0.18 * h, 0.7 * h] {
+            // N1 above N2 at the right, further ones at the left.
+            for z in [0.7 * h, 0.18 * h] {
                 m.add_cylinder([cx + 0.9 * r, cy, z], 0, 0.08 * r, w - cx - 0.9 * r, ROUND, STEEL);
+                ports.push(([w, cy, z], [1.0, 0.0, 0.0]));
+            }
+            if pins > 2 {
+                for z in [0.7 * h, 0.18 * h] {
+                    m.add_cylinder([0.0, cy, z], 0, 0.08 * r, cx - 0.9 * r, ROUND, STEEL);
+                    ports.push(([0.0, cy, z], [-1.0, 0.0, 0.0]));
+                }
             }
             circle(&mut prims, [cx, cy], r);
         }
@@ -262,6 +293,7 @@ fn build(p: &Part) -> Option<(Model2d, Mesh3d, Option<Shaft>)> {
             m.add_painted_box([0.3 * w, 0.0, 0.3 * h], [0.7 * w, 0.03 * d, 0.36 * h], DISPLAY);
             for x in [0.25 * w, 0.75 * w] {
                 m.add_cylinder([x, 0.97 * d, 0.12 * h], 1, 0.05 * w, 0.03 * d, ROUND, STEEL);
+                ports.push(([x, d, 0.12 * h], [0.0, 1.0, 0.0]));
             }
         }
         Kind::Compressor { motor } => {
@@ -301,6 +333,7 @@ fn build(p: &Part) -> Option<(Model2d, Mesh3d, Option<Shaft>)> {
             m.add_painted_box([0.3 * w, 0.0, 0.8 * h], [0.7 * w, 0.02 * d, 0.88 * h], DISPLAY);
             for x in [0.3 * w, 0.7 * w] {
                 m.add_cylinder([x, 0.98 * d, 0.9 * h], 1, 0.05 * w, 0.02 * d, ROUND, STEEL);
+                ports.push(([x, d, 0.9 * h], [0.0, 1.0, 0.0]));
             }
         }
         Kind::Valve { actuator } => {
@@ -309,6 +342,7 @@ fn build(p: &Part) -> Option<(Model2d, Mesh3d, Option<Shaft>)> {
             let rb = (0.24 * h).min(0.3 * d);
             let (yc, zc) = (0.35 * h, d - rb);
             pipe_along_x(&mut m, w, yc, zc, 0.65 * rb, BRASS);
+            ports = along_x(w, yc, zc);
             m.add_cylinder([0.3 * w, yc, zc], 0, rb, 0.4 * w, ROUND, BRASS);
             for x in [0.02 * w, 0.86 * w] {
                 m.add_frustum([x, yc, zc], 0, 0.85 * rb, 0.85 * rb, 0.12 * w, 6, STEEL);
@@ -329,6 +363,7 @@ fn build(p: &Part) -> Option<(Model2d, Mesh3d, Option<Shaft>)> {
             let rb = (0.32 * h).min(0.42 * d);
             let (yc, zc) = (if dial { 0.32 * h } else { 0.5 * h }, d - rb);
             pipe_along_x(&mut m, w, yc, zc, 0.6 * rb, BRASS);
+            ports = along_x(w, yc, zc);
             m.add_cylinder([0.25 * w, yc, zc], 0, rb, 0.5 * w, ROUND, if dial { BRASS } else { STEEL });
             if dial {
                 m.add_cylinder([w / 2.0, yc + 0.8 * rb, zc], 1, 0.8 * rb, h - yc - 0.8 * rb - 0.04 * h, ROUND, BLACK);
@@ -343,6 +378,7 @@ fn build(p: &Part) -> Option<(Model2d, Mesh3d, Option<Shaft>)> {
             let (cx, zc) = (w / 2.0, d / 2.0);
             let r = 0.42 * w.min(d);
             m.add_painted_box([0.2 * w, 0.85 * h, 0.0], [0.8 * w, h, zc], DARK);
+            ports.push(([cx, h, zc], [0.0, 1.0, 0.0]));
             m.add_cylinder([cx, 0.0, zc], 1, 0.35 * r, 0.25 * h, ROUND, BRASS);
             m.add_cylinder([cx, 0.25 * h, zc], 1, r, 0.45 * h, ROUND, STEEL);
             m.add_cylinder([cx, 0.45 * h, zc], 1, 1.1 * r.min(0.5 * w), 0.08 * h, ROUND, DARK);
@@ -355,6 +391,7 @@ fn build(p: &Part) -> Option<(Model2d, Mesh3d, Option<Shaft>)> {
             let r = 0.48 * w.min(h);
             m.add_cylinder([cx, cy, 0.0], 2, r, 0.1 * d, ROUND + 8, DARK);
             m.add_cylinder([cx, cy, 0.1 * d], 2, 0.3 * r, 0.9 * d, ROUND, STEEL);
+            ports.push(([cx, cy, d], [0.0, 0.0, 1.0]));
             m.add_cylinder([cx, cy, 0.55 * d], 2, 0.55 * r, 0.06 * d, ROUND, STEEL);
             circle(&mut prims, [cx, cy], r);
             circle(&mut prims, [cx, cy], 0.3 * r);
@@ -364,10 +401,12 @@ fn build(p: &Part) -> Option<(Model2d, Mesh3d, Option<Shaft>)> {
             let rp = (0.22 * h).min(0.3 * d);
             let (yc, zc) = (0.7 * h, d - rp);
             pipe_along_x(&mut m, w, yc, zc, rp, BRASS);
+            ports.push(([0.0, yc, zc], [-1.0, 0.0, 0.0]));
             let n = n.max(1);
             for k in 0..n {
                 let x = w * (k as f32 + 0.5) / n as f32;
                 m.add_cylinder([x, 0.0, zc], 1, 0.4 * rp, yc, ROUND, BRASS);
+                ports.push(([x, 0.0, zc], [0.0, -1.0, 0.0]));
                 m.add_cylinder([x, 0.3 * h, zc], 1, 0.65 * rp, 0.12 * h, ROUND, BRASS);
                 m.add_painted_box([x, 0.36 * h - 0.02 * h, zc - 0.15 * rp], [x + (0.45 * w / n as f32), 0.36 * h + 0.02 * h, zc + 0.15 * rp], RED);
                 prims.push(Prim2d::Line { a: [x, h - yc], b: [x, h] });
@@ -383,6 +422,7 @@ fn build(p: &Part) -> Option<(Model2d, Mesh3d, Option<Shaft>)> {
             m.add_painted_box([0.25 * w, head0, 0.0], [0.75 * w, head1, 0.12 * d], DARK);
             m.add_painted_box([0.05 * w, head0, 0.12 * d], [0.95 * w, head1, 0.96 * d], DARK);
             m.add_cylinder([0.0, (head0 + head1) / 2.0, zc], 0, 0.3 * r, w, ROUND, STEEL);
+            ports = along_x(w, (head0 + head1) / 2.0, zc);
             m.add_cylinder([cx, 0.0, zc], 1, 0.25 * r, 0.06 * h, ROUND, BLACK);
             m.add_cylinder([cx, 0.06 * h, zc], 1, r, head0 - 0.06 * h, ROUND, if long { STEEL } else { BOWL });
             let top = if gauge { BLACK } else { BOWL };
@@ -500,7 +540,9 @@ fn build(p: &Part) -> Option<(Model2d, Mesh3d, Option<Shaft>)> {
             prims.push(Prim2d::Rect { min: [0.04 * w, 0.12 * h], max: [0.96 * w, 0.88 * h], fill: false });
         }
     }
-    let mut ends = shaft.unwrap_or_default();
+    // The shaft and the nozzles: their ends and a point one millimetre further out.
+    let mut ends: Vec<[f32; 3]> = shaft.unwrap_or_default().to_vec();
+    ends.extend(ports.iter().flat_map(|&(at, dir)| [at, crate::vec3::add(at, dir)]));
     if floor {
         // Upright: the height along y, the front (y 0 of the floor) at z = depth; the
         // front view shows the outline only.
@@ -511,11 +553,22 @@ fn build(p: &Part) -> Option<(Model2d, Mesh3d, Option<Shaft>)> {
     }
     fit(&mut m, [w, h, d], &mut ends);
     prims.insert(0, Prim2d::Rect { min: [0.0, 0.0], max: [w, h], fill: false });
+    let out = |e: &[[f32; 3]]| (e[0], crate::vec3::norm(crate::vec3::sub(e[1], e[0])));
     let shaft = shaft.map(|_| {
-        let dir = crate::vec3::norm(crate::vec3::sub(ends[1], ends[0]));
-        Shaft { at: ends[0], dir }
+        let (at, dir) = out(&ends[..2]);
+        Shaft { at, dir }
     });
-    Some((Model2d { width: w, height: h, prims }, m, shaft))
+    let pins = p.functions.iter().flat_map(|f| f.pin_list());
+    let nozzles = pins.zip(ends[2..].chunks(2)).map(|(pin, e)| {
+        let (at, dir) = out(e);
+        Nozzle { pin, at, dir }
+    });
+    Some((Model2d { width: w, height: h, prims }, m, shaft, nozzles.collect()))
+}
+
+/// The nozzles at both ends of a pipe along x (see [`pipe_along_x`]).
+fn along_x(w: f32, yc: f32, zc: f32) -> Vec<([f32; 3], [f32; 3])> {
+    vec![([0.0, yc, zc], [-1.0, 0.0, 0.0]), ([w, yc, zc], [1.0, 0.0, 0.0])]
 }
 
 /// Stretches the mesh to fill the box from the origin to `size` exactly, and `points`

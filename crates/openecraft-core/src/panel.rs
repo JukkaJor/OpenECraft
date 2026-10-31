@@ -38,7 +38,7 @@ pub use fill::{duct_fill, duct_inside, duct_lanes, duct_lanes_in_order, wire_are
 pub use lineup::{add_facing_cutout, add_passage, bay_right_of, lineup_of, lineups, neighbours, next_passage_place, passages, positions, route_across, set_site, site_poses, unbay, Leg, Passage, SitePlace, SitePose, LINEUP_GAP, PASSAGE_DIAMETER};
 pub use macros::{all_macros, builtin_macros, group_members, insert_macro, macro_from_items, ItemGroup, PanelMacro};
 pub use placement::{align, apply_anchors, apply_one_anchor, arrange_on_rail, capture_anchors, distribute, pattern_copy, Align, AlignTo, Anchor};
-pub use points::{device_points, point_of, PlacedPoint};
+pub use points::{device_points, exit_vector, nozzles, point_of, PlacedPoint};
 pub use rack::{is_rack, mount_in_rack, rack_units, RACK_SYSTEM, RACK_UNIT, RACK_WIDTH};
 pub use rooms::{
     add_inner_wall, add_opening, add_pipe_run, add_wall_profile, pipe_run_offset, pipe_run_on_face, PIPE_RUN_WIDTH, inner_sides, moved_inner_wall, remove_inner_wall, side, INNER_WALL, door_zone, opening_sill, entries, entry_point, ENTRY_SILL, ENTRY_SIZE, DOOR_SIZE, WINDOW_SILL, WINDOW_SIZE, bounds, cabinet_problems, cabinets_in, check_outline, floor_cells, floor_footprint, floor_problems, footprint, inside_outline, mount_ok, mount_on_wall, moved_wall, new_room, normalize_outline, outline, room_face_from_key, room_face_key, room_face_title, room_faces,
@@ -1195,8 +1195,86 @@ fn closest_on_segment(q: P, a: P, b: P) -> P {
     a + ab * t
 }
 
+/// How far past the devices a wire without cable ducts runs (mm, see [`direct_route`]).
+const DIRECT_CLEAR: f32 = 25.0;
+
+/// The way of a wire in an enclosure without cable ducts: out of each connection point
+/// in the direction it leaves it, past the devices there (the row on its rail), then
+/// across (below a row both leave downwards, above one both leave upwards).
+fn direct_route(e: &Enclosure, from: WireEnd, to: WireEnd) -> Route {
+    let devices: Vec<R> = e.items.iter().filter(|i| i.kind == ItemKind::Device && i.face == Face::Plate).map(|i| i.rect()).collect();
+    let out = |end: WireEnd| -> P {
+        let mut q = end.pos;
+        for _ in 0..devices.len() {
+            // On its outline too (the connection points of most devices).
+            let on = |r: &&R| q.x >= r.min.x - 0.5 && q.x <= r.max.x + 0.5 && q.y >= r.min.y - 0.5 && q.y <= r.max.y + 0.5;
+            let Some(r) = devices.iter().find(on) else { break };
+            q = match end.exit {
+                Some(Exit::Up) => p(q.x, r.min.y - DIRECT_CLEAR),
+                Some(Exit::Down) => p(q.x, r.max.y + DIRECT_CLEAR),
+                Some(Exit::Left) => p(r.min.x - DIRECT_CLEAR, q.y),
+                Some(Exit::Right) => p(r.max.x + DIRECT_CLEAR, q.y),
+                Some(Exit::Front) | None => break,
+            };
+        }
+        q
+    };
+    let (a, b) = (from.pos, to.pos);
+    let (a1, b1) = (out(from), out(to));
+    let vertical = |x: Option<Exit>| matches!(x, Some(Exit::Up | Exit::Down));
+    // Moved on (`more`: downwards or to the right) past every device the run across at
+    // `at` from `s` to `t` (along x when `along_x`) passes through.
+    let past = |mut at: f32, s: f32, t: f32, along_x: bool, more: bool| {
+        for _ in 0..devices.len() {
+            let (lo, hi) = (s.min(t), s.max(t));
+            let hit = devices.iter().find(|r| match along_x {
+                true => at > r.min.y && at < r.max.y && r.max.x > lo && r.min.x < hi,
+                false => at > r.min.x && at < r.max.x && r.max.y > lo && r.min.y < hi,
+            });
+            let Some(r) = hit else { break };
+            at = match (along_x, more) {
+                (true, true) => r.max.y + DIRECT_CLEAR,
+                (true, false) => r.min.y - DIRECT_CLEAR,
+                (false, true) => r.max.x + DIRECT_CLEAR,
+                (false, false) => r.min.x - DIRECT_CLEAR,
+            };
+        }
+        at
+    };
+    let mut points = vec![a, a1];
+    match (from.exit, to.exit) {
+        (Some(Exit::Down), Some(Exit::Down)) | (Some(Exit::Up), Some(Exit::Up)) => {
+            let down = from.exit == Some(Exit::Down);
+            let y = past(if down { a1.y.max(b1.y) } else { a1.y.min(b1.y) }, a1.x, b1.x, true, down);
+            points.extend([p(a1.x, y), p(b1.x, y)]);
+        }
+        (Some(Exit::Left), Some(Exit::Left)) | (Some(Exit::Right), Some(Exit::Right)) => {
+            let right = from.exit == Some(Exit::Right);
+            let x = past(if right { a1.x.max(b1.x) } else { a1.x.min(b1.x) }, a1.y, b1.y, false, right);
+            points.extend([p(x, a1.y), p(x, b1.y)]);
+        }
+        // Opposite: round the devices between at the nearer side.
+        (Some(Exit::Up), Some(Exit::Down)) | (Some(Exit::Down), Some(Exit::Up)) => {
+            let (left, right) = (past(a1.x, a1.y, b1.y, false, false), past(a1.x, a1.y, b1.y, false, true));
+            let x = if (a1.x - left).abs() + (b1.x - left).abs() <= (right - a1.x).abs() + (right - b1.x).abs() { left } else { right };
+            points.extend([p(x, a1.y), p(x, b1.y)]);
+        }
+        (Some(Exit::Left), Some(Exit::Right)) | (Some(Exit::Right), Some(Exit::Left)) => {
+            let (up, down) = (past(a1.y, a1.x, b1.x, true, false), past(a1.y, a1.x, b1.x, true, true));
+            let y = if (a1.y - up).abs() + (b1.y - up).abs() <= (down - a1.y).abs() + (down - b1.y).abs() { up } else { down };
+            points.extend([p(a1.x, y), p(b1.x, y)]);
+        }
+        (x, _) if vertical(x) => points.push(p(a1.x, b1.y)),
+        _ => points.push(p(b1.x, a1.y)),
+    }
+    points.extend([b1, b]);
+    points.dedup_by(|q, r| q.same(*r));
+    let plate_length = points.windows(2).map(|s| manhattan(s[0], s[1])).sum();
+    Route { points, plate_length, via_ducts: false, runs: Vec::new() }
+}
+
 /// Routes a wire from `a` to `b` through the cable duct network (shortest path).
-/// Without ducts the wire runs directly (orthogonally).
+/// Without ducts the wire runs directly (orthogonally, see [`direct_route`]).
 pub fn route(e: &Enclosure, a: P, b: P) -> Route {
     route_ends(e, WireEnd::at(a), WireEnd::at(b))
 }
@@ -1219,7 +1297,7 @@ pub fn route_door(e: &Enclosure, from: P, to: P) -> Route {
 /// avoids expensive stretches. The route's length stays the real length.
 pub fn route_weighted(e: &Enclosure, from: WireEnd, to: WireEnd, cost: &dyn Fn(u64, f32, f32) -> f32) -> Route {
     let (a, b) = (from.pos, to.pos);
-    let direct = || Route { points: vec![a, p(b.x, a.y), b], plate_length: manhattan(a, b), via_ducts: false, runs: Vec::new() };
+    let direct = || direct_route(e, from, to);
     let ducts: Vec<&PanelItem> = e.items.iter().filter(|i| i.kind == ItemKind::Duct && i.face == Face::Plate).collect();
     if ducts.is_empty() {
         return direct();

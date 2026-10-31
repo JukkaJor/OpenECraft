@@ -4,7 +4,7 @@
 
 use super::{ItemKind, PanelItem};
 use crate::model::{Project, SymbolInst};
-use crate::parts::vec3::V3;
+use crate::parts::vec3::{add, norm, sub, V3};
 use crate::parts::{Exit, Part};
 use crate::symbols::Func;
 
@@ -44,6 +44,32 @@ fn turned(exit: Exit) -> Exit {
         Exit::Left => Exit::Up,
         Exit::Front => Exit::Front,
     }
+}
+
+/// The direction a wire leaves a connection point in, in the coordinates of its face
+/// (y down, z away from it).
+pub fn exit_vector(exit: Exit) -> V3 {
+    match exit {
+        Exit::Up => [0.0, -1.0, 0.0],
+        Exit::Down => [0.0, 1.0, 0.0],
+        Exit::Left => [-1.0, 0.0, 0.0],
+        Exit::Right => [1.0, 0.0, 0.0],
+        Exit::Front => [0.0, 0.0, 1.0],
+    }
+}
+
+/// The nozzles of the model of a fluid device: the connection point each is for, its
+/// end and the direction a pipe leaves it in, in the coordinates of the item's face.
+pub fn nozzles(prj: &Project, it: &PanelItem) -> Vec<(String, V3, V3)> {
+    let Some(part) = super::part_by_number(prj, &it.part) else { return Vec::new() };
+    let Some(mesh) = part.model_3d.as_deref() else { return Vec::new() };
+    crate::parts::nozzles(part)
+        .into_iter()
+        .map(|n| {
+            let (a, b) = (super::place_point(mesh, it, n.at), super::place_point(mesh, it, add(n.at, n.dir)));
+            (n.pin, a, norm(sub(b, a)))
+        })
+        .collect()
 }
 
 /// The connection points of a device item, in the coordinates of its face. Terminal

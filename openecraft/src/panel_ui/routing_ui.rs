@@ -6,6 +6,7 @@ use super::{PanelUi, PATH_COLOR, RESERVE_COLOR, WIRE_HIGHLIGHT};
 use openecraft_core::geom::{p, P};
 use openecraft_core::model::Project;
 use openecraft_core::panel::{self, PLATE_MARGIN, PLATE_Z};
+use openecraft_core::parts::vec3::{add, dist, norm, sub};
 use openecraft_core::analysis::Analysis;
 use openecraft_core::routing3d::{self, Class, PathKind, ReserveMode, Reservation, RouteKind, RoutingPath, ShieldEnds};
 use egui::{Color32, Pos2, Rect, RichText, Shape, Stroke};
@@ -48,7 +49,136 @@ pub(super) struct RouteLine {
     pub below: f32,
     pub on_top: bool,
     pub target: RouteRef,
+    /// Drawn as it is, not laid beside the others (the cores where a cable parts).
+    pub as_is: bool,
 }
+
+/// Where the cores of a cable part to their connection points at a device: `way` is the
+/// cable's route up to the device, its last point the middle of the connection points
+/// `at`, each with the direction its core leaves it in (view coordinates). The cable
+/// ends a little before the device: the points of `way` it keeps and its end, then the
+/// way of each core from there, a smooth curve leaving the cable's end in its direction
+/// and coming into the connection point against the direction the core leaves it in.
+pub(super) fn fan_out(way: &[[f32; 3]], at: &[([f32; 3], [f32; 3])], cable: f32, core: f32) -> (usize, [f32; 3], Vec<Vec<[f32; 3]>>) {
+    use openecraft_core::parts::vec3::{cross, dot, length, scale};
+    // Up to the device, without the middle of the connection points.
+    let route = &way[..way.len().saturating_sub(1)];
+    let Some(&approach) = route.last() else { return (0, way.first().copied().unwrap_or_default(), Vec::new()) };
+    let middle = way[way.len() - 1];
+    let spread = at.iter().map(|(q, _)| dist(*q, middle)).fold(0.0, f32::max);
+    // Back along the route to where it is as far from the connection points as the cores
+    // need to turn to them (at most two fifths of it, the other end may part too).
+    let reach = (1.5 * spread).max(3.0 * cable).max(FAN_LEAST);
+    let mut left = 0.4 * route.windows(2).map(|s| dist(s[0], s[1])).sum::<f32>();
+    let (mut keep, mut split, mut dir) = (route.len(), approach, norm(sub(middle, approach)));
+    for k in (1..route.len()).rev() {
+        if dist(route[k], middle) >= reach {
+            break;
+        }
+        let step = dist(route[k - 1], route[k]);
+        if step < 1e-3 {
+            continue;
+        }
+        (keep, dir) = (k, scale(sub(route[k], route[k - 1]), 1.0 / step));
+        let at = |t: f32| sub(route[k], scale(dir, t));
+        if dist(route[k - 1], middle) < reach && step < left {
+            (left, split) = (left - step, route[k - 1]);
+            continue;
+        }
+        // Where the segment reaches that far (halving), but no further than is left.
+        let (mut near, mut far) = (0.0, step.min(left));
+        if dist(at(far), middle) >= reach {
+            for _ in 0..24 {
+                let mid = (near + far) / 2.0;
+                if dist(at(mid), middle) >= reach { far = mid } else { near = mid }
+            }
+        }
+        split = at(far);
+        break;
+    }
+    // Their places in the cable's cross-section: round its axis, in the order they lie
+    // across it at the device.
+    let aside = |q: [f32; 3]| {
+        let d = sub(q, middle);
+        sub(d, scale(dir, dot(d, dir)))
+    };
+    let across = at.iter().map(|(q, _)| aside(*q)).max_by(|a, b| length(*a).total_cmp(&length(*b))).filter(|v| length(*v) > 1e-3).map_or_else(|| any_across(dir), norm);
+    let beside = cross(dir, across);
+    let n = at.len();
+    // Inside the cable, but no core in another.
+    let ring = if n > 1 { ((cable - core) / 2.0).max(core / (2.0 * (std::f32::consts::PI / n as f32).sin())) } else { 0.0 };
+    let mut slots: Vec<[f32; 3]> = (0..n).map(|k| {
+        let a = std::f32::consts::TAU * (k as f32 + 0.5) / n as f32;
+        add(scale(across, ring * a.cos()), scale(beside, ring * a.sin()))
+    }).collect();
+    slots.sort_by(|a, b| dot(*a, across).total_cmp(&dot(*b, across)));
+    let mut order: Vec<usize> = (0..n).collect();
+    order.sort_by(|&a, &b| dot(aside(at[a].0), across).total_cmp(&dot(aside(at[b].0), across)));
+    let mut place = vec![[0.0; 3]; n];
+    for (slot, &k) in slots.into_iter().zip(&order) {
+        place[k] = slot;
+    }
+    let ways = at
+        .iter()
+        .zip(place)
+        .map(|(&(q, exit), off)| {
+            let start = add(split, off);
+            let pull = 0.45 * dist(start, q);
+            let (b, c) = (add(start, scale(dir, pull)), add(q, scale(norm(exit), pull)));
+            (0..=CORE_STEPS)
+                .map(|i| {
+                    let t = i as f32 / CORE_STEPS as f32;
+                    let u = 1.0 - t;
+                    [0, 1, 2].map(|k| u * u * u * start[k] + 3.0 * u * u * t * b[k] + 3.0 * u * t * t * c[k] + t * t * t * q[k])
+                })
+                .collect()
+        })
+        .collect();
+    (keep, split, ways)
+}
+
+/// Lines passing the same cable gland or wall penetration (`through`: line and the
+/// point before it, see [`PanelUi::routing_lines_3d`]) pass it side by side, in rows
+/// across it as far apart as the thickest is thick, in the order they come from.
+fn side_by_side(lines: &mut [RouteLine], through: &[(usize, usize)]) {
+    use openecraft_core::parts::vec3::{cross, dot, scale};
+    let mut at: std::collections::BTreeMap<[i32; 3], Vec<(usize, usize)>> = std::collections::BTreeMap::new();
+    for &(l, i) in through {
+        at.entry(lines[l].points[i].map(|v| (v / 10.0).round() as i32)).or_default().push((l, i));
+    }
+    for mut group in at.into_values().filter(|g| g.len() > 1) {
+        let (l, i) = group[0];
+        let (a, d) = (lines[l].points[i], norm(sub(lines[l].points[i + 1], lines[l].points[i])));
+        let e1 = norm(cross(d, if d[1].abs() < 0.9 { [0.0, 1.0, 0.0] } else { [1.0, 0.0, 0.0] }));
+        let e2 = cross(d, e1);
+        let gap = group.iter().map(|&(l, _)| lines[l].diameter).fold(0.0, f32::max) + 2.0;
+        let from = |&(l, i): &(usize, usize)| lines[l].points.get(i.wrapping_sub(1)).map_or(0.0, |q| dot(sub(*q, a), e1));
+        group.sort_by(|x, y| from(x).total_cmp(&from(y)).then(x.cmp(y)));
+        let cols = (group.len() as f32).sqrt().ceil() as usize;
+        let rows = group.len().div_ceil(cols);
+        for (k, &(l, i)) in group.iter().enumerate() {
+            let (col, row) = ((k % cols) as f32 - (cols - 1) as f32 / 2.0, (k / cols) as f32 - (rows - 1) as f32 / 2.0);
+            let off = add(scale(e1, col * gap), scale(e2, row * gap));
+            for q in &mut lines[l].points[i..=i + 1] {
+                *q = add(*q, off);
+            }
+        }
+    }
+}
+
+/// A direction across `dir`.
+fn any_across(dir: [f32; 3]) -> [f32; 3] {
+    let other = if dir[1].abs() < 0.9 { [0.0, 1.0, 0.0] } else { [1.0, 0.0, 0.0] };
+    norm(openecraft_core::parts::vec3::cross(dir, other))
+}
+
+/// Points along each of the curved cores where a cable parts ([`fan_out`]).
+const CORE_STEPS: usize = 10;
+/// How far at least from their connection points the cores of a cable part, mm.
+const FAN_LEAST: f32 = 30.0;
+/// Steps of a route shorter than this (mm) next to where two of its legs are joined are
+/// left out (to the cells of the routing grid beside a cable gland).
+const JOIN_STEP: f32 = 30.0;
 
 fn mode_choice(ui: &mut egui::Ui, salt: impl egui::AsIdSalt, mode: &mut ReserveMode) {
     egui::ComboBox::from_id_salt(salt).selected_text(mode.title()).show_ui(ui, |ui| {
@@ -206,7 +336,7 @@ impl PanelUi {
             for path in &e.paths {
                 let selected = self.selected_object == Some(path.id);
                 let color = if path.face.is_some() { PIPE_COLOR } else { PATH_COLOR };
-                out.push(RouteLine { points: path.points.iter().map(|q| g(*q)).collect(), color, stripe: None, width: if selected { 3.0 } else { 1.5 }, diameter: 0.0, bends: Vec::new(), rest: [0.0; 3], below: f32::INFINITY, on_top: selected, target: RouteRef::None });
+                out.push(RouteLine { points: path.points.iter().map(|q| g(*q)).collect(), color, stripe: None, width: if selected { 3.0 } else { 1.5 }, diameter: 0.0, bends: Vec::new(), rest: [0.0; 3], below: f32::INFINITY, on_top: selected, target: RouteRef::None, as_is: false });
             }
             for r in &e.reservations {
                 let color = match r.mode {
@@ -230,75 +360,133 @@ impl PanelUi {
                     ((0, 1, 0), (0, 1, 1)),
                     ((1, 1, 0), (1, 1, 1)),
                 ] {
-                    out.push(RouteLine { points: vec![c(s.0, s.1, s.2), c(t.0, t.1, t.2)], color, stripe: None, width: 1.0, diameter: 0.0, bends: Vec::new(), rest: [0.0; 3], below: f32::INFINITY, on_top: false, target: RouteRef::None });
+                    out.push(RouteLine { points: vec![c(s.0, s.1, s.2), c(t.0, t.1, t.2)], color, stripe: None, width: 1.0, diameter: 0.0, bends: Vec::new(), rest: [0.0; 3], below: f32::INFINITY, on_top: false, target: RouteRef::None, as_is: false });
                 }
             }
         }
         let wires_3d = prj.layout.routing.wires_3d;
+        // Where lines pass a cable gland or wall penetration: line and point (the one
+        // before it, the next one behind it).
+        let mut through: Vec<(usize, usize)> = Vec::new();
         for it in an.routing.items.iter().filter(|i| i.routed() && i.enclosures.iter().any(|k| shown.contains(k))) {
-            // Leg by leg; legs through an enclosure not shown are left out.
+            // Wires routed in 3D as wires; cables and tubes in the colour of their class,
+            // as thick as they are.
+            let (color, stripe, width, diameter, selected, target) = match (it.kind, it.wire) {
+                (RouteKind::Wire, Some(wi)) if wires_3d => {
+                    let selected = selected_wire == Some(wi);
+                    let done = self.done_wires.contains(&an.wiring[wi].key());
+                    if !self.show_wires && !selected && !done {
+                        continue;
+                    }
+                    let wire = &an.wiring[wi];
+                    let (color, stripe, width) = super::wire_look(&wire.color, selected, done, selected_wire.is_some());
+                    (color, stripe, width, openecraft_core::harness::outer_diameter(&wire.cross_section), selected, RouteRef::Wire(wi))
+                }
+                (RouteKind::Wire, _) => continue,
+                _ => {
+                    let selected = self.selected_route.as_deref() == Some(it.key.as_str());
+                    if !self.show_wires && !selected {
+                        continue;
+                    }
+                    let (color, width) = if selected { (WIRE_HIGHLIGHT, 4.0) } else { (class_color(it.class), 2.0) };
+                    (color, None, width, it.diameter, selected, RouteRef::Item(it.key.clone()))
+                }
+            };
+            // The cores of a cable as thick as its diameter tells for their number
+            // (see routing3d::cable_diameter).
+            let cores_at = it.ends.iter().map(|e| e.cores.len()).max().unwrap_or(0).max(2) as f32;
+            let core = ((diameter - 2.0) / (1.2 * (1.0 + 0.5 * cores_at).sqrt())).clamp(0.2 * diameter, 0.5 * diameter);
+            // Leg by leg; legs through an enclosure not shown are left out, legs shown one
+            // after the other are one line through the cable gland or wall penetration
+            // between them, bent there with the route's bend radius.
             let stretches = it.stretches();
             let radii = it.stretch_radii();
+            let radius = it.radii.iter().copied().fold(0.0, f32::max);
             let last = stretches.len().saturating_sub(1);
+            // The last stretch drawn and its line.
+            let mut joined: Option<(usize, usize)> = None;
             for (s, (leg, points)) in stretches.into_iter().enumerate() {
-                let mut bends = radii.get(s).copied().unwrap_or_default();
+                let bends = radii.get(s).copied().unwrap_or_default();
                 if leg.is_some_and(|k| !shown.contains(&k)) {
                     continue;
                 }
-                // The cores part where the cable comes up to the device at the ends of the
-                // first and the last stretch (off its face, so the device does not hide them).
-                let mut points = points;
-                let mut cores: Vec<[[f32; 3]; 2]> = Vec::new();
-                if s == 0 && !it.ends[0].cores.is_empty() && points.len() > 2 {
-                    cores.extend(it.ends[0].cores.iter().map(|q| [points[1], *q]));
-                    points = &points[1..];
-                    bends = bends.get(1..).unwrap_or_default();
-                }
-                if s == last && !it.ends[1].cores.is_empty() && points.len() > 2 {
-                    let n = points.len();
-                    cores.extend(it.ends[1].cores.iter().map(|q| [points[n - 2], *q]));
-                    points = &points[..n - 1];
-                    bends = bends.get(..n - 1).unwrap_or(bends);
-                }
-                let bends = bends.to_vec();
                 // In a cabinet the mounting plate is behind it: how far it lies in front.
                 let in_room = leg.is_some_and(|k| prj.layout.enclosures[k].is_room());
                 let cabinet = |q: &[f32; 3]| it.enclosures.iter().copied().find(|&k| !prj.layout.enclosures[k].is_room() && q[0] >= pos[k][0] && q[0] <= pos[k][0] + prj.layout.enclosures[k].width);
                 let front = points.iter().filter_map(|q| cabinet(q).map(|k| q[2] - pos[k][2] - PLATE_Z)).fold(f32::INFINITY, f32::min);
                 let (rest, below) = match points.first() {
-                    Some(q) if !in_room && front.is_finite() => (openecraft_core::parts::vec3::norm(openecraft_core::parts::vec3::sub(to_view(leg, [q[0], q[1], q[2] + 1.0]), to_view(leg, *q))), front - it.diameter / 2.0 - PLATE_CLEAR),
+                    Some(q) if !in_room && front.is_finite() => (norm(sub(to_view(leg, [q[0], q[1], q[2] + 1.0]), to_view(leg, *q))), front - it.diameter / 2.0 - PLATE_CLEAR),
                     _ => ([0.0; 3], f32::INFINITY),
                 };
-                let cores: Vec<[[f32; 3]; 2]> = cores.into_iter().map(|c| c.map(|q| to_view(leg, q))).collect();
-                let points: Vec<[f32; 3]> = points.iter().map(|q| to_view(leg, *q)).collect();
-                match (it.kind, it.wire) {
-                    (RouteKind::Wire, Some(wi)) if wires_3d => {
-                        let selected = selected_wire == Some(wi);
-                        let done = self.done_wires.contains(&an.wiring[wi].key());
-                        if !self.show_wires && !selected && !done {
-                            continue;
-                        }
-                        let wire = &an.wiring[wi];
-                        let (color, stripe, width) = super::wire_look(&wire.color, selected, done, selected_wire.is_some());
-                        let diameter = openecraft_core::harness::outer_diameter(&wire.cross_section);
-                        out.push(RouteLine { points, color, stripe, width, diameter, bends, rest, below, on_top: selected, target: RouteRef::Wire(wi) });
+                let mut points: Vec<[f32; 3]> = points.iter().map(|q| to_view(leg, *q)).collect();
+                let mut bends = bends.to_vec();
+                bends.resize(points.len(), 0.0);
+                // The cores part a little before the devices at the ends of the first and the
+                // last stretch.
+                let mut cores: Vec<Vec<[f32; 3]>> = Vec::new();
+                for (end, at_end) in [(0, s == 0), (1, s == last)] {
+                    let n = points.len();
+                    if !at_end || it.ends[end].cores.is_empty() || n <= 2 {
+                        continue;
                     }
-                    (RouteKind::Wire, _) => {}
-                    _ => {
-                        let selected = self.selected_route.as_deref() == Some(it.key.as_str());
-                        if !self.show_wires && !selected {
-                            continue;
-                        }
-                        // In the colour of its class, as thick as it is.
-                        let (color, width) = if selected { (WIRE_HIGHLIGHT, 4.0) } else { (class_color(it.class), 2.0) };
-                        out.push(RouteLine { points, color, stripe: None, width, diameter: it.diameter, bends, rest, below, on_top: selected, target: RouteRef::Item(it.key.clone()) });
-                        for core in cores {
-                            out.push(RouteLine { points: core.to_vec(), color, stripe: None, width: width * 0.5, diameter: it.diameter * 0.5, bends: Vec::new(), rest: [0.0; 3], below: f32::INFINITY, on_top: selected, target: RouteRef::Item(it.key.clone()) });
-                        }
+                    // Seen from the far end of the stretch towards this one.
+                    if end == 0 {
+                        points.reverse();
+                        bends.reverse();
+                    }
+                    let at: Vec<([f32; 3], [f32; 3])> = it.ends[end].cores.iter().zip(&it.ends[end].exits).map(|(q, x)| (to_view(leg, *q), sub(to_view(leg, add(*q, *x)), to_view(leg, *q)))).collect();
+                    let (keep, split, fan) = fan_out(&points, &at, diameter, core);
+                    cores.extend(fan);
+                    points.truncate(keep);
+                    bends.truncate(keep);
+                    points.push(split);
+                    bends.push(0.0);
+                    if end == 0 {
+                        points.reverse();
+                        bends.reverse();
                     }
                 }
+                for c in cores {
+                    let bends = vec![0.0; c.len()];
+                    out.push(RouteLine { points: c, color, stripe: None, width: width * 0.5, diameter: core, bends, rest: [0.0; 3], below: f32::INFINITY, on_top: selected, target: target.clone(), as_is: true });
+                }
+                let index = match joined {
+                    Some((prev, index)) if prev + 1 == s => {
+                        let line = &mut out[index];
+                        // Straight through, without the short steps to the cells of the
+                        // routing grid beside it.
+                        while line.points.len() > 2 && points.len() > 1 && dist(line.points[line.points.len() - 2], line.points[line.points.len() - 1]) < JOIN_STEP {
+                            line.points.remove(line.points.len() - 2);
+                            line.bends.remove(line.bends.len() - 2);
+                        }
+                        while points.len() > 2 && dist(points[0], points[1]) < JOIN_STEP {
+                            points.remove(1);
+                            bends.remove(1);
+                        }
+                        if let Some(b) = line.bends.last_mut() {
+                            *b = radius;
+                        }
+                        if let Some(b) = bends.first_mut() {
+                            *b = radius;
+                        }
+                        through.push((index, line.points.len() - 1));
+                        line.points.extend(points);
+                        line.bends.extend(bends);
+                        if line.rest == [0.0; 3] {
+                            line.rest = rest;
+                        }
+                        line.below = line.below.min(below);
+                        index
+                    }
+                    _ => {
+                        out.push(RouteLine { points, color, stripe, width, diameter, bends, rest, below, on_top: selected, target: target.clone(), as_is: false });
+                        out.len() - 1
+                    }
+                };
+                joined = Some((s, index));
             }
         }
+        side_by_side(&mut out, &through);
         out
     }
 

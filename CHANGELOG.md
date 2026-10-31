@@ -74,6 +74,17 @@ with a command line, an MCP server, a parts server and a project server.
   view lays them out on another thread, several times faster, with a progress box while it does (it
   shows them as routed until then). Cables and tubes keep apart from each other in free air already when they are
   routed. A cable duct too small for its wires to lie side by side is an error of the project check.
+  A cable ends a little before the device and its cores part from there in smooth curves, each coming
+  into its connection point from the side its wires leave it; cables and wires run on through the cable
+  glands, wall penetrations and cable passages between cabinets and rooms in one piece, bent round
+  there; pipes and hoses end at the nozzles of the devices' models (suction and pressure nozzle of a
+  pump, the nozzles of a vessel, both ends of a valve), coming straight out of them; a valve, meter or
+  check valve in a pipe is taken as mounted with its inlet towards the pipe that feeds it. Cables
+  through one gland pass it side by side; the cores of a cable are as thick as its diameter tells and
+  part from their places round its axis. Wires in a cabinet without cable ducts leave their devices
+  in the direction of their connection points and run round the rows of devices instead of behind or
+  through them; wires leave their own devices over them, not through them. Wires, cables and pipes
+  laid side by side are pushed at most a few times their thickness from their routes.
   Devices mounted on a busbar system are connected by its bars instead of wires. The title bar can show
   the frame time and the frames per second (Settings › Appearance). A placed device is shown in the
   panel layout or the 3D view from its context menu in the schematic. Pumps, tanks

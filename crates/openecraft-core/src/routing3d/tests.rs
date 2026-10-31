@@ -249,3 +249,55 @@ fn searches_at_the_same_time_give_the_same_routes() {
     assert!(one.0.paths.iter().any(|u| u.items > 1), "{:?}", one.0.paths);
     assert!(one == four);
 }
+
+#[test]
+fn pipes_end_at_the_nozzles_of_their_devices() {
+    let prj = crate::sample::example("pump_room").unwrap();
+    let an = Analysis::build(&prj);
+    let pipes: Vec<&RoutedItem> = an.routing.items.iter().filter(|i| i.kind == RouteKind::Tube && i.routed()).collect();
+    assert!(!pipes.is_empty());
+    for it in &pipes {
+        // Into each nozzle straight from the end of the route out of it (devices without
+        // a model with nozzles, like the gauge, as before).
+        let n = it.points.len();
+        for (end, tip, out) in [(0, it.points[0], it.points[1]), (1, it.points[n - 1], it.points[n - 2])] {
+            let Some(nozzle) = it.ends[end].nozzle else { continue };
+            assert_eq!(tip, nozzle, "{}", it.label);
+            assert!(crate::parts::vec3::dist(out, it.ends[end].point.unwrap()) < 0.01, "{}", it.label);
+            assert!(crate::parts::vec3::dist(out, tip) >= NOZZLE_OUT, "{}", it.label);
+        }
+    }
+    // The suction and the pressure pipe of the pump, the two pipes of the vessel: each at
+    // a nozzle of its own.
+    for tag in ["=P1+ER1-GP1", "=P1+ER1-CM1"] {
+        let mut at: Vec<V3> = pipes.iter().flat_map(|i| i.ends.iter()).filter(|e| e.tag == tag).filter_map(|e| e.nozzle).collect();
+        assert_eq!(at.len(), 2, "{tag}");
+        at.dedup();
+        assert_eq!(at.len(), 2, "{tag}: {at:?}");
+    }
+}
+
+#[test]
+fn fittings_in_a_pipe_are_turned_to_the_pipes_they_join() {
+    // The fittings on the left wall of the house connection room are mounted against
+    // their connection points: each pipe still joins the ends facing each other.
+    let prj = crate::sample::example("building_services").unwrap();
+    let an = Analysis::build(&prj);
+    let centre = |tag: &str| {
+        let (k, it) = crate::panel::locate(&prj, tag).unwrap();
+        let e = &prj.layout.enclosures[k];
+        add(crate::panel::face_point(e, it.face, [it.x + it.w / 2.0, it.y + it.h / 2.0, it.z + it.d / 2.0]), crate::panel::positions(&prj.layout)[k])
+    };
+    let mut checked = 0;
+    for key in ["hose:=WAT+HR-QM1:2|=WAT+HR-BF1:1", "hose:=WAT+HR-BF1:2|=WAT+HR-RM1:1"] {
+        let it = an.routing.item(key).unwrap_or_else(|| panic!("{key}"));
+        let tips = [it.ends[0].nozzle.unwrap(), it.ends[1].nozzle.unwrap()];
+        let (a, b) = (centre(&it.ends[0].tag), centre(&it.ends[1].tag));
+        assert!(crate::parts::vec3::dist(tips[0], b) < crate::parts::vec3::dist(a, b), "{key}: {tips:?}");
+        assert!(crate::parts::vec3::dist(tips[1], a) < crate::parts::vec3::dist(a, b), "{key}: {tips:?}");
+        // Straight from one to the other: not much longer than the way between them.
+        assert!(crate::parts::vec3::length(sub(tips[0], tips[1])) * 1.5 + 200.0 > it.points.windows(2).map(|s| crate::parts::vec3::dist(s[0], s[1])).sum::<f32>(), "{key}: {:?}", it.points);
+        checked += 1;
+    }
+    assert_eq!(checked, 2);
+}

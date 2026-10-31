@@ -12,7 +12,7 @@
 use crate::model::{Cable, Project};
 use crate::netlist::{Connection, Netlist, PinRef};
 use crate::panel::{self, Face, ItemKind, Layout, PanelItem, RoutedWire, DUCT_PROFILE, PLATE_MARGIN, PLATE_Z};
-use crate::parts::vec3::{add, manhattan, sub, V3};
+use crate::parts::vec3::{add, dist, manhattan, scale, sub, V3};
 use openecraft_i18n::{tr, tr_fmt};
 use std::collections::{BTreeMap, HashMap};
 
@@ -234,6 +234,11 @@ pub struct End {
     /// The connection points the cores land on where they part at the end (layout
     /// coordinates; `point` is their middle); empty for one.
     pub cores: Vec<V3>,
+    /// The direction each of the cores leaves its connection point in.
+    pub exits: Vec<V3>,
+    /// The end of the nozzle of the device a tube ends at (layout coordinates): the
+    /// route comes to `point` straight out of it and goes on into it.
+    pub nozzle: Option<V3>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -475,22 +480,72 @@ fn device_end(prj: &Project, pos: &[V3], tag: &str, pins: &[PinRef]) -> End {
         Some((ei, it)) => {
             let e = &prj.layout.enclosures[ei];
             let placed = if pins.is_empty() { Vec::new() } else { panel::device_points(prj, it) };
-            let mut at: Vec<V3> = Vec::new();
-            for q in pins.iter().filter_map(|p| panel::point_of(prj, &placed, &prj.pages[p.page].symbols[p.sym], p.pin)).map(|p| p.pos) {
-                if !at.contains(&q) {
-                    at.push(q);
+            let mut at: Vec<(V3, V3)> = Vec::new();
+            for p in pins.iter().filter_map(|p| panel::point_of(prj, &placed, &prj.pages[p.page].symbols[p.sym], p.pin)) {
+                if !at.iter().any(|a| a.0 == p.pos) {
+                    at.push((p.pos, panel::exit_vector(p.exit)));
                 }
             }
             let q = match at.len() {
                 0 => [it.x + it.w / 2.0, it.y + it.h / 2.0, it.z + it.d],
-                n => at.iter().fold([0.0; 3], |s, q| add(s, *q)).map(|v| v / n as f32),
+                n => at.iter().fold([0.0; 3], |s, q| add(s, q.0)).map(|v| v / n as f32),
             };
             let in_layout = |q: V3| add(panel::face_point(e, it.face, q), pos[ei]);
-            let cores = if at.len() > 1 { at.into_iter().map(in_layout).collect() } else { Vec::new() };
-            End { tag: tag.into(), enclosure: Some(ei), point: Some(in_layout(q)), item: Some(it.id), cores }
+            let (cores, exits) = if at.len() > 1 { at.into_iter().map(|(q, x)| (in_layout(q), sub(in_layout(add(q, x)), in_layout(q)))).unzip() } else { Default::default() };
+            End { tag: tag.into(), enclosure: Some(ei), point: Some(in_layout(q)), item: Some(it.id), cores, exits, nozzle: None }
         }
         None => End { tag: tag.into(), ..Default::default() },
     }
+}
+
+/// The nozzles of the device at the end `end` of a tube (layout coordinates: their ends
+/// and the directions out of them) and which of them is for its connection point `pin`.
+fn end_nozzles(prj: &Project, pos: &[V3], end: &End, pin: PinRef) -> Option<(Vec<(V3, V3)>, usize)> {
+    let s = &prj.pages[pin.page].symbols[pin.sym];
+    let (ei, it) = panel::locate(prj, &s.tag).filter(|(_, it)| end.item == Some(it.id))?;
+    let def = prj.symbol(&s.sym)?;
+    let name = s.pins.get(pin.pin).map(String::as_str).or_else(|| def.pins.get(pin.pin).map(|d| d.label))?;
+    let all = panel::nozzles(prj, it);
+    let k = all.iter().position(|n| n.0 == name)?;
+    let e = &prj.layout.enclosures[ei];
+    let in_layout = |q: V3| add(panel::face_point(e, it.face, q), pos[ei]);
+    let at = all.iter().map(|(_, at, dir)| (in_layout(*at), sub(in_layout(add(*at, *dir)), in_layout(*at)))).collect();
+    Some((at, k))
+}
+
+/// The two nozzles at the ends of a fitting in a pipe (valve, meter): one opposite the other.
+fn in_line(nozzles: &[(V3, V3)]) -> bool {
+    nozzles.len() == 2 && crate::parts::vec3::dot(nozzles[0].1, nozzles[1].1) < -0.99
+}
+
+/// The fittings in a pipe (see [`in_line`]) that are mounted the other way round, each
+/// pipe at the end it comes from (as near as possible to where its other end is): the
+/// items at the ends of `hoses` that turned are that much nearer.
+fn turned_fittings(prj: &Project, pos: &[V3], hoses: &[(crate::fluid::Hose, [End; 2])]) -> Vec<u64> {
+    let mut ways: HashMap<u64, [f32; 2]> = HashMap::new();
+    for (h, ends) in hoses {
+        for (i, pin) in [h.a, h.b].into_iter().enumerate() {
+            let (Some(item), Some(to)) = (ends[i].item, ends[1 - i].point) else { continue };
+            let Some((at, k)) = end_nozzles(prj, pos, &ends[i], pin).filter(|(at, _)| in_line(at)) else { continue };
+            let way = ways.entry(item).or_default();
+            way[0] += dist(at[k].0, to);
+            way[1] += dist(at[1 - k].0, to);
+        }
+    }
+    let mut turned: Vec<u64> = ways.into_iter().filter(|(_, w)| w[1] + 1.0 < w[0]).map(|(id, _)| id).collect();
+    turned.sort_unstable();
+    turned
+}
+
+/// A tube at the end `end` at the connection point `pin` of its device ends at the nozzle
+/// of the device's model for it (the other end of a fitting `turned` round), the route
+/// coming to it from `out` mm straight out of it.
+fn at_nozzle(prj: &Project, pos: &[V3], end: &mut End, pin: PinRef, out: f32, turned: &[u64]) {
+    let Some((at, k)) = end_nozzles(prj, pos, end, pin) else { return };
+    let k = if in_line(&at) && end.item.is_some_and(|id| turned.contains(&id)) { 1 - k } else { k };
+    let (tip, dir) = at[k];
+    end.nozzle = Some(tip);
+    end.point = Some(add(tip, scale(dir, out)));
 }
 
 /// The schematic connection points of `cores` at the device `tag`.
@@ -506,10 +561,10 @@ fn entry_end(prj: &Project, pos: &[V3], ei: usize, near: V3) -> End {
     let glands = accessories(prj, ei, "Cable gland");
     let at = |it: &PanelItem| add(panel::face_point(e, it.face, [it.x + it.w / 2.0, it.y + it.h / 2.0, 5.0]), pos[ei]);
     match glands.into_iter().min_by(|a, b| manhattan(at(a), near).total_cmp(&manhattan(at(b), near)).then(a.id.cmp(&b.id))) {
-        Some(g) => End { tag: g.part.clone(), enclosure: Some(ei), point: Some(at(g)), item: Some(g.id), cores: Vec::new() },
+        Some(g) => End { tag: g.part.clone(), enclosure: Some(ei), point: Some(at(g)), item: Some(g.id), ..Default::default() },
         None => {
             let q = [e.width / 2.0, e.height - e.wall() - 5.0, (PLATE_Z + e.depth) / 2.0];
-            End { tag: tr("Bottom").to_string(), enclosure: Some(ei), point: Some(add(q, pos[ei])), item: None, cores: Vec::new() }
+            End { tag: tr("Bottom").to_string(), enclosure: Some(ei), point: Some(add(q, pos[ei])), item: None, ..Default::default() }
         }
     }
 }
@@ -561,6 +616,9 @@ type LegsPlan = (Vec<room::LegPlan>, bool, f32);
 /// Threads the searches of one class are spread over: each keeps arrays as large as the
 /// largest space it searches.
 const ROUTING_THREADS: usize = 4;
+/// How far at least the route of a tube comes to the nozzle of its device straight out
+/// of it, mm.
+const NOZZLE_OUT: f32 = 30.0;
 
 /// The two end tags of a cable: the device most of its cores start at, and the one
 /// most of them end at.
@@ -595,7 +653,7 @@ fn building_entry(prj: &Project, pos: &[V3], ri: usize, near: V3) -> Option<End>
     let e = &prj.layout.enclosures[ri];
     let at = |it: &PanelItem| panel::entry_point(e, it).map(|q| add(q, pos[ri]));
     let it = panel::entries(e).into_iter().filter(|it| at(it).is_some()).min_by(|a, b| manhattan(at(a).unwrap_or(near), near).total_cmp(&manhattan(at(b).unwrap_or(near), near)).then(a.id.cmp(&b.id)))?;
-    Some(End { tag: tr("Building entry").to_string(), enclosure: Some(ri), point: at(it), item: Some(it.id), cores: Vec::new() })
+    Some(End { tag: tr("Building entry").to_string(), enclosure: Some(ri), point: at(it), item: Some(it.id), ..Default::default() })
 }
 
 /// The location of a device tag (`=F1+LOC-K1` → `LOC`), empty without one.
@@ -742,10 +800,16 @@ fn jobs(prj: &Project, wiring: &[RoutedWire], conns: &[Connection], open: &Netli
         });
     }
     // Hoses, tubes and pipes with their configuration: bend radius, and the insertion
-    // depth at both ends for the cut length.
-    for h in crate::fluid::hoses(prj, open) {
-        let tag = |p: crate::netlist::PinRef| prj.pages[p.page].symbols[p.sym].tag.clone();
-        let Some(ends) = ends_between(prj, &pos, &tag(h.a), &tag(h.b), [&[], &[]]) else { continue };
+    // depth at both ends for the cut length. They end at the nozzles of their devices,
+    // the routes coming to them twice as far straight out of them as they are thick.
+    let tag = |p: crate::netlist::PinRef| prj.pages[p.page].symbols[p.sym].tag.clone();
+    let hoses: Vec<(crate::fluid::Hose, [End; 2])> = crate::fluid::hoses(prj, open).into_iter().filter_map(|h| ends_between(prj, &pos, &tag(h.a), &tag(h.b), [&[], &[]]).map(|e| (h, e))).collect();
+    let turned = turned_fittings(prj, &pos, &hoses);
+    for (h, mut ends) in hoses {
+        let diameter = tube_diameter(&h.size);
+        for (end, pin) in ends.iter_mut().zip([h.a, h.b]) {
+            at_nozzle(prj, &pos, end, pin, (2.0 * diameter).max(NOZZLE_OUT), &turned);
+        }
         let label = if h.number.is_empty() { format!("{} – {}", h.from, h.to) } else { h.number.clone() };
         jobs.push(Job {
             kind: RouteKind::Tube,
@@ -753,7 +817,7 @@ fn jobs(prj: &Project, wiring: &[RoutedWire], conns: &[Connection], open: &Netli
             label,
             class: Class::Fluid,
             ends,
-            diameter: tube_diameter(&h.size),
+            diameter,
             shielded: false,
             wire: None,
             fixed: None,
@@ -778,7 +842,7 @@ fn jobs(prj: &Project, wiring: &[RoutedWire], conns: &[Connection], open: &Netli
             enclosure: Some(ei),
             point: q.map(|q| add([PLATE_MARGIN + q.x, PLATE_MARGIN + q.y, PLATE_Z + 5.0], pos[ei])),
             item: Some(item),
-            cores: Vec::new(),
+            ..Default::default()
         };
         let last = w.stretches().last().map(|s| s.1).unwrap_or(&w.route);
         let ends = [end(&w.from, w.enclosure, w.items.0, w.route.points.first()), end(&w.to, w.last_enclosure(), w.items.1, last.points.last())];
@@ -848,8 +912,19 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, progress: &dy
             }
         })
         .collect();
-    // The legs of a frozen job as frozen, where the route is still the same.
-    let thawed = |job: &Job, legs: &[room::LegPlan]| frozen.get(job.key.as_str()).and_then(|f| thaw(prj, &pos, f)).filter(|t| t.len() == legs.len()).unwrap_or_default();
+    // The legs of a frozen job as frozen, where the route is still the same (without the
+    // ways into the nozzles, added to the route again).
+    let thawed = |job: &Job, legs: &[room::LegPlan]| {
+        let mut t = frozen.get(job.key.as_str()).and_then(|f| thaw(prj, &pos, f)).filter(|t| t.len() == legs.len()).unwrap_or_default();
+        let near = |q: Option<&V3>, tip: Option<V3>| q.zip(tip).is_some_and(|(q, tip)| dist(*q, tip) < 0.5);
+        if let Some(first) = t.first_mut().filter(|p| near(p.first(), job.ends[0].nozzle)) {
+            first.remove(0);
+        }
+        if let Some(last) = t.last_mut().filter(|p| near(p.last(), job.ends[1].nozzle)) {
+            last.pop();
+        }
+        t
+    };
     let thawed_ok = |points: &[V3], leg: &room::LegPlan, space: &grid::Space, req: &grid::Request| {
         let near = |q: Option<&V3>, e: V3| q.is_some_and(|q| manhattan(*q, e) <= 2.0 * space.cell);
         near(points.first(), leg.a) && near(points.last(), leg.b) && space.still_free(points, req)
@@ -1001,6 +1076,21 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, progress: &dy
             item.free += if known { 0.0 } else { *free };
         }
         length += through_walls;
+        // Tubes go on straight into the nozzles of their devices.
+        if let (Some(tip), Some((_, points, _, radii))) = (job.ends[0].nozzle, ways.first_mut()) {
+            length += dist(tip, points[0]);
+            points.insert(0, tip);
+            radii.insert(0, 0.0);
+            radii[1] = radius;
+        }
+        if let (Some(tip), Some((_, points, _, radii))) = (job.ends[1].nozzle, ways.last_mut()) {
+            length += dist(tip, points[points.len() - 1]);
+            points.push(tip);
+            if let Some(r) = radii.last_mut() {
+                *r = radius;
+            }
+            radii.push(0.0);
+        }
         item.length = match (known, job.wire) {
             (true, Some(wi)) => wiring[wi].length,
             _ => length + job.extra,

@@ -201,3 +201,27 @@ fn motors_and_machines_without_a_motor_have_a_shaft_end() {
     own.description = "Piston compressor 10 bar on its receiver".into();
     assert!(shaft(&own).is_none() && shaft(get("GEN.PUMP-CIRC-DN25")).is_none());
 }
+
+#[test]
+fn fluid_devices_have_a_nozzle_per_connection_point() {
+    let parts = default_catalog();
+    let get = |n: &str| parts.iter().find(|p| p.number == n).unwrap_or_else(|| panic!("{n}"));
+    for (n, pins) in [("GEN.PUMP-CENT-DN25", &["S", "P"][..]), ("GEN.TANK-200L", &["N1", "N2"]), ("GEN.TANK-BUFFER-500L", &["N1", "N2", "N3", "N4"]), ("GEN.VLV-BALL-DN25", &["1", "2"]), ("GEN.MANIFOLD-DN32-4", &["IN", "OUT1", "OUT2", "OUT3", "OUT4"])] {
+        let p = get(n);
+        let nozzles = nozzles(p);
+        assert_eq!(nozzles.iter().map(|z| z.pin.as_str()).collect::<Vec<_>>(), pins, "{n}");
+        // On the side of the part's box they point out of.
+        let size = [p.width, p.height, p.depth];
+        for z in &nozzles {
+            let k = (0..3).find(|&k| z.dir[k].abs() > 0.99).unwrap_or_else(|| panic!("{n} {}: {:?}", z.pin, z.dir));
+            let side = if z.dir[k] > 0.0 { size[k] } else { 0.0 };
+            assert!((z.at[k] - side).abs() < 0.01, "{n} {}: {:?} {:?}", z.pin, z.at, z.dir);
+        }
+    }
+    // The pump on the floor: the pressure nozzle on top, the suction nozzle at the end.
+    let pump = nozzles(get("GEN.PUMP-CENT-DN25"));
+    assert_eq!(pump[1].dir, [0.0, 1.0, 0.0]);
+    assert_eq!(pump[0].dir[1], 0.0);
+    // Motors have none.
+    assert!(nozzles(get("GEN.MOT-2.2KW")).is_empty());
+}

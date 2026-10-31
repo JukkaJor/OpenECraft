@@ -28,3 +28,17 @@ fn wires_along_the_plate_go_over_what_stands_in_their_way() {
     let beside = [[0.0, 80.0, 30.0], [300.0, 80.0, 30.0]];
     assert_eq!(over(&beside, &[busbar], 1.5), beside.to_vec());
 }
+
+#[test]
+fn wires_leave_their_own_devices_at_the_height_of_their_connection_points() {
+    // A way along the plate (z 5) from a connection point inside the device (box x 0 ..
+    // 50, y 0 .. 80) out to x 100: it leaves at the height of the connection point (60).
+    let mut way = vec![[25.0, 70.0, 5.0], [25.0, 100.0, 5.0], [100.0, 100.0, 5.0]];
+    leave_device(&mut way, ([0.0, 0.0, 0.0], [50.0, 80.0, 70.0]), 60.0);
+    assert_eq!(way, vec![[25.0, 100.0, 60.0], [25.0, 100.0, 5.0], [100.0, 100.0, 5.0]]);
+    // Nothing inside the device or all of it: as it is.
+    let outside = vec![[60.0, 100.0, 5.0], [100.0, 100.0, 5.0]];
+    let mut same = outside.clone();
+    leave_device(&mut same, ([0.0, 0.0, 0.0], [50.0, 80.0, 70.0]), 60.0);
+    assert_eq!(same, outside);
+}

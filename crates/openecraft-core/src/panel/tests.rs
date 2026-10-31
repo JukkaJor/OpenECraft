@@ -664,3 +664,25 @@ fn devices_on_a_busbar_are_connected_by_its_bars() {
     let feeds = wiring.iter().filter(|w| [device(&w.from), device(&w.to)] == ["=MD+MD-X0", "=MD+MD-Q1"] || [device(&w.from), device(&w.to)] == ["=MD+MD-Q1", "=MD+MD-X0"]).count();
     assert_eq!(feeds, 3);
 }
+
+#[test]
+fn wires_without_ducts_run_round_the_devices() {
+    // Two devices side by side on a rail and a third beside them, no ducts.
+    let mut e = Enclosure::default();
+    let device = |id: u64, x: f32| PanelItem { id, kind: ItemKind::Device, face: Face::Plate, x, y: 100.0, w: 50.0, h: 80.0, d: 70.0, ..Default::default() };
+    e.items.extend([device(1, 100.0), device(2, 150.0), device(3, 200.0)]);
+    let inside = |q: P| e.items.iter().any(|i| q.x > i.x + 0.5 && q.x < i.x + i.w - 0.5 && q.y > i.y + 0.5 && q.y < i.y + i.h - 0.5);
+    let through = |r: &Route| r.points.windows(2).any(|s| (0..=20).any(|k| inside(s[0] + (s[1] - s[0]) * (k as f32 / 20.0))));
+    // From the top of the first to the top of the third: above all of them.
+    let top = |x: f32| WireEnd { pos: p(x, 100.0), exit: Some(Exit::Up) };
+    let bottom = |x: f32| WireEnd { pos: p(x, 180.0), exit: Some(Exit::Down) };
+    let r = route_ends(&e, top(120.0), top(220.0));
+    assert!(!r.via_ducts && !through(&r), "{:?}", r.points);
+    assert!(r.points.iter().all(|q| q.y <= 100.0), "{:?}", r.points);
+    // From the bottom of the first to the top of the second: round the row.
+    let r = route_ends(&e, bottom(120.0), top(170.0));
+    assert!(!through(&r), "{:?}", r.points);
+    assert!((r.plate_length - r.points.windows(2).map(|s| (s[1].x - s[0].x).abs() + (s[1].y - s[0].y).abs()).sum::<f32>()).abs() < 0.01);
+    // Without directions as before: straight across.
+    assert_eq!(route_ends(&e, WireEnd::at(p(10.0, 10.0)), WireEnd::at(p(50.0, 40.0))).points, vec![p(10.0, 10.0), p(50.0, 10.0), p(50.0, 40.0)]);
+}
