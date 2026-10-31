@@ -377,7 +377,7 @@ impl PanelUi {
             });
         }
         if let Some((ei, id)) = select {
-            self.enclosure = ei;
+            self.switch_enclosure(ei);
             self.select_item(id);
         }
     }

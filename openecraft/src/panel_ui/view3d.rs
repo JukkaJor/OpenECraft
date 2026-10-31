@@ -198,7 +198,7 @@ impl PanelUi {
                 return true;
             }
             (Some((k, id)), None) => {
-                self.enclosure = k;
+                self.switch_enclosure(k);
                 self.select_item(id);
             }
             (None, None) => self.deselect(),

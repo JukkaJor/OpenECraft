@@ -741,6 +741,15 @@ impl PanelUi {
         self.cam = None;
     }
 
+    /// Shows another enclosure (a cabinet clicked in its room), fitted into the view.
+    fn switch_enclosure(&mut self, ei: usize) {
+        if self.enclosure != ei {
+            self.enclosure = ei;
+            self.fit_pending = true;
+            self.cam = None;
+        }
+    }
+
     /// Selects a wire and turns the 3D camera towards it (wiring assistant).
     pub fn focus_wire(&mut self, prj: &Project, w: &panel::RoutedWire) {
         let Some(e) = prj.layout.enclosures.get(w.enclosure) else { return };
@@ -1918,7 +1927,7 @@ impl PanelUi {
             }
         }
         if let Some((ei, id)) = select {
-            self.enclosure = ei;
+            self.switch_enclosure(ei);
             self.select_item(id);
         }
     }
