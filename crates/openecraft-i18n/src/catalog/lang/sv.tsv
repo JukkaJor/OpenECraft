@@ -6371,6 +6371,33 @@ Open cable ducts	Öppna kabelkanaler
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	Utelämna locken på alla kabelkanaler i 3D-vyn: ledarna i dem syns
 {}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: kabelkanal vid {} mm för liten: dess {} ledare kan inte dras bredvid varandra
 Laying out the wires, cables and tubes…	Ledningar, kablar och slangar läggs ut…
+Wire colour	Ledarfärg
+Pin-out	Stiftbeläggning
+No pin layout in the technical data of the part: the pins are shown in a row (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).	Ingen stiftlayout i artikelns tekniska data: stiften visas på en rad (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).
+Seen on the mating faces; the colours are those of the wires and cable cores at the pins.	Sett mot anslutningssidorna; färgerna är ledarnas och kabelledarnas vid stiften.
+{}: pin {}	{}: stift {}
+Pin layout: {}	Stiftlayout: {}
+Coding: {}	Kodning: {}
+Connector pin-outs and flat cables	Kontakters stiftbeläggning och flatkablar
+Plug tag, e.g. -X10 (default: all plugs)	Kontaktbeteckning, t.ex. -X10 (standard: alla kontakter)
+Connector pin-outs: mating faces and pin tables (SVG)	Kontakters stiftbeläggning: anslutningssidor och stifttabeller (SVG)
+{}: pin {} is not a pin of the part {}	{}: stift {} är inte ett stift i artikeln {}
+{}: core {} of flat cable {} lands on pin {}	{}: ledare {} i flatkabeln {} hamnar på stift {}
+Flat cable {} has {} cores, the IDC connector {} has {} pins	Flatkabeln {} har {} ledare, IDC-kontakten {} har {} stift
+Pin side (male)	Stiftsida (hane)
+Socket side (female)	Hylssida (hona)
+Mating faces	Anslutningssidor
+used: colour of the wire or core	använd: ledarens eller kabelledarens färg
+coding key	kodningsnyckel
+No plugs	Inga kontakter
+No wires at the pins of {}	Inga ledare vid stiften på {}
+12 · Connectors, pin-outs and ribbon cables	12 · Kontaktdon, stiftbeläggning och flatkablar
+Plug connectors with their parts: a sensor on M12 and a valve on M8, a fan and its thermostat on GX16 and GX12 aviation connectors, a buzzer on a D-sub 9 and an operator panel on a ribbon cable between two IDC sockets; the plugs window shows the pin-out of each plug on its mating faces with the wire and core colours.	Kontaktdon med sina artiklar: en givare på M12 och en ventil på M8, en fläkt och dess termostat på GX16- och GX12-kontakter, en summer på en D-sub 9 och en manöverpanel på en flatkabel mellan två IDC-hylsor; kontaktfönstret visar stiftbeläggningen för varje kontakt på dess anslutningssidor med ledarnas färger.
+Unknown side {} (socket or pin)	Okänd sida {} (socket eller pin)
+Shows the mating face of a plug: pin layout of its part, the position of each pin on the face (mm, seen on the pin side) with potential, wire colour and cable core of both sides	Visar en kontakts anslutningssida: artikelns stiftlayout, varje stifts läge (mm, sett mot stiftsidan) med potential, ledarfärg och kabelledare på båda sidor
+Makes the wires at the pins of a plug cores of a flat (ribbon) cable: pin n takes core n, as on IDC connectors	Gör ledarna vid en kontakts stift till ledare i en flatkabel: stift n får ledare n, som på IDC-kontakter
+Cable tag, e.g. -W20	Kabelbeteckning, t.ex. -W20
+Side of the plug the cable leaves: socket or pin (default: socket)	Kontaktens sida där kabeln går ut: socket eller pin (standard: socket)
 Fits	Passar till
 Fits {}	Passar till {}
 The accessory fits none of the device's parts	Tillbehöret passar inte till någon av enhetens artiklar

@@ -14,6 +14,7 @@
 //!   (catalogs, lifecycle, attachments, users, faceted search, update check: [`portal`])
 //! - accessories that fit other parts ([`accessory`])
 //! - the EPLAN product groups with their exchange numbers ([`productgroups`])
+//! - pin layouts and mating faces of plug connectors ([`connector`])
 
 pub mod access;
 pub mod accessory;
@@ -22,6 +23,7 @@ mod bmecat;
 pub mod bundled;
 mod catalog;
 mod connection;
+pub mod connector;
 mod csv;
 mod eplan;
 mod filter;

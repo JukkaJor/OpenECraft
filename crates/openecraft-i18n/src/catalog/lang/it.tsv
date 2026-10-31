@@ -6371,6 +6371,33 @@ Open cable ducts	Apri canaline
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	Nella vista 3D omette i coperchi di tutte le canaline: i fili al loro interno sono visibili
 {}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: canalina a {} mm troppo piccola: i suoi {} fili non possono essere posati uno accanto all'altro
 Laying out the wires, cables and tubes…	Disposizione di conduttori, cavi e tubi…
+Wire colour	Colore del filo
+Pin-out	Piedinatura
+No pin layout in the technical data of the part: the pins are shown in a row (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).	Nessuna disposizione dei pin nei dati tecnici dell'articolo: i pin sono mostrati in una fila (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).
+Seen on the mating faces; the colours are those of the wires and cable cores at the pins.	Vista sulle facce di accoppiamento; i colori sono quelli dei fili e dei conduttori del cavo ai pin.
+{}: pin {}	{}: pin {}
+Pin layout: {}	Disposizione dei pin: {}
+Coding: {}	Codifica: {}
+Connector pin-outs and flat cables	Piedinature dei connettori e cavi piatti
+Plug tag, e.g. -X10 (default: all plugs)	Sigla del connettore, ad es. -X10 (predefinito: tutti i connettori)
+Connector pin-outs: mating faces and pin tables (SVG)	Piedinature dei connettori: facce di accoppiamento e tabelle dei pin (SVG)
+{}: pin {} is not a pin of the part {}	{}: il pin {} non è un pin dell'articolo {}
+{}: core {} of flat cable {} lands on pin {}	{}: il conduttore {} del cavo piatto {} arriva sul pin {}
+Flat cable {} has {} cores, the IDC connector {} has {} pins	Il cavo piatto {} ha {} conduttori, il connettore IDC {} ha {} pin
+Pin side (male)	Lato pin (maschio)
+Socket side (female)	Lato prese (femmina)
+Mating faces	Facce di accoppiamento
+used: colour of the wire or core	usato: colore del filo o conduttore
+coding key	chiave di codifica
+No plugs	Nessun connettore
+No wires at the pins of {}	Nessun filo ai pin di {}
+12 · Connectors, pin-outs and ribbon cables	12 · Connettori, piedinature e cavi piatti
+Plug connectors with their parts: a sensor on M12 and a valve on M8, a fan and its thermostat on GX16 and GX12 aviation connectors, a buzzer on a D-sub 9 and an operator panel on a ribbon cable between two IDC sockets; the plugs window shows the pin-out of each plug on its mating faces with the wire and core colours.	Connettori con i loro articoli: un sensore su M12 e una valvola su M8, un ventilatore e il suo termostato su connettori aviazione GX16 e GX12, un cicalino su un D-sub 9 e un pannello operatore su un cavo piatto tra due connettori IDC; la finestra dei connettori mostra la piedinatura di ogni connettore sulle sue facce di accoppiamento con i colori dei fili e dei conduttori.
+Unknown side {} (socket or pin)	Lato sconosciuto {} (socket o pin)
+Shows the mating face of a plug: pin layout of its part, the position of each pin on the face (mm, seen on the pin side) with potential, wire colour and cable core of both sides	Mostra la faccia di accoppiamento di un connettore: disposizione dei pin del suo articolo, posizione di ogni pin (mm, vista lato pin) con potenziale, colore del filo e conduttore del cavo di entrambi i lati
+Makes the wires at the pins of a plug cores of a flat (ribbon) cable: pin n takes core n, as on IDC connectors	Rende i fili ai pin di un connettore conduttori di un cavo piatto: il pin n riceve il conduttore n, come sui connettori IDC
+Cable tag, e.g. -W20	Sigla del cavo, ad es. -W20
+Side of the plug the cable leaves: socket or pin (default: socket)	Lato del connettore da cui esce il cavo: socket o pin (predefinito: socket)
 Fits	Compatibile con
 Fits {}	Compatibile con {}
 The accessory fits none of the device's parts	L'accessorio non è compatibile con nessun articolo del dispositivo

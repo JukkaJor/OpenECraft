@@ -43,7 +43,7 @@ step.
 
 ## Example projects
 
-The start page and *File › New* list ten example projects; each builds on the one
+The start page and *File › New* list twelve example projects; each builds on the one
 before and shows more of the features (command line: `list_examples`,
 `new_project --example <name>`). All of them pass the project check without errors or
 warnings.
@@ -61,6 +61,7 @@ warnings.
 | 9 | `electrical_room` | The line-up in its room `+ER1`: L-shaped floor plan, inner wall, door and window, the line-up at its place, wall rail with a socket outlet, wall-mounted emergency light (part marked for wall mounting), cable tray under the ceiling |
 | 10 | `pump_room` | The room of the line-up with its pumps: motors, pump and vessel standing on the floor (parts marked for floor mounting), ball valves and a gauge on the wall, a P&ID with DN25 water pipes routed in 3D along a pipe run, motor cables from the cabinets through glands in their roofs |
 | 11 | `building_services` | A building in two rooms joined by wall penetrations: supply cable and water main through building entries to the house connection box and the remote controlled valve; main distribution with busbars, Hager NH fuse switch disconnectors NH000 / NH00 / NH2 and energy meters (direct and with current transformers); PLC and pump cabinets with EtherCAT I/O, tanks, booster pumps and pressure vessel; compressor with air receiver, refrigeration and membrane dryers, filter regulators and oilers at four outlets; heat pump with buffer tank, hot water distribution and circulation; temperature, pressure and level transmitters; PV strings with generator junction box, Victron Inverter RS and three MultiPlus-II on the wall, Cerbo GX, Pylontech US5000 in a 19-inch rack; sections in two levels, single-line diagram, sized wires, manufacturer parts of the parts server's catalogs |
+| 12 | `connector_handling` | Plug connectors with their parts: a proximity switch on M12 and a valve on M8 with the core colours of their field cables, a fan and its thermostat on GX16 / GX12 aviation connectors, a buzzer on a D-sub 9, an operator panel on a 10-core ribbon cable between two IDC sockets on box headers (core n on pin n); the plugs window shows each pin-out on the mating faces, plug diagram, cable reports |
 
 The projects are built in code (`crates/openecraft-core/src/sample/`), so they always
 match the current file format; *Save as…* writes one as an `.oec` file.

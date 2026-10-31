@@ -8,6 +8,7 @@ use openecraft_i18n::tr_const;
 
 mod building;
 mod cabinets;
+mod connectors;
 mod lamp;
 mod plant;
 mod press;
@@ -30,7 +31,7 @@ pub struct Example {
 }
 
 /// The example projects, simple ones first.
-pub const EXAMPLES: [Example; 11] = [
+pub const EXAMPLES: [Example; 12] = [
     Example {
         key: "lamp_circuit",
         level: 1,
@@ -107,6 +108,13 @@ pub const EXAMPLES: [Example; 11] = [
         title: tr_const!("11 · Building services with water supply and PV storage"),
         description: tr_const!("A whole building in two rooms: the supply cable and the water main come in through building entries to the house connection box and the remote controlled valve; main distribution with busbars, Hager NH fuse switch disconnectors of three sizes and energy meters; cables and the water pipe pass a wall penetration into the technical room with PLC and pump cabinets, tanks and booster pumps, a compressor with air receiver and dryers and oilers at the outlets, a heat pump with buffer tank and hot water circulation, temperature, pressure and level sensors, a PV system with generator junction box, Victron MultiPlus-II and Inverter RS on the wall, Cerbo GX and Pylontech batteries in a 19-inch rack."),
         build: building::project,
+    },
+    Example {
+        key: "connector_handling",
+        level: 12,
+        title: tr_const!("12 · Connectors, pin-outs and ribbon cables"),
+        description: tr_const!("Plug connectors with their parts: a sensor on M12 and a valve on M8, a fan and its thermostat on GX16 and GX12 aviation connectors, a buzzer on a D-sub 9 and an operator panel on a ribbon cable between two IDC sockets; the plugs window shows the pin-out of each plug on its mating faces with the wire and core colours."),
+        build: connectors::project,
     },
 ];
 

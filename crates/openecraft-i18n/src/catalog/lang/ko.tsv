@@ -6358,6 +6358,33 @@ Open cable ducts	케이블 덕트 열기
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	3D 보기에서 모든 케이블 덕트의 덮개를 생략합니다: 안의 전선이 보입니다
 {}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{0}: {1} mm 위치의 케이블 덕트가 너무 작습니다: 전선 {2}개를 나란히 배선할 수 없습니다
 Laying out the wires, cables and tubes…	전선, 케이블 및 튜브 배치 중…
+Wire colour	전선 색상
+Pin-out	핀 배치
+No pin layout in the technical data of the part: the pins are shown in a row (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).	부품의 기술 데이터에 핀 배치가 없습니다: 핀이 한 줄로 표시됩니다 (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).
+Seen on the mating faces; the colours are those of the wires and cable cores at the pins.	결합면에서 본 모습입니다. 색상은 핀에 연결된 전선과 케이블 심선의 색상입니다.
+{}: pin {}	{}: 핀 {}
+Pin layout: {}	핀 배치: {}
+Coding: {}	코딩: {}
+Connector pin-outs and flat cables	커넥터 핀 배치와 리본 케이블
+Plug tag, e.g. -X10 (default: all plugs)	플러그 태그, 예: -X10 (기본값: 모든 플러그)
+Connector pin-outs: mating faces and pin tables (SVG)	커넥터 핀 배치: 결합면과 핀 표 (SVG)
+{}: pin {} is not a pin of the part {}	{}: 핀 {}은(는) 부품 {}의 핀이 아닙니다
+{}: core {} of flat cable {} lands on pin {}	{}: 심선 {} (리본 케이블 {})이(가) 핀 {}에 연결됩니다
+Flat cable {} has {} cores, the IDC connector {} has {} pins	리본 케이블 {}은(는) {}심, IDC 커넥터 {}은(는) {}핀입니다
+Pin side (male)	핀 측 (수)
+Socket side (female)	소켓 측 (암)
+Mating faces	결합면
+used: colour of the wire or core	사용: 전선 또는 심선 색상
+coding key	코딩 키
+No plugs	플러그 없음
+No wires at the pins of {}	{}의 핀에 전선이 없습니다
+12 · Connectors, pin-outs and ribbon cables	12 · 커넥터, 핀 배치와 리본 케이블
+Plug connectors with their parts: a sensor on M12 and a valve on M8, a fan and its thermostat on GX16 and GX12 aviation connectors, a buzzer on a D-sub 9 and an operator panel on a ribbon cable between two IDC sockets; the plugs window shows the pin-out of each plug on its mating faces with the wire and core colours.	부품이 지정된 커넥터: M12의 센서와 M8의 밸브, GX16 및 GX12 항공 커넥터의 팬과 온도 스위치, D-sub 9의 부저, 두 IDC 소켓 사이 리본 케이블의 조작 패널; 플러그 창은 각 플러그의 핀 배치를 결합면에 전선과 심선 색상으로 표시합니다.
+Unknown side {} (socket or pin)	알 수 없는 측 {} (socket 또는 pin)
+Shows the mating face of a plug: pin layout of its part, the position of each pin on the face (mm, seen on the pin side) with potential, wire colour and cable core of both sides	플러그의 결합면을 표시합니다: 부품의 핀 배치, 각 핀의 위치(mm, 핀 측에서 본 모습)와 양측의 전위, 전선 색상, 케이블 심선
+Makes the wires at the pins of a plug cores of a flat (ribbon) cable: pin n takes core n, as on IDC connectors	플러그 핀의 전선을 리본 케이블의 심선으로 만듭니다: IDC 커넥터처럼 핀 n에 심선 n
+Cable tag, e.g. -W20	케이블 태그, 예: -W20
+Side of the plug the cable leaves: socket or pin (default: socket)	케이블이 나가는 플러그 측: socket 또는 pin (기본값: socket)
 Fits	호환 대상
 Fits {}	{}에 호환
 The accessory fits none of the device's parts	이 액세서리는 장치의 어떤 부품에도 맞지 않습니다

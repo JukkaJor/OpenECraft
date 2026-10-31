@@ -29,6 +29,7 @@ pub fn builtin() -> Vec<Check> {
         entry("wires", tr_const!("Cables and wire numbers"), |prj, an| check_wires(prj, &an.netlist, &an.open)),
         entry("potentials", tr_const!("Potential definitions"), |prj, an| check_potentials(prj, &an.netlist, &an.open)),
         entry("plugs", tr_const!("Plugs"), |prj, _| crate::plugs::problems(prj).into_iter().map(|(message, target)| Issue::plain(Severity::Warning, message, target)).collect()),
+        entry("connectors", tr_const!("Connector pin-outs and flat cables"), |prj, _| crate::pinout::problems(prj)),
         entry("terminal_strips_and_plc", tr_const!("Terminal strips and PLC addresses"), |prj, an| check_strips_and_plc(prj, &an.netlist)),
         entry("plc_hardware", tr_const!("PLC hardware"), |prj, _| crate::plc_hw::problems(prj)),
         entry("duct_fill", tr_const!("Duct fill levels"), |prj, an| check_duct_fill(prj, &an.duct_fill)),

@@ -61,6 +61,7 @@ pub mod pdf;
 pub mod preplanning;
 pub mod settings_scheme;
 pub mod pdf_comments;
+pub mod pinout;
 pub mod plc;
 pub mod plc_hw;
 pub mod plugs;

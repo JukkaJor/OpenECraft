@@ -6371,6 +6371,33 @@ Open cable ducts	Åbn kabelkanaler
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	Udelad lågene på alle kabelkanaler i 3D-visningen: lederne i dem bliver synlige
 {}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: kabelkanal ved {} mm for lille: dens {} ledere kan ikke trækkes side om side
 Laying out the wires, cables and tubes…	Ledninger, kabler og slanger lægges ud…
+Wire colour	Lederfarve
+Pin-out	Benforbindelse
+No pin layout in the technical data of the part: the pins are shown in a row (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).	Ingen benplacering i artiklens tekniske data: benene vises på en række (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).
+Seen on the mating faces; the colours are those of the wires and cable cores at the pins.	Set mod stiksiderne; farverne er ledernes og kabellederes ved benene.
+{}: pin {}	{}: ben {}
+Pin layout: {}	Benplacering: {}
+Coding: {}	Kodning: {}
+Connector pin-outs and flat cables	Stikforbindelsers benforbindelse og fladkabler
+Plug tag, e.g. -X10 (default: all plugs)	Stikbetegnelse, f.eks. -X10 (standard: alle stik)
+Connector pin-outs: mating faces and pin tables (SVG)	Stikforbindelsers benforbindelse: stiksider og bentabeller (SVG)
+{}: pin {} is not a pin of the part {}	{}: ben {} er ikke et ben i artiklen {}
+{}: core {} of flat cable {} lands on pin {}	{}: leder {} i fladkablet {} lander på ben {}
+Flat cable {} has {} cores, the IDC connector {} has {} pins	Fladkablet {} har {} ledere, IDC-stikket {} har {} ben
+Pin side (male)	Benside (han)
+Socket side (female)	Bøsningsside (hun)
+Mating faces	Stiksider
+used: colour of the wire or core	brugt: lederens eller kabellederens farve
+coding key	kodenøgle
+No plugs	Ingen stik
+No wires at the pins of {}	Ingen ledere ved benene på {}
+12 · Connectors, pin-outs and ribbon cables	12 · Stik, benforbindelser og fladkabler
+Plug connectors with their parts: a sensor on M12 and a valve on M8, a fan and its thermostat on GX16 and GX12 aviation connectors, a buzzer on a D-sub 9 and an operator panel on a ribbon cable between two IDC sockets; the plugs window shows the pin-out of each plug on its mating faces with the wire and core colours.	Stik med deres artikler: en sensor på M12 og en ventil på M8, en ventilator og dens termostat på GX16- og GX12-stik, en summer på et D-sub 9 og et betjeningspanel på et fladkabel mellem to IDC-bøsninger; stikvinduet viser benforbindelsen for hvert stik på dets stiksider med ledernes farver.
+Unknown side {} (socket or pin)	Ukendt side {} (socket eller pin)
+Shows the mating face of a plug: pin layout of its part, the position of each pin on the face (mm, seen on the pin side) with potential, wire colour and cable core of both sides	Viser et stiks stikside: artiklens benplacering, hvert bens position (mm, set mod bensiden) med potential, lederfarve og kabelleder på begge sider
+Makes the wires at the pins of a plug cores of a flat (ribbon) cable: pin n takes core n, as on IDC connectors	Gør lederne ved et stiks ben til ledere i et fladkabel: ben n får leder n, som på IDC-stik
+Cable tag, e.g. -W20	Kabelbetegnelse, f.eks. -W20
+Side of the plug the cable leaves: socket or pin (default: socket)	Stikkets side, hvor kablet går ud: socket eller pin (standard: socket)
 Fits	Passer til
 Fits {}	Passer til {}
 The accessory fits none of the device's parts	Tilbehøret passer ikke til nogen af enhedens artikler

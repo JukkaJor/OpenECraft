@@ -6364,6 +6364,33 @@ Open cable ducts	配線ダクトを開く
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	3D ビューですべての配線ダクトのふたを省略します：中の電線が見えます
 {}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: {} mm の位置の配線ダクトが小さすぎます: {} 本の電線を並べて配線できません
 Laying out the wires, cables and tubes…	電線、ケーブル、チューブを配置しています…
+Wire colour	電線の色
+Pin-out	ピン配置
+No pin layout in the technical data of the part: the pins are shown in a row (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).	部品の技術データにピン配置がありません：ピンは一列に表示されます (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).
+Seen on the mating faces; the colours are those of the wires and cable cores at the pins.	嵌合面から見た図。色はピンの電線とケーブル心線の色です。
+{}: pin {}	{}: ピン {}
+Pin layout: {}	ピン配置: {}
+Coding: {}	コーディング: {}
+Connector pin-outs and flat cables	コネクタのピン配置とフラットケーブル
+Plug tag, e.g. -X10 (default: all plugs)	プラグのタグ、例: -X10 (既定: すべてのプラグ)
+Connector pin-outs: mating faces and pin tables (SVG)	コネクタのピン配置: 嵌合面とピン表 (SVG)
+{}: pin {} is not a pin of the part {}	{}: ピン {} は部品 {} のピンではありません
+{}: core {} of flat cable {} lands on pin {}	{}: 心線 {} (フラットケーブル {}) がピン {} に接続されています
+Flat cable {} has {} cores, the IDC connector {} has {} pins	フラットケーブル {} は {} 心、IDC コネクタ {} は {} ピンです
+Pin side (male)	ピン側 (オス)
+Socket side (female)	ソケット側 (メス)
+Mating faces	嵌合面
+used: colour of the wire or core	使用中: 電線または心線の色
+coding key	コーディングキー
+No plugs	プラグがありません
+No wires at the pins of {}	{} のピンに電線がありません
+12 · Connectors, pin-outs and ribbon cables	12 · コネクタ、ピン配置、フラットケーブル
+Plug connectors with their parts: a sensor on M12 and a valve on M8, a fan and its thermostat on GX16 and GX12 aviation connectors, a buzzer on a D-sub 9 and an operator panel on a ribbon cable between two IDC sockets; the plugs window shows the pin-out of each plug on its mating faces with the wire and core colours.	部品付きのコネクタ: M12 のセンサと M8 のバルブ、GX16 と GX12 の航空コネクタのファンとサーモスタット、D-sub 9 のブザー、2 つの IDC ソケット間のフラットケーブルの操作パネル。プラグウィンドウは各プラグのピン配置を嵌合面に電線と心線の色で示します。
+Unknown side {} (socket or pin)	不明な側 {} (socket または pin)
+Shows the mating face of a plug: pin layout of its part, the position of each pin on the face (mm, seen on the pin side) with potential, wire colour and cable core of both sides	プラグの嵌合面を表示します: 部品のピン配置、各ピンの位置 (mm、ピン側から見た図)、両側の電位、電線の色、ケーブル心線
+Makes the wires at the pins of a plug cores of a flat (ribbon) cable: pin n takes core n, as on IDC connectors	プラグのピンの電線をフラットケーブルの心線にします: IDC コネクタと同様にピン n に心線 n
+Cable tag, e.g. -W20	ケーブルのタグ、例: -W20
+Side of the plug the cable leaves: socket or pin (default: socket)	ケーブルが出るプラグの側: socket または pin (既定: socket)
 Fits	適合先
 Fits {}	{} に適合
 The accessory fits none of the device's parts	このアクセサリは機器のどの部品にも適合しません

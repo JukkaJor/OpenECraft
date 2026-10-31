@@ -6371,6 +6371,33 @@ Open cable ducts	Otwórz korytka kablowe
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	W widoku 3D pomija pokrywy wszystkich korytek kablowych: przewody w nich są widoczne
 {}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: kanał kablowy na {} mm za mały: jego {} przewodów nie da się ułożyć obok siebie
 Laying out the wires, cables and tubes…	Układanie przewodów, kabli i węży…
+Wire colour	Kolor przewodu
+Pin-out	Rozkład pinów
+No pin layout in the technical data of the part: the pins are shown in a row (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).	Brak układu pinów w danych technicznych części: piny są pokazane w jednym rzędzie (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).
+Seen on the mating faces; the colours are those of the wires and cable cores at the pins.	Widok od strony styku; kolory to kolory przewodów i żył kabla na pinach.
+{}: pin {}	{}: pin {}
+Pin layout: {}	Układ pinów: {}
+Coding: {}	Kodowanie: {}
+Connector pin-outs and flat cables	Rozkłady pinów złączy i kable płaskie
+Plug tag, e.g. -X10 (default: all plugs)	Oznaczenie złącza, np. -X10 (domyślnie: wszystkie złącza)
+Connector pin-outs: mating faces and pin tables (SVG)	Rozkłady pinów złączy: strony styku i tabele pinów (SVG)
+{}: pin {} is not a pin of the part {}	{}: pin {} nie jest pinem części {}
+{}: core {} of flat cable {} lands on pin {}	{}: żyła {} kabla płaskiego {} trafia na pin {}
+Flat cable {} has {} cores, the IDC connector {} has {} pins	Kabel płaski {} ma {} żył, złącze IDC {} ma {} pinów
+Pin side (male)	Strona pinów (męska)
+Socket side (female)	Strona gniazd (żeńska)
+Mating faces	Strony styku
+used: colour of the wire or core	zajęty: kolor przewodu lub żyły
+coding key	klucz kodujący
+No plugs	Brak złączy
+No wires at the pins of {}	Brak przewodów na pinach {}
+12 · Connectors, pin-outs and ribbon cables	12 · Złącza, rozkłady pinów i taśmy
+Plug connectors with their parts: a sensor on M12 and a valve on M8, a fan and its thermostat on GX16 and GX12 aviation connectors, a buzzer on a D-sub 9 and an operator panel on a ribbon cable between two IDC sockets; the plugs window shows the pin-out of each plug on its mating faces with the wire and core colours.	Złącza z ich częściami: czujnik na M12 i zawór na M8, wentylator i jego termostat na złączach lotniczych GX16 i GX12, brzęczyk na D-sub 9 oraz panel operatora na taśmie między dwoma złączami IDC; okno złączy pokazuje rozkład pinów każdego złącza na jego stronach styku z kolorami przewodów i żył.
+Unknown side {} (socket or pin)	Nieznana strona {} (socket lub pin)
+Shows the mating face of a plug: pin layout of its part, the position of each pin on the face (mm, seen on the pin side) with potential, wire colour and cable core of both sides	Pokazuje stronę styku złącza: układ pinów jego części, położenie każdego pinu (mm, widok od strony pinów) z potencjałem, kolorem przewodu i żyłą kabla po obu stronach
+Makes the wires at the pins of a plug cores of a flat (ribbon) cable: pin n takes core n, as on IDC connectors	Czyni przewody na pinach złącza żyłami kabla płaskiego (taśmy): pin n dostaje żyłę n, jak w złączach IDC
+Cable tag, e.g. -W20	Oznaczenie kabla, np. -W20
+Side of the plug the cable leaves: socket or pin (default: socket)	Strona złącza, z której wychodzi kabel: socket lub pin (domyślnie: socket)
 Fits	Pasuje do
 Fits {}	Pasuje do {}
 The accessory fits none of the device's parts	Akcesorium nie pasuje do żadnej części urządzenia

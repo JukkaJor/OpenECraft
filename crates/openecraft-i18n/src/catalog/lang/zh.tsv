@@ -6360,6 +6360,33 @@ Open cable ducts	打开线槽
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	在 3D 视图中省略所有线槽的盖板：可以看到其中的导线
 {}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}：位于 {} mm 处的线槽太小：其中的 {} 根导线无法并排敷设
 Laying out the wires, cables and tubes…	正在排布导线、电缆和管子…
+Wire colour	导线颜色
+Pin-out	引脚分配
+No pin layout in the technical data of the part: the pins are shown in a row (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).	部件的技术数据中没有引脚布局：引脚显示为一排 (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).
+Seen on the mating faces; the colours are those of the wires and cable cores at the pins.	从插合面看；颜色为引脚上导线和电缆芯线的颜色。
+{}: pin {}	{}：引脚 {}
+Pin layout: {}	引脚布局：{}
+Coding: {}	编码：{}
+Connector pin-outs and flat cables	连接器引脚分配和扁平电缆
+Plug tag, e.g. -X10 (default: all plugs)	插头标识，例如 -X10（默认：所有插头）
+Connector pin-outs: mating faces and pin tables (SVG)	连接器引脚分配：插合面和引脚表 (SVG)
+{}: pin {} is not a pin of the part {}	{}：引脚 {} 不是部件 {} 的引脚
+{}: core {} of flat cable {} lands on pin {}	{}：扁平电缆芯线 {}（{}）接在引脚 {} 上
+Flat cable {} has {} cores, the IDC connector {} has {} pins	扁平电缆 {} 有 {} 芯，IDC 连接器 {} 有 {} 个引脚
+Pin side (male)	插针侧（公）
+Socket side (female)	插孔侧（母）
+Mating faces	插合面
+used: colour of the wire or core	已用：导线或芯线颜色
+coding key	编码键
+No plugs	没有插头
+No wires at the pins of {}	{} 的引脚上没有导线
+12 · Connectors, pin-outs and ribbon cables	12 · 连接器、引脚分配和排线
+Plug connectors with their parts: a sensor on M12 and a valve on M8, a fan and its thermostat on GX16 and GX12 aviation connectors, a buzzer on a D-sub 9 and an operator panel on a ribbon cable between two IDC sockets; the plugs window shows the pin-out of each plug on its mating faces with the wire and core colours.	带部件的插接连接器：M12 上的传感器和 M8 上的阀，GX16 和 GX12 航空插头上的风扇及其温控器，D-sub 9 上的蜂鸣器，以及两个 IDC 插座之间排线上的操作面板；插头窗口在插合面上显示每个插头的引脚分配及导线和芯线颜色。
+Unknown side {} (socket or pin)	未知的侧 {}（socket 或 pin）
+Shows the mating face of a plug: pin layout of its part, the position of each pin on the face (mm, seen on the pin side) with potential, wire colour and cable core of both sides	显示插头的插合面：部件的引脚布局、每个引脚的位置（mm，从插针侧看）以及两侧的电位、导线颜色和电缆芯线
+Makes the wires at the pins of a plug cores of a flat (ribbon) cable: pin n takes core n, as on IDC connectors	将插头引脚上的导线设为扁平电缆（排线）的芯线：引脚 n 对应芯线 n，与 IDC 连接器相同
+Cable tag, e.g. -W20	电缆标识，例如 -W20
+Side of the plug the cable leaves: socket or pin (default: socket)	电缆引出的插头侧：socket 或 pin（默认：socket）
 Fits	适配
 Fits {}	适配 {}
 The accessory fits none of the device's parts	该附件不适配设备的任何部件

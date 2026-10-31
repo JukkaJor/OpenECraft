@@ -19,6 +19,7 @@ const HARNESS: Param = param("harness", Kind::Str, tr_const!("Harness tag, e.g. 
 const HARNESS_OPT: Param = optional("harness", Kind::Str, tr_const!("Harness tag, e.g. -WH1 (default: the only harness of the project)"));
 const HARNESSES: Param = optional("harness", Kind::Str, tr_const!("Harness tag, e.g. -WH1 (default: all harnesses)"));
 const SCHEME: Param = optional("scheme", Kind::Str, tr_const!("Labeling scheme (default: the scheme selected in the project)"));
+const PLUGS: Param = optional("plug", Kind::Str, tr_const!("Plug tag, e.g. -X10 (default: all plugs)"));
 
 fn marking_scheme(prj: &Project, a: &Args) -> Result<crate::marking::Scheme, String> {
     let name = a.str("scheme").filter(|s| !s.trim().is_empty());
@@ -112,6 +113,13 @@ pub fn builtin() -> Vec<Exporter> {
     .exporter_with("nailboard", tr_const!("Harness nailboard drawing to scale (SVG)"), "svg", false, vec![HARNESS], text(|prj, an, a| {
         let tag = a.req("harness");
         crate::nailboard::layout(prj, an, tag).map(|nb| crate::nailboard::svg(&nb)).ok_or_else(|| tr_fmt!("Harness {} has no wires", tag))
+    }))
+    .exporter_with("pinouts", tr_const!("Connector pin-outs: mating faces and pin tables (SVG)"), "svg", false, vec![PLUGS], text(|prj, an, a| {
+        let plugs: Vec<String> = a.str("plug").filter(|p| !p.trim().is_empty()).map(|p| vec![p.to_string()]).unwrap_or_default();
+        if let Some(p) = plugs.first().filter(|p| !crate::plugs::plug_tags(prj).contains(p)) {
+            return Err(tr_fmt!("No plug {}", p));
+        }
+        Ok(crate::pinout::svg(prj, &an.netlist, &an.open, &plugs))
     }))
     .exporter_with("marking", tr_const!("Marking (CSV)"), "csv", false, vec![SCHEME], text(|prj, an, a| {
         let scheme = marking_scheme(prj, a)?;

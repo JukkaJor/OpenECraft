@@ -354,3 +354,37 @@ fn pumps_and_the_compressor_are_driven_by_their_motors() {
     let count = |k: DriveKind| building.iter().filter(|b| **b == k).count();
     assert_eq!((count(DriveKind::Coupling), count(DriveKind::Belt)), (2, 1), "{building:?}");
 }
+
+#[test]
+fn connectors_show_their_pin_outs_and_the_ribbon_cable() {
+    let (prj, an) = checked("connector_handling");
+    assert_eq!(crate::plugs::plug_tags(&prj), ["-X11", "-X12", "-X13", "-X14", "-X15", "-X20", "-X21"]);
+    let po = |plug: &str| crate::pinout::pinout(&prj, plug, &an.netlist, &an.open);
+    // M12: the field cable's core colours on the socket side, pins 2 and 3 spare.
+    let m12 = po("-X11");
+    assert_eq!(m12.layout.as_ref().map(|l| l.text()), Some("circle 4".to_string()));
+    let v: Vec<(&str, bool, &str)> = m12.pins.iter().map(|p| (p.label.as_str(), p.used(), p.socket.color.as_str())).collect();
+    assert_eq!(v, [("1", true, "BN"), ("2", false, ""), ("3", false, ""), ("4", true, "BK")]);
+    assert_eq!(m12.pins[0].socket.core, "-W11:BN");
+    // M8 3-pin: designations 1, 3, 4 on a face of four places.
+    assert_eq!(po("-X12").pins.iter().map(|p| p.slot).collect::<Vec<_>>(), [Some(0), Some(2), Some(3)]);
+    for (plug, layout) in [("-X13", "circle 4"), ("-X14", "circle 3"), ("-X15", "dsub 9"), ("-X20", "zigzag 10")] {
+        assert_eq!(po(plug).layout.as_ref().map(|l| l.text()).as_deref(), Some(layout), "{plug}");
+    }
+    // The ribbon cable: core n on pin n at both IDC sockets, core 1 red, the others grey.
+    for plug in ["-X20", "-X21"] {
+        let idc = po(plug);
+        assert_eq!(idc.pins.len(), 10);
+        for p in idc.pins.iter().take(5) {
+            assert_eq!(p.socket.core, format!("-W20:{}", p.label), "{plug}");
+            assert_eq!(p.socket.color, if p.label == "1" { "RD" } else { "GY" }, "{plug}");
+        }
+        assert!(idc.pins.iter().skip(5).all(|p| !p.used()));
+    }
+    let bom = an.report(&prj, ReportKind::BillOfMaterials).unwrap();
+    for part in ["GEN.CBL-FLAT-10", "GEN.CON-IDC-10F", "GEN.CON-BOX-10M", "GEN.CON-GX16-4F", "GEN.CON-DSUB-9M", "GEN.CON-M8-3F"] {
+        assert!(bom.rows.iter().any(|r| r[3] == part), "{part}");
+    }
+    let svg = crate::pinout::svg(&prj, &an.netlist, &an.open, &[]);
+    assert!(svg.contains("-X21") && svg.contains("zigzag 10"));
+}
