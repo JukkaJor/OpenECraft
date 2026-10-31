@@ -47,15 +47,22 @@ pub fn duct_inside(it: &PanelItem) -> (f32, f32) {
 pub fn duct_lanes(width: f32, depth: f32, diameters: &[f32]) -> (Vec<[f32; 2]>, bool) {
     let mut order: Vec<usize> = (0..diameters.len()).collect();
     order.sort_by(|&a, &b| diameters[b].total_cmp(&diameters[a]).then(a.cmp(&b)));
+    duct_lanes_in_order(width, depth, diameters, &order)
+}
+
+/// [`duct_lanes`] with the wires laid in the rows in the `order` given (indices into
+/// `diameters`) instead of the thickest first.
+pub fn duct_lanes_in_order(width: f32, depth: f32, diameters: &[f32], order: &[usize]) -> (Vec<[f32; 2]>, bool) {
     let mut out = vec![[0.0f32; 2]; diameters.len()];
     // Rows: the wires in them, their width, height and base.
     let mut rows: Vec<(Vec<usize>, f32, f32, f32)> = Vec::new();
-    for i in order {
+    for &i in order {
         let d = diameters[i] + LANE_GAP;
         match rows.last_mut() {
             Some(row) if row.1 + d <= width + 1e-3 => {
                 row.0.push(i);
                 row.1 += d;
+                row.2 = row.2.max(d);
             }
             _ => {
                 let base = rows.last().map_or(0.0, |r| r.3 + r.2);

@@ -95,7 +95,7 @@ impl PanelUi {
         let background = if dark { Color32::from_rgb(24, 26, 30) } else { Color32::from_rgb(214, 218, 224) };
         painter.rect_filled(rect, 0.0, background);
 
-        let scene = self.scene_3d(prj, an, ei, &shown);
+        let scene = self.scene_3d(ui.ctx(), prj, an, ei, &shown);
         let opacity = self.wall_opacity.clamp(0.0, 1.0);
         let hide_front = self.hide_front_walls;
         let picking = resp.clicked_by(PointerButton::Primary);
@@ -123,6 +123,18 @@ impl PanelUi {
         }
         for q in scene.branches.iter().filter_map(|q| project_view(*q)) {
             painter.circle(q.0, 3.5, Color32::WHITE, Stroke::new(1.5, Color32::from_rgb(60, 60, 60)));
+        }
+        // While the wires, cables and tubes are laid out on another thread: how far it is.
+        if let Some(done) = self.layouts.progress() {
+            let width = 300.0;
+            let at = Rect::from_min_size(Pos2::new(rect.center().x - width / 2.0, rect.top() + 12.0), vec2(width, 60.0));
+            let mut boxed = ui.new_child(egui::UiBuilder::new().max_rect(at));
+            egui::Frame::popup(boxed.style()).show(&mut boxed, |ui| {
+                ui.set_width(width - 20.0);
+                ui.label(tr("Laying out the wires, cables and tubes…"));
+                ui.add(egui::ProgressBar::new(done).show_percentage().animate(true));
+            });
+            ui.ctx().request_repaint_after(std::time::Duration::from_millis(100));
         }
         // Picking: items of a neighbour in the line-up make it the current enclosure.
         if let Some(ptr) = resp.interact_pointer_pos().filter(|_| picking) {

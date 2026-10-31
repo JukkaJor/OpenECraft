@@ -6363,3 +6363,4 @@ Select wire	電線を選択
 Open cable ducts	配線ダクトを開く
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	3D ビューですべての配線ダクトのふたを省略します：中の電線が見えます
 {}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: {} mm の位置の配線ダクトが小さすぎます: {} 本の電線を並べて配線できません
+Laying out the wires, cables and tubes…	電線、ケーブル、チューブを配置しています…

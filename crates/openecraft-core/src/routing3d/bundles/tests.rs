@@ -85,12 +85,14 @@ fn items_of_a_bundle_lie_side_by_side_and_do_not_cross() {
         item("B", Class::Power, 10.0, route.clone()),
         item("C", Class::Power, 10.0, vec![[0.0, 2000.0, 0.0], [500.0, 2000.0, 0.0], [500.0, 2500.0, 0.0]]),
     ];
-    let ways: Vec<Way> = items.iter().map(|it| Way { points: &it.points, radii: &it.radii, diameter: it.diameter, rest: [0.0; 3], below: f32::INFINITY }).collect();
+    let ways: Vec<Way> = items.iter().map(|it| Way { points: &it.points, radii: &it.radii, diameter: it.diameter, rest: [0.0; 3], below: f32::INFINITY, steps: 2 }).collect();
     let laid = spread_ways(&ways, 25.0, &[], &[], &[]);
     let (a, b) = (&laid[0].0, &laid[1].0);
     assert_eq!(laid[2].0, items[2].points, "alone it stays as it is");
-    // The ends and the stretches at the ends stay where they are.
-    assert_eq!((a[0], a[a.len() - 1], b[0], a[1], b[1]), (route[0], route[4], route[0], route[1], route[1]));
+    // The ends stay where they are; the stretches at the ends lie side by side too and
+    // run from their lanes to the end points.
+    assert_eq!((a[0], a[a.len() - 1], b[0], b[b.len() - 1]), (route[0], route[4], route[0], route[4]));
+    assert!(crate::parts::vec3::dist(a[1], b[1]) > 10.0, "{a:?} {b:?}");
     // Along the shared stretches (x 0 .. 500, then y 0 .. 500) they run a lane apart (the
     // thickest item and 1 mm), parallel: side by side, never crossing.
     let middle = |p: &[V3], axis: usize| {
@@ -109,7 +111,7 @@ fn lanes_keep_off_the_surface_the_ways_run_along() {
     // Five wires lying 5 mm in front of a plate (z 0) that may come 3 mm nearer to it:
     // two rows away from it, side by side along it.
     let line = vec![[0.0, 0.0, 5.0], [500.0, 0.0, 5.0], [500.0, 300.0, 5.0], [800.0, 300.0, 5.0]];
-    let ways: Vec<Way> = (0..5).map(|_| Way { points: &line, radii: &[], diameter: 3.0, rest: [0.0, 0.0, 1.0], below: 3.0 }).collect();
+    let ways: Vec<Way> = (0..5).map(|_| Way { points: &line, radii: &[], diameter: 3.0, rest: [0.0, 0.0, 1.0], below: 3.0, steps: 2 }).collect();
     let laid = spread_ways(&ways, 8.0, &[], &[], &[]);
     for (points, _) in &laid {
         assert!(points.iter().all(|q| q[2] >= 2.0 - 0.01), "{points:?}");
@@ -134,7 +136,7 @@ fn lanes_keep_out_of_devices_beside_them() {
     // Three cables run together along x; a device lies right beside them on one side
     // (y below -6): centred, a lane would run through it, so they go to the other side.
     let line = vec![[0.0, -300.0, 0.0], [0.0, 0.0, 0.0], [500.0, 0.0, 0.0], [500.0, 300.0, 0.0]];
-    let ways: Vec<Way> = (0..3).map(|_| Way { points: &line, radii: &[], diameter: 10.0, rest: [0.0; 3], below: f32::INFINITY }).collect();
+    let ways: Vec<Way> = (0..3).map(|_| Way { points: &line, radii: &[], diameter: 10.0, rest: [0.0; 3], below: f32::INFINITY, steps: 2 }).collect();
     let device = ([100.0, -100.0, -50.0], [400.0, -6.0, 50.0]);
     let middle = |p: &[V3]| p.windows(2).find(|s| (s[1][0] - s[0][0]).abs() > 400.0).map(|s| [0, 1, 2].map(|k| (s[0][k] + s[1][k]) / 2.0)).unwrap();
     let free = spread_ways(&ways, 25.0, &[], &[], &[]);
@@ -152,7 +154,7 @@ fn lanes_keep_out_of_devices_beside_them() {
     let below = ([100.0, -100.0, -100.0], [400.0, 100.0, -6.0]);
     let above = ([100.0, -100.0, 6.0], [400.0, 100.0, 100.0]);
     let stuck = spread_ways(&ways, 25.0, &[device, other, below, above], &[], &[]);
-    assert!(stuck.iter().all(|(p, _)| *p == line), "{stuck:?}");
+    assert!(stuck.iter().all(|(p, _)| middle(p)[1..] == middle(&line)[1..]), "{stuck:?}");
 }
 
 #[test]
@@ -160,7 +162,7 @@ fn ways_along_a_duct_lie_inside_it() {
     // Six wires along a duct (x 0 .. 500), inside 40 wide (y) and 30 deep (z) on a
     // plate at z 0; all on the duct's middle line.
     let line = vec![[-50.0, 20.0, -100.0], [-50.0, 20.0, 15.0], [550.0, 20.0, 15.0], [550.0, 200.0, 15.0]];
-    let ways: Vec<Way> = (0..6).map(|_| Way { points: &line, radii: &[], diameter: 8.0, rest: [0.0; 3], below: f32::INFINITY }).collect();
+    let ways: Vec<Way> = (0..6).map(|_| Way { points: &line, radii: &[], diameter: 8.0, rest: [0.0; 3], below: f32::INFINITY, steps: 2 }).collect();
     let duct = Channel { inside: ([0.0, 0.0, 0.0], [500.0, 40.0, 30.0]), floor: [0.0, 0.0, 1.0] };
     let laid = spread_ways(&ways, 8.0, &[], &[duct], &[]);
     let middles: Vec<V3> = laid.iter().map(|(p, _)| p.windows(2).find(|s| (s[1][0] - s[0][0]).abs() > 500.0).map(|s| [0, 1, 2].map(|k| (s[0][k] + s[1][k]) / 2.0)).unwrap()).collect();
@@ -195,7 +197,7 @@ fn strands_through_each_other_are_pushed_apart() {
     // Two wires 6 mm thick lying on a plate (z 0, may not come nearer): one along x,
     // one across it, both at z 3.
     fn strand(points: &[V3], rest: V3, below: f32) -> Strand<'_> {
-        Strand { points, diameter: 6.0, rest, below }
+        Strand { points, diameter: 6.0, rest, below, tails: [0.0; 2] }
     }
     let along = [[0.0, 0.0, 3.0], [400.0, 0.0, 3.0]];
     let across = [[200.0, -200.0, 3.0], [200.0, 200.0, 3.0]];
@@ -222,4 +224,43 @@ fn strands_through_each_other_are_pushed_apart() {
     for q in apart.iter().flatten() {
         assert!(!(q[0] > 150.0 && q[0] < 250.0 && q[1] + 3.0 > 33.5 + 1e-3), "{q:?}");
     }
+}
+
+#[test]
+fn wires_on_terminals_closer_than_they_are_thick_leave_them_straight() {
+    // Three wires 10 mm thick on terminals 6 mm apart at the front (z 100): straight back
+    // to z 20, along y to 400 and forward to terminals as close at the other end.
+    let lines: Vec<Vec<V3>> = (0..3)
+        .map(|i| {
+            let x = 6.0 * i as f32;
+            vec![[x, 0.0, 100.0], [x, 0.0, 20.0], [x, 400.0, 20.0], [x, 400.0, 100.0]]
+        })
+        .collect();
+    let radii = [0.0, 20.0, 20.0, 0.0];
+    let ways: Vec<Way> = lines.iter().map(|l| Way { points: l, radii: &radii, diameter: 10.0, rest: [0.0; 3], below: f32::INFINITY, steps: 4 }).collect();
+    let rounds = std::cell::Cell::new(0);
+    let laid = lay_out(&ways, 8.0, &[], &[], &[], &|n, total| {
+        assert_eq!(total, ROUNDS);
+        rounds.set(n + 1);
+        true
+    })
+    .expect("not stopped");
+    assert!(rounds.get() < ROUNDS, "pushed apart until the end: {}", rounds.get());
+    for (l, p) in lines.iter().zip(&laid) {
+        assert_eq!((p[0], p[p.len() - 1]), (l[0], l[3]));
+        // From each terminal straight down to its lane: no hook where they come together.
+        let n = p.len();
+        assert!(p[1][2] < 60.0 && p[n - 2][2] < 60.0, "{p:?}");
+    }
+    // Along y apart from each other.
+    let at = |p: &[V3]| p.iter().copied().find(|q| (q[1] - 200.0).abs() < 1.0).or_else(|| p.windows(2).find(|s| s[0][1] < 200.0 && s[1][1] > 200.0).map(|s| s[0]));
+    let middles: Vec<V3> = laid.iter().map(|p| at(p).unwrap_or_else(|| panic!("{p:?}"))).collect();
+    for (i, a) in middles.iter().enumerate() {
+        for b in &middles[i + 1..] {
+            let across = ((a[0] - b[0]).powi(2) + (a[2] - b[2]).powi(2)).sqrt();
+            assert!(across >= 10.0 - 0.1, "{middles:?}");
+        }
+    }
+    // Stopped, there is none.
+    assert!(lay_out(&ways, 8.0, &[], &[], &[], &|_, _| false).is_none());
 }

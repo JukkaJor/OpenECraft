@@ -445,9 +445,9 @@ pub struct PanelUi {
     gpu: gpu3d::Gpu,
     /// What the 3D view shows, kept while it does not change.
     scene: Option<Arc<scene3d::Scene3d>>,
-    /// The wires, cables and tubes of the 3D view pushed apart, kept while they do not
-    /// change (by a hash of what they were laid out from).
-    apart: Option<(u64, Arc<Vec<Vec<openecraft_core::parts::vec3::V3>>>)>,
+    /// The wires, cables and tubes of the 3D view laid out, and the layout being worked
+    /// out on another thread.
+    layouts: scene3d::Layouts,
     offset: Vec2,
     zoom: f32,
     fit_pending: bool,
@@ -527,7 +527,7 @@ impl Default for PanelUi {
             gpu_3d: false,
             gpu: gpu3d::Gpu::default(),
             scene: None,
-            apart: None,
+            layouts: scene3d::Layouts::default(),
             offset: vec2(20.0, 20.0),
             zoom: 0.5,
             fit_pending: true,
@@ -615,6 +615,12 @@ impl PanelUi {
     /// The graphics card could not draw the 3D view: it is drawn by the processor.
     pub fn gpu_failed(&self) -> bool {
         self.gpu.failed()
+    }
+
+    /// The door of the 3D view is still turning to where it is to be.
+    fn door_turning(&self) -> bool {
+        let target = if self.door_open { DOOR_OPEN_ANGLE } else { 0.0 };
+        (self.door_angle - target).abs() > 1e-3
     }
 
     /// True while a gesture is in progress (no undo step yet).
