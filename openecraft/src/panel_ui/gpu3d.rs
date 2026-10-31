@@ -129,7 +129,8 @@ fn put(v: &mut Vec<u8>, xs: &[f32]) {
 fn geometry(scene: &Scene3d) -> Geometry {
     // Buckets: base, decal, ducts, then one per side.
     let mut buckets: Vec<Vec<u8>> = vec![Vec::new(); 3 + scene.sides.len()];
-    for face in &scene.faces {
+    // The round tubes of the wires, cables and tubes with the other faces.
+    for face in scene.faces.iter().chain(&scene.tubes) {
         let bucket = match face.side {
             Some(s) => 3 + s,
             None if face.obj.is_some_and(|o| scene.ducts[o]) => 2,
@@ -165,9 +166,16 @@ fn geometry(scene: &Scene3d) -> Geometry {
         fill(lines);
         Span { first, count: lines.len() as i32 / LINE_STRIDE - first }
     };
-    let wires = span(&mut lines, &mut |v: &mut Vec<u8>| scene.wires.iter().for_each(|w| add(v, &w.line, w.line.color)));
-    let stripes = span(&mut lines, &mut |v: &mut Vec<u8>| scene.wires.iter().for_each(|w| w.line.stripe.into_iter().for_each(|s| add(v, &w.line, s))));
-    let top = span(&mut lines, &mut |v: &mut Vec<u8>| scene.lines.iter().for_each(|l| add(v, l, l.color)));
+    // Lines drawn as tubes are left out; a selected one stays on top as a thin line.
+    let flat = || scene.wires.iter().filter(|w| !w.line.tube);
+    let wires = span(&mut lines, &mut |v: &mut Vec<u8>| flat().for_each(|w| add(v, &w.line, w.line.color)));
+    let stripes = span(&mut lines, &mut |v: &mut Vec<u8>| flat().for_each(|w| w.line.stripe.into_iter().for_each(|s| add(v, &w.line, s))));
+    let top = span(&mut lines, &mut |v: &mut Vec<u8>| {
+        for l in &scene.lines {
+            let thin = SceneLine { diameter: 0.0, least: l.least.min(2.0), ..l.clone() };
+            add(v, if l.tube { &thin } else { l }, l.color);
+        }
+    });
     Geometry { faces, lines, spans: Spans { base: spans[0], decal: spans[1], ducts: spans[2], sides: spans[3..].to_vec(), wires, stripes, top } }
 }
 

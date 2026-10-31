@@ -196,6 +196,11 @@ impl RoutingRules {
         *self == RoutingRules::default()
     }
 
+    /// Smallest bend radius (mm) of a route of `kind` with the outer `diameter`.
+    pub fn bend_radius(&self, kind: RouteKind, diameter: f32) -> f32 {
+        self.bend(kind) * diameter
+    }
+
     fn bend(&self, kind: RouteKind) -> f32 {
         match kind {
             RouteKind::Wire => self.bend_wire,

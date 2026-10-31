@@ -242,6 +242,22 @@ fn cable_cores_are_drawn_with_their_cable() {
 }
 
 #[test]
+fn routed_pipes_are_round_tubes_bent_round_their_corners() {
+    let prj = openecraft_core::sample::example("pump_room").unwrap();
+    let an = Analysis::build(&prj);
+    let room = prj.layout.enclosures.iter().position(|e| e.is_room()).unwrap();
+    let pipe = an.routing.items.iter().find(|i| i.kind == routing3d::RouteKind::Tube && i.routed() && i.points.len() > 3).expect("a pipe with corners");
+    let mut ui = PanelUi { show_wires: true, ..Default::default() };
+    let shown = ui.shown_3d(&prj, room);
+    let scene = ui.scene_3d(&prj, &an, room, &shown);
+    assert!(!scene.tubes.is_empty());
+    // Its corners are arcs: more segments than the route has corners.
+    let segments: Vec<_> = scene.picks.iter().filter(|(_, _, t)| matches!(t, routing_ui::RouteRef::Item(k) if *k == pipe.key)).collect();
+    assert!(segments.len() > pipe.points.len(), "{} segments, {} points", segments.len(), pipe.points.len());
+    assert!(scene.wires.iter().any(|w| w.line.tube && w.line.diameter == pipe.diameter));
+}
+
+#[test]
 fn face_summaries_count_openings_apart() {
     let item = |kind: ItemKind, opening: Opening| PanelItem { kind, opening, ..Default::default() };
     let rail = item(ItemKind::Rail, Opening::Cutout);
@@ -513,6 +529,9 @@ fn a_selected_cable_shows_its_properties() {
     let an = Analysis::checked(&prj);
     let cable = an.routing.items.iter().find(|i| i.kind == routing3d::RouteKind::Cable && i.routed()).expect("a routed cable");
     let device = cable.ends.iter().filter_map(|e| prj.layout.enclosures.get(e.enclosure?)?.item(e.item?)).find(|i| !i.tag.is_empty()).expect("a device at an end").tag.clone();
+    // Its cores with the connection points they join.
+    let core = an.connections.iter().find(|c| c.cable == cable.key).expect("a core of the cable");
+    let points = [core.a, core.b].map(|pin| openecraft_core::netlist::pin_designation(&prj, pin));
     let mut ui = PanelUi { selected_route: Some(cable.key.clone()), ..Default::default() };
     let ctx = egui::Context::default();
     let mut out = ctx.run_ui(egui::RawInput::default(), |c| {
@@ -528,7 +547,7 @@ fn a_selected_cable_shows_its_properties() {
     out.textures_delta.clear();
     let mut shown = Vec::new();
     out.shapes.iter().for_each(|c| texts(&c.shape, &mut shown));
-    for want in [cable.label.as_str(), tr("Free air"), tr("Connected devices"), device.as_str()] {
+    for want in [cable.label.as_str(), tr("Free air"), tr("Connected devices"), device.as_str(), tr("Cores"), points[0].as_str(), points[1].as_str()] {
         assert!(shown.iter().any(|t| t.contains(want)), "{want} in {shown:?}");
     }
     assert!(!shown.iter().any(|t| t == tr("Enclosure")), "{shown:?}");

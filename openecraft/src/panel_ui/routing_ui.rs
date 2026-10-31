@@ -5,7 +5,7 @@
 use super::{PanelUi, PATH_COLOR, RESERVE_COLOR, WIRE_HIGHLIGHT};
 use openecraft_core::geom::{p, P};
 use openecraft_core::model::Project;
-use openecraft_core::panel::{PLATE_MARGIN, PLATE_Z};
+use openecraft_core::panel::{self, PLATE_MARGIN, PLATE_Z};
 use openecraft_core::analysis::Analysis;
 use openecraft_core::routing3d::{self, Class, PathKind, ReserveMode, Reservation, RouteKind, RoutingPath, ShieldEnds};
 use egui::{Color32, Pos2, Rect, RichText, Shape, Stroke};
@@ -40,6 +40,8 @@ pub(super) struct RouteLine {
     pub width: f32,
     /// Outer diameter (mm) of a wire, cable or tube, drawn in perspective; 0 for none.
     pub diameter: f32,
+    /// Bend radius (mm) its corners are rounded with; 0 for sharp corners.
+    pub bend: f32,
     pub on_top: bool,
     pub target: RouteRef,
 }
@@ -167,7 +169,7 @@ impl PanelUi {
             for path in &e.paths {
                 let selected = self.selected_object == Some(path.id);
                 let color = if path.face.is_some() { PIPE_COLOR } else { PATH_COLOR };
-                out.push(RouteLine { points: path.points.iter().map(|q| g(*q)).collect(), color, stripe: None, width: if selected { 3.0 } else { 1.5 }, diameter: 0.0, on_top: selected, target: RouteRef::None });
+                out.push(RouteLine { points: path.points.iter().map(|q| g(*q)).collect(), color, stripe: None, width: if selected { 3.0 } else { 1.5 }, diameter: 0.0, bend: 0.0, on_top: selected, target: RouteRef::None });
             }
             for r in &e.reservations {
                 let color = match r.mode {
@@ -191,11 +193,12 @@ impl PanelUi {
                     ((0, 1, 0), (0, 1, 1)),
                     ((1, 1, 0), (1, 1, 1)),
                 ] {
-                    out.push(RouteLine { points: vec![c(s.0, s.1, s.2), c(t.0, t.1, t.2)], color, stripe: None, width: 1.0, diameter: 0.0, on_top: false, target: RouteRef::None });
+                    out.push(RouteLine { points: vec![c(s.0, s.1, s.2), c(t.0, t.1, t.2)], color, stripe: None, width: 1.0, diameter: 0.0, bend: 0.0, on_top: false, target: RouteRef::None });
                 }
             }
         }
-        let wires_3d = prj.layout.routing.wires_3d;
+        let rules = &prj.layout.routing;
+        let wires_3d = rules.wires_3d;
         for it in an.routing.items.iter().filter(|i| i.routed() && i.enclosures.iter().any(|k| shown.contains(k))) {
             // Leg by leg; legs through an enclosure not shown are left out.
             let stretches = it.stretches();
@@ -229,7 +232,8 @@ impl PanelUi {
                         let wire = &an.wiring[wi];
                         let (color, stripe, width) = super::wire_look(&wire.color, selected, done, selected_wire.is_some());
                         let diameter = openecraft_core::harness::outer_diameter(&wire.cross_section);
-                        out.push(RouteLine { points, color, stripe, width, diameter, on_top: selected, target: RouteRef::Wire(wi) });
+                        let bend = rules.bend_radius(RouteKind::Wire, diameter);
+                        out.push(RouteLine { points, color, stripe, width, diameter, bend, on_top: selected, target: RouteRef::Wire(wi) });
                     }
                     (RouteKind::Wire, _) => {}
                     _ => {
@@ -239,9 +243,10 @@ impl PanelUi {
                         }
                         // In the colour of its class, as thick as it is.
                         let (color, width) = if selected { (WIRE_HIGHLIGHT, 4.0) } else { (class_color(it.class), 2.0) };
-                        out.push(RouteLine { points, color, stripe: None, width, diameter: it.diameter, on_top: selected, target: RouteRef::Item(it.key.clone()) });
+                        let bend = rules.bend_radius(it.kind, it.diameter);
+                        out.push(RouteLine { points, color, stripe: None, width, diameter: it.diameter, bend, on_top: selected, target: RouteRef::Item(it.key.clone()) });
                         for core in cores {
-                            out.push(RouteLine { points: core.to_vec(), color, stripe: None, width: width * 0.5, diameter: it.diameter * 0.5, on_top: selected, target: RouteRef::Item(it.key.clone()) });
+                            out.push(RouteLine { points: core.to_vec(), color, stripe: None, width: width * 0.5, diameter: it.diameter * 0.5, bend: 0.0, on_top: selected, target: RouteRef::Item(it.key.clone()) });
                         }
                     }
                 }
@@ -323,6 +328,9 @@ impl PanelUi {
             ui.label(it.status_text());
             ui.end_row();
         });
+        if it.kind == RouteKind::Cable {
+            self.cable_cores(ui, prj, an, &it.key);
+        }
         if let Some(s) = r.shields.iter().find(|s| s.cable == it.key) {
             ui.label(RichText::new(tr("Shield")).strong());
             for e in &s.ends {
@@ -377,6 +385,65 @@ impl PanelUi {
             });
         }
         if let Some((ei, id)) = select {
+            self.switch_enclosure(ei);
+            self.select_item(id);
+        }
+    }
+
+    /// The cores of a cable with the connection points each joins: a core selects its
+    /// wire, a connection point its device.
+    fn cable_cores(&mut self, ui: &mut egui::Ui, prj: &Project, an: &Analysis, cable: &str) {
+        let cores: Vec<_> = an.connections.iter().filter(|c| c.cable == cable).collect();
+        if cores.is_empty() {
+            return;
+        }
+        ui.separator();
+        ui.label(RichText::new(tr("Cores")).strong());
+        let mut wire = None;
+        let mut device = None;
+        egui::Grid::new("rcores").striped(true).num_columns(4).spacing([10.0, 4.0]).show(ui, |ui| {
+            for title in [tr("Core"), tr("Cross-section"), tr("From"), tr("To")] {
+                ui.label(RichText::new(title).weak());
+            }
+            ui.end_row();
+            for c in cores {
+                let (from, to) = (openecraft_core::netlist::pin_designation(prj, c.a), openecraft_core::netlist::pin_designation(prj, c.b));
+                let name = match (c.core.is_empty(), c.color.is_empty()) {
+                    (false, false) => format!("{} ({})", c.core, c.color),
+                    (false, true) => c.core.clone(),
+                    _ => c.color.clone(),
+                };
+                match an.wiring.iter().find(|w| (w.from == from && w.to == to) || (w.from == to && w.to == from)) {
+                    Some(w) => {
+                        if ui.link(name).on_hover_text(tr("Select wire")).clicked() {
+                            wire = Some(w.key());
+                        }
+                    }
+                    None => {
+                        ui.label(name);
+                    }
+                }
+                ui.label(&c.cross_section);
+                for (pin, label) in [(c.a, from), (c.b, to)] {
+                    let tag = &prj.pages[pin.page].symbols[pin.sym].tag;
+                    match panel::locate(prj, tag) {
+                        Some((ei, item)) => {
+                            if ui.link(RichText::new(label).monospace()).on_hover_text(tr("Select device")).clicked() {
+                                device = Some((ei, item.id));
+                            }
+                        }
+                        None => {
+                            ui.label(RichText::new(label).monospace());
+                        }
+                    }
+                }
+                ui.end_row();
+            }
+        });
+        if let Some(key) = wire {
+            self.select_wire(key);
+        }
+        if let Some((ei, id)) = device {
             self.switch_enclosure(ei);
             self.select_item(id);
         }

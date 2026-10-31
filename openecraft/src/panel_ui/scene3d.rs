@@ -19,6 +19,8 @@ use std::sync::Arc;
 pub(super) const EQUIPMENT: u8 = 5;
 /// Layer of what is drawn over everything (the selected wire or route).
 pub(super) const ON_TOP: u8 = OUTER_WALLS + 1;
+/// Sides of the round tubes of wires, cables and tubes.
+const TUBE_SIDES: usize = 10;
 
 /// A flat face of the view: a triangle of a model or a side of a box.
 pub(super) struct SceneFace {
@@ -83,6 +85,8 @@ pub(super) struct SceneLine {
     pub least: f32,
     /// Outer diameter (mm), drawn in perspective; 0 for none.
     pub diameter: f32,
+    /// Drawn as a round tube by the graphics card ([`Scene3d::tubes`]).
+    pub tube: bool,
 }
 
 /// A piece of a line among the equipment, cut where it enters and leaves the ducts.
@@ -117,6 +121,9 @@ pub(super) struct Scene3d {
     pub lines: Vec<SceneLine>,
     /// Lines among the equipment.
     pub wires: Vec<SceneWire>,
+    /// The lines with a diameter as round tubes, bent round their corners, for the
+    /// graphics card (the processor draws the lines).
+    pub tubes: Vec<SceneFace>,
     /// Boxes (min, max) of the equipment, and which of them are ducts.
     pub objects: Vec<(V3, V3)>,
     pub ducts: Vec<bool>,
@@ -447,9 +454,9 @@ impl PanelUi {
                 for seg in paths.iter().flat_map(|p| p.windows(2)) {
                     let (a, b) = (pose.apply(seg[0]), pose.apply(seg[1]));
                     if selected {
-                        s.lines.push(SceneLine { a, b, color, stripe: None, least: width, diameter });
+                        s.lines.push(SceneLine { a, b, color, stripe: None, least: width, diameter, tube: false });
                     } else {
-                        equipment_wires.push(SceneLine { a, b, color, stripe, least: width, diameter });
+                        equipment_wires.push(SceneLine { a, b, color, stripe, least: width, diameter, tube: false });
                     }
                     s.picks.push((a, b, RouteRef::Wire(wi)));
                 }
@@ -486,8 +493,22 @@ impl PanelUi {
         };
         let keys: Vec<usize> = shown.iter().map(|s| s.0).collect();
         for line in self.routing_lines_3d(prj, an, &keys, &to_view, selected_wire) {
-            for seg in line.points.windows(2) {
-                let l = SceneLine { a: seg[0], b: seg[1], color: line.color, stripe: line.stripe, least: line.width, diameter: line.diameter };
+            // Wires, cables and tubes bent round their corners with their bend radius,
+            // as round tubes (a two-colour one with a stripe along it).
+            let tube = line.diameter > 0.0;
+            let points = if tube { vec3::fillet(&line.points, line.bend, 4) } else { line.points };
+            if tube {
+                for (tri, side) in vec3::tube(&points, line.diameter / 2.0, TUBE_SIDES) {
+                    let normal = norm(cross(sub(tri[1], tri[0]), sub(tri[2], tri[0])));
+                    let base = match line.stripe {
+                        Some(stripe) if side < TUBE_SIDES / 3 => stripe,
+                        _ => line.color,
+                    };
+                    s.tubes.push(SceneFace { pts: [tri[0], tri[1], tri[2], tri[2]], n: 3, normal, color: lit(base, normal), layer: EQUIPMENT, side: None, obj: None, item: None, outline: false, decal: false });
+                }
+            }
+            for seg in points.windows(2) {
+                let l = SceneLine { a: seg[0], b: seg[1], color: line.color, stripe: line.stripe, least: line.width, diameter: line.diameter, tube };
                 if line.on_top {
                     s.lines.push(SceneLine { stripe: None, ..l });
                 } else {
