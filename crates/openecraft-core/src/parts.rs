@@ -171,6 +171,81 @@ pub fn purge_unused(prj: &mut Project) -> usize {
     before - prj.parts.len()
 }
 
+// ---------------------------------------------------------------------- accessories
+
+/// A part from the project, the database or the built-in catalog.
+fn find_part<'a>(prj: &'a Project, db: Option<&'a PartsDb>, number: &str) -> Option<&'a Part> {
+    lookup(prj, db, number).or_else(|| catalog().iter().find(|p| p.number == number))
+}
+
+/// The parts a device uses, resolved (unknown numbers are left out).
+pub fn device_parts<'a>(prj: &'a Project, db: Option<&'a PartsDb>, tag: &str) -> Vec<&'a Part> {
+    prj.devices.get(tag).map(|d| d.parts.iter().filter_map(|r| find_part(prj, db, &r.number)).collect()).unwrap_or_default()
+}
+
+/// The part of the device that accessory `number` is attached to: the first of its
+/// other parts it fits.
+pub fn attached_to<'a>(prj: &'a Project, db: Option<&'a PartsDb>, tag: &str, number: &str) -> Option<&'a Part> {
+    let acc = find_part(prj, db, number)?;
+    device_parts(prj, db, tag).into_iter().find(|main| accessory::fits(acc, main))
+}
+
+/// Accessories of a device's parts that can still be added: from the database, the
+/// project parts and the built-in catalog, each with the part it fits, in the order of
+/// the device's parts.
+pub fn accessory_choices(prj: &Project, db: Option<&PartsDb>, tag: &str) -> Vec<(Part, String)> {
+    let mains = device_parts(prj, db, tag);
+    let pool = prj.parts.iter().chain(db.map(|d| d.parts.as_slice()).unwrap_or_default()).chain(catalog());
+    let pool: Vec<&Part> = pool.collect();
+    let mut out: Vec<(Part, String)> = Vec::new();
+    for main in &mains {
+        for acc in accessory::accessories_of(pool.iter().copied(), main) {
+            if !out.iter().any(|(p, _)| p.number == acc.number) && !mains.iter().any(|m| m.number == acc.number) {
+                out.push((acc.clone(), main.number.clone()));
+            }
+        }
+    }
+    out
+}
+
+/// Adds `count` units of accessory `number` to a device; it must fit one of the
+/// device's parts. Returns the part it is attached to.
+pub fn add_accessory(prj: &mut Project, db: &PartsDb, tag: &str, number: &str, count: u32) -> Result<String, String> {
+    if !prj.devices.contains_key(tag) {
+        return Err(openecraft_i18n::tr_fmt!("Unknown device: {}", tag));
+    }
+    if find_part(prj, Some(db), number).is_none() {
+        return Err(openecraft_i18n::tr_fmt!("Unknown part: {}", number));
+    }
+    let main = match attached_to(prj, Some(db), tag, number) {
+        Some(m) => m.number.clone(),
+        None => return Err(openecraft_i18n::tr_fmt!("{} fits none of the parts of {}", number, tag)),
+    };
+    if !prj.parts.iter().any(|p| p.number == number) {
+        if let Some(p) = find_part(prj, Some(db), number).cloned() {
+            prj.parts.push(p);
+        }
+    }
+    add_to_device(prj, db, tag, number, count);
+    Ok(main)
+}
+
+/// Accessories of devices that fit none of the device's other parts: (device tag,
+/// accessory part number).
+pub fn loose_accessories(prj: &Project) -> Vec<(String, String)> {
+    let mut out = Vec::new();
+    for (tag, data) in &prj.devices {
+        for r in &data.parts {
+            let Some(acc) = prj.parts.iter().find(|p| p.number == r.number && p.accessory) else { continue };
+            if attached_to(prj, None, tag, &acc.number).is_none() {
+                out.push((tag.clone(), acc.number.clone()));
+            }
+        }
+    }
+    out.sort_by(|a, b| crate::model::natural_cmp(&a.0, &b.0).then(a.1.cmp(&b.1)));
+    out
+}
+
 // ---------------------------------------------------------------------- devices
 
 /// Functions placed for a device: (kind, connection designations, symbol id).

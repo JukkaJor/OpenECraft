@@ -6371,3 +6371,28 @@ Open cable ducts	Avaa johtokanavat
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	Jätä kaikkien johtokanavien kannet pois 3D-näkymästä: niissä olevat johtimet näkyvät
 {}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: johtokouru kohdassa {} mm liian pieni: sen {} johdinta ei voi asentaa rinnakkain
 Laying out the wires, cables and tubes…	Johtoja, kaapeleita ja putkia asetellaan…
+Fits	Sopii
+Fits {}	Sopii osaan {}
+The accessory fits none of the device's parts	Lisävaruste ei sovi mihinkään laitteen osaan
+{}: accessory {} fits none of the device's parts	{}: lisävaruste {} ei sovi mihinkään laitteen osaan
+Part accessories	Osien lisävarusteet
+Unknown device: {}	Tuntematon laite: {}
+{} fits none of the parts of {}	{} ei sovi mihinkään laitteen {} osaan
+Accessories only work together with the parts they fit. A part lists its accessories, an accessory the parts it fits; either side is enough.	Lisävarusteet toimivat vain niiden osien kanssa, joihin ne sopivat. Osa luettelee lisävarusteensa, lisävaruste osat, joihin se sopii; toinen puoli riittää.
+Accessories of this part	Tämän osan lisävarusteet
+This part is an accessory	Tämä osa on lisävaruste
+It only works attached to one of the parts it fits; the project check reports it on a device without such a part	Se toimii vain kiinnitettynä johonkin osaan, johon se sopii; projektin tarkistus ilmoittaa siitä laitteessa, jossa tällaista osaa ei ole
+Where the accessory sits on the part it fits, in the panel layout and the 3D view	Missä lisävaruste on siinä osassa, johon se sopii, kaappiasettelussa ja 3D-näkymässä
+Fits these parts	Sopii näihin osiin
+➕ Add part	➕ Lisää osa
+Accessory, mounted: {}	Lisävaruste, asennus: {}
+Give a device tag or a part number	Anna laitetunnus tai osanumero
+Lists and renames devices, adds accessories to their parts	Luettelee ja nimeää laitteet uudelleen, lisää lisävarusteita niiden osiin
+Lists the accessories that fit a part or the parts of a device, and the parts an accessory fits (project parts, built-in and bundled catalogs)	Luettelee lisävarusteet, jotka sopivat osaan tai laitteen osiin, ja osat, joihin lisävaruste sopii (projektin osat, sisäänrakennetut ja mukana toimitetut luettelot)
+Device tag: the accessories that can still be added to its parts	Laitetunnus: lisävarusteet, jotka voi vielä lisätä sen osiin
+Adds an accessory to a device; it must fit one of the device's parts	Lisää laitteeseen lisävarusteen; sen on sovittava johonkin laitteen osaan
+Part number of the accessory	Lisävarusteen osanumero
+On the front	Edessä
+On the left side	Vasemmalla puolella
+On the right side	Oikealla puolella
+Not mounted	Ei asennettu

@@ -11,8 +11,21 @@ fn csv_roundtrip() {
         assert_eq!(a.number, b.number);
         assert_eq!(a.functions, b.functions);
         assert_eq!(a.accessories, b.accessories);
+        assert_eq!((a.accessory, a.accessory_mount, &a.fits), (b.accessory, b.accessory_mount, &b.fits), "{}", a.number);
         assert_eq!(a.description, b.description);
     }
+}
+
+#[test]
+fn accessories_in_csv() {
+    let part = Part { number: "OWN.AUX".into(), accessory: true, accessory_mount: crate::AccessoryMount::Left, fits: vec!["OWN.K1".into(), "OWN.K2".into()], ..Default::default() };
+    let back = from_csv(&to_csv(std::slice::from_ref(&part))).unwrap();
+    assert_eq!((back[0].accessory, back[0].accessory_mount, back[0].fits.clone()), (true, crate::AccessoryMount::Left, part.fits));
+    // Files without the columns read plain parts.
+    let plain = from_csv("Part number;Accessories
+OWN.K1;OWN.AUX
+").unwrap();
+    assert_eq!((plain[0].accessory, plain[0].accessory_mount, plain[0].accessories.clone()), (false, crate::AccessoryMount::Auto, vec!["OWN.AUX".to_string()]));
 }
 
 #[test]
@@ -31,7 +44,7 @@ fn connection_points_in_csv() {
     ];
     let csv = to_csv(std::slice::from_ref(&part));
     let header = csv.lines().next().unwrap();
-    assert!(header.contains(";Connection points;Catalog;Lifecycle;Successor;Clearance top;") && header.ends_with(";Terminal type;Wall mounting;Floor mounting;Components"));
+    assert!(header.contains(";Connection points;Catalog;Lifecycle;Successor;Clearance top;") && header.ends_with(";Terminal type;Wall mounting;Floor mounting;Components;Accessory;Accessory mounting;Fits"));
     assert!(csv.contains("A1:5.5/0/60/up|14:40/74/55.25/down"));
     assert_eq!(from_csv(&csv).unwrap()[0].connection_points, part.connection_points);
     // Files without the column (older exports) have no points.

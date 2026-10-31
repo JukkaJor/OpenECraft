@@ -6371,3 +6371,28 @@ Open cable ducts	Åbn kabelkanaler
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	Udelad lågene på alle kabelkanaler i 3D-visningen: lederne i dem bliver synlige
 {}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: kabelkanal ved {} mm for lille: dens {} ledere kan ikke trækkes side om side
 Laying out the wires, cables and tubes…	Ledninger, kabler og slanger lægges ud…
+Fits	Passer til
+Fits {}	Passer til {}
+The accessory fits none of the device's parts	Tilbehøret passer ikke til nogen af enhedens artikler
+{}: accessory {} fits none of the device's parts	{}: tilbehøret {} passer ikke til nogen af enhedens artikler
+Part accessories	Artikeltilbehør
+Unknown device: {}	Ukendt enhed: {}
+{} fits none of the parts of {}	{} passer ikke til nogen artikel i {}
+Accessories only work together with the parts they fit. A part lists its accessories, an accessory the parts it fits; either side is enough.	Tilbehør virker kun sammen med de artikler, det passer til. En artikel angiver sit tilbehør, et tilbehør de artikler, det passer til; én side er nok.
+Accessories of this part	Tilbehør til denne artikel
+This part is an accessory	Denne artikel er tilbehør
+It only works attached to one of the parts it fits; the project check reports it on a device without such a part	Det virker kun monteret på en af de artikler, det passer til; projektkontrollen melder det på en enhed uden en sådan artikel
+Where the accessory sits on the part it fits, in the panel layout and the 3D view	Hvor tilbehøret sidder på den artikel, det passer til, i tavlelayoutet og 3D-visningen
+Fits these parts	Passer til disse artikler
+➕ Add part	➕ Tilføj artikel
+Accessory, mounted: {}	Tilbehør, monteret: {}
+Give a device tag or a part number	Angiv en enhedsbetegnelse eller et artikelnummer
+Lists and renames devices, adds accessories to their parts	Viser og omdøber enheder, tilføjer tilbehør til deres artikler
+Lists the accessories that fit a part or the parts of a device, and the parts an accessory fits (project parts, built-in and bundled catalogs)	Viser tilbehør, der passer til en artikel eller en enheds artikler, og de artikler, et tilbehør passer til (projektartikler, indbyggede og medfølgende kataloger)
+Device tag: the accessories that can still be added to its parts	Enhedsbetegnelse: tilbehør, der stadig kan tilføjes dens artikler
+Adds an accessory to a device; it must fit one of the device's parts	Tilføjer et tilbehør til en enhed; det skal passe til en af enhedens artikler
+Part number of the accessory	Tilbehørets artikelnummer
+On the front	På forsiden
+On the left side	På venstre side
+On the right side	På højre side
+Not mounted	Ikke monteret

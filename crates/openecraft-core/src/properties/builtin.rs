@@ -518,6 +518,7 @@ pub(super) const ROWS: &[Row] = &[
     r("part.mounting", tr_const!("Mounting"), Part, Mechanical, Text, "").ro(),
     r("part.functions", tr_const!("Function template"), Part, General, Text, "").ro(),
     r("part.accessories", tr_const!("Accessories"), Part, General, Text, "").ro(),
+    r("part.fits", tr_const!("Fits"), Part, General, Text, "").ro(),
     r("part.certificates", tr_const!("Certificates"), Part, Documentation, Text, "").ro(),
     r("part.datasheet", tr_const!("Data sheet"), Part, Documentation, Link, "").ro(),
 ];

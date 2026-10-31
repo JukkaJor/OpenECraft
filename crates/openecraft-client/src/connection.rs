@@ -5,7 +5,7 @@
 use crate::eplan::{self, EplanEndpoint};
 use crate::{check, decode, decode_found, Endpoint};
 use openecraft_i18n::tr;
-use openecraft_parts::api::{PartQuery, ServerInfo};
+use openecraft_parts::api::{Accessories, PartQuery, ServerInfo};
 use openecraft_parts::portal::SearchResult;
 use openecraft_parts::Part;
 use serde::{Deserialize, Serialize};
@@ -138,6 +138,22 @@ impl Connection {
             Connection::Eplan(e) => {
                 let n = number.to_string();
                 Call::new(e.part(number), move |r| eplan::decode_part(&n, r))
+            }
+        }
+    }
+
+    /// The accessories of a part and the parts it fits. The EPLAN Data Portal only
+    /// names the accessories the part lists (by number).
+    pub fn accessories(&self, number: &str) -> Call<Accessories> {
+        match self {
+            Connection::Parts(e) => Call::new(e.accessories(number), decode),
+            Connection::Eplan(e) => {
+                let n = number.to_string();
+                Call::new(e.part(number), move |r| {
+                    let part = eplan::decode_part(&n, r)?.unwrap_or_default();
+                    let accessories = part.accessories.iter().map(|a| Part { number: a.clone(), ..Default::default() }).collect();
+                    Ok(Accessories { accessories, fits: Vec::new() })
+                })
             }
         }
     }

@@ -1,6 +1,6 @@
 //! Generic example catalog with function templates.
 
-use crate::{natural_cmp, FnKind, FunctionTemplate, Mesh3d, Model2d, Part, Prim2d, TopGroup};
+use crate::{natural_cmp, AccessoryMount, FnKind, FunctionTemplate, Mesh3d, Model2d, Part, Prim2d, TopGroup};
 
 struct C {
     parts: Vec<Part>,
@@ -49,6 +49,18 @@ impl C {
     }
 }
 
+trait AccessoryPart {
+    fn accessory_front(&mut self);
+}
+
+impl AccessoryPart for Part {
+    /// An accessory snapped onto the front of the parts that list it.
+    fn accessory_front(&mut self) {
+        self.accessory = true;
+        self.accessory_mount = AccessoryMount::Front;
+    }
+}
+
 /// Generic example catalog with function templates.
 pub fn default_catalog() -> Vec<Part> {
     use FnKind::*;
@@ -65,7 +77,7 @@ pub fn default_catalog() -> Vec<Part> {
 Coil power: 3 W
 B10d: 1300000".into();
     p.power = "4 kW / 400 V".into();
-    p.accessories = vec!["GEN.AUX-2NO2NC".into()];
+    p.accessories = vec!["GEN.AUX-2NO2NC".into(), "GEN.AUX-1NO1NC".into()];
     let p = c.add("GEN.CT-18A-24DC", "Contactor 3P 18 A, coil 24 V DC, 1 NO + 1 NC aux", rc, "Power contactor", "K", 52.0, (45.0, 84.0, 87.0, 0.45), &[(Coil, "A1 A2"), (MainContacts3, main3), (No, "13 14"), (Nc, "21 22")]);
     p.voltage = "24 V DC".into();
     p.current = "18 A (AC-3)".into();
@@ -73,9 +85,9 @@ B10d: 1300000".into();
 Coil power: 4.5 W
 B10d: 1300000".into();
     p.power = "7.5 kW / 400 V".into();
-    p.accessories = vec!["GEN.AUX-2NO2NC".into()];
-    c.add("GEN.AUX-2NO2NC", "Auxiliary contact block 2 NO + 2 NC, front mounting", rc, "Auxiliary contact block", "K", 14.6, (45.0, 40.0, 40.0, 0.05), &[(No, "53 54"), (Nc, "61 62"), (Nc, "71 72"), (No, "83 84")]);
-    c.add("GEN.AUX-1NO1NC", "Auxiliary contact block 1 NO + 1 NC", rc, "Auxiliary contact block", "K", 9.8, (45.0, 40.0, 40.0, 0.03), &[(No, "53 54"), (Nc, "61 62")]);
+    p.accessories = vec!["GEN.AUX-2NO2NC".into(), "GEN.AUX-1NO1NC".into()];
+    c.add("GEN.AUX-2NO2NC", "Auxiliary contact block 2 NO + 2 NC, front mounting", rc, "Auxiliary contact block", "K", 14.6, (45.0, 40.0, 40.0, 0.05), &[(No, "53 54"), (Nc, "61 62"), (Nc, "71 72"), (No, "83 84")]).accessory_front();
+    c.add("GEN.AUX-1NO1NC", "Auxiliary contact block 1 NO + 1 NC", rc, "Auxiliary contact block", "K", 9.8, (45.0, 40.0, 40.0, 0.03), &[(No, "53 54"), (Nc, "61 62")]).accessory_front();
     let p = c.add("GEN.RLY-24DC-2CO", "Interface relay 24 V DC, 2 CO, with socket", rc, "Relay", "K", 12.4, (15.5, 78.0, 70.0, 0.04), &[(Coil, "A1 A2"), (Changeover, "11 12 14"), (Changeover, "21 22 24")]);
     p.voltage = "24 V DC".into();
     p.current = "8 A".into();
@@ -117,7 +129,10 @@ Instantaneous trip: 13 x In".into();
 Breaking capacity: 50 kA
 Instantaneous trip: 13 x In".into();
     p.accessories = vec!["GEN.MPS-AUX-1NO1NC".into()];
-    c.add("GEN.MPS-AUX-1NO1NC", "Auxiliary switch for motor protection switch, 1 NO + 1 NC", sd, "Auxiliary switch", "Q", 12.9, (9.0, 90.0, 60.0, 0.02), &[(No, "13 14"), (Nc, "21 22")]);
+    // Lateral auxiliary switch: snapped onto the left side of the switch, beside it on the rail.
+    let p = c.add("GEN.MPS-AUX-1NO1NC", "Auxiliary switch for motor protection switch, 1 NO + 1 NC, lateral mounting on the left", sd, "Auxiliary switch", "Q", 12.9, (9.0, 90.0, 60.0, 0.02), &[(No, "13 14"), (Nc, "21 22")]);
+    p.accessory = true;
+    p.accessory_mount = AccessoryMount::Left;
     let p = c.add("GEN.MCB-1P-C6", "Miniature circuit breaker 1P C6", sd, "Circuit breaker", "F", 8.7, (18.0, 90.0, 70.0, 0.12), &[(Breaker1, "1 2")]);
     p.current = "6 A".into();
     p.tech_data = "Power loss: 1.5 W
@@ -128,6 +143,12 @@ Breaking capacity: 10 kA".into();
     p.tech_data = "Power loss: 2 W
 Characteristic: B
 Breaking capacity: 10 kA".into();
+    // Auxiliary switch beside the breakers: the accessory names the parts it fits.
+    let p = c.add("GEN.MCB-AUX-1CO", "Auxiliary switch for miniature circuit breakers, 1 CO, side mounting, 1/2 module", sd, "Auxiliary switch", "F", 14.2, (9.0, 90.0, 70.0, 0.03), &[(Changeover, "11 12 14")]);
+    p.current = "6 A".into();
+    p.accessory = true;
+    p.accessory_mount = AccessoryMount::Right;
+    p.fits = vec!["GEN.MCB-1P-C6".into(), "GEN.MCB-1P-B10".into(), "GEN.MCB-3P-C16".into()];
     let p = c.add("GEN.MCB-3P-C16", "Miniature circuit breaker 3P C16", sd, "Circuit breaker", "Q", 27.3, (54.0, 90.0, 70.0, 0.36), &[(Breaker3, main3)]);
     p.current = "16 A".into();
     p.tech_data = "Power loss: 7 W
@@ -193,8 +214,8 @@ Breaking capacity: 100 kA".into();
     p.accessories = vec!["GEN.CB-1NC".into()];
     p.tech_data = "B10d: 100000".into();
     c.add("GEN.SEL-2POS-1NO", "Selector switch 2 positions, 1 NO", sw, "Selector switch", "S", 15.9, (30.0, 30.0, 45.0, 0.03), &[(SwitchNo, "13 14")]);
-    c.add("GEN.CB-1NO", "Contact block 1 NO for front mounting", sw, "Contact block", "S", 4.9, (10.0, 30.0, 40.0, 0.01), &[(No, "13 14")]);
-    c.add("GEN.CB-1NC", "Contact block 1 NC for front mounting", sw, "Contact block", "S", 4.9, (10.0, 30.0, 40.0, 0.01), &[(Nc, "21 22")]);
+    c.add("GEN.CB-1NO", "Contact block 1 NO for front mounting", sw, "Contact block", "S", 4.9, (10.0, 30.0, 40.0, 0.01), &[(No, "13 14")]).accessory_front();
+    c.add("GEN.CB-1NC", "Contact block 1 NC for front mounting", sw, "Contact block", "S", 4.9, (10.0, 30.0, 40.0, 0.01), &[(Nc, "21 22")]).accessory_front();
     let p = c.add("GEN.PROX-M12-PNP", "Inductive proximity sensor M12, PNP NO, Sn 4 mm", sw, "Proximity sensor", "B", 29.0, (12.0, 12.0, 60.0, 0.05), &[(Sensor, "BN BK")]);
     p.voltage = "10 - 30 V DC".into();
     p.tech_data = "Current consumption: 15 mA".into();
@@ -213,6 +234,9 @@ Breaking capacity: 100 kA".into();
     let p = c.add("GEN.LMP-GN-24", "Indicator lamp green, LED 24 V", "Signal devices", "Indicator lamp", "P", 9.1, (30.0, 30.0, 45.0, 0.02), &[(Signal, "X1 X2")]);
     p.voltage = "24 V AC/DC".into();
     p.tech_data = "Current consumption: 20 mA".into();
+    let p = c.add("GEN.LMP-DIN-RD-230", "Modular indicator lamp red, LED 230 V AC, 1 module", "Signal devices", "Indicator lamp", "P", 14.5, (18.0, 90.0, 70.0, 0.06), &[(Signal, "X1 X2")]);
+    p.voltage = "230 V AC".into();
+    p.tech_data = "Power loss: 0.3 W".into();
     let p = c.add("GEN.LMP-RD-24", "Indicator lamp red, LED 24 V", "Signal devices", "Indicator lamp", "P", 9.1, (30.0, 30.0, 45.0, 0.02), &[(Signal, "X1 X2")]);
     p.voltage = "24 V AC/DC".into();
     p.tech_data = "Current consumption: 20 mA".into();
@@ -739,6 +763,8 @@ fn shape_of(p: &Part) -> Option<Shape> {
         "Circuit breaker" | "Residual current device" | "Motor protection switch" | "Auxiliary switch" | "Main switch" => Shape::Din { toggle: true, display: false },
         "Power supply" | "Timer relay" | "Safety relay" | "Frequency converter" | "Soft starter" => Shape::Din { toggle: false, display: true },
         "Temperature switch" | "Current transformer" | "Socket outlet" => Shape::Din { toggle: false, display: false },
+        // Modular indicator lamps on the rail (door lamps are lower).
+        "Indicator lamp" if p.height > 60.0 => Shape::Din { toggle: false, display: false },
         "Power contactor" | "Relay" | "Auxiliary contact block" | "Overload relay" => Shape::Contactor,
         "Energy meter" | "Battery monitor" | "Measuring transducer" => Shape::Din { toggle: false, display: true },
         _ if matches!(p.group.as_str(), "Sensors, switches, pushbuttons" | "Signal devices" | "Measuring instruments") => Shape::Round,

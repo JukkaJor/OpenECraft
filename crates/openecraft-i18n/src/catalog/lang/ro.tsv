@@ -6371,3 +6371,28 @@ Open cable ducts	Deschide canalele de cabluri
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	În vizualizarea 3D omite capacele tuturor canalelor de cabluri: firele din ele se văd
 {}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: canalul de cablu la {} mm este prea mic: cele {} fire ale sale nu pot fi pozate unul lângă altul
 Laying out the wires, cables and tubes…	Se așază conductoarele, cablurile și tuburile…
+Fits	Compatibil cu
+Fits {}	Compatibil cu {}
+The accessory fits none of the device's parts	Accesoriul nu se potrivește cu niciun articol al aparatului
+{}: accessory {} fits none of the device's parts	{}: accesoriul {} nu se potrivește cu niciun articol al aparatului
+Part accessories	Accesorii ale articolelor
+Unknown device: {}	Aparat necunoscut: {}
+{} fits none of the parts of {}	{} nu se potrivește cu niciun articol al {}
+Accessories only work together with the parts they fit. A part lists its accessories, an accessory the parts it fits; either side is enough.	Accesoriile funcționează doar împreună cu articolele cu care se potrivesc. Un articol își enumeră accesoriile, un accesoriu articolele cu care se potrivește; este suficientă o parte.
+Accessories of this part	Accesoriile acestui articol
+This part is an accessory	Acest articol este un accesoriu
+It only works attached to one of the parts it fits; the project check reports it on a device without such a part	Funcționează doar montat pe unul dintre articolele cu care se potrivește; verificarea proiectului îl semnalează la un aparat fără un astfel de articol
+Where the accessory sits on the part it fits, in the panel layout and the 3D view	Unde se află accesoriul pe articolul cu care se potrivește, în schema de montaj și în vederea 3D
+Fits these parts	Compatibil cu aceste articole
+➕ Add part	➕ Adaugă articol
+Accessory, mounted: {}	Accesoriu, montat: {}
+Give a device tag or a part number	Indicați o identificare de aparat sau un număr de articol
+Lists and renames devices, adds accessories to their parts	Listează și redenumește aparatele, adaugă accesorii la articolele lor
+Lists the accessories that fit a part or the parts of a device, and the parts an accessory fits (project parts, built-in and bundled catalogs)	Listează accesoriile care se potrivesc cu un articol sau cu articolele unui aparat și articolele cu care se potrivește un accesoriu (articole ale proiectului, cataloage integrate și incluse)
+Device tag: the accessories that can still be added to its parts	Identificarea aparatului: accesoriile care se mai pot adăuga articolelor sale
+Adds an accessory to a device; it must fit one of the device's parts	Adaugă un accesoriu la un aparat; trebuie să se potrivească cu unul dintre articolele aparatului
+Part number of the accessory	Numărul de articol al accesoriului
+On the front	Pe față
+On the left side	Pe partea stângă
+On the right side	Pe partea dreaptă
+Not mounted	Nemontat

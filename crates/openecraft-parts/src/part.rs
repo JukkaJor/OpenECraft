@@ -2,7 +2,7 @@
 //! data and the parts database container.
 
 use crate::portal::{Attachment, Lifecycle};
-use crate::{natural_cmp, ConnectionPoint, Mesh3d, Model2d, MountingData, Shared};
+use crate::{natural_cmp, AccessoryMount, ConnectionPoint, Mesh3d, Model2d, MountingData, Shared};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -423,6 +423,17 @@ pub struct Part {
     pub functions: Vec<FunctionTemplate>,
     /// Part numbers of accessories.
     pub accessories: Vec<String>,
+    /// The part is an accessory: it only works attached to one of the parts it fits
+    /// (see [`crate::accessory`]).
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub accessory: bool,
+    /// Where the accessory sits on the part it is attached to.
+    #[serde(skip_serializing_if = "AccessoryMount::is_auto")]
+    pub accessory_mount: AccessoryMount,
+    /// Part numbers of the parts this accessory fits (the other direction of
+    /// `accessories`).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub fits: Vec<String>,
     /// Parts this part is assembled from (assembly / module); the bill of materials
     /// lists them under it.
     #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -500,6 +511,9 @@ impl Default for Part {
             mounting_data: MountingData::default(),
             functions: Vec::new(),
             accessories: Vec::new(),
+            accessory: false,
+            accessory_mount: AccessoryMount::Auto,
+            fits: Vec::new(),
             components: Vec::new(),
             model_2d: None,
             model_3d: None,

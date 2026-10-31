@@ -7,7 +7,7 @@ use axum::response::Html;
 use axum::Json;
 use openecraft_i18n::{tr_const, translate, Lang};
 use openecraft_parts::portal::{AttachmentKind, ChangeKind, Lifecycle, Role, Sort};
-use openecraft_parts::{productgroups, FnKind, TopGroup, PRODUCT_GROUPS};
+use openecraft_parts::{productgroups, AccessoryMount, FnKind, TopGroup, PRODUCT_GROUPS};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -77,6 +77,9 @@ const TEXTS: &[&str] = &[
     tr_const!("Mounting"),
     tr_const!("Functions"),
     tr_const!("Accessories"),
+    tr_const!("Accessory"),
+    tr_const!("Fits"),
+    tr_const!("Yes"),
     tr_const!("Successor"),
     tr_const!("Replaced by {}"),
     tr_const!("Files"),
@@ -152,6 +155,9 @@ pub fn web_texts(lang: Lang) -> WebTexts {
     }
     for f in FnKind::ALL {
         key("fn", format!("{f:?}"), f.title());
+    }
+    for m in AccessoryMount::ALL {
+        key("mount", format!("{m:?}"), m.title());
     }
     let languages = Lang::ALL.iter().map(|l| (l.code().to_string(), l.native_name().to_string())).collect();
     WebTexts { lang: lang.code().into(), languages, texts, keys }

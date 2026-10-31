@@ -18,6 +18,7 @@ use crate::parts::vec3::{box_triangles, surfaces_intersect, Tri, V3};
 use crate::parts::{Exit, FnKind};
 use std::collections::{BTreeSet, HashMap, HashSet};
 
+mod assembly;
 mod checks;
 mod drives;
 mod fastening;
@@ -31,6 +32,7 @@ pub mod rack;
 mod rooms;
 mod system;
 pub mod thermal;
+pub use assembly::{assembly, mounted, Assembly, Piece};
 pub use checks::{box_gap, class_collisions, class_title, clearances, data_number, device_class, device_kinds, floor_height, heights, item_class, item_name, validate, CheckKind, ClassRule, Clearances, Finding, PanelRules, CLASSES};
 pub use drives::{drives, Drive, DriveKind, DRIVE, DRIVEN_BY};
 pub use fastening::{fastening_material, Fastening};
@@ -821,6 +823,18 @@ pub fn device_mesh_painted(prj: &Project, it: &PanelItem) -> Option<Vec<(Tri, Op
         let n = mesh.triangles.len().max(1);
         tris.into_iter().enumerate().map(|(i, t)| (t, mesh.color(i % n))).collect()
     };
+    // Accessories mounted on the main part: every piece in its box.
+    if let Some(a) = mounted(prj, it) {
+        let mut out = Vec::new();
+        for piece in a.pieces() {
+            let sub = a.piece_item(it, piece);
+            match piece.part.model_3d.as_ref() {
+                Some(mesh) => out.extend(painted(mesh, place_mesh(mesh, &sub))),
+                None => out.extend(box_triangles([sub.x, sub.y, sub.z], [sub.x + sub.w, sub.y + sub.h, sub.z + sub.d]).into_iter().map(|t| (t, None))),
+            }
+        }
+        return Some(out);
+    }
     let cells = strip_cells(prj, it);
     if cells.is_empty() {
         let mesh = part_by_number(prj, &it.part)?.model_3d.as_ref()?;
@@ -853,35 +867,24 @@ pub fn device_mesh_painted(prj: &Project, it: &PanelItem) -> Option<Vec<(Tri, Op
     Some(out)
 }
 
-/// Footprint of a device from its parts: the first part with mounting data gives
-/// width / height; further parts (e.g. auxiliary blocks) add their depth. Terminal
-/// strips are as long as their strip layout (terminals and spare terminals) and as deep
-/// as their deepest part.
+/// Footprint of a device from its parts (see [`assembly`]): the main part gives the
+/// height, accessories in front add their depth, accessories beside it their width.
+/// Terminal strips are as long as their strip layout (terminals and spare terminals)
+/// and as deep as their deepest part.
 pub fn device_size(prj: &Project, tag: &str) -> Option<DeviceSize> {
     let Some(data) = prj.devices.get(tag) else { return group_size(prj, tag) };
+    if let Some(a) = assembly(prj, tag) {
+        return Some(DeviceSize { tag: tag.into(), part: a.main.part.number.clone(), w: a.w, h: a.main.size[1], d: a.d, from_part: true });
+    }
     let parts: Vec<_> = data
         .parts
         .iter()
         .filter_map(|r| prj.parts.iter().find(|x| x.number == r.number).map(|pd| (pd, r.count.max(1))))
         .collect();
-    let (main, [mw, mh, md]) = parts.iter().find_map(|(pd, _)| pd.size().map(|dims| (*pd, dims)))?;
-    let mut w = mw;
-    let strip = is_strip_part(main);
-    if strip {
-        let length: f32 = crate::strips::strip_layout(prj, tag).iter().map(|e| e.width).sum();
-        if length > 0.0 {
-            w = length;
-        }
-    }
-    let mut d = if strip { strip_depth(&parts) } else { md };
-    for (pd, count) in parts.iter().filter(|_| !strip) {
-        if let (true, Some([aw, _, ad])) = (pd.number != main.number, pd.size()) {
-            if aw <= mw + 1.0 {
-                d += ad * *count as f32;
-            }
-        }
-    }
-    Some(DeviceSize { tag: tag.into(), part: main.number.clone(), w, h: mh, d, from_part: true })
+    let (main, [mw, mh, _]) = parts.iter().find_map(|(pd, _)| pd.size().map(|dims| (*pd, dims)))?;
+    let length: f32 = crate::strips::strip_layout(prj, tag).iter().map(|e| e.width).sum();
+    let w = if length > 0.0 { length } else { mw };
+    Some(DeviceSize { tag: tag.into(), part: main.number.clone(), w, h: mh, d: strip_depth(&parts), from_part: true })
 }
 
 /// The main part of a terminal strip: all its functions are terminals.

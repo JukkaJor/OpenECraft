@@ -6371,3 +6371,28 @@ Open cable ducts	Otevřít kabelové kanály
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	Ve 3D zobrazení vynechá víka všech kabelových kanálů: vodiče v nich jsou vidět
 {}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: kabelový kanál na {} mm je příliš malý: jeho {} vodičů nelze položit vedle sebe
 Laying out the wires, cables and tubes…	Rozmísťování vodičů, kabelů a trubek…
+Fits	Hodí se k
+Fits {}	Hodí se k {}
+The accessory fits none of the device's parts	Příslušenství se nehodí k žádnému dílu přístroje
+{}: accessory {} fits none of the device's parts	{}: příslušenství {} se nehodí k žádnému dílu přístroje
+Part accessories	Příslušenství dílů
+Unknown device: {}	Neznámý přístroj: {}
+{} fits none of the parts of {}	{} se nehodí k žádnému dílu {}
+Accessories only work together with the parts they fit. A part lists its accessories, an accessory the parts it fits; either side is enough.	Příslušenství funguje jen s díly, ke kterým se hodí. Díl uvádí své příslušenství, příslušenství díly, ke kterým se hodí; stačí jedna strana.
+Accessories of this part	Příslušenství tohoto dílu
+This part is an accessory	Tento díl je příslušenství
+It only works attached to one of the parts it fits; the project check reports it on a device without such a part	Funguje jen připevněné k jednomu z dílů, ke kterým se hodí; kontrola projektu je hlásí u přístroje bez takového dílu
+Where the accessory sits on the part it fits, in the panel layout and the 3D view	Kde příslušenství sedí na dílu, ke kterému se hodí, v rozvržení rozváděče a ve 3D zobrazení
+Fits these parts	Hodí se k těmto dílům
+➕ Add part	➕ Přidat díl
+Accessory, mounted: {}	Příslušenství, montáž: {}
+Give a device tag or a part number	Zadejte označení přístroje nebo číslo dílu
+Lists and renames devices, adds accessories to their parts	Vypisuje a přejmenovává přístroje, přidává příslušenství k jejich dílům
+Lists the accessories that fit a part or the parts of a device, and the parts an accessory fits (project parts, built-in and bundled catalogs)	Vypisuje příslušenství hodící se k dílu nebo dílům přístroje a díly, ke kterým se příslušenství hodí (díly projektu, vestavěné a dodané katalogy)
+Device tag: the accessories that can still be added to its parts	Označení přístroje: příslušenství, které lze ještě přidat k jeho dílům
+Adds an accessory to a device; it must fit one of the device's parts	Přidá příslušenství k přístroji; musí se hodit k jednomu z dílů přístroje
+Part number of the accessory	Číslo dílu příslušenství
+On the front	Vpředu
+On the left side	Na levé straně
+On the right side	Na pravé straně
+Not mounted	Nemontováno

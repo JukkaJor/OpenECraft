@@ -253,7 +253,7 @@ fn enclosures(prj: &mut Project, db: &PartsDb) -> [usize; 5] {
     profile(prj, acd, ItemKind::Rail, panel::RAIL_PART, (40.0, 200.0), (680.0, 200.0));
     profile(prj, acd, ItemKind::Rail, panel::RAIL_PART, (40.0, 480.0), (680.0, 480.0));
     on_rail(prj, acd, 200.0, 40.0, &["=ESS+ACD-Q1", "=ESS+ACD-F1", "=ESS+ACD-F2", "=ESS+ACD-F3", "=ESS+ACD-F10", "=ESS+ACD-F11", "=ESS+ACD-F12", "=ESS+ACD-F13"]);
-    on_rail(prj, acd, 480.0, 40.0, &["=ESS+ACD-F21", "=ESS+ACD-F22", "=ESS+ACD-X11", "=ESS+ACD-X21", "=ESS+ACD-X22"]);
+    on_rail(prj, acd, 480.0, 40.0, &["=ESS+ACD-F21", "=ESS+ACD-F22", "=ESS+ACD-P10", "=ESS+ACD-X11", "=ESS+ACD-X21", "=ESS+ACD-X22"]);
     on_rail(prj, acd, 480.0, 360.0, &["=ESS+ACD-X0"]);
     on_rail(prj, acd, 480.0, 460.0, &["=ESS+ACD-X1"]);
     on_rail(prj, acd, 480.0, 560.0, &["=ESS+ACD-X2"]);

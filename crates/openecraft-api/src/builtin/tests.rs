@@ -65,6 +65,29 @@ fn a_failed_command_changes_nothing_and_old_parameter_names_work() {
 }
 
 #[test]
+fn accessories_are_listed_and_added() {
+    let p = Plugins::new(Vec::<String>::new());
+    let mut prj = demo_project();
+    let mut run = |name: &str, args: serde_json::Value| p.run(p.command(name).unwrap(), &mut prj, args.as_object().unwrap());
+    // The Hager signal contact fits two RCCBs of the bundled catalog.
+    let cz = run("list_accessories", serde_json::json!({ "part": "HAG.CZ001" })).unwrap();
+    assert_eq!((cz["accessory"].as_bool(), cz["mount"].as_str()), (Some(true), Some("left")));
+    assert!(cz["fits"].as_array().unwrap().iter().any(|f| f["number"] == "HAG.CCA216D"));
+    let cda = run("list_accessories", serde_json::json!({ "part": "HAG.CDA440D" })).unwrap();
+    assert_eq!(cda["accessories"][0]["number"], "HAG.CZ001");
+    // The contactor -K1 of the demo takes the auxiliary contact block it does not have yet.
+    let k1 = run("list_accessories", serde_json::json!({ "tag": "-K1" })).unwrap();
+    assert!(k1["accessories"].as_array().unwrap().iter().any(|a| a["accessory"]["number"] == "GEN.AUX-1NO1NC" && a["fits"] == "GEN.CT-9A-24DC"), "{k1}");
+    let added = run("add_accessory", serde_json::json!({ "tag": "-K1", "part": "GEN.AUX-1NO1NC" })).unwrap();
+    assert_eq!(added["fits"], "GEN.CT-9A-24DC");
+    assert!(run("add_accessory", serde_json::json!({ "tag": "-K1", "part": "HAG.CZ001" })).unwrap_err().contains("fits none"));
+    assert!(run("list_accessories", serde_json::json!({})).is_err());
+    let devices = run("list_devices", serde_json::json!({})).unwrap();
+    let k1 = devices.as_array().unwrap().iter().find(|d| d["tag"] == "-K1").unwrap();
+    assert!(k1["parts"].as_array().unwrap().iter().any(|r| r["number"] == "GEN.AUX-1NO1NC" && r["accessory_of"] == "GEN.CT-9A-24DC"), "{k1}");
+}
+
+#[test]
 fn values_out_of_range_are_refused_not_corrected() {
     let p = Plugins::new(Vec::<String>::new());
     let mut prj = demo_project();
