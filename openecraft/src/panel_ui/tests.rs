@@ -221,7 +221,7 @@ fn cable_cores_are_drawn_with_their_cable() {
     assert!(an.routing.item("=ESS-W97").is_some_and(|c| c.routed()));
     let mut ui = PanelUi::default();
     let shown = ui.shown_3d(&prj, rack);
-    let scene = ui.scene_3d(&prj, &an, rack, &shown);
+    let scene = ui.scene_3d(&egui::Context::default(), &prj, &an, rack, &shown);
     let cores = scene.picks.iter().filter(|(_, _, t)| matches!(t, routing_ui::RouteRef::Wire(wi) if an.wiring[*wi].cable == "=ESS-W97")).count();
     assert_eq!(cores, 0);
     assert!(scene.picks.iter().any(|(_, _, t)| matches!(t, routing_ui::RouteRef::Item(key) if key == "=ESS-W97")));
@@ -249,7 +249,7 @@ fn routed_pipes_are_round_tubes_bent_round_their_corners() {
     let pipe = an.routing.items.iter().find(|i| i.kind == routing3d::RouteKind::Tube && i.routed() && i.points.len() > 3).expect("a pipe with corners");
     let mut ui = PanelUi { show_wires: true, ..Default::default() };
     let shown = ui.shown_3d(&prj, room);
-    let scene = ui.scene_3d(&prj, &an, room, &shown);
+    let scene = ui.scene_3d(&egui::Context::default(), &prj, &an, room, &shown);
     assert!(!scene.tubes.is_empty());
     // Its corners are arcs: more segments than the route has corners.
     let segments: Vec<_> = scene.picks.iter().filter(|(_, _, t)| matches!(t, routing_ui::RouteRef::Item(k) if *k == pipe.key)).collect();
@@ -295,7 +295,7 @@ fn wires_entering_the_ducts_take_out_the_fingers_they_pass() {
     let faces = |show_wires: bool| {
         let mut ui = PanelUi { show_wires, ..Default::default() };
         let shown = ui.shown_3d(&prj, 0);
-        ui.scene_3d(&prj, &an, 0, &shown).faces.len()
+        ui.scene_3d(&egui::Context::default(), &prj, &an, 0, &shown).faces.len()
     };
     let (hidden, shown) = (faces(false), faces(true));
     assert!(shown < hidden && (hidden - shown) % 6 == 0, "{hidden} faces, {shown} with the wires");
@@ -309,7 +309,7 @@ fn wires_running_together_lie_side_by_side() {
     let an = Analysis::build(&prj);
     let mut ui = PanelUi { show_wires: true, ..Default::default() };
     let shown = ui.shown_3d(&prj, 0);
-    let scene = ui.scene_3d(&prj, &an, 0, &shown);
+    let scene = ui.scene_3d(&egui::Context::default(), &prj, &an, 0, &shown);
     let axis = |a: [f32; 3], b: [f32; 3]| {
         let along: Vec<usize> = (0..3).filter(|&k| (a[k] - b[k]).abs() > 0.01).collect();
         (along.len() == 1 && (a[along[0]] - b[along[0]]).abs() > 30.0).then(|| along[0])
@@ -359,7 +359,7 @@ fn wires_and_cables_laid_side_by_side_keep_in_front_of_the_plate() {
         let e = &prj.layout.enclosures[ei];
         let mut ui = PanelUi { enclosure: ei, show_wires: true, ..Default::default() };
         let shown = ui.shown_3d(prj, ei);
-        let scene = ui.scene_3d(prj, &an, ei, &shown);
+        let scene = ui.scene_3d(&egui::Context::default(), prj, &an, ei, &shown);
         let inside = |q: &[f32; 3]| q[0] > 0.0 && q[0] < e.width && q[1] > 0.0 && q[1] < e.height && q[2] < e.depth;
         let mut checked = 0;
         for (a, b, t) in &scene.picks {
@@ -388,7 +388,7 @@ fn wires_pass_in_front_of_the_busbars() {
     let mut ui = PanelUi { enclosure: ei, show_wires: true, ..Default::default() };
     let shown = ui.shown_3d(&prj, ei);
     let pose = shown.iter().find(|s| s.0 == ei).unwrap().1;
-    let scene = ui.scene_3d(&prj, &an, ei, &shown);
+    let scene = ui.scene_3d(&egui::Context::default(), &prj, &an, ei, &shown);
     let busbars: Vec<([f32; 3], [f32; 3])> = e
         .items
         .iter()
@@ -707,4 +707,40 @@ fn a_selected_cable_shows_its_properties() {
         assert!(shown.iter().any(|t| t.contains(want)), "{want} in {shown:?}");
     }
     assert!(!shown.iter().any(|t| t == tr("Enclosure")), "{shown:?}");
+}
+
+#[test]
+fn wires_are_laid_out_on_another_thread_with_their_progress_shown() {
+    let prj = openecraft_core::sample::demo_project();
+    let an = Analysis::build(&prj);
+    let ctx = egui::Context::default();
+    let mut ui = PanelUi { show_wires: true, ..Default::default() };
+    ui.layouts.wait = 0;
+    let shown = ui.shown_3d(&prj, 0);
+    let first = ui.scene_3d(&ctx, &prj, &an, 0, &shown);
+    // With threads the scene does not wait for the layout: its wires are shown as routed
+    // until it is done (without threads it is done at once).
+    if let Some(key) = first.waiting {
+        assert!(ui.layouts.running(key) && ui.layouts.progress().is_some_and(|p| (0.0..=1.0).contains(&p)));
+        while ui.layouts.progress().is_some() {
+            ui.layouts.collect();
+            std::thread::sleep(std::time::Duration::from_millis(5));
+        }
+    }
+    let laid = ui.scene_3d(&ctx, &prj, &an, 0, &shown);
+    assert!(laid.waiting.is_none() && ui.layouts.progress().is_none());
+    assert!(first.waiting.is_none() || laid.id != first.id);
+    assert_eq!(ui.scene_3d(&ctx, &prj, &an, 0, &shown).id, laid.id, "kept");
+    // A selection draws it again with the same layout, none worked out again.
+    let wire = an.wiring.iter().position(|w| w.in_enclosure(0)).unwrap();
+    ui.selected_wire = Some((an.wiring[wire].from.clone(), an.wiring[wire].to.clone()));
+    let selected = ui.scene_3d(&ctx, &prj, &an, 0, &shown);
+    assert!(selected.id != laid.id && selected.waiting.is_none() && ui.layouts.progress().is_none());
+    // During a gesture none is worked out: shown as routed.
+    let mut moved = prj.clone();
+    let device = moved.layout.enclosures[0].items.iter().position(|i| i.kind == ItemKind::Device).unwrap();
+    moved.layout.enclosures[0].items[device].x += 30.0;
+    ui.drag = Some(MoveDrag { start: openecraft_core::geom::p(0.0, 0.0), originals: Vec::new() });
+    let dragged = ui.scene_3d(&ctx, &moved, &an, 0, &shown);
+    assert!(dragged.waiting.is_some() && ui.layouts.progress().is_none());
 }

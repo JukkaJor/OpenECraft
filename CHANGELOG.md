@@ -69,7 +69,10 @@ with a command line, an MCP server, a parts server and a project server.
   (in a cable duct packed in rows from its base, never over its cover), and where wires and cables pass
   through the wall of a duct its fingers are left out; where they would still run inside or through each
   other they are pushed apart, one over the other where they cross, inside the walls of their cabinet and
-  out of its devices. Cables and tubes keep apart from each other in free air already when they are
+  out of its devices. Wires on one terminal or on terminals closer than they are thick leave them
+  straight, side by side, instead of hooking round each other where they come out of a duct. The 3D
+  view lays them out on another thread, several times faster, with a progress box while it does (it
+  shows them as routed until then). Cables and tubes keep apart from each other in free air already when they are
   routed. A cable duct too small for its wires to lie side by side is an error of the project check.
   Devices mounted on a busbar system are connected by its bars instead of wires. The title bar can show
   the frame time and the frames per second (Settings › Appearance). A placed device is shown in the

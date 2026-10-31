@@ -2,7 +2,9 @@
 //! the camera: faces with their lit colours, wires and routing lines, the boxes of the
 //! equipment for the painting order, labels and outlines. It is built again only when
 //! the analysis, the layout or what the view highlights changes; each frame projects it
-//! ([`super::view3d`]) or hands it to the graphics card ([`super::gpu3d`]).
+//! ([`super::view3d`]) or hands it to the graphics card ([`super::gpu3d`]). The wires,
+//! cables and tubes are laid out side by side on another thread ([`Layouts`]); until
+//! that is done the scene shows them as they were routed.
 
 use super::routing_ui::RouteRef;
 use super::{PanelUi, OUTER_WALLS, WIRE_HIGHLIGHT};
@@ -10,11 +12,11 @@ use openecraft_core::analysis::Analysis;
 use openecraft_core::model::Project;
 use openecraft_core::panel::{self, Face, ItemKind, Opening, Role, SitePose, PLATE_MARGIN, PLATE_Z};
 use openecraft_core::parts::vec3::{self, cross, dot, norm, sub, V3};
-use openecraft_core::routing3d::bundles::{self, Channel, Strand, Way};
+use openecraft_core::routing3d::bundles::{self, Channel, Way};
 use openecraft_core::routing3d::RouteKind;
 use egui::Color32;
 use std::hash::{Hash, Hasher};
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
 use std::sync::Arc;
 
 /// Layer of the equipment (ducts, busbars, devices), painted in the order of its boxes.
@@ -27,6 +29,8 @@ const WIRE_SIDES: usize = 6;
 /// Grid (mm) the wires, cables and tubes running together are found on, to be laid
 /// side by side.
 const LANE_CELL: f32 = 8.0;
+/// How long (ms) a scene waits for its layout before it is shown without it.
+const LAYOUT_WAIT: u32 = 30;
 
 /// A wire, cable or tube drawn as a round tube, before it is laid beside the others it
 /// runs with: its corners and their bend radii, how it looks and what it is.
@@ -141,6 +145,9 @@ pub(super) struct Scene3d {
     pub(super) analysis: u64,
     pub(super) layout: panel::Layout,
     pub(super) state: u64,
+    /// The layout of its wires, cables and tubes it is shown without until it is ready
+    /// (its key, see [`Layouts`]).
+    pub(super) waiting: Option<u64>,
     pub faces: Vec<SceneFace>,
     pub sides: Vec<SceneSide>,
     /// Lines on top of everything.
@@ -162,6 +169,148 @@ pub(super) struct Scene3d {
     pub picks: Vec<(V3, V3, RouteRef)>,
     /// Box around everything.
     pub bounds: (V3, V3),
+}
+
+/// What the wires, cables and tubes of a scene are laid out from ([`bundles::lay_out`]),
+/// owned to go to another thread.
+pub(super) struct LayoutInput {
+    ways: Vec<LayoutWay>,
+    obstacles: Vec<(V3, V3)>,
+    channels: Vec<Channel>,
+    insides: Vec<(V3, V3)>,
+}
+
+/// A [`Way`] of a [`LayoutInput`].
+struct LayoutWay {
+    points: Vec<V3>,
+    bends: Vec<f32>,
+    diameter: f32,
+    rest: V3,
+    below: f32,
+    steps: usize,
+}
+
+impl LayoutInput {
+    /// Tells this input from every other one.
+    fn key(&self) -> u64 {
+        let mut h = std::collections::hash_map::DefaultHasher::new();
+        for w in &self.ways {
+            (w.points.len(), w.bends.len(), w.steps).hash(&mut h);
+            w.points.iter().flatten().chain(&w.bends).chain(&w.rest).chain([&w.diameter, &w.below]).for_each(|v| v.to_bits().hash(&mut h));
+        }
+        (self.obstacles.len(), self.insides.len(), self.channels.len()).hash(&mut h);
+        let boxes = self.obstacles.iter().chain(&self.insides).chain(self.channels.iter().map(|c| &c.inside));
+        boxes.flat_map(|(lo, hi)| lo.iter().chain(hi)).chain(self.channels.iter().flat_map(|c| &c.floor)).for_each(|v| v.to_bits().hash(&mut h));
+        h.finish()
+    }
+
+    /// The ways laid out; `None` when `progress` (rounds done, of all) answers false.
+    fn lay_out(&self, progress: &dyn Fn(usize, usize) -> bool) -> Option<Vec<Vec<V3>>> {
+        let ways: Vec<Way> = self.ways.iter().map(|w| Way { points: &w.points, radii: &w.bends, diameter: w.diameter, rest: w.rest, below: w.below, steps: w.steps }).collect();
+        bundles::lay_out(&ways, LANE_CELL, &self.obstacles, &self.channels, &self.insides, progress)
+    }
+}
+
+/// The layouts of the 3D view: the last one worked out (by the key of its input), kept
+/// while the input stays the same, and the one being worked out on another thread.
+pub(super) struct Layouts {
+    laid: Option<(u64, Arc<Vec<Vec<V3>>>)>,
+    laying: Option<Laying>,
+    /// The key of a layout that failed (is not tried again).
+    failed: Option<u64>,
+    /// How long (ms) a scene waits for its layout.
+    pub(super) wait: u32,
+}
+
+/// A layout being worked out: its key, the rounds done and of all, whether it is to stop.
+struct Laying {
+    key: u64,
+    done: Arc<(AtomicUsize, AtomicUsize)>,
+    stop: Arc<AtomicBool>,
+    job: crate::jobs::Job<Option<Vec<Vec<V3>>>>,
+}
+
+impl Default for Layouts {
+    fn default() -> Self {
+        // Tests wait for the layout of each scene, as without threads.
+        Layouts { laid: None, laying: None, failed: None, wait: if cfg!(test) { u32::MAX } else { LAYOUT_WAIT } }
+    }
+}
+
+impl Layouts {
+    /// Takes the layout worked out on another thread once it is there.
+    pub(super) fn collect(&mut self) {
+        let Some(laying) = &self.laying else { return };
+        match laying.job.take() {
+            Some(Ok(Some(ways))) => self.laid = Some((laying.key, Arc::new(ways))),
+            Some(Ok(None)) => {}
+            Some(Err(_)) => self.failed = Some(laying.key),
+            None => return,
+        }
+        self.laying = None;
+    }
+
+    /// The layout of `key` is being worked out.
+    pub(super) fn running(&self, key: u64) -> bool {
+        self.laying.as_ref().is_some_and(|l| l.key == key)
+    }
+
+    /// A scene waiting for the layout of `key` is to be built again: it is done, or it is
+    /// neither being worked out nor failed.
+    fn outdated(&self, key: u64) -> bool {
+        self.laid.as_ref().is_some_and(|l| l.0 == key) || (!self.running(key) && self.failed != Some(key))
+    }
+
+    /// How far the layout being worked out is, 0 … 1; `None` without one.
+    pub(super) fn progress(&self) -> Option<f32> {
+        let l = self.laying.as_ref()?;
+        let (done, total) = (l.done.0.load(Ordering::Relaxed), l.done.1.load(Ordering::Relaxed));
+        Some(if total > 0 { done as f32 / total as f32 } else { 0.0 })
+    }
+
+    /// The ways of `input` laid out: kept, or worked out on another thread (`start`; one
+    /// for another input is stopped), waiting for it a moment. Otherwise the key it is
+    /// waited for.
+    fn get(&mut self, ctx: &egui::Context, input: LayoutInput, start: bool) -> Result<Arc<Vec<Vec<V3>>>, u64> {
+        let key = input.key();
+        if let Some((k, ways)) = &self.laid {
+            if *k == key {
+                return Ok(ways.clone());
+            }
+        }
+        if !self.running(key) && self.failed != Some(key) {
+            if let Some(old) = self.laying.take() {
+                old.stop.store(true, Ordering::Relaxed);
+            }
+            if !start {
+                return Err(key);
+            }
+            let done = Arc::new((AtomicUsize::new(0), AtomicUsize::new(0)));
+            let stop = Arc::new(AtomicBool::new(false));
+            let (counter, halt) = (done.clone(), stop.clone());
+            let job = crate::jobs::Job::start(String::new(), ctx, move || {
+                input.lay_out(&|n, total| {
+                    counter.0.store(n, Ordering::Relaxed);
+                    counter.1.store(total, Ordering::Relaxed);
+                    !halt.load(Ordering::Relaxed)
+                })
+            });
+            self.laying = Some(Laying { key, done, stop, job });
+        }
+        let mut waited = 0;
+        loop {
+            self.collect();
+            if !self.running(key) || waited >= self.wait {
+                break;
+            }
+            std::thread::sleep(std::time::Duration::from_millis(1));
+            waited += 1;
+        }
+        match &self.laid {
+            Some((k, ways)) if *k == key => Ok(ways.clone()),
+            _ => Err(key),
+        }
+    }
 }
 
 static NEXT_SCENE: AtomicU64 = AtomicU64::new(1);
@@ -242,16 +391,21 @@ fn bounds(pts: &[V3]) -> (V3, V3) {
 
 impl PanelUi {
     /// The scene of the 3D view of enclosure `ei` showing `shown`: the one built before
-    /// while nothing it shows changed (always a new one during a gesture, whose layout
-    /// checks are made live).
-    pub(super) fn scene_3d(&mut self, prj: &Project, an: &Analysis, ei: usize, shown: &[(usize, SitePose)]) -> Arc<Scene3d> {
+    /// while nothing it shows changed and it does not wait for a layout that is done
+    /// (always a new one during a gesture, whose layout checks are made live). Its wires,
+    /// cables and tubes are laid out on another thread (not during a gesture or while
+    /// the door turns); `ctx` repaints when that is done.
+    pub(super) fn scene_3d(&mut self, ctx: &egui::Context, prj: &Project, an: &Analysis, ei: usize, shown: &[(usize, SitePose)]) -> Arc<Scene3d> {
+        self.layouts.collect();
         let state = self.scene_state(an, ei, shown);
-        if let Some(s) = self.scene.as_ref().filter(|s| !self.busy() && s.analysis == an.id && s.state == state && s.layout == prj.layout) {
+        let current = |s: &&Arc<Scene3d>| s.waiting.is_none_or(|k| !self.layouts.outdated(k));
+        if let Some(s) = self.scene.as_ref().filter(|s| !self.busy() && s.analysis == an.id && s.state == state && s.layout == prj.layout).filter(current) {
             return s.clone();
         }
-        let mut apart = self.apart.take();
-        let s = Arc::new(self.build_scene(prj, an, ei, shown, state, &mut apart));
-        self.apart = apart;
+        let settled = !self.busy() && !self.door_turning();
+        let mut layouts = std::mem::take(&mut self.layouts);
+        let s = Arc::new(self.build_scene(prj, an, ei, shown, state, &mut |input| layouts.get(ctx, input, settled)));
+        self.layouts = layouts;
         self.scene = Some(s.clone());
         s
     }
@@ -275,9 +429,9 @@ impl PanelUi {
     }
 
     #[allow(clippy::too_many_lines)]
-    /// `apart`: the wires, cables and tubes pushed apart before and what they were laid
-    /// out from (a hash), taken again while that does not change.
-    fn build_scene(&self, prj: &Project, an: &Analysis, ei: usize, shown: &[(usize, SitePose)], state: u64, apart: &mut Option<(u64, Arc<Vec<Vec<V3>>>)>) -> Scene3d {
+    /// `lay_out`: the wires, cables and tubes laid out, or the key of the layout the scene
+    /// waits for.
+    fn build_scene(&self, prj: &Project, an: &Analysis, ei: usize, shown: &[(usize, SitePose)], state: u64, lay_out: &mut dyn FnMut(LayoutInput) -> Result<Arc<Vec<Vec<V3>>>, u64>) -> Scene3d {
         let mut s = Scene3d { id: NEXT_SCENE.fetch_add(1, Ordering::Relaxed), analysis: an.id, layout: prj.layout.clone(), state, ..Default::default() };
         let pos = panel::positions(&prj.layout);
         let (sin, cos) = self.door_angle.sin_cos();
@@ -670,33 +824,21 @@ impl PanelUi {
             }
         }
         // Wires, cables and tubes that run together side by side, each on a lane of its own,
-        // bent round their corners with their bend radius as round tubes (a two-colour one
-        // with a stripe along it).
-        let ways: Vec<Way> = pending.iter().map(|t| Way { points: &t.points, radii: &t.bends, diameter: t.diameter, rest: t.rest, below: t.below }).collect();
-        // Kept out of the devices, busbars and accessories (their own boxes).
+        // bent round their corners with their bend radius and pushed apart where they still
+        // run inside or through each other, as round tubes (a two-colour one with a stripe
+        // along it); kept out of the devices, busbars and accessories (their own boxes).
+        // Until that is worked out, as they were routed.
         let mut obstacles: Vec<(V3, V3)> = (0..s.objects.len()).filter(|&i| exact[i] && !s.ducts[i]).map(|i| s.objects[i]).collect();
         obstacles.extend(lids);
-        let laid = bundles::spread_ways(&ways, LANE_CELL, &obstacles, &channels, &insides);
-        // Bent round their corners, pushed apart where they still run inside or through
-        // each other.
-        let bent: Vec<Vec<V3>> = pending.iter().zip(&laid).map(|(t, (points, bends))| vec3::fillet_each(points, bends, t.steps)).collect();
-        let strands: Vec<Strand> = pending.iter().zip(&bent).map(|(t, points)| Strand { points, diameter: t.diameter, rest: t.rest, below: t.below }).collect();
-        let mut h = std::collections::hash_map::DefaultHasher::new();
-        for st in &strands {
-            st.points.iter().flatten().chain(&st.rest).chain([&st.diameter, &st.below]).for_each(|v| v.to_bits().hash(&mut h));
-        }
-        let boxes = obstacles.iter().chain(&insides).chain(channels.iter().map(|c| &c.inside));
-        boxes.flat_map(|(lo, hi)| lo.iter().chain(hi)).for_each(|v| v.to_bits().hash(&mut h));
-        let key = h.finish();
-        let laid_apart = match apart.as_ref().filter(|(k, _)| *k == key) {
-            Some((_, ways)) => ways.clone(),
-            None => {
-                let ways = Arc::new(bundles::separate(&strands, &obstacles, &channels, &insides));
-                *apart = Some((key, ways.clone()));
-                ways
+        let ways = pending.iter().map(|t| LayoutWay { points: t.points.clone(), bends: t.bends.clone(), diameter: t.diameter, rest: t.rest, below: t.below, steps: t.steps }).collect();
+        let laid = match lay_out(LayoutInput { ways, obstacles, channels, insides }) {
+            Ok(ways) => ways,
+            Err(key) => {
+                s.waiting = Some(key);
+                Arc::new(pending.iter().map(|t| vec3::fillet_each(&t.points, &t.bends, t.steps)).collect())
             }
         };
-        for (t, points) in pending.iter().zip(laid_apart.iter()) {
+        for (t, points) in pending.iter().zip(laid.iter()) {
             tube_faces(&mut s.tubes, points, t.diameter, t.color, t.stripe, t.sides);
             tube_ways.push((points.clone(), t.diameter / 2.0));
             for seg in points.windows(2) {

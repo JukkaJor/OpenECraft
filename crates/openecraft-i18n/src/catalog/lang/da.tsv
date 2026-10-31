@@ -6370,3 +6370,4 @@ Select wire	Vælg leder
 Open cable ducts	Åbn kabelkanaler
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	Udelad lågene på alle kabelkanaler i 3D-visningen: lederne i dem bliver synlige
 {}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: kabelkanal ved {} mm for lille: dens {} ledere kan ikke trækkes side om side
+Laying out the wires, cables and tubes…	Ledninger, kabler og slanger lægges ud…

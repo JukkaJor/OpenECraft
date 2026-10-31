@@ -6370,3 +6370,4 @@ Select wire	Teli seç
 Open cable ducts	Kablo kanallarını aç
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	3B görünümde tüm kablo kanallarının kapaklarını gösterme: içlerindeki teller görünür
 {}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: {} mm'deki kablo kanalı çok küçük: {} tel yan yana döşenemez
+Laying out the wires, cables and tubes…	Teller, kablolar ve tüpler yerleştiriliyor…

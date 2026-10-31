@@ -6,7 +6,7 @@
 //! ([`separate`]).
 
 use super::{Class, RoutedItem};
-use crate::parts::vec3::{add, cross, dist, dot, norm, segment_in_box, sub, V3};
+use crate::parts::vec3::{add, cross, dist, dot, fillet_each, norm, segment_in_box, sub, V3};
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 
 /// Stretch shared by two or more routed items.
@@ -169,6 +169,7 @@ pub fn find(items: &[RoutedItem], cell: f32) -> (Vec<Bundle>, Vec<Branch>) {
 
 /// The inside of a cable duct the ways may run along: its box and the direction away
 /// from the surface it stands on (its base).
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Channel {
     pub inside: (V3, V3),
     pub floor: V3,
@@ -183,6 +184,8 @@ pub struct Way<'a> {
     pub diameter: f32,
     pub rest: V3,
     pub below: f32,
+    /// Points per quarter turn of its bends where [`lay_out`] bends it round its corners.
+    pub steps: usize,
 }
 
 /// The ways drawn apart from those they run together with, with the bend radius of each
@@ -198,8 +201,8 @@ pub struct Way<'a> {
 /// `obstacles` (boxes) a way did not run through before and in the `insides` (boxes,
 /// the cabinets) it ran in: centred on the group, otherwise all to one side of it (or a
 /// corner), otherwise (along a surface) in one stack away from it; where none of them
-/// does, the group stays as it is. At its corners a way steps from lane to lane, its
-/// ends stay where they are, the stretches at its ends too.
+/// does, the group stays as it is. At its corners a way steps from lane to lane; its
+/// ends stay where they are, the stretches at its ends run from their lanes to them.
 pub fn spread_ways(ways: &[Way], cell: f32, obstacles: &[(V3, V3)], channels: &[Channel], insides: &[(V3, V3)]) -> Vec<(Vec<V3>, Vec<f32>)> {
     let stretches: Vec<(usize, &[V3])> = ways.iter().enumerate().map(|(i, w)| (i, w.points)).collect();
     let (_, chains) = chains(&stretches, cell);
@@ -230,11 +233,11 @@ pub fn spread_ways(ways: &[Way], cell: f32, obstacles: &[(V3, V3)], channels: &[
         }
     }
     // The straight stretches along an axis: way, stretch, axis, from, to, the point. The
-    // stretches at the ends (from the connection points) stay where they are.
+    // stretches at the ends (from the connection points) too: they run from their lanes
+    // to the end points.
     let mut runs: Vec<Run> = Vec::new();
     for (i, way) in ways.iter().enumerate() {
-        let last = way.points.len().saturating_sub(2);
-        for (j, s) in way.points.windows(2).enumerate().filter(|(j, _)| *j > 0 && *j < last) {
+        for (j, s) in way.points.windows(2).enumerate() {
             let moving: Vec<usize> = (0..3).filter(|&k| (s[0][k] - s[1][k]).abs() > 1e-3).collect();
             if let [axis] = moving[..] {
                 runs.push((i, j, axis, s[0][axis].min(s[1][axis]), s[0][axis].max(s[1][axis]), s[0]));
@@ -257,7 +260,8 @@ pub fn spread_ways(ways: &[Way], cell: f32, obstacles: &[(V3, V3)], channels: &[
         let along = |c: &&Channel| (0..3).all(|k| c.inside.1[axis] - c.inside.0[axis] >= c.inside.1[k] - c.inside.0[k]);
         if let Some(c) = channels.iter().find(|c| inside(c) && along(c)) {
             let at: Vec<(V3, f32)> = members.iter().map(|&r| (runs[r].5, ways[runs[r].0].diameter)).collect();
-            for (&r, to) in members.iter().zip(packed(c, axis, &at)) {
+            let frame = across.get(&line).copied().unwrap_or((unit((axis + 1) % 3), unit((axis + 2) % 3)));
+            for (&r, to) in members.iter().zip(packed(c, axis, &at, frame)) {
                 moves.insert((runs[r].0, runs[r].1), to);
             }
             continue;
@@ -389,13 +393,20 @@ fn groups(ways: &[Way], runs: &[Run]) -> BTreeMap<usize, Vec<usize>> {
 }
 
 /// The moves of ways along `axis` (where they are, their diameter) into the lanes of
-/// the channel `c` (across it).
-fn packed(c: &Channel, axis: usize, ways: &[(V3, f32)]) -> Vec<V3> {
+/// the channel `c` (across it): in their order across the directions `frame` turned with
+/// the bundles round their corners, so that they do not cross where they turn into the
+/// next channel.
+fn packed(c: &Channel, axis: usize, ways: &[(V3, f32)], frame: (V3, V3)) -> Vec<V3> {
     let up = (0..3).find(|&k| k != axis && c.floor[k].abs() > 0.5).unwrap_or((axis + 1) % 3);
     let across = 3 - axis - up;
     let (lo, hi) = c.inside;
     let diameters: Vec<f32> = ways.iter().map(|w| w.1).collect();
-    let (lanes, _) = crate::panel::duct_lanes(hi[across] - lo[across], hi[up] - lo[up], &diameters);
+    let side = if frame.0[across].abs() >= frame.1[across].abs() { frame.0[across] } else { frame.1[across] };
+    let mut order: Vec<usize> = (0..ways.len()).collect();
+    if side < 0.0 {
+        order.reverse();
+    }
+    let (lanes, _) = crate::panel::duct_lanes_in_order(hi[across] - lo[across], hi[up] - lo[up], &diameters, &order);
     let (base, sign) = if c.floor[up] > 0.0 { (lo[up], 1.0) } else { (hi[up], -1.0) };
     ways.iter()
         .zip(lanes)
@@ -452,32 +463,74 @@ fn same(a: V3, b: V3) -> bool {
 }
 
 /// A wire, cable or tube drawn apart from the others by [`separate`]: its points (bent
-/// round its corners), its outer diameter and the surface it runs along (as [`Way`]).
+/// round its corners), its outer diameter, the surface it runs along (as [`Way`]) and
+/// how long the stretches at its ends are (with their bends): where its end point lies
+/// as close to another one's end as their thicknesses (wires on one terminal, terminals
+/// closer than the wires are thick) they converge, and the stretch stays as it is.
 pub struct Strand<'a> {
     pub points: &'a [V3],
     pub diameter: f32,
     pub rest: V3,
     pub below: f32,
+    pub tails: [f32; 2],
 }
 
 /// Overlap (mm) of two strands [`separate`] leaves (lanes touch).
 pub const STRAND_GAP: f32 = 0.05;
 
 /// Rounds of [`separate`] at most.
-const ROUNDS: usize = 60;
+pub const ROUNDS: usize = 60;
+
+/// Overlap (mm) [`separate`] leaves more with every round.
+const SLACK_GROWTH: f32 = 0.01;
+
+/// Parts the segments of a round of [`separate`] are searched in (on the threads there are).
+const PUSH_PARTS: usize = 16;
+
+/// The ways as the 3D view draws them: laid side by side ([`spread_ways`] on a grid of
+/// `cell`), bent round their corners ([`Way::steps`] points per quarter turn) and pushed
+/// apart ([`separate`]); `progress` as for [`separate_with`].
+pub fn lay_out(ways: &[Way], cell: f32, obstacles: &[(V3, V3)], channels: &[Channel], insides: &[(V3, V3)], progress: &dyn Fn(usize, usize) -> bool) -> Option<Vec<Vec<V3>>> {
+    let laid = spread_ways(ways, cell, obstacles, channels, insides);
+    let bent: Vec<Vec<V3>> = ways.iter().zip(&laid).map(|(w, (points, radii))| fillet_each(points, radii, w.steps)).collect();
+    let tails = |points: &[V3], radii: &[f32]| -> [f32; 2] {
+        let n = points.len();
+        let r = |i: usize| radii.get(i).copied().unwrap_or(0.0);
+        if n < 2 {
+            return [0.0; 2];
+        }
+        [dist(points[0], points[1]) + r(1), dist(points[n - 2], points[n - 1]) + r(n - 2)]
+    };
+    let strands: Vec<Strand> = ways.iter().zip(&laid).zip(&bent).map(|((w, (points, radii)), bent)| Strand { points: bent, diameter: w.diameter, rest: w.rest, below: w.below, tails: tails(points, radii) }).collect();
+    separate_with(&strands, obstacles, channels, insides, progress)
+}
 
 /// The strands pushed apart where they still run inside or through each other: sampled
 /// along their length, each piece moved off the others by its share of their overlap
 /// (one over the other where they cross) and the move spread along the strand, round
-/// after round until none overlap (or [`ROUNDS`]). Their ends (twice their thickness from the connection points) and what
-/// lies inside one of the `obstacles` stay; no sample enters an obstacle it kept out
-/// of, comes further out of a channel's inside or one of the `insides` (the cabinets)
-/// it was in, or nearer to the surface it runs along than `below`. Straight where they
-/// did not move.
+/// after round until none overlap (or [`ROUNDS`]). Their ends (twice their thickness
+/// from the connection points, the stretches at the ends where they converge with
+/// others: [`Strand::tails`]) and what lies inside one of the `obstacles` stay; no
+/// sample enters an obstacle it kept out of, comes further out of a channel's inside or
+/// one of the `insides` (the cabinets) it was in, or nearer to the surface it runs along
+/// than `below`. Straight where they did not move.
 pub fn separate(strands: &[Strand], obstacles: &[(V3, V3)], channels: &[Channel], insides: &[(V3, V3)]) -> Vec<Vec<V3>> {
+    separate_with(strands, obstacles, channels, insides, &|_, _| true).unwrap_or_default()
+}
+
+/// Like [`separate`], telling `progress` how many of at most [`ROUNDS`] rounds are done
+/// before each; `None` when it answers false (stopped).
+#[allow(clippy::too_many_lines)]
+pub fn separate_with(strands: &[Strand], obstacles: &[(V3, V3)], channels: &[Channel], insides: &[(V3, V3)], progress: &dyn Fn(usize, usize) -> bool) -> Option<Vec<Vec<V3>>> {
     let radius: Vec<f32> = strands.iter().map(|s| s.diameter.max(0.0) / 2.0).collect();
-    let Samples { mut at, owner, fixed, arc, spans } = samples(strands, obstacles);
+    let Samples { mut at, owner, mut fixed, arc, spans } = samples(strands, obstacles);
     let was = at.clone();
+    // The boxes a sample stays in (where it was in one) and those it keeps out of, by the
+    // cells of a grid they reach into (the obstacles grown by the thickest strand).
+    let walls: Vec<(V3, V3)> = channels.iter().map(|c| c.inside).chain(insides.iter().copied()).collect();
+    let thickest = radius.iter().fold(0.0f32, |m, r| m.max(*r));
+    let grown: Vec<(V3, V3)> = obstacles.iter().map(|(lo, hi)| (lo.map(|v| v - thickest), hi.map(|v| v + thickest))).collect();
+    let (wall_cells, obstacle_cells) = (BoxGrid::new(&walls), BoxGrid::new(&grown));
     let keep = |i: usize, mut p: V3| -> V3 {
         let (o, r, st) = (was[i], radius[owner[i]], &strands[owner[i]]);
         if st.rest != [0.0; 3] {
@@ -486,12 +539,12 @@ pub fn separate(strands: &[Strand], obstacles: &[(V3, V3)], channels: &[Channel]
                 p = add(p, scale(st.rest, least - h));
             }
         }
-        for b in channels.iter().map(|c| c.inside).chain(insides.iter().copied()).filter(|b| within(o, *b)) {
+        for b in wall_cells.at(o).iter().map(|&w| walls[w as usize]).filter(|b| within(o, *b)) {
             for k in 0..3 {
                 p[k] = p[k].clamp((b.0[k] + r).min(o[k]), (b.1[k] - r).max(o[k]));
             }
         }
-        for &(lo, hi) in obstacles {
+        for &(lo, hi) in obstacle_cells.at(p).iter().map(|&b| &obstacles[b as usize]) {
             let (lo, hi) = (lo.map(|v| v - r), hi.map(|v| v + r));
             if within(p, (lo, hi)) && !within(o, (lo, hi)) {
                 // Out the nearest side.
@@ -508,7 +561,7 @@ pub fn separate(strands: &[Strand], obstacles: &[(V3, V3)], channels: &[Channel]
     // thickness of: the thin ones in small cells, the others in cells as large as the
     // thickest.
     let thin = 4.0f32;
-    let coarse = radius.iter().fold(2.0 * thin, |m, r| m.max(2.0 * r));
+    let coarse = (2.0 * thickest).max(2.0 * thin);
     let level = |r: f32| usize::from(r > thin);
     let size = [2.0 * thin, coarse];
     let reach = |l: usize, a: V3, b: V3, r: f32| -> ([i32; 3], [i32; 3]) {
@@ -525,74 +578,108 @@ pub fn separate(strands: &[Strand], obstacles: &[(V3, V3)], channels: &[Channel]
             grids[level(r)].entry(c).or_default().push(i as u32);
         }
     }
-    let mut seen = vec![usize::MAX; at.len()];
+    // Sums of the pushes and moves of each sample in a round (and which have one).
+    let mut pushes: Vec<(V3, f32)> = vec![([0.0; 3], 0.0); at.len()];
+    let mut spread: Vec<(V3, f32)> = vec![([0.0; 3], 0.0); at.len()];
+    let (mut pushed, mut moved): (Vec<usize>, Vec<usize>) = (Vec::new(), Vec::new());
+    let add_to = |sums: &mut [(V3, f32)], touched: &mut Vec<usize>, k: usize, v: V3, w: f32| {
+        if sums[k].1 == 0.0 {
+            touched.push(k);
+        }
+        sums[k] = (add(sums[k].0, scale(v, w)), sums[k].1 + w);
+    };
+    // How often a sample was kept from moving: twice, and it stays (the others give way).
+    let mut stuck = vec![0u8; at.len()];
     let mut active: Vec<usize> = (0..at.len()).filter(|&i| !fixed[i]).collect();
-    for _ in 0..ROUNDS {
+    for round in 0..ROUNDS {
+        if !progress(round, ROUNDS) {
+            return None;
+        }
         // Each segment off the segments of the others it overlaps: by half the overlap
         // (all of it off one that stays), its ends as far as they are near.
-        let mut pushes: BTreeMap<usize, (V3, f32)> = BTreeMap::new();
-        let segments: BTreeSet<usize> = active.iter().flat_map(|&i| [i.wrapping_sub(1), i]).filter(|&i| i != usize::MAX && segment(i)).collect();
-        for i in segments {
-            let (a, b, s) = (at[i], at[i + 1], owner[i]);
-            for (l, grid) in grids.iter().enumerate() {
-                for c in cells(reach(l, a, b, radius[s])) {
-                    for &j in grid.get(&c).map(Vec::as_slice).unwrap_or(&[]) {
-                        let j = j as usize;
-                        if owner[j] == s || seen[j] == i {
-                            continue;
-                        }
-                        seen[j] = i;
-                        let need = radius[s] + radius[owner[j]];
-                        let (own, other) = (sub(b, a), sub(at[j + 1], at[j]));
-                        let (u, t) = closest(a, own, at[j], other);
-                        let (p, q) = (add(a, scale(own, u)), add(at[j], scale(other, t)));
-                        let d = dist(p, q);
-                        if d >= need - STRAND_GAP {
-                            continue;
-                        }
-                        // Across each other: one over the other (along both), otherwise
-                        // apart.
-                        let over = cross(own, other);
-                        let crossing = dot(over, over) > 0.2 * dot(own, own) * dot(other, other);
-                        let (away, gap) = if crossing {
-                            let n = norm(over);
-                            let h = dot(sub(p, q), n);
-                            let up = if h.abs() > 1e-3 { h > 0.0 } else { (dot(n, strands[s].rest) >= 0.0) == (s < owner[j]) };
-                            (scale(n, if up { 1.0 } else { -1.0 }), h.abs())
-                        } else if d > 1e-4 {
-                            (scale(sub(p, q), 1.0 / d), d)
-                        } else {
-                            (aside(other, strands[s].rest, s < owner[j]), 0.0)
-                        };
-                        let share = if fixed[j] && fixed[j + 1] { 1.0 } else { 0.5 };
-                        let push = scale(away, (need - gap).max(0.0) * share);
-                        for (k, w) in [(i, 1.0 - u), (i + 1, u)] {
-                            let e = pushes.entry(k).or_insert(([0.0; 3], 0.0));
-                            *e = (add(e.0, scale(push, w)), e.1 + w);
+        let mut segments: Vec<usize> = active.iter().flat_map(|&i| [i.wrapping_sub(1), i]).filter(|&i| i != usize::MAX && segment(i)).collect();
+        segments.dedup();
+        // The overlap left grows a little with every round, so that they come to rest.
+        let slack = STRAND_GAP + SLACK_GROWTH * round as f32;
+        // Searched in parts on the threads there are, added up in order.
+        let parts: Vec<&[usize]> = segments.chunks(segments.len().div_ceil(PUSH_PARTS).max(64)).collect();
+        let found = crate::parallel::par_map(&parts, |part| {
+            let mut out: Vec<(usize, V3, f32)> = Vec::new();
+            let mut seen: Vec<usize> = Vec::new();
+            for &i in *part {
+                let (a, b, s) = (at[i], at[i + 1], owner[i]);
+                seen.clear();
+                for (l, grid) in grids.iter().enumerate() {
+                    for c in cells(reach(l, a, b, radius[s])) {
+                        for &j in grid.get(&c).map(Vec::as_slice).unwrap_or(&[]) {
+                            let j = j as usize;
+                            if owner[j] == s || seen.contains(&j) {
+                                continue;
+                            }
+                            seen.push(j);
+                            let need = radius[s] + radius[owner[j]];
+                            let (own, other) = (sub(b, a), sub(at[j + 1], at[j]));
+                            let (u, t) = closest(a, own, at[j], other);
+                            let (p, q) = (add(a, scale(own, u)), add(at[j], scale(other, t)));
+                            let d = dist(p, q);
+                            if d >= need - slack {
+                                continue;
+                            }
+                            // Across each other: one over the other (along both), otherwise
+                            // apart.
+                            let over = cross(own, other);
+                            let crossing = dot(over, over) > 0.2 * dot(own, own) * dot(other, other);
+                            let (away, gap) = if crossing {
+                                let n = norm(over);
+                                let h = dot(sub(p, q), n);
+                                let up = if h.abs() > 1e-3 { h > 0.0 } else { (dot(n, strands[s].rest) >= 0.0) == (s < owner[j]) };
+                                (scale(n, if up { 1.0 } else { -1.0 }), h.abs())
+                            } else if d > 1e-4 {
+                                (scale(sub(p, q), 1.0 / d), d)
+                            } else {
+                                (aside(other, strands[s].rest, s < owner[j]), 0.0)
+                            };
+                            let share = if fixed[j] && fixed[j + 1] { 1.0 } else { 0.5 };
+                            let push = scale(away, (need - gap).max(0.0) * share);
+                            out.extend([(i, push, 1.0 - u), (i + 1, push, u)]);
                         }
                     }
                 }
             }
+            out
+        });
+        for (k, push, w) in found.into_iter().flatten() {
+            add_to(&mut pushes, &mut pushed, k, push, w);
         }
-        let moves: Vec<(usize, V3)> = pushes.into_iter().filter(|(k, (_, w))| !fixed[*k] && *w > 1e-3).map(|(k, (sum, w))| (k, scale(sum, 1.0 / w.max(0.5)))).collect();
+        pushed.sort_unstable();
+        pushed.dedup();
+        let moves: Vec<(usize, V3)> = pushed.iter().map(|&k| (k, pushes[k])).filter(|(k, (_, w))| !fixed[*k] && *w > 1e-3).map(|(k, (sum, w))| (k, scale(sum, 1.0 / w.max(0.5)))).collect();
+        for k in pushed.drain(..) {
+            pushes[k] = ([0.0; 3], 0.0);
+        }
         if moves.is_empty() {
             break;
         }
         // Each move spread along its strand, fading out over three times its thickness
         // (so that it bends away); where moves meet, their mean.
-        let mut spread: BTreeMap<usize, (V3, f32)> = BTreeMap::new();
         for (i, m) in moves {
             let (span, reach) = (spans[owner[i]].clone(), 3.0 * strands[owner[i]].diameter + 10.0);
             let near = |k: &usize| (arc[*k] - arc[i]).abs() < reach;
             for k in (span.start..i).rev().take_while(near).chain((i..span.end).take_while(near)).filter(|&k| !fixed[k]) {
-                let w = 1.0 - (arc[k] - arc[i]).abs() / reach;
-                let e = spread.entry(k).or_insert(([0.0; 3], 0.0));
-                *e = (add(e.0, scale(m, w)), e.1 + w);
+                add_to(&mut spread, &mut moved, k, m, 1.0 - (arc[k] - arc[i]).abs() / reach);
             }
         }
+        moved.sort_unstable();
+        moved.dedup();
         let mut changed: Vec<usize> = Vec::new();
-        for (k, (sum, w)) in spread {
-            let to = keep(k, add(at[k], scale(sum, 1.0 / w.max(1.0))));
+        for k in moved.drain(..) {
+            let (sum, w) = std::mem::replace(&mut spread[k], ([0.0; 3], 0.0));
+            let want = scale(sum, 1.0 / w.max(1.0));
+            let to = keep(k, add(at[k], want));
+            if dist(to, at[k]) < 0.5 * dot(want, want).sqrt() {
+                stuck[k] += 1;
+                fixed[k] |= stuck[k] >= 2;
+            }
             if dist(to, at[k]) > 0.01 {
                 at[k] = to;
                 changed.push(k);
@@ -600,7 +687,7 @@ pub fn separate(strands: &[Strand], obstacles: &[(V3, V3)], channels: &[Channel]
         }
         // The grid follows the segments that moved; their samples and those next to
         // them are checked again.
-        let mut next: BTreeSet<usize> = BTreeSet::new();
+        let mut next: Vec<usize> = Vec::new();
         for &i in &changed {
             for j in [i.wrapping_sub(1), i] {
                 if j == usize::MAX || !segment(j) {
@@ -623,14 +710,48 @@ pub fn separate(strands: &[Strand], obstacles: &[(V3, V3)], channels: &[Channel]
             }
             next.extend([i.wrapping_sub(1), i, i + 1].into_iter().filter(|&m| m < at.len() && owner[m] == owner[i] && !fixed[m]));
         }
-        active = next.into_iter().collect();
+        next.sort_unstable();
+        next.dedup();
+        active = next;
     }
-    spans.into_iter().map(|span| straighten(&at[span], 0.05)).collect()
+    Some(spans.into_iter().map(|span| straighten(&at[span], 0.05)).collect())
+}
+
+/// Boxes by the cells of a grid they reach into, to find those around a point.
+struct BoxGrid {
+    cells: HashMap<[i32; 3], Vec<u32>>,
+}
+
+/// Edge (mm) of the cells of a [`BoxGrid`].
+const BOX_CELL: f32 = 100.0;
+
+impl BoxGrid {
+    fn new(boxes: &[(V3, V3)]) -> BoxGrid {
+        let mut cells: HashMap<[i32; 3], Vec<u32>> = HashMap::new();
+        for (i, (lo, hi)) in boxes.iter().enumerate() {
+            for c in cells_of(*lo, *hi) {
+                cells.entry(c).or_default().push(i as u32);
+            }
+        }
+        BoxGrid { cells }
+    }
+
+    /// The boxes reaching into the cell of `p` (all that may contain it).
+    fn at(&self, p: V3) -> &[u32] {
+        self.cells.get(&p.map(|v| (v / BOX_CELL).floor() as i32)).map_or(&[], Vec::as_slice)
+    }
+}
+
+/// The cells of a [`BoxGrid`] a box reaches into.
+fn cells_of(lo: V3, hi: V3) -> impl Iterator<Item = [i32; 3]> {
+    let key = |v: f32| (v / BOX_CELL).floor() as i32;
+    cells((lo.map(key), hi.map(key)))
 }
 
 /// The points of the strands for [`separate`], every three quarters of their thickness
-/// (at least 3 mm): where they are, their strand, whether they stay (near the ends or
-/// inside an obstacle), how far along their strand, the samples of each strand.
+/// (at least 3 mm): where they are, their strand, whether they stay (near the ends, at
+/// an end converging with others, or inside an obstacle), how far along their strand,
+/// the samples of each strand.
 struct Samples {
     at: Vec<V3>,
     owner: Vec<usize>,
@@ -641,11 +762,17 @@ struct Samples {
 
 fn samples(strands: &[Strand], obstacles: &[(V3, V3)]) -> Samples {
     let mut out = Samples { at: Vec::new(), owner: Vec::new(), fixed: Vec::new(), arc: Vec::new(), spans: Vec::new() };
+    // The ends that lie as close to an end of another strand as their thicknesses.
+    let ends: Vec<(usize, V3)> = strands.iter().enumerate().flat_map(|(s, st)| st.points.first().into_iter().chain(st.points.last()).map(move |q| (s, *q))).collect();
+    let crowded = |s: usize, q: V3| ends.iter().any(|&(t, e)| t != s && dist(q, e) < (strands[s].diameter + strands[t].diameter) / 2.0);
+    let grid = BoxGrid::new(obstacles);
     for (s, st) in strands.iter().enumerate() {
         let start = out.at.len();
         let step = (st.diameter * 0.75).max(3.0);
         let ends = 2.0 * st.diameter + 10.0;
         let total: f32 = st.points.windows(2).map(|w| dist(w[0], w[1])).sum();
+        let held = [st.points.first(), st.points.last()].map(|q| q.is_some_and(|q| crowded(s, *q)));
+        let hold = [0, 1].map(|e| if held[e] { st.tails[e].max(ends) } else { ends });
         let mut run = 0.0;
         for (k, &q) in st.points.iter().enumerate() {
             let a = if k == 0 { q } else { st.points[k - 1] };
@@ -655,10 +782,11 @@ fn samples(strands: &[Strand], obstacles: &[(V3, V3)]) -> Samples {
                 let t = i as f32 / n as f32;
                 let p = add(a, scale(sub(q, a), t));
                 let along = run + len * t;
+                let inside = grid.at(p).iter().any(|&b| within(p, obstacles[b as usize]));
                 out.at.push(p);
                 out.owner.push(s);
                 out.arc.push(along);
-                out.fixed.push(along.min(total - along) < ends || obstacles.iter().any(|b| within(p, *b)));
+                out.fixed.push(along < hold[0] || total - along < hold[1] || inside);
             }
             run += len;
         }
