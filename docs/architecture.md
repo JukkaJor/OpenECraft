@@ -68,7 +68,7 @@ Layers, bottom up (a module may use its own layer and the layers below):
    renumbering), `text` (free texts: lines,
    wrapping, rotation, path function texts).
 5. Feature logic and page editing: `ops`, `arrange` (align, distribute, multiple copy), `panel`, `electrical`, `fluid`, `plc`,
-   `plc_hw`, `field`, `routing3d`, `strips`, `plugs`, `harness`, `marking`, `forms`,
+   `plc_hw`, `field`, `routing3d`, `strips`, `plugs`, `pinout` (connector faces, flat cables), `harness`, `marking`, `forms`,
    `report_blocks`, `revision`, `review`, `compare`, …
 6. Derived data and the registry: `analysis` (`Analysis`: index, netlists,
    connections, panel wiring, routing, field plan, report tables on demand), `checks`

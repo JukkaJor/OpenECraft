@@ -6371,3 +6371,30 @@ Open cable ducts	Kabelgoten openen
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	In de 3D-weergave de deksels van alle kabelgoten weglaten: de draden erin zijn zichtbaar
 {}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: kabelgoot bij {} mm te klein: de {} draden kunnen niet naast elkaar worden gelegd
 Laying out the wires, cables and tubes…	Draden, kabels en slangen worden gelegd…
+Wire colour	Draadkleur
+Pin-out	Pinbezetting
+No pin layout in the technical data of the part: the pins are shown in a row (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).	Geen pinindeling in de technische gegevens van het artikel: de pinnen worden in een rij getoond (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).
+Seen on the mating faces; the colours are those of the wires and cable cores at the pins.	Gezien op de steekzijden; de kleuren zijn die van de draden en kabeladers aan de pinnen.
+{}: pin {}	{}: pin {}
+Pin layout: {}	Pinindeling: {}
+Coding: {}	Codering: {}
+Connector pin-outs and flat cables	Pinbezettingen van connectoren en platte kabels
+Plug tag, e.g. -X10 (default: all plugs)	Connectorcode, bijv. -X10 (standaard: alle connectoren)
+Connector pin-outs: mating faces and pin tables (SVG)	Pinbezettingen: steekzijden en pintabellen (SVG)
+{}: pin {} is not a pin of the part {}	{}: pin {} is geen pin van artikel {}
+{}: core {} of flat cable {} lands on pin {}	{}: ader {} van platte kabel {} komt op pin {}
+Flat cable {} has {} cores, the IDC connector {} has {} pins	Platte kabel {} heeft {} aders, de IDC-connector {} heeft {} pinnen
+Pin side (male)	Pinzijde (mannelijk)
+Socket side (female)	Buszijde (vrouwelijk)
+Mating faces	Steekzijden
+used: colour of the wire or core	bezet: kleur van de draad of ader
+coding key	codeernok
+No plugs	Geen connectoren
+No wires at the pins of {}	Geen draden aan de pinnen van {}
+12 · Connectors, pin-outs and ribbon cables	12 · Connectoren, pinbezettingen en lintkabels
+Plug connectors with their parts: a sensor on M12 and a valve on M8, a fan and its thermostat on GX16 and GX12 aviation connectors, a buzzer on a D-sub 9 and an operator panel on a ribbon cable between two IDC sockets; the plugs window shows the pin-out of each plug on its mating faces with the wire and core colours.	Connectoren met hun artikelen: een sensor op M12 en een ventiel op M8, een ventilator en zijn thermostaat op GX16- en GX12-luchtvaartconnectoren, een zoemer op een D-sub 9 en een bedienpaneel op een lintkabel tussen twee IDC-connectoren; het connectorvenster toont de pinbezetting van elke connector op de steekzijden met de kleuren van draden en aders.
+Unknown side {} (socket or pin)	Onbekende zijde {} (socket of pin)
+Shows the mating face of a plug: pin layout of its part, the position of each pin on the face (mm, seen on the pin side) with potential, wire colour and cable core of both sides	Toont de steekzijde van een connector: pinindeling van het artikel, positie van elke pin (mm, gezien op de pinzijde) met potentiaal, draadkleur en kabelader van beide zijden
+Makes the wires at the pins of a plug cores of a flat (ribbon) cable: pin n takes core n, as on IDC connectors	Maakt de draden aan de pinnen van een connector aders van een platte (lint)kabel: pin n krijgt ader n, zoals bij IDC-connectoren
+Cable tag, e.g. -W20	Kabelcode, bijv. -W20
+Side of the plug the cable leaves: socket or pin (default: socket)	Zijde van de connector waar de kabel vertrekt: socket of pin (standaard: socket)

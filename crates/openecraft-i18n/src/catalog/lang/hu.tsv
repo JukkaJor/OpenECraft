@@ -6371,3 +6371,30 @@ Open cable ducts	Kábelcsatornák megnyitása
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	A 3D nézetben elhagyja az összes kábelcsatorna fedelét: a bennük lévő vezetékek láthatók
 {}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: a kábelcsatorna {} mm-nél túl kicsi: {} vezetéke nem fektethető egymás mellé
 Laying out the wires, cables and tubes…	Vezetékek, kábelek és csövek elrendezése…
+Wire colour	Érszín
+Pin-out	Lábkiosztás
+No pin layout in the technical data of the part: the pins are shown in a row (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).	Az alkatrész műszaki adataiban nincs lábelrendezés: a lábak egy sorban jelennek meg (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).
+Seen on the mating faces; the colours are those of the wires and cable cores at the pins.	A csatlakozó felületek felől nézve; a színek a lábakon lévő vezetékek és kábelerek színei.
+{}: pin {}	{}: láb {}
+Pin layout: {}	Lábelrendezés: {}
+Coding: {}	Kódolás: {}
+Connector pin-outs and flat cables	Csatlakozók lábkiosztása és szalagkábelek
+Plug tag, e.g. -X10 (default: all plugs)	Csatlakozó jelölése, pl. -X10 (alapértelmezés: minden csatlakozó)
+Connector pin-outs: mating faces and pin tables (SVG)	Csatlakozók lábkiosztása: csatlakozó felületek és lábtáblázatok (SVG)
+{}: pin {} is not a pin of the part {}	{}: a(z) {} láb nem a(z) {} alkatrész lába
+{}: core {} of flat cable {} lands on pin {}	{}: a(z) {} ér a(z) {} szalagkábelből a(z) {} lábra kerül
+Flat cable {} has {} cores, the IDC connector {} has {} pins	A(z) {} szalagkábelnek {} ere van, a(z) {} IDC csatlakozónak {} lába
+Pin side (male)	Tüske oldal (apa)
+Socket side (female)	Hüvely oldal (anya)
+Mating faces	Csatlakozó felületek
+used: colour of the wire or core	foglalt: a vezeték vagy ér színe
+coding key	kódoló kulcs
+No plugs	Nincsenek csatlakozók
+No wires at the pins of {}	Nincs vezeték a(z) {} lábain
+12 · Connectors, pin-outs and ribbon cables	12 · Csatlakozók, lábkiosztások és szalagkábelek
+Plug connectors with their parts: a sensor on M12 and a valve on M8, a fan and its thermostat on GX16 and GX12 aviation connectors, a buzzer on a D-sub 9 and an operator panel on a ribbon cable between two IDC sockets; the plugs window shows the pin-out of each plug on its mating faces with the wire and core colours.	Csatlakozók az alkatrészeikkel: egy érzékelő M12-n és egy szelep M8-on, egy ventilátor és termosztátja GX16 és GX12 csatlakozókon, egy berregő D-sub 9-en és egy kezelőpanel szalagkábelen két IDC aljzat között; a csatlakozók ablaka minden csatlakozó lábkiosztását mutatja a csatlakozó felületein a vezetékek és erek színeivel.
+Unknown side {} (socket or pin)	Ismeretlen oldal: {} (socket vagy pin)
+Shows the mating face of a plug: pin layout of its part, the position of each pin on the face (mm, seen on the pin side) with potential, wire colour and cable core of both sides	Megmutatja egy csatlakozó csatlakozó felületét: az alkatrész lábelrendezése, minden láb helye (mm, a tüske oldal felől nézve) mindkét oldal potenciáljával, érszínével és kábelerével
+Makes the wires at the pins of a plug cores of a flat (ribbon) cable: pin n takes core n, as on IDC connectors	A csatlakozó lábain lévő vezetékeket szalagkábel ereivé teszi: az n. láb az n. eret kapja, mint az IDC csatlakozóknál
+Cable tag, e.g. -W20	Kábel jelölése, pl. -W20
+Side of the plug the cable leaves: socket or pin (default: socket)	A csatlakozó oldala, ahol a kábel kilép: socket vagy pin (alapértelmezés: socket)

@@ -15,6 +15,11 @@ with a command line, an MCP server, a parts server and a project server.
   power (ISO 1219), P&ID, installation plans and single-line; a symbol editor.
 - **Terminals, plugs, PLC:** multi-level terminals with accessories, plugs, PLC tag
   tables for TIA Portal, Studio 5000, TwinCAT, CODESYS and more, marker export.
+- **Connectors:** the plug window shows the pin-out of a plug on the mating faces of
+  both sides, coloured by the wires and cable cores at the pins (also as SVG export);
+  connector parts for M8, M12, GX12 / GX16 / GX20, D-sub, IDC, dual-row housings,
+  pluggable terminal blocks, RJ45 and heavy duty inserts, ribbon and flat cables with
+  a check of the cores on IDC connectors; example project 12 shows them.
 - **Reports and checks:** live report pages, graphical terminal, cable and plug
   diagrams, drawn forms, a project check with message management and a check for
   open wire ends.

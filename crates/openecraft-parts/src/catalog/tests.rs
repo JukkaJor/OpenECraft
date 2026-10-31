@@ -153,3 +153,27 @@ fn terminals_show_their_openings_and_marker() {
         assert_eq!(part(n).size(), Some(size), "{n}");
     }
 }
+
+#[test]
+fn connectors_have_a_pin_layout_for_every_pin() {
+    use crate::connector::PinLayout;
+    let parts = default_catalog();
+    let connectors: Vec<&Part> = parts.iter().filter(|p| p.group == "Connectors").collect();
+    assert!(connectors.len() > 100, "{}", connectors.len());
+    for p in &connectors {
+        let layout = PinLayout::of_part(p).unwrap_or_else(|| panic!("{} has no pin layout", p.number));
+        let pins = p.functions.iter().filter(|f| f.kind == FnKind::PlugPin).count();
+        assert!(pins <= layout.slots() && pins > 0, "{}: {pins} pins, {} positions", p.number, layout.slots());
+        assert!(matches!(p.tech_value("Gender"), Some("male" | "female")), "{}", p.number);
+    }
+    for series in ["GX12", "GX16", "GX20", "M8", "M12", "D-sub", "IDC 2.54", "RJ45", "Heavy duty"] {
+        assert!(connectors.iter().any(|p| p.tech_value("Series") == Some(series)), "{series}");
+    }
+    // A ribbon cable for every IDC socket.
+    for p in connectors.iter().filter(|p| p.tech_value("Termination") == Some("IDC")) {
+        let n = p.functions.len();
+        let cable = parts.iter().find(|c| c.number == format!("GEN.CBL-FLAT-{n}")).unwrap_or_else(|| panic!("ribbon cable for {}", p.number));
+        assert_eq!(cable.tech_value("Cable form"), Some("Flat"));
+        assert_eq!(cable.tech_value("Cores").map(|c| c.split(' ').count()), Some(n));
+    }
+}

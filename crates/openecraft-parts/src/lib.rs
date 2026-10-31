@@ -13,6 +13,7 @@
 //! - the HTTP API types of the parts server ([`api`]), its data portal model
 //!   (catalogs, lifecycle, attachments, users, faceted search, update check: [`portal`])
 //! - the EPLAN product groups with their exchange numbers ([`productgroups`])
+//! - pin layouts and mating faces of plug connectors ([`connector`])
 
 pub mod access;
 pub mod api;
@@ -20,6 +21,7 @@ mod bmecat;
 pub mod bundled;
 mod catalog;
 mod connection;
+pub mod connector;
 mod csv;
 mod eplan;
 mod filter;

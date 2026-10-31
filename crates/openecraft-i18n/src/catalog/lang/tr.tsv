@@ -6371,3 +6371,30 @@ Open cable ducts	Kablo kanallarını aç
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	3B görünümde tüm kablo kanallarının kapaklarını gösterme: içlerindeki teller görünür
 {}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: {} mm'deki kablo kanalı çok küçük: {} tel yan yana döşenemez
 Laying out the wires, cables and tubes…	Teller, kablolar ve tüpler yerleştiriliyor…
+Wire colour	Tel rengi
+Pin-out	Pin dizilimi
+No pin layout in the technical data of the part: the pins are shown in a row (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).	Parçanın teknik verilerinde pin düzeni yok: pinler bir sırada gösterilir (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).
+Seen on the mating faces; the colours are those of the wires and cable cores at the pins.	Eşleşme yüzlerinden görünüm; renkler pinlerdeki tellerin ve kablo damarlarının renkleridir.
+{}: pin {}	{}: pin {}
+Pin layout: {}	Pin düzeni: {}
+Coding: {}	Kodlama: {}
+Connector pin-outs and flat cables	Konnektör pin dizilimleri ve yassı kablolar
+Plug tag, e.g. -X10 (default: all plugs)	Konnektör etiketi, ör. -X10 (varsayılan: tüm konnektörler)
+Connector pin-outs: mating faces and pin tables (SVG)	Konnektör pin dizilimleri: eşleşme yüzleri ve pin tabloları (SVG)
+{}: pin {} is not a pin of the part {}	{}: pin {}, {} parçasının bir pini değil
+{}: core {} of flat cable {} lands on pin {}	{}: {} damarı, {} yassı kablosunun, {} pinine geliyor
+Flat cable {} has {} cores, the IDC connector {} has {} pins	Yassı kablo {}: {} damar, IDC konnektör {}: {} pin
+Pin side (male)	Pin tarafı (erkek)
+Socket side (female)	Soket tarafı (dişi)
+Mating faces	Eşleşme yüzleri
+used: colour of the wire or core	kullanılan: telin veya damarın rengi
+coding key	kodlama anahtarı
+No plugs	Konnektör yok
+No wires at the pins of {}	{} pinlerinde tel yok
+12 · Connectors, pin-outs and ribbon cables	12 · Konnektörler, pin dizilimleri ve şerit kablolar
+Plug connectors with their parts: a sensor on M12 and a valve on M8, a fan and its thermostat on GX16 and GX12 aviation connectors, a buzzer on a D-sub 9 and an operator panel on a ribbon cable between two IDC sockets; the plugs window shows the pin-out of each plug on its mating faces with the wire and core colours.	Parçalarıyla konnektörler: M12 üzerinde bir sensör ve M8 üzerinde bir valf, GX16 ve GX12 havacılık konnektörlerinde bir fan ve termostatı, D-sub 9 üzerinde bir buzzer ve iki IDC soket arasındaki şerit kablo üzerinde bir operatör paneli; konnektör penceresi her konnektörün pin dizilimini eşleşme yüzlerinde tel ve damar renkleriyle gösterir.
+Unknown side {} (socket or pin)	Bilinmeyen taraf {} (socket veya pin)
+Shows the mating face of a plug: pin layout of its part, the position of each pin on the face (mm, seen on the pin side) with potential, wire colour and cable core of both sides	Bir konnektörün eşleşme yüzünü gösterir: parçasının pin düzeni, her pinin konumu (mm, pin tarafından görünüm), iki tarafın potansiyeli, tel rengi ve kablo damarı
+Makes the wires at the pins of a plug cores of a flat (ribbon) cable: pin n takes core n, as on IDC connectors	Bir konnektörün pinlerindeki telleri yassı (şerit) kablonun damarları yapar: IDC konnektörlerdeki gibi pin n, damar n'yi alır
+Cable tag, e.g. -W20	Kablo etiketi, ör. -W20
+Side of the plug the cable leaves: socket or pin (default: socket)	Kablonun çıktığı konnektör tarafı: socket veya pin (varsayılan: socket)

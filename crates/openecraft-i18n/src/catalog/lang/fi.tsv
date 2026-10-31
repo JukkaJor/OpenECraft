@@ -6371,3 +6371,30 @@ Open cable ducts	Avaa johtokanavat
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	Jätä kaikkien johtokanavien kannet pois 3D-näkymästä: niissä olevat johtimet näkyvät
 {}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: johtokouru kohdassa {} mm liian pieni: sen {} johdinta ei voi asentaa rinnakkain
 Laying out the wires, cables and tubes…	Johtoja, kaapeleita ja putkia asetellaan…
+Wire colour	Johtimen väri
+Pin-out	Nastajärjestys
+No pin layout in the technical data of the part: the pins are shown in a row (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).	Osan teknisissä tiedoissa ei ole nastajärjestystä: nastat näytetään rivissä (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).
+Seen on the mating faces; the colours are those of the wires and cable cores at the pins.	Nähtynä liitinpinnoilta; värit ovat nastojen johtimien ja kaapelijohtimien värit.
+{}: pin {}	{}: nasta {}
+Pin layout: {}	Nastajärjestys: {}
+Coding: {}	Koodaus: {}
+Connector pin-outs and flat cables	Liittimien nastajärjestykset ja lattakaapelit
+Plug tag, e.g. -X10 (default: all plugs)	Liittimen tunnus, esim. -X10 (oletus: kaikki liittimet)
+Connector pin-outs: mating faces and pin tables (SVG)	Liittimien nastajärjestykset: liitinpinnat ja nastataulukot (SVG)
+{}: pin {} is not a pin of the part {}	{}: nasta {} ei ole osan {} nasta
+{}: core {} of flat cable {} lands on pin {}	{}: johdin {} (lattakaapeli {}) osuu nastaan {}
+Flat cable {} has {} cores, the IDC connector {} has {} pins	Lattakaapelissa {} on {} johdinta, IDC-liittimessä {} on {} nastaa
+Pin side (male)	Nastapuoli (uros)
+Socket side (female)	Holkkipuoli (naaras)
+Mating faces	Liitinpinnat
+used: colour of the wire or core	käytössä: johtimen tai kaapelijohtimen väri
+coding key	koodausavain
+No plugs	Ei liittimiä
+No wires at the pins of {}	Liittimen {} nastoissa ei ole johtimia
+12 · Connectors, pin-outs and ribbon cables	12 · Liittimet, nastajärjestykset ja lattakaapelit
+Plug connectors with their parts: a sensor on M12 and a valve on M8, a fan and its thermostat on GX16 and GX12 aviation connectors, a buzzer on a D-sub 9 and an operator panel on a ribbon cable between two IDC sockets; the plugs window shows the pin-out of each plug on its mating faces with the wire and core colours.	Liittimet osineen: anturi M12-liittimessä ja venttiili M8-liittimessä, tuuletin ja sen termostaatti GX16- ja GX12-liittimissä, summeri D-sub 9 -liittimessä ja ohjauspaneeli lattakaapelissa kahden IDC-liittimen välissä; liitinikkuna näyttää kunkin liittimen nastajärjestyksen liitinpinnoilla johtimien väreineen.
+Unknown side {} (socket or pin)	Tuntematon puoli {} (socket tai pin)
+Shows the mating face of a plug: pin layout of its part, the position of each pin on the face (mm, seen on the pin side) with potential, wire colour and cable core of both sides	Näyttää liittimen liitinpinnan: osan nastajärjestys, kunkin nastan sijainti (mm, nastapuolelta katsottuna) sekä molempien puolten potentiaali, johtimen väri ja kaapelijohdin
+Makes the wires at the pins of a plug cores of a flat (ribbon) cable: pin n takes core n, as on IDC connectors	Tekee liittimen nastojen johtimista lattakaapelin johtimia: nasta n saa johtimen n, kuten IDC-liittimissä
+Cable tag, e.g. -W20	Kaapelin tunnus, esim. -W20
+Side of the plug the cable leaves: socket or pin (default: socket)	Liittimen puoli, josta kaapeli lähtee: socket tai pin (oletus: socket)

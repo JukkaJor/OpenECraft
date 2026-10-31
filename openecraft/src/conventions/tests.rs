@@ -184,6 +184,7 @@ const CORE_RULES: &[(&str, &[&str])] = &[
     ("field", &["geom", "issue", "model", "netlist", "panel", "parts", "production", "render", "routing3d", "structure", "svg", "symbols"]),
     ("strips", &["frame", "model", "netlist", "parts", "symbols", "text"]),
     ("plugs", &["frame", "model", "netlist", "parts", "symbols", "text"]),
+    ("pinout", &["geom", "issue", "model", "netlist", "parts", "plugs", "potentials", "render", "structure", "svg", "symbols"]),
     ("harness", &["analysis", "geom", "model", "netlist", "plugs", "production", "symbols"]),
     ("nailboard", &["analysis", "geom", "harness", "model", "render", "svg", "symbols"]),
     ("marking", &["index", "model", "netlist", "panel", "strips", "structure", "xlsx"]),
@@ -222,10 +223,10 @@ const CORE_RULES: &[(&str, &[&str])] = &[
     ("testkit", &["analysis", "geom", "model", "parts", "symbols"]),
     // 6 derived data, checks, reports, registry
     ("analysis", &["ext", "field", "index", "issue", "model", "netlist", "panel", "parallel", "revision", "routing3d", "table"]),
-    ("checks", &["analysis", "cabledef", "climate", "conndef", "electrofluid", "emc", "ext", "fluid", "frame", "harness", "index", "integration", "issue", "loads", "model", "mounting", "netlist", "panel", "parts", "plc", "plc_hw", "plugs", "potentials", "preplanning", "process", "production", "reports", "routing3d", "rules", "safety", "shortcircuit", "singleline", "sizing", "strips", "structure", "symbols", "translation", "wirenum", "wiring"]),
+    ("checks", &["analysis", "cabledef", "climate", "conndef", "electrofluid", "emc", "ext", "fluid", "frame", "harness", "index", "integration", "issue", "loads", "model", "mounting", "netlist", "panel", "parts", "pinout", "plc", "plc_hw", "plugs", "potentials", "preplanning", "process", "production", "reports", "routing3d", "rules", "safety", "shortcircuit", "singleline", "sizing", "strips", "structure", "symbols", "translation", "wirenum", "wiring"]),
     ("reports", &["analysis", "checks", "climate", "electrofluid", "ext", "field", "fluid", "frame", "geom", "harness", "index", "issue", "loads", "marking", "model", "netlist", "panel", "params", "parts", "plc", "plc_hw", "plugs", "process", "production", "revision", "routing3d", "rules", "safety", "shortcircuit", "sizing", "strips", "symbols", "table", "text"]),
     ("ext", &["analysis", "issue", "model", "params", "table"]),
-    ("exporters", &["aml", "analysis", "dwg", "dxf", "export3d", "ext", "harness", "harness_export", "kbl", "marking", "model", "nailboard", "page_select", "params", "pdf", "plc", "reports", "svg", "translation", "xlsx"]),
+    ("exporters", &["aml", "analysis", "dwg", "dxf", "export3d", "ext", "harness", "harness_export", "kbl", "marking", "model", "nailboard", "page_select", "params", "pdf", "pinout", "plc", "plugs", "reports", "svg", "translation", "xlsx"]),
     // 7 output and exchange formats
     ("render", &["analysis", "cabledef", "conndef", "document", "electrofluid", "forms", "frame", "geom", "graphics", "index", "macro_boxes", "model", "netlist", "panel", "parts", "potentials", "production", "props", "report_blocks", "review", "revision", "structure", "symbols", "text", "wirenum"]),
     ("svg", &["analysis", "frame", "geom", "model", "render", "symbols", "text"]),
@@ -249,7 +250,7 @@ const CORE_RULES: &[(&str, &[&str])] = &[
     ("projects", &["archive", "index", "issue", "model", "properties", "verify"]),
     ("project_templates", &["model", "structure"]),
     ("verify", &["analysis", "issue", "model", "options", "properties", "structure", "symbols"]),
-    ("sample", &["electrofluid", "geom", "harness", "model", "netlist", "ops", "panel", "parts", "potentials", "review", "revision", "sections", "sizing", "structure", "symbols", "wirenum"]),
+    ("sample", &["electrofluid", "geom", "harness", "model", "netlist", "ops", "panel", "parts", "pinout", "potentials", "review", "revision", "sections", "sizing", "structure", "symbols", "wirenum"]),
 ];
 
 #[test]

@@ -6371,3 +6371,30 @@ Open cable ducts	Abrir canaletas
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	Na vista 3D, omitir as tampas de todas as canaletas: os fios nelas ficam visíveis
 {}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: canaleta em {} mm pequena demais: seus {} fios não podem ser passados lado a lado
 Laying out the wires, cables and tubes…	Dispondo fios, cabos e tubos…
+Wire colour	Cor do fio
+Pin-out	Pinagem
+No pin layout in the technical data of the part: the pins are shown in a row (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).	Sem disposição dos pinos nos dados técnicos da peça: os pinos são mostrados em uma linha (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).
+Seen on the mating faces; the colours are those of the wires and cable cores at the pins.	Vista das faces de acoplamento; as cores são as dos fios e condutores de cabo nos pinos.
+{}: pin {}	{}: pino {}
+Pin layout: {}	Disposição dos pinos: {}
+Coding: {}	Codificação: {}
+Connector pin-outs and flat cables	Pinagens de conectores e cabos planos
+Plug tag, e.g. -X10 (default: all plugs)	Identificação do conector, p. ex. -X10 (padrão: todos os conectores)
+Connector pin-outs: mating faces and pin tables (SVG)	Pinagens dos conectores: faces de acoplamento e tabelas de pinos (SVG)
+{}: pin {} is not a pin of the part {}	{}: o pino {} não é um pino da peça {}
+{}: core {} of flat cable {} lands on pin {}	{}: o condutor {} do cabo plano {} chega ao pino {}
+Flat cable {} has {} cores, the IDC connector {} has {} pins	O cabo plano {} tem {} condutores, o conector IDC {} tem {} pinos
+Pin side (male)	Lado dos pinos (macho)
+Socket side (female)	Lado dos soquetes (fêmea)
+Mating faces	Faces de acoplamento
+used: colour of the wire or core	usado: cor do fio ou condutor
+coding key	chave de codificação
+No plugs	Sem conectores
+No wires at the pins of {}	Nenhum fio nos pinos de {}
+12 · Connectors, pin-outs and ribbon cables	12 · Conectores, pinagens e cabos flat
+Plug connectors with their parts: a sensor on M12 and a valve on M8, a fan and its thermostat on GX16 and GX12 aviation connectors, a buzzer on a D-sub 9 and an operator panel on a ribbon cable between two IDC sockets; the plugs window shows the pin-out of each plug on its mating faces with the wire and core colours.	Conectores com suas peças: um sensor em M12 e uma válvula em M8, um ventilador e seu termostato em conectores aviação GX16 e GX12, uma campainha em um D-sub 9 e um painel de operação em um cabo flat entre dois soquetes IDC; a janela de conectores mostra a pinagem de cada conector em suas faces de acoplamento com as cores dos fios e condutores.
+Unknown side {} (socket or pin)	Lado desconhecido {} (socket ou pin)
+Shows the mating face of a plug: pin layout of its part, the position of each pin on the face (mm, seen on the pin side) with potential, wire colour and cable core of both sides	Mostra a face de acoplamento de um conector: disposição dos pinos da peça, posição de cada pino (mm, vista do lado dos pinos) com potencial, cor do fio e condutor de cabo dos dois lados
+Makes the wires at the pins of a plug cores of a flat (ribbon) cable: pin n takes core n, as on IDC connectors	Torna os fios nos pinos de um conector condutores de um cabo plano (flat): o pino n recebe o condutor n, como nos conectores IDC
+Cable tag, e.g. -W20	Identificação do cabo, p. ex. -W20
+Side of the plug the cable leaves: socket or pin (default: socket)	Lado do conector por onde sai o cabo: socket ou pin (padrão: socket)

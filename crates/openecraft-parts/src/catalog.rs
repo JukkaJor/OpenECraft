@@ -401,14 +401,7 @@ Breaking capacity: 100 kA".into();
     let p = c.add("GEN.VLV-42-24DC", "4/2-way solenoid valve G1/4, spring return, coil 24 V DC", "Valves", "Directional valve", "QM", 74.0, (32.0, 120.0, 70.0, 0.3), &[(DirectionalValve, "A B P T"), (Valve, "A1 A2")]);
     p.voltage = "24 V DC".into();
     p.power = "2.5 W".into();
-    for (number, desc, pins) in [
-        ("GEN.CON-M12-4", "Connector M12, 4 pins, A-coded, female, field-wireable", 4),
-        ("GEN.CON-HD-16", "Heavy duty connector insert 16 pins + PE, 16 A, male", 17),
-    ] {
-        let functions: Vec<(FnKind, String)> = (1..=pins).map(|i| (PlugPin, if i > 16 { "PE".into() } else { i.to_string() })).collect();
-        let functions: Vec<(FnKind, &str)> = functions.iter().map(|(k, s)| (*k, s.as_str())).collect();
-        c.add(number, desc, "Connectors", "Plug connector", "X", if pins > 4 { 38.0 } else { 9.5 }, (0.0, 0.0, 0.0, 0.05), &functions);
-    }
+    connectors(&mut c);
     let fl = "Fluid power components";
     c.add("GEN.CYL-32-100", "Pneumatic cylinder double-acting, bore 32 mm, stroke 100 mm", fl, "Cylinder", "MM", 82.0, (0.0, 0.0, 0.0, 0.7), &[(Cylinder, "1 2")]);
     c.add("GEN.CYL-20-50-SA", "Pneumatic cylinder single-acting, bore 20 mm, stroke 50 mm", fl, "Cylinder", "MM", 46.0, (0.0, 0.0, 0.0, 0.3), &[(Cylinder, "1")]);
@@ -565,6 +558,23 @@ Breaking capacity: 100 kA".into();
         let p = c.add(number, desc, "Cables", subgroup, "W", price, (0.0, 0.0, 0.0, kg), &[]);
         p.quantity_unit = "m".into();
         p.tech_data = format!("Cores: {cores}\nCross-section: {cs}");
+    }
+    // Flat cables: ribbon cables for IDC connectors (core 1 marked red) and flat
+    // cables for festoon systems; the cores lie side by side.
+    for n in [10, 14, 16, 20, 26, 34, 40, 50, 64] {
+        let p = c.add(&format!("GEN.CBL-FLAT-{n}"), &format!("Ribbon cable {n} cores, AWG 28, pitch 1.27 mm, grey, core 1 marked red"), "Cables", "Ribbon cable", "W", 0.06 * n as f32, (0.0, 0.0, 0.0, 0.004 * n as f32), &[]);
+        p.quantity_unit = "m".into();
+        let cores: Vec<String> = (1..=n).map(|i| i.to_string()).collect();
+        p.tech_data = format!("Cores: {}\nCross-section: 0.08 mm²\nCable form: Flat\nPitch: 1.27 mm\nThickness: 0.9 mm", cores.join(" "));
+    }
+    for (number, desc, price, kg, cores, cs, width, thick) in [
+        ("GEN.CBL-FLAT-4G1.5", "Flat cable H07VVH6-F 4G1.5 for festoon systems", 2.8, 0.13, "1 2 3 GNYE", "1.5 mm²", 18.0, 5.0),
+        ("GEN.CBL-FLAT-7G1.5", "Flat cable H07VVH6-F 7G1.5 for festoon systems", 4.6, 0.22, "1 2 3 4 5 6 GNYE", "1.5 mm²", 30.0, 5.0),
+        ("GEN.CBL-FLAT-12G1.0", "Flat control cable 12G1.0 for festoon systems", 6.2, 0.27, "1 2 3 4 5 6 7 8 9 10 11 GNYE", "1 mm²", 42.0, 4.4),
+    ] {
+        let p = c.add(number, desc, "Cables", "Flat cable", "W", price, (0.0, 0.0, 0.0, kg), &[]);
+        p.quantity_unit = "m".into();
+        p.tech_data = format!("Cores: {cores}\nCross-section: {cs}\nCable form: Flat\nWidth: {width} mm\nThickness: {thick} mm");
     }
 
     let mut parts = c.parts;
@@ -970,6 +980,99 @@ mod models;
 mod mounting;
 
 pub use models::{nozzles, shaft, Nozzle, Shaft};
+
+/// Plug connectors with the `Pin layout` of their mating face: circular (M8, M12, GX
+/// aviation connectors), D-sub, IDC sockets and box headers for ribbon cables,
+/// dual-row housings, pluggable terminal blocks, RJ45 and heavy duty inserts; each
+/// male and female.
+fn connectors(c: &mut C) {
+    let mut add = |number: String, desc: String, subgroup: &str, price: f32, labels: Vec<String>, tech: String| {
+        let functions: Vec<(FnKind, &str)> = labels.iter().map(|l| (FnKind::PlugPin, l.as_str())).collect();
+        let p = c.add(&number, &desc, "Connectors", subgroup, "X", price, (0.0, 0.0, 0.0, 0.02), &functions);
+        p.mounting.clear();
+        p.tech_data = tech;
+    };
+    let numbered = |n: usize| -> Vec<String> { (1..=n).map(|i| i.to_string()).collect() };
+    let with_pe = |n: usize| -> Vec<String> { numbered(n).into_iter().chain(["PE".to_string()]).collect() };
+    let genders = [("M", "male", "panel socket"), ("F", "female", "cable plug")];
+    let circle = |ring_max: usize, n: usize| if n <= ring_max { format!("circle {n}") } else { format!("circle {}+1", n - 1) };
+    // GX aviation connectors: the male part is the panel socket, the female one the cable plug.
+    for (series, sizes, ring_max, amps, price) in [
+        ("GX12", &[2, 3, 4, 5, 6, 7][..], 5, 5, 2.4),
+        ("GX16", &[2, 3, 4, 5, 6, 7, 8, 9, 10], 6, 5, 3.1),
+        ("GX20", &[2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 15], 7, 7, 4.2),
+    ] {
+        for &n in sizes {
+            for (suffix, gender, kind) in genders {
+                let desc = format!("Aviation connector {series}, {n} pins, {gender}, {kind}, {amps} A, IP55");
+                let tech = format!("Pin layout: {}\nGender: {gender}\nSeries: {series}", circle(ring_max, n));
+                add(format!("GEN.CON-{series}-{n}{suffix}"), desc, "Circular connector", price, numbered(n), tech);
+            }
+        }
+    }
+    // M8 and M12 sensor / actuator connectors (IEC 61076-2-101 / -104).
+    for (series, labels, layout, coding, price) in [
+        ("M8-3", "1 3 4", "circle 4", "A", 6.9),
+        ("M8-4", "1 2 3 4", "circle 4", "A", 7.4),
+        ("M12-4", "1 2 3 4", "circle 4", "A", 9.5),
+        ("M12-5", "1 2 3 4 5", "circle 4+1", "A", 10.2),
+        ("M12-8", "1 2 3 4 5 6 7 8", "circle 7+1", "A", 13.8),
+        ("M12-12", "1 2 3 4 5 6 7 8 9 10 11 12", "circle 11+1", "A", 18.5),
+        ("M12-4D", "1 2 3 4", "circle 4", "D", 14.9),
+    ] {
+        let labels: Vec<String> = labels.split(' ').map(String::from).collect();
+        let n = labels.len();
+        let size = series.split('-').next().unwrap_or(series);
+        for (suffix, gender, _) in genders {
+            // The female M12 4-pin keeps its number of earlier versions.
+            let number = if series == "M12-4" && suffix == "F" { "GEN.CON-M12-4".to_string() } else { format!("GEN.CON-{series}{suffix}") };
+            let desc = format!("Connector {size}, {n} pins, {coding}-coded, {gender}, field-wireable");
+            let tech = format!("Pin layout: {layout}\nCoding: {coding}\nGender: {gender}\nSeries: {size}");
+            add(number, desc, "Circular connector", price, labels.clone(), tech);
+        }
+    }
+    // D-sub connectors.
+    for (shell, n, price) in [("E", 9, 1.8), ("A", 15, 2.4), ("B", 25, 3.2), ("C", 37, 4.6)] {
+        for (suffix, gender, _) in genders {
+            let desc = format!("D-sub connector D{shell}-{n}, {n} pins, {gender}, solder cup, with metal hood");
+            let tech = format!("Pin layout: dsub {n}\nPitch: 2.77 mm\nGender: {gender}\nSeries: D-sub");
+            add(format!("GEN.CON-DSUB-{n}{suffix}"), desc, "D-sub connector", price, numbered(n), tech);
+        }
+    }
+    // IDC sockets (on the ribbon cable) and the box headers they plug onto (DIN 41651).
+    for n in [10, 14, 16, 20, 26, 34, 40, 50, 64] {
+        let tech = |gender: &str| format!("Pin layout: zigzag {n}\nPitch: 2.54 mm\nTermination: IDC\nGender: {gender}\nSeries: IDC 2.54");
+        let desc = format!("IDC socket {n} pins (2 x {}), pitch 2.54 mm, for ribbon cable 1.27 mm, with strain relief", n / 2);
+        add(format!("GEN.CON-IDC-{n}F"), desc, "IDC connector", 0.6 + 0.02 * n as f32, numbered(n), tech("female"));
+        let desc = format!("Box header {n} pins (2 x {}), pitch 2.54 mm, straight, polarised, for PCB", n / 2);
+        add(format!("GEN.CON-BOX-{n}M"), desc, "IDC connector", 0.4 + 0.015 * n as f32, numbered(n), tech("male"));
+    }
+    // Dual-row wire-to-board housings, pitch 3.0 mm.
+    for n in [2, 4, 6, 8, 10, 12, 16, 24] {
+        let tech = |gender: &str| format!("Pin layout: grid 2x{}\nPitch: 3.0 mm\nGender: {gender}\nSeries: Dual row 3.0", n / 2);
+        add(format!("GEN.CON-DR3-{n}F"), format!("Receptacle housing dual row, pitch 3.0 mm, {n} pins, female, with crimp contacts"), "Wire-to-board connector", 0.5 + 0.05 * n as f32, numbered(n), tech("female"));
+        add(format!("GEN.CON-DR3-{n}M"), format!("Header dual row, pitch 3.0 mm, {n} pins, male, for PCB"), "Wire-to-board connector", 0.4 + 0.04 * n as f32, numbered(n), tech("male"));
+    }
+    // Pluggable terminal blocks, pitch 5.08 mm.
+    for n in 2..=12 {
+        let tech = |gender: &str| format!("Pin layout: row {n}\nPitch: 5.08 mm\nGender: {gender}\nSeries: Pluggable 5.08");
+        add(format!("GEN.CON-PTB-{n}F"), format!("Pluggable terminal block, pitch 5.08 mm, {n} poles, screw connection, female"), "Pluggable terminal block", 0.5 + 0.25 * n as f32, numbered(n), tech("female"));
+        add(format!("GEN.CON-PTB-{n}M"), format!("PCB header for pluggable terminal blocks, pitch 5.08 mm, {n} poles, male"), "Pluggable terminal block", 0.3 + 0.15 * n as f32, numbered(n), tech("male"));
+    }
+    // RJ45: jack and field-wireable plug.
+    for (suffix, gender, desc) in [("F", "female", "RJ45 jack Cat 6A, shielded, 8 contacts, for panel mounting"), ("M", "male", "RJ45 plug Cat 6A, shielded, 8 contacts, field-wireable")] {
+        add(format!("GEN.CON-RJ45-{suffix}"), desc.into(), "Data connector", 6.5, numbered(8), format!("Pin layout: row 8\nPitch: 1.02 mm\nGender: {gender}\nSeries: RJ45"));
+    }
+    // Heavy duty connector inserts.
+    for (n, layout, amps, price) in [(3, "row 3+PE", 16, 14.0), (10, "grid 2x5+PE", 16, 26.0), (16, "grid 2x8+PE", 16, 38.0), (24, "grid 2x12+PE", 16, 52.0)] {
+        for (suffix, gender, _) in genders {
+            // The male 16-pin insert keeps its number of earlier versions.
+            let number = if n == 16 && suffix == "M" { "GEN.CON-HD-16".to_string() } else { format!("GEN.CON-HD-{n}{suffix}") };
+            let desc = format!("Heavy duty connector insert {n} pins + PE, {amps} A, {gender}");
+            add(number, desc, "Heavy duty connector", price, with_pe(n), format!("Pin layout: {layout}\nGender: {gender}\nSeries: Heavy duty"));
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests;

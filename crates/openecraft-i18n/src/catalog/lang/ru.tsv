@@ -6370,3 +6370,30 @@ Open cable ducts	Открыть кабельные каналы
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	В 3D-виде не показывать крышки всех кабельных каналов: провода в них становятся видны
 {}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: кабельный канал на {} мм слишком мал: его {} проводов нельзя проложить рядом друг с другом
 Laying out the wires, cables and tubes…	Раскладка проводов, кабелей и трубок…
+Wire colour	Цвет провода
+Pin-out	Распиновка
+No pin layout in the technical data of the part: the pins are shown in a row (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).	В технических данных изделия нет расположения контактов: контакты показаны в ряд (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).
+Seen on the mating faces; the colours are those of the wires and cable cores at the pins.	Вид со стороны сочленения; цвета соответствуют проводам и жилам кабелей на контактах.
+{}: pin {}	{}: контакт {}
+Pin layout: {}	Расположение контактов: {}
+Coding: {}	Кодировка: {}
+Connector pin-outs and flat cables	Распиновки разъёмов и плоские кабели
+Plug tag, e.g. -X10 (default: all plugs)	Обозначение разъёма, напр. -X10 (по умолчанию: все разъёмы)
+Connector pin-outs: mating faces and pin tables (SVG)	Распиновки разъёмов: стороны сочленения и таблицы контактов (SVG)
+{}: pin {} is not a pin of the part {}	{}: контакт {} не является контактом изделия {}
+{}: core {} of flat cable {} lands on pin {}	{}: жила {} плоского кабеля {} попадает на контакт {}
+Flat cable {} has {} cores, the IDC connector {} has {} pins	Плоский кабель {} имеет {} жил, разъём IDC {} имеет {} контактов
+Pin side (male)	Сторона штырей (вилка)
+Socket side (female)	Сторона гнёзд (розетка)
+Mating faces	Стороны сочленения
+used: colour of the wire or core	занят: цвет провода или жилы
+coding key	кодирующий ключ
+No plugs	Нет разъёмов
+No wires at the pins of {}	Нет проводов на контактах {}
+12 · Connectors, pin-outs and ribbon cables	12 · Разъёмы, распиновки и плоские шлейфы
+Plug connectors with their parts: a sensor on M12 and a valve on M8, a fan and its thermostat on GX16 and GX12 aviation connectors, a buzzer on a D-sub 9 and an operator panel on a ribbon cable between two IDC sockets; the plugs window shows the pin-out of each plug on its mating faces with the wire and core colours.	Разъёмы с их изделиями: датчик на M12 и клапан на M8, вентилятор и его термостат на авиационных разъёмах GX16 и GX12, зуммер на D-sub 9 и пульт оператора на плоском шлейфе между двумя разъёмами IDC; окно разъёмов показывает распиновку каждого разъёма на его сторонах сочленения с цветами проводов и жил.
+Unknown side {} (socket or pin)	Неизвестная сторона {} (socket или pin)
+Shows the mating face of a plug: pin layout of its part, the position of each pin on the face (mm, seen on the pin side) with potential, wire colour and cable core of both sides	Показывает сторону сочленения разъёма: расположение контактов изделия, положение каждого контакта (мм, вид со стороны штырей) с потенциалом, цветом провода и жилой кабеля с обеих сторон
+Makes the wires at the pins of a plug cores of a flat (ribbon) cable: pin n takes core n, as on IDC connectors	Делает провода на контактах разъёма жилами плоского кабеля (шлейфа): контакт n получает жилу n, как у разъёмов IDC
+Cable tag, e.g. -W20	Обозначение кабеля, напр. -W20
+Side of the plug the cable leaves: socket or pin (default: socket)	Сторона разъёма, с которой уходит кабель: socket или pin (по умолчанию: socket)

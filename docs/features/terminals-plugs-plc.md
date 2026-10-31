@@ -39,6 +39,31 @@ listed as spare). The check reports pins placed twice and more pins than the plu
 parts have; the KBL export names the housing part of plug connectors with all
 cavities of the part.
 
+## Connector pin-outs and flat cables
+
+**Pin-out** (plug window, export *Connector pin-outs (SVG)* `pinouts`, command
+`get_pinout`): the mating faces of the pin side (male) and the socket side (female, the
+mirror image) with every pin of the plug's part at its place, filled with the colour of
+the wire or cable core at the pin (spares empty), the coding key and a pin table with
+potential, targets and cable cores; hovering a pin shows its details, a click shows
+its symbol. The face comes from the technical data of the connector part:
+`Pin layout: circle 4` (pins on a circle, pin 1 right of the key at the top, counting
+counter-clockwise on the male face as in IEC 61076-2-101), `circle 7+1` (centre pins
+last), `row 8`, `zigzag 10` (two rows, odd pins above even pins: IDC), `grid 2x5`,
+`dsub 9`, each optionally `+PE`; `Pitch`, `Coding` and `Gender` complete it. Numbered
+pins of a smaller part sit at their number (M8 3-pin: 1, 3, 4); plugs without a layout
+are shown in a row. The catalog has M8, M12 (A- and D-coded), GX12 / GX16 / GX20 aviation
+connectors, D-sub 9 – 37, IDC sockets and box headers 10 – 64, dual-row housings,
+pluggable terminal blocks, RJ45 and heavy duty inserts, each male and female.
+
+**Flat cables** (`Cable form: Flat` in the cable part: ribbon cables 10 – 64 cores with
+pitch 1.27 mm, flat cables for festoon systems): `connect_flat_cable` makes the wires at
+one side of a plug cores of the cable, pin n taking core n. Ribbon cables (flat cables
+with a `Pitch`) show grey cores with core 1 red on the faces. The check *Connector
+pin-outs and flat cables* reports pins the plug's part does not have, cores of a flat
+cable on an IDC connector (`Termination: IDC`) that land on another pin and flat cables
+with another core count than the IDC connector has pins.
+
 ## Strip and plug navigator
 
 **Strip and plug navigator** (navigator tab *Strips / plugs*): the terminal strips with
