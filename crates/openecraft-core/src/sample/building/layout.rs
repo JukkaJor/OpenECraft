@@ -171,6 +171,7 @@ fn enclosures(prj: &mut Project, db: &PartsDb) -> [usize; 5] {
         "GEN.GLAND-M20",
         "GEN.GLAND-M32",
         "GEN.DUCT-100X80",
+        "GEN.DUCT-100X120",
         "GEN.DUCT-80X80",
         "GEN.GLAND-M25",
         "GEN.PE-BAR-10",
@@ -181,13 +182,22 @@ fn enclosures(prj: &mut Project, db: &PartsDb) -> [usize; 5] {
     ] {
         crate::parts::ensure_in_project(prj, db, part);
     }
-    // Main distribution: busbar system, NH fuse switch disconnectors below it, the
+    // Main distribution: busbar system, NH fuse switch disconnectors on it, the
     // meters and terminals on rails; every cable goes up through a gland right above
     // the device it lands on.
     let md = cabinet(prj, "GEN.TS-1000X2000X600", "+MD", "GEN.DUCT-100X80", &[900.0, 1250.0, 1550.0], &[180.0, 760.0, 1100.0, 1400.0, 1700.0]);
+    // The ducts above and below the fuse switch disconnectors hold the 185 mm² feeders:
+    // deeper, so that they lie side by side in them.
+    let deep = panel::profile(prj, ItemKind::Duct, "GEN.DUCT-100X120").1;
+    for it in prj.layout.enclosures[md].items.iter_mut().filter(|i| i.kind == ItemKind::Duct && [130.0, 710.0].contains(&i.y)) {
+        it.part = "GEN.DUCT-100X120".into();
+        it.d = deep;
+    }
     profile(prj, md, ItemKind::Busbar, "GEN.BB-3X30X10", (100.0, 300.0), (840.0, 300.0));
-    for (tag, x) in [("=MD+MD-X0", 100.0), ("=MD+MD-Q1", 260.0), ("=MD+MD-Q2", 380.0), ("=MD+MD-Q3", 560.0)] {
-        panel::place_device(prj, md, tag, p(x, 380.0));
+    // The incoming terminals below the bars, the fuse switch disconnectors on them.
+    panel::place_device(prj, md, "=MD+MD-X0", p(100.0, 380.0));
+    for (tag, x) in [("=MD+MD-Q1", 260.0), ("=MD+MD-Q2", 380.0), ("=MD+MD-Q3", 560.0)] {
+        panel::place_device(prj, md, tag, p(x, 255.0));
     }
     on_rail(prj, md, 900.0, 240.0, &["=MD+MD-P1", "=MD+MD-P2", "=MD+MD-P3", "=MD+MD-F11", "=MD+MD-F10"]);
     on_rail(prj, md, 900.0, 730.0, &["=MD+MD-X2"]);

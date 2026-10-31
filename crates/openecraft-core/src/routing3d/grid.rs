@@ -5,7 +5,10 @@
 //! keep-out reservations. Cable ducts and routing paths are channels: the way through
 //! them is cheaper than through free air; a cable too thick for a duct keeps out of it.
 //! A route keeps half its thickness from what blocks the cells; a turn where its bend
-//! (rounded with the bend radius) would not keep clear of them costs more. Walls between
+//! (rounded with the bend radius) would not keep clear of them costs more. Cables and
+//! tubes keep apart from the ones routed before them by their thicknesses: none runs
+//! inside another in free air (in a duct or routing path they lie side by side, but
+//! where they come up to their ends). Walls between
 //! bayed enclosures are crossed at cable passages only.
 
 use super::{Class, PathKind, ReserveMode, RouteKind, RoutingRules};
@@ -35,6 +38,22 @@ const ROOM: u8 = 8;
 pub const CORNER_CUT: f32 = std::f32::consts::SQRT_2 - 1.0;
 /// Extra cost of a turn without room for its bend, in turns.
 const TIGHT: f32 = 4.0;
+/// Most cells whose costs to the goal a search keeps for searching again.
+const KEEP_COSTS: usize = 400_000;
+
+/// The costs to the goal a search worked out (the cells known with their costs, the
+/// highest), to search the same way again (the same start and goal, the same channels
+/// full) without working them out.
+#[derive(Clone, Debug, PartialEq)]
+pub struct GoalCosts {
+    start: usize,
+    goal: usize,
+    cells: Vec<(u32, f32)>,
+    reach: f32,
+}
+/// How far (mm) beyond half its thickness a route keeps the cells of the ones routed
+/// after it: up to half the thickness of the thickest of them.
+const REACH: f32 = 30.0;
 
 /// A routing path in the grid and what runs through it.
 #[derive(Clone, Debug, PartialEq)]
@@ -97,6 +116,10 @@ pub struct Space {
     /// Cells from each cell to the nearest blocked one (at most [`ROOM`]); empty until
     /// [`Space::measure`]: room everywhere.
     room: Vec<u8>,
+    /// How far the cables and tubes routed through the space reach into each cell: the
+    /// largest half thickness less the distance from its middle line (see
+    /// [`Space::take`]).
+    taken: Vec<f32>,
     /// Routing path of a cell: index + 1 into `paths`, 0 for none.
     path: Vec<u16>,
     /// Classes a reservation keeps the cell for (bits); 0: any.
@@ -184,6 +207,7 @@ impl Space {
             owner: vec![0; total],
             duct: vec![0.0; total],
             room: Vec::new(),
+            taken: vec![f32::NEG_INFINITY; total],
             path: vec![0; total],
             reserved: vec![0; total],
             occ: vec![0; total],
@@ -406,6 +430,29 @@ impl Space {
         req.at.iter().any(|q| dist(self.centre(idx), *q) <= 3.0 * self.cell + req.half)
     }
 
+    /// The request keeps apart from the cables and tubes routed before it in the cell
+    /// (wires do not; in a cable duct or routing path they lie side by side, as far as
+    /// it holds them; where it comes up to its ends it need not).
+    fn apart(&self, idx: usize, req: &Request) -> bool {
+        req.kind == RouteKind::Wire || self.taken[idx] + req.half + 0.5 <= 0.0 || self.channel(idx, req) || self.near_end(idx, req)
+    }
+
+    /// A cable or tube of half thickness `half` routed along `points`: the routes after
+    /// it keep apart from it.
+    pub fn take(&mut self, points: &[V3], half: f32) {
+        for idx in self.cells_near(points, half + REACH) {
+            let c = self.centre(idx);
+            let d = points.windows(2).map(|s| dist_to_segment(c, s[0], s[1])).fold(f32::INFINITY, f32::min);
+            self.taken[idx] = self.taken[idx].max(half - d);
+        }
+    }
+
+    /// The cells of a way found before other routes took their room are still apart from
+    /// them.
+    pub fn still_apart(&self, cells: &[usize], req: &Request) -> bool {
+        cells.iter().all(|&i| self.apart(i, req))
+    }
+
     /// The bend radius each corner of a way can have (`radius` at most, less where it
     /// would come nearer than half the thickness to a blocked cell); 0 at the ends.
     pub fn corner_radii(&self, points: &[V3], half: f32, radius: f32) -> Vec<f32> {
@@ -517,6 +564,11 @@ impl Space {
     }
 
     fn passable(&self, idx: usize, req: &Request) -> bool {
+        self.open_for(idx, req) && self.apart(idx, req)
+    }
+
+    /// The cell is passable for the request but for the other routes in it.
+    fn open_for(&self, idx: usize, req: &Request) -> bool {
         let free = match self.block[idx] {
             0 => true,
             ITEM => req.ignore.contains(&self.owner[idx]),
@@ -589,23 +641,46 @@ impl Space {
 
     /// The cheapest way from `a` to `b`, or `None` if there is none.
     pub fn route(&self, a: V3, b: V3, req: &Request, rules: &RoutingRules) -> Option<Way> {
-        let start = self.nearest_passable(a, req)?;
-        let goal = self.nearest_passable(b, req)?;
+        self.route_with(a, b, req, rules, None).0
+    }
+
+    /// [`Space::route`] with the costs to the goal of a search of the same request before
+    /// (where they still hold), and the costs it used.
+    pub fn route_with(&self, a: V3, b: V3, req: &Request, rules: &RoutingRules, known: Option<&GoalCosts>) -> (Option<Way>, Option<GoalCosts>) {
+        let (Some(start), Some(goal)) = (self.nearest_passable(a, req), self.nearest_passable(b, req)) else { return (None, None) };
         // Cables and tubes turn only after half their bend radius straight on (but at
         // the start), where there is a way like that.
         let straight = if req.kind == RouteKind::Wire { 0 } else { (req.turn * 0.5 / self.cell).ceil() as usize };
+        let mut costs = known.filter(|k| k.start == start && k.goal == goal).cloned();
         SEARCH.with_borrow_mut(|search| {
-            self.search(search, a, b, start, goal, req, rules, straight).or_else(|| (straight > 0).then(|| self.search(search, a, b, start, goal, req, rules, 0)).flatten())
+            let way = self.search(search, a, b, start, goal, req, rules, straight, &mut costs).or_else(|| (straight > 0).then(|| self.search(search, a, b, start, goal, req, rules, 0, &mut costs)).flatten());
+            (way, costs)
         })
     }
 
     /// The A* search of [`Space::route`] with the arrays of `search`; it turns only
-    /// after `straight` cells straight on since the last turn or from the start.
+    /// after `straight` cells straight on since the last turn or from the start. It takes
+    /// the costs to the goal from `costs` where known, otherwise works them out and keeps
+    /// them there.
     #[allow(clippy::too_many_arguments)]
-    fn search(&self, search: &mut Search, a: V3, b: V3, start: usize, goal: usize, req: &Request, rules: &RoutingRules, straight: usize) -> Option<Way> {
+    fn search(&self, search: &mut Search, a: V3, b: V3, start: usize, goal: usize, req: &Request, rules: &RoutingRules, straight: usize, costs: &mut Option<GoalCosts>) -> Option<Way> {
         // States: cell × direction it was entered in (6: none).
         let run = search.start(self.block.len());
-        let reach = self.costs_to_goal(search, run, start, goal, req, rules);
+        let reach = match costs {
+            Some(known) => {
+                for &(idx, c) in &known.cells {
+                    (search.to_goal[idx as usize], search.settled[idx as usize]) = (c, run);
+                }
+                known.reach
+            }
+            None => {
+                let (reach, cells) = self.costs_to_goal(search, run, start, goal, req, rules);
+                if cells.len() <= KEEP_COSTS {
+                    *costs = Some(GoalCosts { start, goal, cells: cells.into_iter().map(|i| (i as u32, search.to_goal[i])).collect(), reach });
+                }
+                reach
+            }
+        };
         let Search { best, prev, stamp, to_goal, settled, .. } = search;
         let mut heap = BinaryHeap::new();
         let gc = self.coords(goal);
@@ -766,20 +841,23 @@ impl Space {
         changed
     }
 
-    /// The costs from the cells to `goal` without turns (Dijkstra backwards), until
-    /// the one of `start` is known. Gives the highest known cost: the other cells cost
-    /// at least as much.
-    fn costs_to_goal(&self, search: &mut Search, run: u32, start: usize, goal: usize, req: &Request, rules: &RoutingRules) -> f32 {
+    /// The costs from the cells to `goal` without turns and without the other routes
+    /// (Dijkstra backwards: they only make the way longer), until the one of `start` is
+    /// known. Gives the highest known cost (the other cells cost at least as much) and
+    /// the cells known.
+    fn costs_to_goal(&self, search: &mut Search, run: u32, start: usize, goal: usize, req: &Request, rules: &RoutingRules) -> (f32, Vec<usize>) {
         let Search { to_goal, reached, settled, .. } = search;
         let mut heap = BinaryHeap::new();
         (to_goal[goal], reached[goal]) = (0.0, run);
         heap.push(Reverse((0.0f32.to_bits(), goal)));
         let mut reach = 0.0;
+        let mut known = Vec::new();
         while let Some(Reverse((d, idx))) = heap.pop() {
             if settled[idx] == run {
                 continue;
             }
             settled[idx] = run;
+            known.push(idx);
             reach = f32::from_bits(d);
             if idx == start {
                 break;
@@ -801,7 +879,7 @@ impl Space {
                     nc[axis] -= 1;
                 }
                 let ni = self.index(nc);
-                if settled[ni] == run || !self.passable(ni, req) || (axis == 0 && !self.crossing_ok(ni, idx)) {
+                if settled[ni] == run || !self.open_for(ni, req) || (axis == 0 && !self.crossing_ok(ni, idx)) {
                     continue;
                 }
                 let nd = reach + self.cell * self.factor(idx, axis, req, rules);
@@ -811,7 +889,7 @@ impl Space {
                 }
             }
         }
-        reach
+        (reach, known)
     }
 
     /// For a route of cross-section `area`, the routing paths are full or not as they

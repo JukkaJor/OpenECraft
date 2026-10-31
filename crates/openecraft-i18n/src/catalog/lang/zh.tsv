@@ -6358,3 +6358,4 @@ Drive type	传动方式
 Select wire	选择导线
 Open cable ducts	打开线槽
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	在 3D 视图中省略所有线槽的盖板：可以看到其中的导线
+{}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}：位于 {} mm 处的线槽太小：其中的 {} 根导线无法并排敷设

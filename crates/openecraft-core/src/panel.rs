@@ -34,7 +34,7 @@ pub mod thermal;
 pub use checks::{box_gap, class_collisions, class_title, clearances, data_number, device_class, device_kinds, floor_height, heights, item_class, item_name, validate, CheckKind, ClassRule, Clearances, Finding, PanelRules, CLASSES};
 pub use drives::{drives, Drive, DriveKind, DRIVE, DRIVEN_BY};
 pub use fastening::{fastening_material, Fastening};
-pub use fill::{duct_fill, wire_area, DuctFill, DuctLoads, OVERFILL_COST};
+pub use fill::{duct_fill, duct_inside, duct_lanes, wire_area, DuctFill, DuctLoads, LANE_GAP, OVERFILL_COST};
 pub use lineup::{add_facing_cutout, add_passage, bay_right_of, lineup_of, lineups, neighbours, next_passage_place, passages, positions, route_across, set_site, site_poses, unbay, Leg, Passage, SitePlace, SitePose, LINEUP_GAP, PASSAGE_DIAMETER};
 pub use macros::{all_macros, builtin_macros, group_members, insert_macro, macro_from_items, ItemGroup, PanelMacro};
 pub use placement::{align, apply_anchors, apply_one_anchor, arrange_on_rail, capture_anchors, distribute, pattern_copy, Align, AlignTo, Anchor};
@@ -1035,8 +1035,30 @@ pub fn snap_to_rail(e: &Enclosure, item: &mut PanelItem) {
             item.y = r.center().y - item.h / 2.0;
             item.z = r.z + r.d;
         }
-        None => item.z = 0.0,
+        // Over a busbar system: mounted onto its bars.
+        None => {
+            let on = busbars(e, item).next().map_or(0.0, |b| b.z + b.d);
+            item.z = on;
+        }
     }
+}
+
+/// The busbar systems of the item's face it lies over.
+fn busbars<'a>(e: &'a Enclosure, item: &'a PanelItem) -> impl Iterator<Item = &'a PanelItem> {
+    let r = item.rect();
+    e.items.iter().filter(move |b| {
+        let rb = b.rect();
+        b.kind == ItemKind::Busbar && b.face == item.face && b.id != item.id && r.min.x < rb.max.x && rb.min.x < r.max.x && r.min.y < rb.max.y && rb.min.y < r.max.y
+    })
+}
+
+/// The busbar system a device is mounted on (by id): one it lies over, the device in
+/// front of its bars. Devices on the same busbar system are connected by its bars.
+pub fn busbar_of(e: &Enclosure, item: &PanelItem) -> Option<u64> {
+    if item.kind != ItemKind::Device {
+        return None;
+    }
+    busbars(e, item).find(|b| item.z >= b.z + b.d - 0.5).map(|b| b.id)
 }
 
 // ---------------------------------------------------------------------- checks
@@ -1516,7 +1538,8 @@ pub struct OpenWire {
 }
 
 /// Virtual wiring: routes the point-to-point connections of the schematic (see
-/// [`connections`]) between placed devices through the cable ducts.
+/// [`connections`]) between placed devices through the cable ducts. Devices mounted
+/// on the same busbar system are connected by its bars, not by a wire.
 pub fn virtual_wiring(prj: &Project, conns: &[Connection]) -> (Vec<RoutedWire>, Vec<OpenWire>) {
     let mut routed = Vec::new();
     let mut ends = Vec::new();
@@ -1535,6 +1558,9 @@ pub fn virtual_wiring(prj: &Project, conns: &[Connection]) -> (Vec<RoutedWire>, 
             open.push(OpenWire { from, to, net: c.net.clone(), reason: "device not placed" });
             continue;
         };
+        if ea == eb && busbar_of(&prj.layout.enclosures[ea], ia).is_some_and(|bar| busbar_of(&prj.layout.enclosures[eb], ib) == Some(bar)) {
+            continue; // connected by the bars of the busbar system both are mounted on
+        }
         let mut end = |ei: usize, it: &PanelItem, s, pin| {
             let e = &prj.layout.enclosures[ei];
             let placed = points.entry(it.id).or_insert_with(|| device_points(prj, it));

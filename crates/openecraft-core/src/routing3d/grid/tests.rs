@@ -235,3 +235,21 @@ fn bends_are_rounded_as_far_as_the_room_around_them_allows() {
     unmeasured.block.iter_mut().for_each(|b| *b = 0);
     assert_eq!(unmeasured.corner_radii(&[[0.0; 3], [50.0; 3], [100.0; 3]], 5.0, 80.0)[1], 80.0);
 }
+
+#[test]
+fn cables_keep_apart_in_free_air() {
+    let prj = project(single());
+    let mut s = space(&prj);
+    let rules = RoutingRules::default();
+    let (a, b) = ([300.0, 60.0, 250.0], [300.0, 740.0, 250.0]);
+    let first = s.route(a, b, &req(&[]), &rules).unwrap();
+    s.take(&first.points, 3.0);
+    // The same way again: beside the first, not inside it, but for the ends.
+    let second = s.route(a, b, &req(&[]), &rules).unwrap();
+    assert!(!s.still_apart(&first.cells, &req(&[])));
+    assert!(s.still_apart(&second.cells, &req(&[])));
+    let far = second.points.iter().filter(|q| q[1] > 150.0 && q[1] < 650.0).all(|q| first.points.iter().all(|p| (p[0] - q[0]).hypot(p[2] - q[2]) >= 6.0 - 1e-3 || (p[1] - q[1]).abs() > 1.0));
+    assert!(far, "{:?} / {:?}", first.points, second.points);
+    // Wires are not kept apart.
+    assert!(s.still_apart(&first.cells, &Request { kind: RouteKind::Wire, ..req(&[]) }));
+}

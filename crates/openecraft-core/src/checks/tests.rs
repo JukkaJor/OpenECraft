@@ -96,3 +96,18 @@ fn poles_drawn_one_by_one_are_one_device() {
     prj.pages[pi].symbols.last_mut().unwrap().sym = "fuse".into();
     assert_eq!(twice(&prj), ["-F1: main function placed 2 times"]);
 }
+
+#[test]
+fn a_duct_too_small_for_its_wires_is_an_error() {
+    let mut prj = Project::default();
+    let mut e = crate::panel::Enclosure { name: "+A".into(), ..Default::default() };
+    e.items.push(crate::panel::PanelItem { id: 7, kind: crate::panel::ItemKind::Duct, x: 0.0, y: 0.0, w: 400.0, h: 40.0, d: 60.0, ..Default::default() });
+    prj.layout.enclosures.push(e);
+    let fill = |diameters: Vec<f32>| crate::panel::DuctFill { enclosure: 0, duct: 7, capacity: 2400.0, percent: 10.0, from: 0.0, to: 100.0, wires: diameters.len(), total_wires: diameters.len(), diameters };
+    // Two 28.7 mm wires on top of each other need 57.6 mm, the duct is 55.5 deep inside.
+    let issues = check_duct_fill(&prj, &[fill(vec![28.7, 28.7])]);
+    assert_eq!(issues.len(), 1);
+    assert_eq!(issues[0].severity, Severity::Error);
+    assert!(issues[0].message().starts_with("+A: cable duct at ") && issues[0].message().contains("its 2 wires cannot be routed"), "{}", issues[0].message());
+    assert!(check_duct_fill(&prj, &[fill(vec![28.7])]).is_empty());
+}

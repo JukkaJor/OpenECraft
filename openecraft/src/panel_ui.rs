@@ -445,6 +445,9 @@ pub struct PanelUi {
     gpu: gpu3d::Gpu,
     /// What the 3D view shows, kept while it does not change.
     scene: Option<Arc<scene3d::Scene3d>>,
+    /// The wires, cables and tubes of the 3D view pushed apart, kept while they do not
+    /// change (by a hash of what they were laid out from).
+    apart: Option<(u64, Arc<Vec<Vec<openecraft_core::parts::vec3::V3>>>)>,
     offset: Vec2,
     zoom: f32,
     fit_pending: bool,
@@ -524,6 +527,7 @@ impl Default for PanelUi {
             gpu_3d: false,
             gpu: gpu3d::Gpu::default(),
             scene: None,
+            apart: None,
             offset: vec2(20.0, 20.0),
             zoom: 0.5,
             fit_pending: true,

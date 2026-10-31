@@ -632,3 +632,35 @@ fn cable_ducts_have_slotted_walls_and_a_cover() {
     }
     assert!(checked > 2);
 }
+
+#[test]
+fn devices_on_a_busbar_are_connected_by_its_bars() {
+    // Placed over the bars, a device is mounted onto them.
+    let mut e = Enclosure::default();
+    e.items.push(PanelItem { id: 1, kind: ItemKind::Busbar, x: 0.0, y: 100.0, w: 600.0, h: 90.0, d: 40.0, ..Default::default() });
+    let mut q = device(2, 100.0, 80.0, 50.0, 200.0, 0.0, 100.0);
+    snap_to_rail(&e, &mut q);
+    assert_eq!(q.z, 40.0);
+    assert_eq!(busbar_of(&e, &q), Some(1));
+    // Below the bars it is not.
+    let mut x = device(3, 100.0, 300.0, 50.0, 50.0, 0.0, 100.0);
+    snap_to_rail(&e, &mut x);
+    assert_eq!((x.z, busbar_of(&e, &x)), (0.0, None));
+
+    // The main distribution of the building: the fuse switch disconnectors on the
+    // busbar are not wired to each other, the incoming terminals to the first of them.
+    let prj = crate::sample::example("building_services").unwrap();
+    let (md, _) = prj.layout.find_device("=MD+MD-Q1").unwrap();
+    let on_bars: Vec<&str> = ["=MD+MD-Q1", "=MD+MD-Q2", "=MD+MD-Q3"].into();
+    for tag in &on_bars {
+        let (_, it) = prj.layout.find_device(tag).unwrap();
+        assert!(busbar_of(&prj.layout.enclosures[md], it).is_some(), "{tag}");
+    }
+    let (nl, open) = (crate::netlist::Netlist::build(&prj, true), crate::netlist::Netlist::build(&prj, false));
+    let conns = crate::netlist::connections(&prj, &nl, &open);
+    let (wiring, _) = virtual_wiring(&prj, &conns);
+    let device = |end: &str| end.rsplit_once(':').map_or(end, |(d, _)| d).to_string();
+    assert!(!wiring.iter().any(|w| on_bars.contains(&device(&w.from).as_str()) && on_bars.contains(&device(&w.to).as_str())));
+    let feeds = wiring.iter().filter(|w| [device(&w.from), device(&w.to)] == ["=MD+MD-X0", "=MD+MD-Q1"] || [device(&w.from), device(&w.to)] == ["=MD+MD-Q1", "=MD+MD-X0"]).count();
+    assert_eq!(feeds, 3);
+}

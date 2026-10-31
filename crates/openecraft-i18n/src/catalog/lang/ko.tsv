@@ -6356,3 +6356,4 @@ Drive type	구동 방식
 Select wire	전선 선택
 Open cable ducts	케이블 덕트 열기
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	3D 보기에서 모든 케이블 덕트의 덮개를 생략합니다: 안의 전선이 보입니다
+{}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{0}: {1} mm 위치의 케이블 덕트가 너무 작습니다: 전선 {2}개를 나란히 배선할 수 없습니다

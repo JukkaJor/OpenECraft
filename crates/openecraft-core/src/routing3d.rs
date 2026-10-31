@@ -542,6 +542,12 @@ impl Job {
         (area, if self.bend > 0.0 { self.bend } else { rules.bend(self.kind) * self.diameter })
     }
 
+    /// What is routed along a leg through `space` (passing the items `ignore`).
+    fn request<'a>(&self, leg: &room::LegPlan, space: &grid::Space, ignore: &'a [u64], rules: &RoutingRules) -> grid::Request<'a> {
+        let (area, radius) = self.area_radius(rules);
+        grid::Request { kind: self.kind, class: self.class, ignore, at: [leg.a, leg.b], area, turn: (space.cell * 0.5).max(radius), half: self.diameter / 2.0 }
+    }
+
     /// The items a leg may pass through: the devices at the ends, its cable glands.
     fn ignore(&self, leg: &room::LegPlan) -> Vec<u64> {
         self.ends.iter().filter_map(|e| e.item).chain(leg.ignore.iter().copied()).collect()
@@ -853,13 +859,26 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, progress: &dy
     // routing paths it fills, so a way found ahead is taken where none of the paths
     // became full for it since, otherwise it is searched again (the same routes as one
     // after the other).
-    let mut ahead: HashMap<(usize, usize), Option<grid::Way>> = HashMap::new();
-    let mut paths_before: HashMap<usize, Vec<f32>> = HashMap::new();
+    // A way found ahead with the use of the routing paths of its space then and the costs
+    // to its goal (to search it again without working them out).
+    type Ahead = (Option<grid::Way>, Vec<f32>, Option<grid::GoalCosts>);
+    let mut ahead: HashMap<(usize, usize), Ahead> = HashMap::new();
+    // The legs (job, leg) searched at the same time against the spaces as they are.
+    let search_ahead = |tasks: &[(usize, usize)], spaces: &HashMap<usize, grid::Space>| -> Vec<Ahead> {
+        crate::parallel::par_map_n(tasks, workers, |&(k, i)| {
+            let (job, leg) = (&jobs[k], &plans[k].as_ref().map(|p| &p.0[i]).expect("planned"));
+            let space = &spaces[&leg.lineup];
+            let ignore = job.ignore(leg);
+            let req = job.request(leg, space, &ignore, rules);
+            let (way, costs) = space.route_with(leg.a, leg.b, &req, rules, None);
+            (way, space.paths.iter().map(|p| p.used).collect(), costs)
+        })
+    };
     for (n, job) in jobs.iter().enumerate() {
         progress(n, total);
         if workers > 1 && (n == 0 || jobs[n - 1].class != job.class) {
-            let batch = n..jobs[n..].iter().position(|j| j.class != job.class).map_or(jobs.len(), |k| n + k);
-            for leg in batch.clone().filter_map(|k| plans[k].as_ref().ok()).flat_map(|p| &p.0) {
+            let batch_end = jobs[n..].iter().position(|j| j.class != job.class).map_or(jobs.len(), |k| n + k);
+            for leg in (n..batch_end).filter_map(|k| plans[k].as_ref().ok()).flat_map(|p| &p.0) {
                 let space = spaces.entry(leg.lineup).or_insert_with(|| make_space(leg.lineup));
                 if zoned.get(&leg.lineup) != Some(&job.class) {
                     space.update_zones(rules.segregation);
@@ -867,30 +886,18 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, progress: &dy
                 }
             }
             let mut tasks: Vec<(usize, usize)> = Vec::new();
-            for k in batch.filter(|&k| jobs[k].fixed.is_none()) {
+            for k in (n..batch_end).filter(|&k| jobs[k].fixed.is_none()) {
                 let Ok((legs, ..)) = &plans[k] else { continue };
-                let (area, radius) = jobs[k].area_radius(rules);
                 let frozen_legs = thawed(&jobs[k], legs);
                 for (i, leg) in legs.iter().enumerate() {
                     let space = &spaces[&leg.lineup];
                     let ignore = jobs[k].ignore(leg);
-                    let req = grid::Request { kind: jobs[k].kind, class: jobs[k].class, ignore: &ignore, at: [leg.a, leg.b], area, turn: (space.cell * 0.5).max(radius), half: jobs[k].diameter / 2.0 };
-                    if !frozen_legs.get(i).is_some_and(|p| thawed_ok(p, leg, space, &req)) {
+                    if !frozen_legs.get(i).is_some_and(|p| thawed_ok(p, leg, space, &jobs[k].request(leg, space, &ignore, rules))) {
                         tasks.push((k, i));
                     }
                 }
             }
-            let spaces_now = &spaces;
-            let found = crate::parallel::par_map_n(&tasks, workers, |&(k, i)| {
-                let (job, leg) = (&jobs[k], &plans[k].as_ref().map(|p| &p.0[i]).expect("planned"));
-                let space = &spaces_now[&leg.lineup];
-                let (area, radius) = job.area_radius(rules);
-                let ignore = job.ignore(leg);
-                let req = grid::Request { kind: job.kind, class: job.class, ignore: &ignore, at: [leg.a, leg.b], area, turn: (space.cell * 0.5).max(radius), half: job.diameter / 2.0 };
-                space.route(leg.a, leg.b, &req, rules)
-            });
-            ahead = tasks.into_iter().zip(found).collect();
-            paths_before = spaces.iter().map(|(k, s)| (*k, s.paths.iter().map(|p| p.used).collect())).collect();
+            ahead = tasks.iter().copied().zip(search_ahead(&tasks, &spaces)).collect();
         }
         let mut item = RoutedItem {
             kind: job.kind,
@@ -939,15 +946,21 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, progress: &dy
                 zoned.insert(leg.lineup, job.class);
             }
             let ignore = job.ignore(leg);
-            let req = grid::Request { kind: job.kind, class: job.class, ignore: &ignore, at: [leg.a, leg.b], area, turn: (space.cell * 0.5).max(radius), half: job.diameter / 2.0 };
+            let req = job.request(leg, space, &ignore, rules);
             let way = match (&job.fixed, thawed.get(i)) {
                 (Some(points), _) => Some((points.clone(), space.cells_along(points), 0.0)),
                 (None, Some(points)) if thawed_ok(points, leg, space, &req) => Some((points.clone(), space.cells_along(points), 0.0)),
                 (None, _) => {
                     rerouted |= is_frozen;
-                    let before = paths_before.get(&leg.lineup);
-                    let found = ahead.remove(&(n, i)).filter(|_| before.is_some_and(|b| space.paths_full_as(b, area)));
-                    found.unwrap_or_else(|| space.route(leg.a, leg.b, &req, rules)).map(|w| (w.points, w.cells, w.free))
+                    // Found ahead: taken where no routing path became full for it since and
+                    // no route took its room (the same as searched now); otherwise searched
+                    // again, with the costs to the goal worked out then where they still hold.
+                    let entry = ahead.remove(&(n, i)).filter(|e| space.paths_full_as(&e.1, area));
+                    match entry {
+                        Some((way, ..)) if way.as_ref().is_none_or(|w| space.still_apart(&w.cells, &req)) => way,
+                        entry => space.route_with(leg.a, leg.b, &req, rules, entry.as_ref().and_then(|e| e.2.as_ref())).0,
+                    }
+                    .map(|w| (w.points, w.cells, w.free))
                 }
             };
             let Some((points, cells, free)) = way else {
@@ -955,6 +968,9 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, progress: &dy
                 break;
             };
             space.occupy(&cells, job.class, area);
+            if job.kind != RouteKind::Wire {
+                space.take(&points, job.diameter / 2.0);
+            }
             let radii = space.corner_radii(&points, job.diameter / 2.0, radius);
             ways.push((leg.lineup, points, free, radii));
         }

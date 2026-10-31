@@ -65,8 +65,13 @@ with a command line, an MCP server, a parts server and a project server.
   connection points; cable cores are drawn with their cable. Routes keep half their
   thickness from what is around them and turn where their bends have room, cables keep
   out of cable ducts too small for them; View › Open cable ducts leaves out the covers
-  of the ducts. Wires, cables and tubes that run together lie side by side, each on a lane of its own,
-  and where wires and cables pass through the wall of a duct its fingers are left out. The title bar can show
+  of the ducts. Wires, cables and tubes that run together lie side by side, each on a lane of its own
+  (in a cable duct packed in rows from its base, never over its cover), and where wires and cables pass
+  through the wall of a duct its fingers are left out; where they would still run inside or through each
+  other they are pushed apart, one over the other where they cross, inside the walls of their cabinet and
+  out of its devices. Cables and tubes keep apart from each other in free air already when they are
+  routed. A cable duct too small for its wires to lie side by side is an error of the project check.
+  Devices mounted on a busbar system are connected by its bars instead of wires. The title bar can show
   the frame time and the frames per second (Settings › Appearance). A placed device is shown in the
   panel layout or the 3D view from its context menu in the schematic. Pumps, tanks
   and other parts marked for floor mounting stand on the floor of a room; a pump or

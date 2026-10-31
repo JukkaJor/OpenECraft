@@ -86,7 +86,7 @@ fn items_of_a_bundle_lie_side_by_side_and_do_not_cross() {
         item("C", Class::Power, 10.0, vec![[0.0, 2000.0, 0.0], [500.0, 2000.0, 0.0], [500.0, 2500.0, 0.0]]),
     ];
     let ways: Vec<Way> = items.iter().map(|it| Way { points: &it.points, radii: &it.radii, diameter: it.diameter, rest: [0.0; 3], below: f32::INFINITY }).collect();
-    let laid = spread_ways(&ways, 25.0, &[]);
+    let laid = spread_ways(&ways, 25.0, &[], &[], &[]);
     let (a, b) = (&laid[0].0, &laid[1].0);
     assert_eq!(laid[2].0, items[2].points, "alone it stays as it is");
     // The ends and the stretches at the ends stay where they are.
@@ -110,7 +110,7 @@ fn lanes_keep_off_the_surface_the_ways_run_along() {
     // two rows away from it, side by side along it.
     let line = vec![[0.0, 0.0, 5.0], [500.0, 0.0, 5.0], [500.0, 300.0, 5.0], [800.0, 300.0, 5.0]];
     let ways: Vec<Way> = (0..5).map(|_| Way { points: &line, radii: &[], diameter: 3.0, rest: [0.0, 0.0, 1.0], below: 3.0 }).collect();
-    let laid = spread_ways(&ways, 8.0, &[]);
+    let laid = spread_ways(&ways, 8.0, &[], &[], &[]);
     for (points, _) in &laid {
         assert!(points.iter().all(|q| q[2] >= 2.0 - 0.01), "{points:?}");
     }
@@ -137,8 +137,8 @@ fn lanes_keep_out_of_devices_beside_them() {
     let ways: Vec<Way> = (0..3).map(|_| Way { points: &line, radii: &[], diameter: 10.0, rest: [0.0; 3], below: f32::INFINITY }).collect();
     let device = ([100.0, -100.0, -50.0], [400.0, -6.0, 50.0]);
     let middle = |p: &[V3]| p.windows(2).find(|s| (s[1][0] - s[0][0]).abs() > 400.0).map(|s| [0, 1, 2].map(|k| (s[0][k] + s[1][k]) / 2.0)).unwrap();
-    let free = spread_ways(&ways, 25.0, &[]);
-    let kept = spread_ways(&ways, 25.0, &[device]);
+    let free = spread_ways(&ways, 25.0, &[], &[], &[]);
+    let kept = spread_ways(&ways, 25.0, &[device], &[], &[]);
     let inside = |q: V3| (0..3).all(|k| q[k] > device.0[k] - 5.0 && q[k] < device.1[k] + 5.0);
     assert!(free.iter().any(|(p, _)| inside(middle(p))), "centred one lane runs through it");
     assert!(kept.iter().all(|(p, _)| !inside(middle(p))), "{kept:?}");
@@ -151,6 +151,75 @@ fn lanes_keep_out_of_devices_beside_them() {
     let other = ([100.0, 6.0, -50.0], [400.0, 100.0, 50.0]);
     let below = ([100.0, -100.0, -100.0], [400.0, 100.0, -6.0]);
     let above = ([100.0, -100.0, 6.0], [400.0, 100.0, 100.0]);
-    let stuck = spread_ways(&ways, 25.0, &[device, other, below, above]);
+    let stuck = spread_ways(&ways, 25.0, &[device, other, below, above], &[], &[]);
     assert!(stuck.iter().all(|(p, _)| *p == line), "{stuck:?}");
+}
+
+#[test]
+fn ways_along_a_duct_lie_inside_it() {
+    // Six wires along a duct (x 0 .. 500), inside 40 wide (y) and 30 deep (z) on a
+    // plate at z 0; all on the duct's middle line.
+    let line = vec![[-50.0, 20.0, -100.0], [-50.0, 20.0, 15.0], [550.0, 20.0, 15.0], [550.0, 200.0, 15.0]];
+    let ways: Vec<Way> = (0..6).map(|_| Way { points: &line, radii: &[], diameter: 8.0, rest: [0.0; 3], below: f32::INFINITY }).collect();
+    let duct = Channel { inside: ([0.0, 0.0, 0.0], [500.0, 40.0, 30.0]), floor: [0.0, 0.0, 1.0] };
+    let laid = spread_ways(&ways, 8.0, &[], &[duct], &[]);
+    let middles: Vec<V3> = laid.iter().map(|(p, _)| p.windows(2).find(|s| (s[1][0] - s[0][0]).abs() > 500.0).map(|s| [0, 1, 2].map(|k| (s[0][k] + s[1][k]) / 2.0)).unwrap()).collect();
+    for q in &middles {
+        assert!(q[1] >= 4.0 - 0.01 && q[1] <= 36.0 + 0.01 && q[2] >= 4.0 - 0.01 && q[2] <= 26.0 + 0.01, "{middles:?}");
+    }
+    for (i, a) in middles.iter().enumerate() {
+        assert!(middles[i + 1..].iter().all(|b| crate::parts::vec3::dist(*a, *b) >= 8.0), "{middles:?}");
+    }
+}
+
+#[test]
+fn strands_through_each_other_are_pushed_apart() {
+    // Least distance between the two, but within 30 mm of the ends (x 0 and 400).
+    let gap = |a: &[V3], b: &[V3]| {
+        let mut least = f32::INFINITY;
+        for s in a.windows(2) {
+            for t in b.windows(2) {
+                for k in 0..=20 {
+                    let p = crate::parts::vec3::add(s[0], crate::parts::vec3::sub(s[1], s[0]).map(|v| v * k as f32 / 20.0));
+                    if p[0] < 30.0 || p[0] > 370.0 {
+                        continue;
+                    }
+                    let ab = crate::parts::vec3::sub(t[1], t[0]);
+                    let u = (dot(crate::parts::vec3::sub(p, t[0]), ab) / dot(ab, ab)).clamp(0.0, 1.0);
+                    least = least.min(crate::parts::vec3::dist(p, crate::parts::vec3::add(t[0], ab.map(|v| v * u))));
+                }
+            }
+        }
+        least
+    };
+    // Two wires 6 mm thick lying on a plate (z 0, may not come nearer): one along x,
+    // one across it, both at z 3.
+    fn strand(points: &[V3], rest: V3, below: f32) -> Strand<'_> {
+        Strand { points, diameter: 6.0, rest, below }
+    }
+    let along = [[0.0, 0.0, 3.0], [400.0, 0.0, 3.0]];
+    let across = [[200.0, -200.0, 3.0], [200.0, 200.0, 3.0]];
+    let on_plate = ([0.0, 0.0, 1.0], 0.0);
+    let apart = separate(&[strand(&along, on_plate.0, on_plate.1), strand(&across, on_plate.0, on_plate.1)], &[], &[], &[]);
+    assert!(gap(&apart[0], &apart[1]) >= 6.0 - 0.1, "{apart:?}");
+    // One goes over the other, none into the plate; the ends stay.
+    assert!(apart.iter().flatten().all(|q| q[2] >= 3.0 - 1e-3));
+    assert_eq!((apart[0][0], *apart[0].last().unwrap()), (along[0], along[1]));
+    // Where they did not move they stay straight.
+    assert!(apart[0].len() < 20 && apart[1].len() < 20, "{apart:?}");
+
+    // Two lying on each other in a channel (60 wide, 20 deep) move apart inside it.
+    let same = [[0.0, 30.0, 10.0], [400.0, 30.0, 10.0]];
+    let channel = || Channel { inside: ([-10.0, 0.0, 0.0], [410.0, 60.0, 20.0]), floor: [0.0, 0.0, 1.0] };
+    let free = [strand(&same, [0.0; 3], f32::INFINITY), strand(&same, [0.0; 3], f32::INFINITY)];
+    let apart = separate(&free, &[], &[channel()], &[]);
+    assert!(gap(&apart[0], &apart[1]) >= 6.0 - 0.1, "{apart:?}");
+    assert!(apart.iter().flatten().all(|q| q[1] >= 3.0 - 1e-3 && q[1] <= 57.0 + 1e-3 && q[2] >= 3.0 - 1e-3 && q[2] <= 17.0 + 1e-3), "{apart:?}");
+
+    // A device in the way is kept out of.
+    let device = ([150.0, 33.5, 0.0], [250.0, 100.0, 50.0]);
+    let apart = separate(&free, &[device], &[channel()], &[]);
+    for q in apart.iter().flatten() {
+        assert!(!(q[0] > 150.0 && q[0] < 250.0 && q[1] + 3.0 > 33.5 + 1e-3), "{q:?}");
+    }
 }

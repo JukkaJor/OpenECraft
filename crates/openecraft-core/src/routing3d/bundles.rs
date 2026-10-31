@@ -1,10 +1,12 @@
 //! Cable bundles and their branches: stretches that several routed items share. The
 //! routes are traced through a grid; where the same items run along consecutive
 //! cells they form one bundle, and where items join or leave there is a branch. Ways
-//! running together lie side by side, each on a lane of its own ([`spread_ways`]).
+//! running together lie side by side, each on a lane of its own ([`spread_ways`]);
+//! where they still run inside or through each other they are pushed apart
+//! ([`separate`]).
 
 use super::{Class, RoutedItem};
-use crate::parts::vec3::{add, cross, dot, norm, segment_in_box, sub, V3};
+use crate::parts::vec3::{add, cross, dist, dot, norm, segment_in_box, sub, V3};
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 
 /// Stretch shared by two or more routed items.
@@ -165,6 +167,13 @@ pub fn find(items: &[RoutedItem], cell: f32) -> (Vec<Bundle>, Vec<Branch>) {
     (bundles, branches)
 }
 
+/// The inside of a cable duct the ways may run along: its box and the direction away
+/// from the surface it stands on (its base).
+pub struct Channel {
+    pub inside: (V3, V3),
+    pub floor: V3,
+}
+
 /// A polyline laid out with others by [`spread_ways`]: its corners, their bend radii, its
 /// outer diameter, and the surface it runs along (the mounting plate): the direction
 /// away from it (none: free) and how far it may come nearer to it.
@@ -184,12 +193,14 @@ pub struct Way<'a> {
 /// the lanes lie in rows away from it as far as the ways may move towards it and away
 /// (as deep as they lie in front of it), each row side by side along the surface;
 /// elsewhere they form a square turned like the bundles round their corners (traced
-/// through a grid of `cell`). The lanes keep out of the `obstacles` (boxes) a way did
-/// not run through before: centred on the group, otherwise all to one side of it (or a
+/// through a grid of `cell`). In one of the `channels` (along it) they lie in it as
+/// [`crate::panel::duct_lanes`] packs them. Elsewhere the lanes keep out of the
+/// `obstacles` (boxes) a way did not run through before and in the `insides` (boxes,
+/// the cabinets) it ran in: centred on the group, otherwise all to one side of it (or a
 /// corner), otherwise (along a surface) in one stack away from it; where none of them
 /// does, the group stays as it is. At its corners a way steps from lane to lane, its
 /// ends stay where they are, the stretches at its ends too.
-pub fn spread_ways(ways: &[Way], cell: f32, obstacles: &[(V3, V3)]) -> Vec<(Vec<V3>, Vec<f32>)> {
+pub fn spread_ways(ways: &[Way], cell: f32, obstacles: &[(V3, V3)], channels: &[Channel], insides: &[(V3, V3)]) -> Vec<(Vec<V3>, Vec<f32>)> {
     let stretches: Vec<(usize, &[V3])> = ways.iter().enumerate().map(|(i, w)| (i, w.points)).collect();
     let (_, chains) = chains(&stretches, cell);
     // Across each line of the grid the directions of the bundles on it, turned with
@@ -220,7 +231,7 @@ pub fn spread_ways(ways: &[Way], cell: f32, obstacles: &[(V3, V3)]) -> Vec<(Vec<
     }
     // The straight stretches along an axis: way, stretch, axis, from, to, the point. The
     // stretches at the ends (from the connection points) stay where they are.
-    let mut runs: Vec<(usize, usize, usize, f32, f32, V3)> = Vec::new();
+    let mut runs: Vec<Run> = Vec::new();
     for (i, way) in ways.iter().enumerate() {
         let last = way.points.len().saturating_sub(2);
         for (j, s) in way.points.windows(2).enumerate().filter(|(j, _)| *j > 0 && *j < last) {
@@ -230,39 +241,7 @@ pub fn spread_ways(ways: &[Way], cell: f32, obstacles: &[(V3, V3)]) -> Vec<(Vec<
             }
         }
     }
-    // Groups of runs that lie inside each other (joined, through the ones in between).
-    let mut root: Vec<usize> = (0..runs.len()).collect();
-    fn find(root: &mut [usize], mut i: usize) -> usize {
-        while root[i] != i {
-            root[i] = root[root[i]];
-            i = root[i];
-        }
-        i
-    }
-    let thickest = ways.iter().map(|w| w.diameter).fold(0.0, f32::max);
-    let mut order: Vec<usize> = (0..runs.len()).collect();
-    let side = |r: &(usize, usize, usize, f32, f32, V3)| r.5[(r.2 + 1) % 3];
-    order.sort_by(|&a, &b| runs[a].2.cmp(&runs[b].2).then(side(&runs[a]).total_cmp(&side(&runs[b]))));
-    for (n, &a) in order.iter().enumerate() {
-        let ra = runs[a];
-        for &b in &order[n + 1..] {
-            let rb = runs[b];
-            if rb.2 != ra.2 || side(&rb) - side(&ra) > thickest + 1.0 {
-                break;
-            }
-            let reach = (ways[ra.0].diameter + ways[rb.0].diameter) / 2.0;
-            let apart = (0..3).filter(|&k| k != ra.2).map(|k| (ra.5[k] - rb.5[k]).powi(2)).sum::<f32>().sqrt();
-            if ra.0 != rb.0 && apart < reach && ra.4.min(rb.4) - ra.3.max(rb.3) > 1.0 {
-                let (x, y) = (find(&mut root, a), find(&mut root, b));
-                root[x] = y;
-            }
-        }
-    }
-    let mut groups: BTreeMap<usize, Vec<usize>> = BTreeMap::new();
-    for r in 0..runs.len() {
-        let g = find(&mut root, r);
-        groups.entry(g).or_default().push(r);
-    }
+    let groups = groups(ways, &runs);
     // The move of each run onto its lane, across its axis.
     let mut moves: HashMap<(usize, usize), V3> = HashMap::new();
     for members in groups.values().filter(|m| m.len() >= 2) {
@@ -273,6 +252,16 @@ pub fn spread_ways(ways: &[Way], cell: f32, obstacles: &[(V3, V3)]) -> Vec<(Vec<
             k[axis] = 0;
             k
         });
+        // In a duct along it: packed into it.
+        let inside = |c: &&Channel| (0..3).all(|k| middle[k] >= c.inside.0[k] - 1.0 && middle[k] <= c.inside.1[k] + 1.0);
+        let along = |c: &&Channel| (0..3).all(|k| c.inside.1[axis] - c.inside.0[axis] >= c.inside.1[k] - c.inside.0[k]);
+        if let Some(c) = channels.iter().find(|c| inside(c) && along(c)) {
+            let at: Vec<(V3, f32)> = members.iter().map(|&r| (runs[r].5, ways[runs[r].0].diameter)).collect();
+            for (&r, to) in members.iter().zip(packed(c, axis, &at)) {
+                moves.insert((runs[r].0, runs[r].1), to);
+            }
+            continue;
+        }
         let gap = members.iter().map(|&r| ways[runs[r].0].diameter).fold(0.0, f32::max) + 1.0;
         // The surface the ways run along, across their axis.
         let rest = members.iter().map(|&r| ways[runs[r].0].rest).find(|n| *n != [0.0; 3]).map(|mut n| {
@@ -314,17 +303,23 @@ pub fn spread_ways(ways: &[Way], cell: f32, obstacles: &[(V3, V3)]) -> Vec<(Vec<
             }
             tos
         };
-        // Moved, no run enters an obstacle it did not run through before.
+        // Moved, no run enters an obstacle it did not run through before or comes further
+        // out of an inside it ran in.
         let clear = |tos: &[V3]| {
             members.iter().zip(tos).all(|(&r, to)| {
                 let (i, _, axis, from, till, at) = runs[r];
                 let (mut a, mut b) = (at, at);
                 (a[axis], b[axis]) = (from, till);
                 let half = ways[i].diameter / 2.0;
-                obstacles.iter().all(|(lo, hi)| {
-                    let bx = (lo.map(|x| x - half), hi.map(|x| x + half));
-                    segment_in_box(add(a, *to), add(b, *to), bx).is_none() || segment_in_box(a, b, bx).is_some()
-                })
+                let kept = |o: V3, (lo, hi): (V3, V3)| {
+                    let q = add(o, *to);
+                    !within(o, (lo, hi)) || (0..3).all(|k| q[k] >= (lo[k] + half).min(o[k]) - 1e-3 && q[k] <= (hi[k] - half).max(o[k]) + 1e-3)
+                };
+                insides.iter().all(|inside| kept(a, *inside) && kept(b, *inside))
+                    && obstacles.iter().all(|(lo, hi)| {
+                        let bx = (lo.map(|x| x - half), hi.map(|x| x + half));
+                        segment_in_box(add(a, *to), add(b, *to), bx).is_none() || segment_in_box(a, b, bx).is_some()
+                    })
             })
         };
         let (su, sv) = ((cols - 1) as f32 / 2.0, (rows - 1) as f32 / 2.0);
@@ -349,6 +344,68 @@ pub fn spread_ways(ways: &[Way], cell: f32, obstacles: &[(V3, V3)]) -> Vec<(Vec<
         .map(|(i, way)| {
             let offsets: Vec<V3> = (0..way.points.len().saturating_sub(1)).map(|j| moves.get(&(i, j)).copied().unwrap_or([0.0; 3])).collect();
             lay(way.points, way.radii, &offsets)
+        })
+        .collect()
+}
+
+/// A straight stretch of a way along an axis: way, stretch, axis, from, to, a point.
+type Run = (usize, usize, usize, f32, f32, V3);
+
+/// Groups of runs that lie inside each other (joined, through the ones in between).
+fn groups(ways: &[Way], runs: &[Run]) -> BTreeMap<usize, Vec<usize>> {
+    let mut root: Vec<usize> = (0..runs.len()).collect();
+    fn find(root: &mut [usize], mut i: usize) -> usize {
+        while root[i] != i {
+            root[i] = root[root[i]];
+            i = root[i];
+        }
+        i
+    }
+    let thickest = ways.iter().map(|w| w.diameter).fold(0.0, f32::max);
+    let mut order: Vec<usize> = (0..runs.len()).collect();
+    let side = |r: &Run| r.5[(r.2 + 1) % 3];
+    order.sort_by(|&a, &b| runs[a].2.cmp(&runs[b].2).then(side(&runs[a]).total_cmp(&side(&runs[b]))));
+    for (n, &a) in order.iter().enumerate() {
+        let ra = runs[a];
+        for &b in &order[n + 1..] {
+            let rb = runs[b];
+            if rb.2 != ra.2 || side(&rb) - side(&ra) > thickest + 1.0 {
+                break;
+            }
+            let reach = (ways[ra.0].diameter + ways[rb.0].diameter) / 2.0;
+            let apart = (0..3).filter(|&k| k != ra.2).map(|k| (ra.5[k] - rb.5[k]).powi(2)).sum::<f32>().sqrt();
+            if ra.0 != rb.0 && apart < reach && ra.4.min(rb.4) - ra.3.max(rb.3) > 1.0 {
+                let (x, y) = (find(&mut root, a), find(&mut root, b));
+                root[x] = y;
+            }
+        }
+    }
+    let mut groups: BTreeMap<usize, Vec<usize>> = BTreeMap::new();
+    for r in 0..runs.len() {
+        let g = find(&mut root, r);
+        groups.entry(g).or_default().push(r);
+    }
+    groups
+}
+
+/// The moves of ways along `axis` (where they are, their diameter) into the lanes of
+/// the channel `c` (across it).
+fn packed(c: &Channel, axis: usize, ways: &[(V3, f32)]) -> Vec<V3> {
+    let up = (0..3).find(|&k| k != axis && c.floor[k].abs() > 0.5).unwrap_or((axis + 1) % 3);
+    let across = 3 - axis - up;
+    let (lo, hi) = c.inside;
+    let diameters: Vec<f32> = ways.iter().map(|w| w.1).collect();
+    let (lanes, _) = crate::panel::duct_lanes(hi[across] - lo[across], hi[up] - lo[up], &diameters);
+    let (base, sign) = if c.floor[up] > 0.0 { (lo[up], 1.0) } else { (hi[up], -1.0) };
+    ways.iter()
+        .zip(lanes)
+        .map(|(&(at, _), [x, y])| {
+            let mut lane = at;
+            lane[across] = (lo[across] + hi[across]) / 2.0 + x;
+            lane[up] = base + sign * y;
+            let mut to = sub(lane, at);
+            to[axis] = 0.0;
+            to
         })
         .collect()
 }
@@ -392,6 +449,296 @@ fn lay(points: &[V3], radii: &[f32], offsets: &[V3]) -> (Vec<V3>, Vec<f32>) {
 
 fn same(a: V3, b: V3) -> bool {
     (0..3).all(|i| (a[i] - b[i]).abs() < 1e-3)
+}
+
+/// A wire, cable or tube drawn apart from the others by [`separate`]: its points (bent
+/// round its corners), its outer diameter and the surface it runs along (as [`Way`]).
+pub struct Strand<'a> {
+    pub points: &'a [V3],
+    pub diameter: f32,
+    pub rest: V3,
+    pub below: f32,
+}
+
+/// Overlap (mm) of two strands [`separate`] leaves (lanes touch).
+pub const STRAND_GAP: f32 = 0.05;
+
+/// Rounds of [`separate`] at most.
+const ROUNDS: usize = 60;
+
+/// The strands pushed apart where they still run inside or through each other: sampled
+/// along their length, each piece moved off the others by its share of their overlap
+/// (one over the other where they cross) and the move spread along the strand, round
+/// after round until none overlap (or [`ROUNDS`]). Their ends (twice their thickness from the connection points) and what
+/// lies inside one of the `obstacles` stay; no sample enters an obstacle it kept out
+/// of, comes further out of a channel's inside or one of the `insides` (the cabinets)
+/// it was in, or nearer to the surface it runs along than `below`. Straight where they
+/// did not move.
+pub fn separate(strands: &[Strand], obstacles: &[(V3, V3)], channels: &[Channel], insides: &[(V3, V3)]) -> Vec<Vec<V3>> {
+    let radius: Vec<f32> = strands.iter().map(|s| s.diameter.max(0.0) / 2.0).collect();
+    let Samples { mut at, owner, fixed, arc, spans } = samples(strands, obstacles);
+    let was = at.clone();
+    let keep = |i: usize, mut p: V3| -> V3 {
+        let (o, r, st) = (was[i], radius[owner[i]], &strands[owner[i]]);
+        if st.rest != [0.0; 3] {
+            let (h, least) = (dot(sub(p, o), st.rest), -st.below.max(0.0));
+            if h < least {
+                p = add(p, scale(st.rest, least - h));
+            }
+        }
+        for b in channels.iter().map(|c| c.inside).chain(insides.iter().copied()).filter(|b| within(o, *b)) {
+            for k in 0..3 {
+                p[k] = p[k].clamp((b.0[k] + r).min(o[k]), (b.1[k] - r).max(o[k]));
+            }
+        }
+        for &(lo, hi) in obstacles {
+            let (lo, hi) = (lo.map(|v| v - r), hi.map(|v| v + r));
+            if within(p, (lo, hi)) && !within(o, (lo, hi)) {
+                // Out the nearest side.
+                let (k, low) = (0..3).flat_map(|k| [(k, true), (k, false)]).min_by(|a, b| {
+                    let depth = |(k, low): (usize, bool)| if low { p[k] - lo[k] } else { hi[k] - p[k] };
+                    depth(*a).total_cmp(&depth(*b))
+                }).unwrap_or((0, true));
+                p[k] = if low { lo[k] - 0.01 } else { hi[k] + 0.01 };
+            }
+        }
+        p
+    };
+    // Segments (by their first sample) in every cell of a grid they come within their
+    // thickness of: the thin ones in small cells, the others in cells as large as the
+    // thickest.
+    let thin = 4.0f32;
+    let coarse = radius.iter().fold(2.0 * thin, |m, r| m.max(2.0 * r));
+    let level = |r: f32| usize::from(r > thin);
+    let size = [2.0 * thin, coarse];
+    let reach = |l: usize, a: V3, b: V3, r: f32| -> ([i32; 3], [i32; 3]) {
+        let key = |v: f32| (v / size[l]).floor() as i32;
+        ([0, 1, 2].map(|k| key(a[k].min(b[k]) - r)), [0, 1, 2].map(|k| key(a[k].max(b[k]) + r)))
+    };
+    let mut grids: [HashMap<[i32; 3], Vec<u32>>; 2] = [HashMap::new(), HashMap::new()];
+    let segment = |i: usize| i + 1 < owner.len() && owner[i] == owner[i + 1];
+    let mut placed: Vec<([i32; 3], [i32; 3])> = vec![([0; 3], [-1; 3]); at.len()];
+    for i in (0..at.len()).filter(|&i| segment(i)) {
+        let r = radius[owner[i]];
+        placed[i] = reach(level(r), at[i], at[i + 1], r);
+        for c in cells(placed[i]) {
+            grids[level(r)].entry(c).or_default().push(i as u32);
+        }
+    }
+    let mut seen = vec![usize::MAX; at.len()];
+    let mut active: Vec<usize> = (0..at.len()).filter(|&i| !fixed[i]).collect();
+    for _ in 0..ROUNDS {
+        // Each segment off the segments of the others it overlaps: by half the overlap
+        // (all of it off one that stays), its ends as far as they are near.
+        let mut pushes: BTreeMap<usize, (V3, f32)> = BTreeMap::new();
+        let segments: BTreeSet<usize> = active.iter().flat_map(|&i| [i.wrapping_sub(1), i]).filter(|&i| i != usize::MAX && segment(i)).collect();
+        for i in segments {
+            let (a, b, s) = (at[i], at[i + 1], owner[i]);
+            for (l, grid) in grids.iter().enumerate() {
+                for c in cells(reach(l, a, b, radius[s])) {
+                    for &j in grid.get(&c).map(Vec::as_slice).unwrap_or(&[]) {
+                        let j = j as usize;
+                        if owner[j] == s || seen[j] == i {
+                            continue;
+                        }
+                        seen[j] = i;
+                        let need = radius[s] + radius[owner[j]];
+                        let (own, other) = (sub(b, a), sub(at[j + 1], at[j]));
+                        let (u, t) = closest(a, own, at[j], other);
+                        let (p, q) = (add(a, scale(own, u)), add(at[j], scale(other, t)));
+                        let d = dist(p, q);
+                        if d >= need - STRAND_GAP {
+                            continue;
+                        }
+                        // Across each other: one over the other (along both), otherwise
+                        // apart.
+                        let over = cross(own, other);
+                        let crossing = dot(over, over) > 0.2 * dot(own, own) * dot(other, other);
+                        let (away, gap) = if crossing {
+                            let n = norm(over);
+                            let h = dot(sub(p, q), n);
+                            let up = if h.abs() > 1e-3 { h > 0.0 } else { (dot(n, strands[s].rest) >= 0.0) == (s < owner[j]) };
+                            (scale(n, if up { 1.0 } else { -1.0 }), h.abs())
+                        } else if d > 1e-4 {
+                            (scale(sub(p, q), 1.0 / d), d)
+                        } else {
+                            (aside(other, strands[s].rest, s < owner[j]), 0.0)
+                        };
+                        let share = if fixed[j] && fixed[j + 1] { 1.0 } else { 0.5 };
+                        let push = scale(away, (need - gap).max(0.0) * share);
+                        for (k, w) in [(i, 1.0 - u), (i + 1, u)] {
+                            let e = pushes.entry(k).or_insert(([0.0; 3], 0.0));
+                            *e = (add(e.0, scale(push, w)), e.1 + w);
+                        }
+                    }
+                }
+            }
+        }
+        let moves: Vec<(usize, V3)> = pushes.into_iter().filter(|(k, (_, w))| !fixed[*k] && *w > 1e-3).map(|(k, (sum, w))| (k, scale(sum, 1.0 / w.max(0.5)))).collect();
+        if moves.is_empty() {
+            break;
+        }
+        // Each move spread along its strand, fading out over three times its thickness
+        // (so that it bends away); where moves meet, their mean.
+        let mut spread: BTreeMap<usize, (V3, f32)> = BTreeMap::new();
+        for (i, m) in moves {
+            let (span, reach) = (spans[owner[i]].clone(), 3.0 * strands[owner[i]].diameter + 10.0);
+            let near = |k: &usize| (arc[*k] - arc[i]).abs() < reach;
+            for k in (span.start..i).rev().take_while(near).chain((i..span.end).take_while(near)).filter(|&k| !fixed[k]) {
+                let w = 1.0 - (arc[k] - arc[i]).abs() / reach;
+                let e = spread.entry(k).or_insert(([0.0; 3], 0.0));
+                *e = (add(e.0, scale(m, w)), e.1 + w);
+            }
+        }
+        let mut changed: Vec<usize> = Vec::new();
+        for (k, (sum, w)) in spread {
+            let to = keep(k, add(at[k], scale(sum, 1.0 / w.max(1.0))));
+            if dist(to, at[k]) > 0.01 {
+                at[k] = to;
+                changed.push(k);
+            }
+        }
+        // The grid follows the segments that moved; their samples and those next to
+        // them are checked again.
+        let mut next: BTreeSet<usize> = BTreeSet::new();
+        for &i in &changed {
+            for j in [i.wrapping_sub(1), i] {
+                if j == usize::MAX || !segment(j) {
+                    continue;
+                }
+                let r = radius[owner[j]];
+                let l = level(r);
+                let now = reach(l, at[j], at[j + 1], r);
+                if now != placed[j] {
+                    for c in cells(placed[j]) {
+                        if let Some(list) = grids[l].get_mut(&c) {
+                            list.retain(|&x| x as usize != j);
+                        }
+                    }
+                    for c in cells(now) {
+                        grids[l].entry(c).or_default().push(j as u32);
+                    }
+                    placed[j] = now;
+                }
+            }
+            next.extend([i.wrapping_sub(1), i, i + 1].into_iter().filter(|&m| m < at.len() && owner[m] == owner[i] && !fixed[m]));
+        }
+        active = next.into_iter().collect();
+    }
+    spans.into_iter().map(|span| straighten(&at[span], 0.05)).collect()
+}
+
+/// The points of the strands for [`separate`], every three quarters of their thickness
+/// (at least 3 mm): where they are, their strand, whether they stay (near the ends or
+/// inside an obstacle), how far along their strand, the samples of each strand.
+struct Samples {
+    at: Vec<V3>,
+    owner: Vec<usize>,
+    fixed: Vec<bool>,
+    arc: Vec<f32>,
+    spans: Vec<std::ops::Range<usize>>,
+}
+
+fn samples(strands: &[Strand], obstacles: &[(V3, V3)]) -> Samples {
+    let mut out = Samples { at: Vec::new(), owner: Vec::new(), fixed: Vec::new(), arc: Vec::new(), spans: Vec::new() };
+    for (s, st) in strands.iter().enumerate() {
+        let start = out.at.len();
+        let step = (st.diameter * 0.75).max(3.0);
+        let ends = 2.0 * st.diameter + 10.0;
+        let total: f32 = st.points.windows(2).map(|w| dist(w[0], w[1])).sum();
+        let mut run = 0.0;
+        for (k, &q) in st.points.iter().enumerate() {
+            let a = if k == 0 { q } else { st.points[k - 1] };
+            let len = dist(a, q);
+            let n = if k == 0 { 1 } else { (len / step).ceil().max(1.0) as usize };
+            for i in 1..=n {
+                let t = i as f32 / n as f32;
+                let p = add(a, scale(sub(q, a), t));
+                let along = run + len * t;
+                out.at.push(p);
+                out.owner.push(s);
+                out.arc.push(along);
+                out.fixed.push(along.min(total - along) < ends || obstacles.iter().any(|b| within(p, *b)));
+            }
+            run += len;
+        }
+        out.spans.push(start..out.at.len());
+    }
+    out
+}
+
+/// Where the segments from `a` along `da` and from `b` along `db` come nearest: the
+/// share of each.
+fn closest(a: V3, da: V3, b: V3, db: V3) -> (f32, f32) {
+    let r = sub(a, b);
+    let (la, lb, f) = (dot(da, da), dot(db, db), dot(db, r));
+    if la <= 1e-9 || lb <= 1e-9 {
+        return match (la <= 1e-9, lb <= 1e-9) {
+            (true, true) => (0.0, 0.0),
+            (true, false) => (0.0, (f / lb).clamp(0.0, 1.0)),
+            _ => ((-dot(da, r) / la).clamp(0.0, 1.0), 0.0),
+        };
+    }
+    let (c, k) = (dot(da, r), dot(da, db));
+    let denom = la * lb - k * k;
+    let s = if denom > 1e-9 { ((k * f - c * lb) / denom).clamp(0.0, 1.0) } else { 0.0 };
+    let t = (k * s + f) / lb;
+    if t < 0.0 {
+        ((-c / la).clamp(0.0, 1.0), 0.0)
+    } else if t > 1.0 {
+        (((k - c) / la).clamp(0.0, 1.0), 1.0)
+    } else {
+        (s, t)
+    }
+}
+
+/// The cells of a grid from `lo` to `hi`.
+fn cells((lo, hi): ([i32; 3], [i32; 3])) -> impl Iterator<Item = [i32; 3]> {
+    (lo[0]..=hi[0]).flat_map(move |x| (lo[1]..=hi[1]).flat_map(move |y| (lo[2]..=hi[2]).map(move |z| [x, y, z])))
+}
+
+/// Inside the box `b`.
+fn within(p: V3, b: (V3, V3)) -> bool {
+    (0..3).all(|k| p[k] >= b.0[k] && p[k] <= b.1[k])
+}
+
+/// Across the segment `along` lying on another one: along the surface the strand runs
+/// on (or across the axis it runs least along), to one side or the other.
+fn aside(along: V3, rest: V3, first: bool) -> V3 {
+    let least = (0..3).min_by(|&a, &b| along[a].abs().total_cmp(&along[b].abs())).unwrap_or(0);
+    let mut d = cross(along, if rest != [0.0; 3] { rest } else { unit(least) });
+    if dot(d, d) < 1e-8 {
+        d = cross(along, unit((least + 1) % 3));
+    }
+    scale(norm(d), if first { 1.0 } else { -1.0 })
+}
+
+/// The points without those that lie within `tolerance` of the line through their
+/// neighbours kept (Douglas–Peucker).
+fn straighten(points: &[V3], tolerance: f32) -> Vec<V3> {
+    if points.len() < 3 {
+        return points.to_vec();
+    }
+    let mut keep = vec![false; points.len()];
+    let (first, last) = (0, points.len() - 1);
+    keep[first] = true;
+    keep[last] = true;
+    let mut stack = vec![(first, last)];
+    while let Some((a, b)) = stack.pop() {
+        let ab = sub(points[b], points[a]);
+        let l2 = dot(ab, ab);
+        let off = |q: V3| {
+            let t = if l2 > 0.0 { (dot(sub(q, points[a]), ab) / l2).clamp(0.0, 1.0) } else { 0.0 };
+            dist(q, add(points[a], scale(ab, t)))
+        };
+        if let Some((m, d)) = (a + 1..b).map(|m| (m, off(points[m]))).max_by(|x, y| x.1.total_cmp(&y.1)) {
+            if d > tolerance {
+                keep[m] = true;
+                stack.extend([(a, m), (m, b)]);
+            }
+        }
+    }
+    points.iter().zip(keep).filter(|(_, k)| *k).map(|(p, _)| *p).collect()
 }
 
 #[cfg(test)]

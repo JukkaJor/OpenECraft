@@ -492,6 +492,7 @@ Breaking capacity: 100 kA".into();
         ("GEN.DUCT-60X80", "Cable duct 60 x 80 mm, 2 m", 15.9, (2000.0, 60.0, 80.0, 1.3)),
         ("GEN.DUCT-80X80", "Cable duct 80 x 80 mm, 2 m", 18.7, (2000.0, 80.0, 80.0, 1.5)),
         ("GEN.DUCT-100X80", "Cable duct 100 x 80 mm, 2 m", 22.4, (2000.0, 100.0, 80.0, 1.8)),
+        ("GEN.DUCT-100X120", "Cable duct 100 x 120 mm, 2 m", 31.5, (2000.0, 100.0, 120.0, 2.4)),
     ] {
         let p = c.add(number, desc, "Mounting", "Cable duct", "", price, dims, &[]);
         p.pack_quantity = 10;
