@@ -95,7 +95,7 @@ pub(super) fn room_entry(prj: &Project, pos: &[V3], poses: &[SitePose], ri: usiz
             let outside = cabinet_in_room(prj, poses, ri, k, panel::face_point(e, g.face, [c[0], c[1], -OUTSIDE]));
             let d = manhattan(outside, near);
             if best.as_ref().is_none_or(|b| d < b.0) {
-                let end = End { tag: g.part.clone(), enclosure: Some(k), point: Some(add(panel::face_point(e, g.face, [c[0], c[1], 5.0]), pos[k])), item: Some(g.id), cores: Vec::new() };
+                let end = End { tag: g.part.clone(), enclosure: Some(k), point: Some(add(panel::face_point(e, g.face, [c[0], c[1], 5.0]), pos[k])), item: Some(g.id), ..Default::default() };
                 best = Some((d, end, add(outside, pos[ri])));
             }
         }
@@ -107,7 +107,7 @@ pub(super) fn room_entry(prj: &Project, pos: &[V3], poses: &[SitePose], ri: usiz
     let c = [e.width / 2.0, e.depth / 2.0];
     let inside = add(panel::face_point(e, Face::Roof, [c[0], c[1], 5.0]), pos[ci]);
     let outside = cabinet_in_room(prj, poses, ri, ci, panel::face_point(e, Face::Roof, [c[0], c[1], -OUTSIDE]));
-    (End { tag: tr("Roof").to_string(), enclosure: Some(ci), point: Some(inside), item: None, cores: Vec::new() }, add(outside, pos[ri]), true)
+    (End { tag: tr("Roof").to_string(), enclosure: Some(ci), point: Some(inside), item: None, ..Default::default() }, add(outside, pos[ri]), true)
 }
 
 /// A stretch of a route to be routed in one line-up or room: from `a` to `b` (layout

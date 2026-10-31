@@ -20,7 +20,10 @@ line-ups, rooms of the building with their floor-standing equipment and pipe run
   Appearance); *Hide walls in front* leaves out the walls between the eye and the inside,
   *Hide ceiling* the ceilings of the rooms. Wires are drawn in their colour (two-colour
   wires such as green-yellow with a stripe) and, like cables and tubes, as thick as
-  their outer diameter.
+  their outer diameter. A cable ends a little before the device it is connected to and
+  its cores part from there in smooth curves, each into its connection point from the
+  side its wires leave it; through cable glands, wall penetrations and the cable passages
+  between cabinets cables and wires are drawn in one piece, bent round there.
 - Copper **busbar systems** (bars drawn, metres and holders in the BOM) and rectangular
   or round **cutouts** in the mounting plate. A device placed over a busbar system is
   mounted onto its bars; devices on the same busbar system are connected by the bars,
@@ -211,6 +214,10 @@ their distance (a short stretch first or last). A route between a cabinet and a 
 room (or two cabinets of one room) runs in legs: through the cabinet to a cable gland on
 its roof, sides or rear (one of its own cabinet first, otherwise of the line-up; without
 one through the middle of the roof, which is reported), then through the room. Frozen, such a route keeps its legs.
+Hoses, tubes and pipes end at the nozzles of the generated models of their devices (the
+suction and the pressure nozzle of a pump, the nozzles of a vessel, both ends of a valve
+or a fitting, the outlets of a manifold): the route comes to a point twice as far out of
+the nozzle as the pipe is thick (at least 30 mm) and goes on straight into it.
 The example `pump_room` shows floor-standing pumps, a pipe run and the routes.
 
 In a schematic, the context menu of a placed device shows it in the panel layout (its

@@ -238,11 +238,11 @@ pub fn wire_place(hiders: impl IntoIterator<Item = (usize, bool)>, rank: &[usize
     }
 }
 
-fn scale(a: V3, f: f32) -> V3 {
+pub fn scale(a: V3, f: f32) -> V3 {
     [a[0] * f, a[1] * f, a[2] * f]
 }
 
-fn length(a: V3) -> f32 {
+pub fn length(a: V3) -> f32 {
     dot(a, a).sqrt()
 }
 

@@ -462,6 +462,9 @@ impl PanelUi {
         // in the ducts of the cabinets (never over their covers), elsewhere inside their
         // walls.
         let mut pending: Vec<TubeWay> = Vec::new();
+        // The pieces of the wires drawn as tubes in each enclosure (wire, stretch), joined
+        // through the cable passages once all are known.
+        let mut wire_pieces: Vec<(usize, usize, TubeWay)> = Vec::new();
         let mut channels: Vec<Channel> = Vec::new();
         let mut insides: Vec<(V3, V3)> = Vec::new();
         let mut lids: Vec<(V3, V3)> = Vec::new();
@@ -716,16 +719,17 @@ impl PanelUi {
                 };
                 // Cable passages (line-up coordinates) in this enclosure's view.
                 let passage = |q: V3| up([q[0] - pos[k][0], q[1] - pos[k][1], q[2] - pos[k][2]]);
-                let paths: Vec<Vec<V3>> = match wire.door {
+                let paths: Vec<(usize, Vec<V3>)> = match wire.door {
                     (Some(a), Some(b)) if wire.on_door() => match &wire.door_routes.0 {
-                        Some(r) => vec![panel::door_jumper_path(e, a, b, r).into_iter().map(|v| swing(up(v))).collect()],
+                        Some(r) => vec![(0, panel::door_jumper_path(e, a, b, r).into_iter().map(|v| swing(up(v))).collect())],
                         None => Vec::new(),
                     },
                     (a, b) => wire
                         .stretch_passages()
                         .into_iter()
-                        .filter(|s| s.0 == k)
-                        .map(|(_, route, entry, exit)| {
+                        .enumerate()
+                        .filter(|(_, s)| s.0 == k)
+                        .map(|(i, (_, route, entry, exit))| {
                             let z = if route.via_ducts { panel::DUCT_PROFILE.1 * 0.5 } else { 5.0 };
                             // From the connection points down to the plate.
                             let mut v = match (entry, a) {
@@ -744,7 +748,7 @@ impl PanelUi {
                                 (None, None) => v.extend(wire.terminals.1.map(up)),
                                 _ => {}
                             }
-                            v
+                            (i, v)
                         })
                         .collect(),
                 };
@@ -752,7 +756,7 @@ impl PanelUi {
                 // the mounting plate.
                 let bend = prj.layout.routing.bend_radius(RouteKind::Wire, diameter);
                 let on_plate = !e.is_room() && wire.door == (None, None);
-                for path in &paths {
+                for (i, path) in &paths {
                     let (rest, below) = match on_plate {
                         true => (pose.turn([0.0, 0.0, 1.0]), path.iter().map(|q| q[2] - PLATE_Z).fold(f32::INFINITY, f32::min) - diameter / 2.0 - super::routing_ui::PLATE_CLEAR),
                         false => ([0.0; 3], f32::INFINITY),
@@ -760,7 +764,7 @@ impl PanelUi {
                     let path: Vec<V3> = path.iter().map(|q| pose.apply(*q)).collect();
                     if diameter > 0.0 {
                         let bends = vec![bend; path.len()];
-                        pending.push(TubeWay { points: path, bends, diameter, color, stripe, width, on_top: selected, target: RouteRef::Wire(wi), sides: WIRE_SIDES, steps: 2, rest, below });
+                        wire_pieces.push((wi, *i, TubeWay { points: path, bends, diameter, color, stripe, width, on_top: selected, target: RouteRef::Wire(wi), sides: WIRE_SIDES, steps: 2, rest, below }));
                         continue;
                     }
                     for seg in path.windows(2) {
@@ -793,6 +797,21 @@ impl PanelUi {
                 };
                 s.labels.push(SceneLabel { at: pose.apply(front), normal: pose.turn(normal), size: it.w.min(it.h), tag: it.tag.clone() });
             }
+        }
+        // A wire through the cable passages between the cabinets is one tube, bent there.
+        wire_pieces.sort_by_key(|p| (p.0, p.1));
+        let mut last: Option<(usize, usize)> = None;
+        for (wi, i, t) in wire_pieces {
+            let next = last.is_some_and(|(w, j)| w == wi && j + 1 == i);
+            match pending.last_mut() {
+                Some(prev) if next && prev.points.last().zip(t.points.first()).is_some_and(|(a, b)| vec3::dist(*a, *b) < 0.5) => {
+                    prev.points.extend(t.points.into_iter().skip(1));
+                    prev.bends.extend(t.bends.into_iter().skip(1));
+                    prev.below = prev.below.min(t.below);
+                }
+                _ => pending.push(t),
+            }
+            last = Some((wi, i));
         }
         // 3D routing across the enclosures shown: routing paths, reservations, cables and
         // tubes (and the wires routed in 3D), from layout to view coordinates through the
@@ -891,3 +910,4 @@ impl PanelUi {
 
 #[cfg(test)]
 mod tests;
+

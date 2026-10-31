@@ -969,7 +969,7 @@ const PUSHER: [u8; 3] = [236, 116, 34];
 mod models;
 mod mounting;
 
-pub use models::{shaft, Shaft};
+pub use models::{nozzles, shaft, Nozzle, Shaft};
 
 #[cfg(test)]
 mod tests;

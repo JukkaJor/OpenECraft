@@ -1,4 +1,5 @@
 use super::*;
+use openecraft_core::parts::vec3;
 
 #[test]
 fn fill_colours_follow_the_limit() {
@@ -225,20 +226,83 @@ fn cable_cores_are_drawn_with_their_cable() {
     let cores = scene.picks.iter().filter(|(_, _, t)| matches!(t, routing_ui::RouteRef::Wire(wi) if an.wiring[*wi].cable == "=ESS-W97")).count();
     assert_eq!(cores, 0);
     assert!(scene.picks.iter().any(|(_, _, t)| matches!(t, routing_ui::RouteRef::Item(key) if key == "=ESS-W97")));
-    // The battery cable parts in front of the battery into its cores to + and -; they
-    // are seen without the cable being selected.
+    // The battery cable parts in front of the battery into its cores to + and -: each a
+    // smooth curve out of the end of the cable into its connection point, coming in
+    // against the direction it leaves it in; they are seen without the cable being
+    // selected.
     let w71 = an.routing.item("=ESS-W71").unwrap();
     let end = w71.ends.iter().find(|e| e.tag == "=ESS+RACK-G1").unwrap();
-    assert_eq!(end.cores.len(), 2);
-    let approach = w71.stretches()[0].1[1];
+    assert_eq!((end.cores.len(), end.exits.len()), (2, 2));
     let lines = ui.routing_lines_3d(&prj, &an, &[rack], &|_, q| q, None);
+    let lines: Vec<_> = lines.iter().filter(|l| matches!(&l.target, routing_ui::RouteRef::Item(k) if k == "=ESS-W71")).collect();
     let (pos, (_, pose)) = (panel::positions(&prj.layout)[rack], shown[0]);
     let view = |q: [f32; 3]| pose.apply([q[0] - pos[0], prj.layout.enclosures[rack].height - (q[1] - pos[1]), q[2] - pos[2]]);
-    for core in &end.cores {
-        assert!(lines.iter().any(|l| matches!(&l.target, routing_ui::RouteRef::Item(k) if k == "=ESS-W71") && l.points == [approach, *core]), "{core:?}");
+    for (core, exit) in end.cores.iter().zip(&end.exits) {
+        let line = lines.iter().find(|l| l.points.last() == Some(core) && l.diameter < w71.diameter).unwrap_or_else(|| panic!("{core:?}"));
+        let dirs: Vec<[f32; 3]> = line.points.windows(2).map(|s| vec3::norm(vec3::sub(s[1], s[0]))).collect();
+        assert!(dirs.windows(2).all(|d| vec3::dot(d[0], d[1]) > 0.7), "{:?}", line.points);
+        assert!(vec3::dot(dirs[dirs.len() - 1], vec3::norm(*exit)) < -0.9, "{:?}", line.points);
+        let start = line.points[0];
+        assert!(lines.iter().any(|l| l.diameter == w71.diameter && l.points.iter().any(|q| vec3::dist(*q, start) <= w71.diameter / 2.0 + 0.01)), "{start:?}");
         let at = view(*core);
         assert!(scene.wires.iter().any(|w| [w.line.a, w.line.b].iter().any(|q| (0..3).all(|k| (q[k] - at[k]).abs() < 0.5)) && w.line.a != w.line.b), "{core:?} not drawn");
     }
+}
+
+#[test]
+fn cables_run_on_through_the_cable_glands_into_the_room() {
+    // The motor cable of pump 1 leaves its cabinet through the gland in the roof: the
+    // stretch through the cabinet and the one through the room are one line through it.
+    let prj = openecraft_core::sample::example("pump_room").unwrap();
+    let an = Analysis::build(&prj);
+    let room = prj.layout.enclosures.iter().position(|e| e.is_room()).unwrap();
+    let w1 = an.routing.item("=P1-W1").unwrap();
+    assert_eq!(w1.legs.len(), 2);
+    let mut ui = PanelUi { show_wires: true, ..Default::default() };
+    let shown = ui.shown_3d(&prj, room);
+    let scene = ui.scene_3d(&egui::Context::default(), &prj, &an, room, &shown);
+    let k = w1.legs[0].enclosure;
+    let (pos, pose) = (panel::positions(&prj.layout)[k], shown.iter().find(|s| s.0 == k).unwrap().1);
+    let gland = *w1.legs[0].points.last().unwrap();
+    let g = pose.apply([gland[0] - pos[0], prj.layout.enclosures[k].height - (gland[1] - pos[1]), gland[2] - pos[2]]);
+    // A piece of the cable crosses the roof just above the gland.
+    let above = g[1] + 20.0;
+    let through = scene.picks.iter().filter(|(_, _, t)| matches!(t, routing_ui::RouteRef::Item(key) if key == "=P1-W1")).any(|(a, b, _)| {
+        let (lo, hi) = if a[1] < b[1] { (a, b) } else { (b, a) };
+        if !(lo[1] <= above && hi[1] >= above) || hi[1] - lo[1] < 1e-3 {
+            return false;
+        }
+        let t = (above - lo[1]) / (hi[1] - lo[1]);
+        let q = [0, 1, 2].map(|i| lo[i] + (hi[i] - lo[i]) * t);
+        (q[0] - g[0]).hypot(q[2] - g[2]) < 30.0
+    });
+    assert!(through, "no piece of the cable through the gland at {g:?}");
+}
+
+#[test]
+fn wires_run_through_the_cable_passages_in_one_bend() {
+    // Wires from +CAB1 to +CAB2 of the pump room pass the cable passage between them
+    // bent round, not with a corner where their stretches in the two cabinets meet.
+    let prj = openecraft_core::sample::example("pump_room").unwrap();
+    let an = Analysis::build(&prj);
+    let mut ui = PanelUi { show_wires: true, ..Default::default() };
+    let shown = ui.shown_3d(&prj, 0);
+    let scene = ui.scene_3d(&egui::Context::default(), &prj, &an, 0, &shown);
+    let pos = panel::positions(&prj.layout);
+    let mut checked = 0;
+    for (wi, w) in an.wiring.iter().enumerate().filter(|(_, w)| w.legs.len() == 1 && w.cable.is_empty()) {
+        let (k, pose) = shown.iter().copied().find(|s| s.0 == w.enclosure).unwrap();
+        let q = w.legs[0].passage;
+        let p = pose.apply([q[0] - pos[k][0], prj.layout.enclosures[k].height - (q[1] - pos[k][1]), q[2] - pos[k][2]]);
+        let segs: Vec<_> = scene.picks.iter().filter(|(_, _, t)| matches!(t, routing_ui::RouteRef::Wire(i) if *i == wi)).collect();
+        let near = |a: [f32; 3]| vec3::dist(a, p) < 40.0;
+        for s in segs.windows(2).filter(|s| vec3::dist(s[0].1, s[1].0) < 0.01 && near(s[0].1)) {
+            let (u, v) = (vec3::norm(vec3::sub(s[0].1, s[0].0)), vec3::norm(vec3::sub(s[1].1, s[1].0)));
+            assert!(vec3::dot(u, v) > 0.6, "{} turns sharply at {:?}", w.number, s[0].1);
+            checked += 1;
+        }
+    }
+    assert!(checked > 0);
 }
 
 #[test]

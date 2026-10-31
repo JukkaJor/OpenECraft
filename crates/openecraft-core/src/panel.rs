@@ -38,7 +38,7 @@ pub use fill::{duct_fill, duct_inside, duct_lanes, duct_lanes_in_order, wire_are
 pub use lineup::{add_facing_cutout, add_passage, bay_right_of, lineup_of, lineups, neighbours, next_passage_place, passages, positions, route_across, set_site, site_poses, unbay, Leg, Passage, SitePlace, SitePose, LINEUP_GAP, PASSAGE_DIAMETER};
 pub use macros::{all_macros, builtin_macros, group_members, insert_macro, macro_from_items, ItemGroup, PanelMacro};
 pub use placement::{align, apply_anchors, apply_one_anchor, arrange_on_rail, capture_anchors, distribute, pattern_copy, Align, AlignTo, Anchor};
-pub use points::{device_points, point_of, PlacedPoint};
+pub use points::{device_points, exit_vector, nozzle, point_of, PlacedPoint};
 pub use rack::{is_rack, mount_in_rack, rack_units, RACK_SYSTEM, RACK_UNIT, RACK_WIDTH};
 pub use rooms::{
     add_inner_wall, add_opening, add_pipe_run, add_wall_profile, pipe_run_offset, pipe_run_on_face, PIPE_RUN_WIDTH, inner_sides, moved_inner_wall, remove_inner_wall, side, INNER_WALL, door_zone, opening_sill, entries, entry_point, ENTRY_SILL, ENTRY_SIZE, DOOR_SIZE, WINDOW_SILL, WINDOW_SIZE, bounds, cabinet_problems, cabinets_in, check_outline, floor_cells, floor_footprint, floor_problems, footprint, inside_outline, mount_ok, mount_on_wall, moved_wall, new_room, normalize_outline, outline, room_face_from_key, room_face_key, room_face_title, room_faces,

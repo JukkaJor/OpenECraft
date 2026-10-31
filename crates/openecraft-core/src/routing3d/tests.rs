@@ -249,3 +249,30 @@ fn searches_at_the_same_time_give_the_same_routes() {
     assert!(one.0.paths.iter().any(|u| u.items > 1), "{:?}", one.0.paths);
     assert!(one == four);
 }
+
+#[test]
+fn pipes_end_at_the_nozzles_of_their_devices() {
+    let prj = crate::sample::example("pump_room").unwrap();
+    let an = Analysis::build(&prj);
+    let pipes: Vec<&RoutedItem> = an.routing.items.iter().filter(|i| i.kind == RouteKind::Tube && i.routed()).collect();
+    assert!(!pipes.is_empty());
+    for it in &pipes {
+        // Into each nozzle straight from the end of the route out of it (devices without
+        // a model with nozzles, like the gauge, as before).
+        let n = it.points.len();
+        for (end, tip, out) in [(0, it.points[0], it.points[1]), (1, it.points[n - 1], it.points[n - 2])] {
+            let Some(nozzle) = it.ends[end].nozzle else { continue };
+            assert_eq!(tip, nozzle, "{}", it.label);
+            assert!(crate::parts::vec3::dist(out, it.ends[end].point.unwrap()) < 0.01, "{}", it.label);
+            assert!(crate::parts::vec3::dist(out, tip) >= NOZZLE_OUT, "{}", it.label);
+        }
+    }
+    // The suction and the pressure pipe of the pump, the two pipes of the vessel: each at
+    // a nozzle of its own.
+    for tag in ["=P1+ER1-GP1", "=P1+ER1-CM1"] {
+        let mut at: Vec<V3> = pipes.iter().flat_map(|i| i.ends.iter()).filter(|e| e.tag == tag).filter_map(|e| e.nozzle).collect();
+        assert_eq!(at.len(), 2, "{tag}");
+        at.dedup();
+        assert_eq!(at.len(), 2, "{tag}: {at:?}");
+    }
+}
