@@ -74,6 +74,7 @@ pub fn room_space(prj: &Project, ri: usize, pos: &[V3], poses: &[SitePose], rule
     }
     s.add_enclosure(e, ri, o, rules);
     s.mark_open(KEEP_TO_SURFACES);
+    s.measure();
     s
 }
 

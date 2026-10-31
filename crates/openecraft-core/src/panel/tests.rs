@@ -608,7 +608,7 @@ fn cable_ducts_have_slotted_walls_and_a_cover() {
     let mut checked = 0;
     for it in e.items.iter().filter(|i| i.kind == ItemKind::Duct) {
         let (lo, hi) = item_box(e, it);
-        let boxes = duct_boxes(e, it);
+        let boxes = duct_boxes(e, it, true);
         assert!(boxes.iter().all(|((a, b), _)| (0..3).all(|k| a[k] >= lo[k] - 0.01 && b[k] <= hi[k] + 0.01)), "{it:?}");
         // The cover closes the duct at the front (plate ducts face the door, door ducts
         // the inside of the enclosure).
@@ -624,6 +624,9 @@ fn cable_ducts_have_slotted_walls_and_a_cover() {
         starts.dedup();
         let width = fingers[0].0 .1[along] - fingers[0].0 .0[along];
         assert!(starts.windows(2).all(|s| s[1] - s[0] > width + 1.0), "slots between the fingers");
+        // Opened, the same without the cover.
+        let open = duct_boxes(e, it, false);
+        assert!(open.len() == boxes.len() - 1 && !open.iter().any(|(_, c)| *c == cover), "{it:?}");
         checked += 1;
     }
     assert!(checked > 2);

@@ -5960,3 +5960,5 @@ Reading the parts file	Lese die Artikeldatei	Lecture du fichier d'articles	Leyen
 Driven by	Angetrieben von	Entraîné par	Accionado por
 Drive type	Antriebsart	Type d'entraînement	Tipo de transmisión
 Select wire	Verbindung auswählen	Sélectionner le fil	Seleccionar el cable
+Open cable ducts	Kabelkanäle öffnen	Ouvrir les goulottes	Abrir las canaletas
+Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	In der 3D-Ansicht die Deckel aller Kabelkanäle weglassen: die Verbindungen darin werden sichtbar	Dans la vue 3D, omettre les couvercles de toutes les goulottes : les fils qu'elles contiennent sont visibles	En la vista 3D, omitir las tapas de todas las canaletas: se ven los cables que contienen

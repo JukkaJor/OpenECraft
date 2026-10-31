@@ -62,7 +62,10 @@ with a command line, an MCP server, a parts server and a project server.
   ceiling on request; the opacity of the walls is a setting. Wires are drawn in their
   colours and, like cables and tubes, in their real thickness as round tubes bent round
   their corners with their bend radius, from the plate up to their
-  connection points; cable cores are drawn with their cable. The title bar can show
+  connection points; cable cores are drawn with their cable. Routes keep half their
+  thickness from what is around them and turn where their bends have room, cables keep
+  out of cable ducts too small for them; View › Open cable ducts leaves out the covers
+  of the ducts. The title bar can show
   the frame time and the frames per second (Settings › Appearance). A placed device is shown in the
   panel layout or the 3D view from its context menu in the schematic. Pumps, tanks
   and other parts marked for floor mounting stand on the floor of a room; a pump or

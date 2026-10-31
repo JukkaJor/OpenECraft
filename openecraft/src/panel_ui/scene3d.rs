@@ -10,6 +10,7 @@ use openecraft_core::analysis::Analysis;
 use openecraft_core::model::Project;
 use openecraft_core::panel::{self, Face, ItemKind, Opening, Role, SitePose, PLATE_MARGIN, PLATE_Z};
 use openecraft_core::parts::vec3::{self, cross, dot, norm, sub, V3};
+use openecraft_core::routing3d::RouteKind;
 use egui::Color32;
 use std::hash::{Hash, Hasher};
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -19,8 +20,9 @@ use std::sync::Arc;
 pub(super) const EQUIPMENT: u8 = 5;
 /// Layer of what is drawn over everything (the selected wire or route).
 pub(super) const ON_TOP: u8 = OUTER_WALLS + 1;
-/// Sides of the round tubes of wires, cables and tubes.
+/// Sides of the round tubes of cables and tubes, and of the many thin wires.
 const TUBE_SIDES: usize = 10;
+const WIRE_SIDES: usize = 6;
 
 /// A flat face of the view: a triangle of a model or a side of a box.
 pub(super) struct SceneFace {
@@ -182,7 +184,7 @@ impl PanelUi {
         }
         self.selection.hash(&mut h);
         self.wire_index(an).hash(&mut h);
-        (self.show_wires, self.hide_ceiling, self.door_angle.to_bits()).hash(&mut h);
+        (self.show_wires, self.hide_ceiling, self.open_ducts, self.door_angle.to_bits()).hash(&mut h);
         (&self.selected_route, self.selected_object).hash(&mut h);
         unordered(self.done_items.iter()).hash(&mut h);
         unordered(self.done_wires.iter()).hash(&mut h);
@@ -200,6 +202,17 @@ impl PanelUi {
         let lit = |base: Color32, n: V3| {
             let shade = 0.55 + 0.45 * dot(n, light).max(0.0);
             Color32::from_rgb((base.r() as f32 * shade) as u8, (base.g() as f32 * shade) as u8, (base.b() as f32 * shade) as u8)
+        };
+        // Round tubes of a wire, cable or tube (a two-colour one with a stripe along it).
+        let tube_faces = |tubes: &mut Vec<SceneFace>, path: &[V3], diameter: f32, color: Color32, stripe: Option<Color32>, sides: usize| {
+            for (tri, side) in vec3::tube(path, diameter / 2.0, sides) {
+                let normal = norm(cross(sub(tri[1], tri[0]), sub(tri[2], tri[0])));
+                let base = match stripe {
+                    Some(stripe) if side < sides / 3 => stripe,
+                    _ => color,
+                };
+                tubes.push(SceneFace { pts: [tri[0], tri[1], tri[2], tri[2]], n: 3, normal, color: lit(base, normal), layer: EQUIPMENT, side: None, obj: None, item: None, outline: false, decal: false });
+            }
         };
         // Wire segments among the equipment, cut at the boxes once all of them are known.
         let mut equipment_wires: Vec<SceneLine> = Vec::new();
@@ -361,7 +374,7 @@ impl PanelUi {
                 }
                 // Cable ducts of a cabinet: slotted walls and the cover.
                 if it.kind == ItemKind::Duct && !e.is_room() {
-                    for (bx, [r, g, b]) in panel::duct_boxes(e, it) {
+                    for (bx, [r, g, b]) in panel::duct_boxes(e, it, !self.open_ducts) {
                         let (min, max) = up_box(bx);
                         add_box(&mut s, EQUIPMENT, None, obj, min, max, highlight.unwrap_or(Color32::from_rgb(r, g, b)), Some(it.id), on_door, false);
                     }
@@ -451,14 +464,24 @@ impl PanelUi {
                         })
                         .collect(),
                 };
-                for seg in paths.iter().flat_map(|p| p.windows(2)) {
-                    let (a, b) = (pose.apply(seg[0]), pose.apply(seg[1]));
-                    if selected {
-                        s.lines.push(SceneLine { a, b, color, stripe: None, least: width, diameter, tube: false });
-                    } else {
-                        equipment_wires.push(SceneLine { a, b, color, stripe, least: width, diameter, tube: false });
+                // Bent round their corners as round tubes.
+                let tube = diameter > 0.0;
+                let bend = prj.layout.routing.bend_radius(RouteKind::Wire, diameter);
+                for path in &paths {
+                    let path: Vec<V3> = path.iter().map(|q| pose.apply(*q)).collect();
+                    let path = if tube { vec3::fillet(&path, bend, 2) } else { path };
+                    if tube {
+                        tube_faces(&mut s.tubes, &path, diameter, color, stripe, WIRE_SIDES);
                     }
-                    s.picks.push((a, b, RouteRef::Wire(wi)));
+                    for seg in path.windows(2) {
+                        let (a, b) = (seg[0], seg[1]);
+                        if selected {
+                            s.lines.push(SceneLine { a, b, color, stripe: None, least: width, diameter, tube });
+                        } else {
+                            equipment_wires.push(SceneLine { a, b, color, stripe, least: width, diameter, tube });
+                        }
+                        s.picks.push((a, b, RouteRef::Wire(wi)));
+                    }
                 }
             }
             // Enclosure outline (the front of a cabinet; rooms show their walls)
@@ -496,16 +519,9 @@ impl PanelUi {
             // Wires, cables and tubes bent round their corners with their bend radius,
             // as round tubes (a two-colour one with a stripe along it).
             let tube = line.diameter > 0.0;
-            let points = if tube { vec3::fillet(&line.points, line.bend, 4) } else { line.points };
+            let points = if tube { vec3::fillet_each(&line.points, &line.bends, 4) } else { line.points };
             if tube {
-                for (tri, side) in vec3::tube(&points, line.diameter / 2.0, TUBE_SIDES) {
-                    let normal = norm(cross(sub(tri[1], tri[0]), sub(tri[2], tri[0])));
-                    let base = match line.stripe {
-                        Some(stripe) if side < TUBE_SIDES / 3 => stripe,
-                        _ => line.color,
-                    };
-                    s.tubes.push(SceneFace { pts: [tri[0], tri[1], tri[2], tri[2]], n: 3, normal, color: lit(base, normal), layer: EQUIPMENT, side: None, obj: None, item: None, outline: false, decal: false });
-                }
+                tube_faces(&mut s.tubes, &points, line.diameter, line.color, line.stripe, TUBE_SIDES);
             }
             for seg in points.windows(2) {
                 let l = SceneLine { a: seg[0], b: seg[1], color: line.color, stripe: line.stripe, least: line.width, diameter: line.diameter, tube };

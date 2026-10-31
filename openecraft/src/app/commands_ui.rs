@@ -43,7 +43,7 @@ impl App {
             Cmd::LayoutBusbar | Cmd::LayoutCutout | Cmd::LayoutRoutingPath | Cmd::LayoutReservation | Cmd::LayoutHeat | Cmd::LayoutNcData => !self.panel_ui.in_room,
             Cmd::LayoutWallPart | Cmd::LayoutFloorPart | Cmd::LayoutPipeRun | Cmd::LayoutFloorPlan | Cmd::LayoutDrawWalls | Cmd::LayoutInnerWalls | Cmd::LayoutRoomDoor | Cmd::LayoutRoomWindow | Cmd::LayoutRoomPenetration | Cmd::LayoutRoomEntry => self.panel_ui.in_room,
             Cmd::LayoutRackPart => self.session.prj.layout.enclosures.get(self.panel_ui.enclosure).is_some_and(openecraft_core::panel::is_rack),
-            Cmd::LayoutLineup | Cmd::LayoutSite | Cmd::LayoutHideFrontWalls | Cmd::LayoutHideCeiling => self.panel_ui.view == crate::panel_ui::View::ThreeD,
+            Cmd::LayoutLineup | Cmd::LayoutSite | Cmd::LayoutHideFrontWalls | Cmd::LayoutHideCeiling | Cmd::LayoutOpenDucts => self.panel_ui.view == crate::panel_ui::View::ThreeD,
             _ => true,
         }
     }
@@ -114,6 +114,7 @@ impl App {
             Cmd::LayoutSite => self.panel_ui.show_site,
             Cmd::LayoutHideFrontWalls => self.panel_ui.hide_front_walls,
             Cmd::LayoutHideCeiling => self.panel_ui.hide_ceiling,
+            Cmd::LayoutOpenDucts => self.panel_ui.open_ducts,
             Cmd::WiringMode => !self.mounting_ui.active,
             Cmd::MountingMode => self.mounting_ui.active,
             Cmd::TabletMode => self.shell.tablet(),
@@ -422,6 +423,7 @@ impl App {
             Cmd::LayoutSite => self.panel_ui.toggle_site(),
             Cmd::LayoutHideFrontWalls => self.panel_ui.hide_front_walls = !self.panel_ui.hide_front_walls,
             Cmd::LayoutHideCeiling => self.panel_ui.hide_ceiling = !self.panel_ui.hide_ceiling,
+            Cmd::LayoutOpenDucts => self.panel_ui.open_ducts = !self.panel_ui.open_ducts,
             Cmd::LayoutFit => self.panel_ui.fit(),
             Cmd::LayoutReports => {
                 self.report_kind = ReportKind::PanelWiring.into();

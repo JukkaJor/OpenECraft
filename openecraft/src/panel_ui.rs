@@ -436,6 +436,8 @@ pub struct PanelUi {
     pub hide_front_walls: bool,
     /// The 3D view leaves out the ceilings of the rooms.
     pub hide_ceiling: bool,
+    /// The 3D view leaves out the covers of the cable ducts.
+    pub open_ducts: bool,
     /// Opacity of the walls seen from the outside in the 3D view, 0 … 1.
     pub wall_opacity: f32,
     /// The 3D view is drawn by the graphics card where it can (set by the application).
@@ -517,6 +519,7 @@ impl Default for PanelUi {
             show_site: false,
             hide_front_walls: false,
             hide_ceiling: false,
+            open_ducts: false,
             wall_opacity: WALL_OPACITY,
             gpu_3d: false,
             gpu: gpu3d::Gpu::default(),

@@ -769,8 +769,8 @@ pub fn strip_cells(prj: &Project, it: &PanelItem) -> Vec<Cell> {
 const DUCT_COLORS: ([u8; 3], [u8; 3]) = ([150, 153, 150], [166, 169, 166]);
 
 /// The parts of a slotted cable duct (enclosure coordinates, colour): the base, the
-/// side walls slotted into fingers above a closed rim, and the cover on top.
-pub fn duct_boxes(e: &Enclosure, it: &PanelItem) -> Vec<((V3, V3), [u8; 3])> {
+/// side walls slotted into fingers above a closed rim, and the `cover` on top.
+pub fn duct_boxes(e: &Enclosure, it: &PanelItem, cover: bool) -> Vec<((V3, V3), [u8; 3])> {
     let (wall, cover_color) = DUCT_COLORS;
     let frame = face_frame(e, it.face);
     let along_x = it.w >= it.h;
@@ -797,7 +797,9 @@ pub fn duct_boxes(e: &Enclosure, it: &PanelItem) -> Vec<((V3, V3), [u8; 3])> {
             add((a, a + finger), c, (rim, top), wall);
         }
     }
-    add((0.0, len), (0.0, width), (top, it.d), cover_color);
+    if cover {
+        add((0.0, len), (0.0, width), (top, it.d), cover_color);
+    }
     out
 }
 

@@ -250,7 +250,13 @@ fn length(a: V3) -> f32 {
 /// segments are too short: an arc takes at most half of a segment between two corners
 /// and all of an end segment), `steps` points per quarter turn.
 pub fn fillet(points: &[V3], radius: f32, steps: usize) -> Vec<V3> {
-    if points.len() < 3 || radius <= 0.0 {
+    fillet_each(points, &vec![radius; points.len()], steps)
+}
+
+/// [`fillet`] with a radius for each corner (`radii[i]` for `points[i]`; missing ones
+/// keep their corner).
+pub fn fillet_each(points: &[V3], radii: &[f32], steps: usize) -> Vec<V3> {
+    if points.len() < 3 {
         return points.to_vec();
     }
     let n = points.len();
@@ -258,7 +264,8 @@ pub fn fillet(points: &[V3], radius: f32, steps: usize) -> Vec<V3> {
     for i in 1..n - 1 {
         let (a, p, b) = (points[i - 1], points[i], points[i + 1]);
         let (la, lb) = (length(sub(p, a)), length(sub(b, p)));
-        if la < 1e-4 || lb < 1e-4 {
+        let radius = radii.get(i).copied().unwrap_or(0.0);
+        if la < 1e-4 || lb < 1e-4 || radius <= 0.0 {
             out.push(p);
             continue;
         }

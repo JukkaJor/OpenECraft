@@ -10,6 +10,7 @@ fn item(key: &str, class: Class, diameter: f32, points: Vec<V3>) -> RoutedItem {
         ends: [End::default(), End::default()],
         enclosures: vec![0],
         points,
+        radii: Vec::new(),
         legs: Vec::new(),
         length: 0.0,
         cut: 0.0,
@@ -64,7 +65,7 @@ fn legs_are_bundled_on_their_own() {
     // elsewhere in the layout (x 5000 – 5100): the jump between the legs is no stretch.
     let leg = |item: &mut RoutedItem, legs: [Vec<V3>; 2]| {
         item.points = legs.concat();
-        item.legs = legs.into_iter().enumerate().map(|(k, points)| RouteLeg { enclosure: k, points }).collect();
+        item.legs = legs.into_iter().enumerate().map(|(k, points)| RouteLeg { enclosure: k, points, radii: Vec::new() }).collect();
     };
     let mut a = item("A", Class::Control, 6.0, Vec::new());
     leg(&mut a, [vec![[0.0, 0.0, 0.0], [100.0, 0.0, 0.0]], vec![[5000.0, 0.0, 0.0], [5100.0, 0.0, 0.0]]]);

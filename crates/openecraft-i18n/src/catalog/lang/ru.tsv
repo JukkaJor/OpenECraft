@@ -6366,3 +6366,5 @@ Reading the parts file	Чтение файла изделий
 Driven by	Приводится от
 Drive type	Тип привода
 Select wire	Выбрать провод
+Open cable ducts	Открыть кабельные каналы
+Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	В 3D-виде не показывать крышки всех кабельных каналов: провода в них становятся видны

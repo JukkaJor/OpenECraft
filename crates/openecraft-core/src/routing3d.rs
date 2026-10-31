@@ -260,6 +260,9 @@ pub struct RoutedItem {
     /// Enclosures the route runs through, in order.
     pub enclosures: Vec<usize>,
     pub points: Vec<V3>,
+    /// Bend radius of each corner of `points` (0 at the ends of the legs): the bend
+    /// radius, smaller where the bend would not keep clear of what is around it.
+    pub radii: Vec<f32>,
     /// A route through a room into its cabinets runs in legs (one per line-up or
     /// room, `points` is their concatenation); empty for routes in one line-up.
     pub legs: Vec<RouteLeg>,
@@ -284,6 +287,8 @@ pub struct RouteLeg {
     /// Enclosure (index) the stretch starts in: a cabinet of the line-up, or the room.
     pub enclosure: usize,
     pub points: Vec<V3>,
+    /// Bend radius of each corner (see [`RoutedItem::radii`]).
+    pub radii: Vec<f32>,
 }
 
 impl RoutedItem {
@@ -299,6 +304,15 @@ impl RoutedItem {
             vec![(None, self.points.as_slice())]
         } else {
             self.legs.iter().map(|l| (Some(l.enclosure), l.points.as_slice())).collect()
+        }
+    }
+
+    /// The bend radii of the corners of each of [`RoutedItem::stretches`].
+    pub fn stretch_radii(&self) -> Vec<&[f32]> {
+        if self.legs.is_empty() {
+            vec![self.radii.as_slice()]
+        } else {
+            self.legs.iter().map(|l| l.radii.as_slice()).collect()
         }
     }
 
@@ -860,7 +874,7 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, progress: &dy
                 for (i, leg) in legs.iter().enumerate() {
                     let space = &spaces[&leg.lineup];
                     let ignore = jobs[k].ignore(leg);
-                    let req = grid::Request { kind: jobs[k].kind, class: jobs[k].class, ignore: &ignore, at: [leg.a, leg.b], area, turn: (space.cell * 0.5).max(radius) };
+                    let req = grid::Request { kind: jobs[k].kind, class: jobs[k].class, ignore: &ignore, at: [leg.a, leg.b], area, turn: (space.cell * 0.5).max(radius), half: jobs[k].diameter / 2.0 };
                     if !frozen_legs.get(i).is_some_and(|p| thawed_ok(p, leg, space, &req)) {
                         tasks.push((k, i));
                     }
@@ -872,7 +886,7 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, progress: &dy
                 let space = &spaces_now[&leg.lineup];
                 let (area, radius) = job.area_radius(rules);
                 let ignore = job.ignore(leg);
-                let req = grid::Request { kind: job.kind, class: job.class, ignore: &ignore, at: [leg.a, leg.b], area, turn: (space.cell * 0.5).max(radius) };
+                let req = grid::Request { kind: job.kind, class: job.class, ignore: &ignore, at: [leg.a, leg.b], area, turn: (space.cell * 0.5).max(radius), half: job.diameter / 2.0 };
                 space.route(leg.a, leg.b, &req, rules)
             });
             ahead = tasks.into_iter().zip(found).collect();
@@ -886,6 +900,7 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, progress: &dy
             ends: job.ends.clone(),
             enclosures: Vec::new(),
             points: Vec::new(),
+            radii: Vec::new(),
             legs: Vec::new(),
             length: 0.0,
             cut: 0.0,
@@ -914,7 +929,7 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, progress: &dy
         let (area, radius) = job.area_radius(rules);
         let is_frozen = frozen.contains_key(job.key.as_str());
         let thawed = thawed(job, legs);
-        let mut ways: Vec<(usize, Vec<V3>, f32)> = Vec::new();
+        let mut ways: Vec<(usize, Vec<V3>, f32, Vec<f32>)> = Vec::new();
         let mut rerouted = false;
         for (i, leg) in legs.iter().enumerate() {
             let space = spaces.entry(leg.lineup).or_insert_with(|| make_space(leg.lineup));
@@ -924,7 +939,7 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, progress: &dy
                 zoned.insert(leg.lineup, job.class);
             }
             let ignore = job.ignore(leg);
-            let req = grid::Request { kind: job.kind, class: job.class, ignore: &ignore, at: [leg.a, leg.b], area, turn: (space.cell * 0.5).max(radius) };
+            let req = grid::Request { kind: job.kind, class: job.class, ignore: &ignore, at: [leg.a, leg.b], area, turn: (space.cell * 0.5).max(radius), half: job.diameter / 2.0 };
             let way = match (&job.fixed, thawed.get(i)) {
                 (Some(points), _) => Some((points.clone(), space.cells_along(points), 0.0)),
                 (None, Some(points)) if thawed_ok(points, leg, space, &req) => Some((points.clone(), space.cells_along(points), 0.0)),
@@ -940,7 +955,8 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, progress: &dy
                 break;
             };
             space.occupy(&cells, job.class, area);
-            ways.push((leg.lineup, points, free));
+            let radii = space.corner_radii(&points, job.diameter / 2.0, radius);
+            ways.push((leg.lineup, points, free, radii));
         }
         if rerouted {
             item.status = Status::Rerouted;
@@ -956,7 +972,7 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, progress: &dy
         }
         let mut length = 0.0;
         let mut close_bends = false;
-        for (_, points, free) in &ways {
+        for (_, points, free, _) in &ways {
             let (bends, shortest) = grid::bends(points);
             // Corners are rounded with the bend radius where the stretches allow it.
             let rounding = if bends > 0 { bends as f32 * radius.min(shortest / 2.0).max(0.0) * (2.0 - std::f32::consts::FRAC_PI_2) } else { 0.0 };
@@ -983,7 +999,7 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, progress: &dy
         }
         let step = rules.cut(job.kind).max(1.0);
         item.cut = (item.length / step).ceil() * step;
-        for (lu, points, _) in &ways {
+        for (lu, points, _, radii) in &ways {
             let mut encs: Vec<usize> = Vec::new();
             for q in points {
                 if let Some(k) = lineups[*lu].iter().copied().find(|&k| is_room(*lu) || (q[0] >= pos[k][0] - 0.5 && q[0] <= pos[k][0] + prj.layout.enclosures[k].width + 0.5)) {
@@ -994,7 +1010,7 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, progress: &dy
             }
             if ways.len() > 1 {
                 let enclosure = encs.first().copied().unwrap_or(lineups[*lu][0]);
-                item.legs.push(RouteLeg { enclosure, points: points.clone() });
+                item.legs.push(RouteLeg { enclosure, points: points.clone(), radii: radii.clone() });
             }
             for k in encs {
                 if item.enclosures.last() != Some(&k) {
@@ -1002,6 +1018,7 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, progress: &dy
                 }
             }
             item.points.extend(points.iter().copied());
+            item.radii.extend(radii.iter().copied());
         }
         if let (Some(wi), false) = (job.wire, known) {
             apply_to_wire(prj, &pos, &mut wiring[wi], &item.points, job.extra);

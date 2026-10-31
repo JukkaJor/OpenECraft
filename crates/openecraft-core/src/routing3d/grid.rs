@@ -3,8 +3,10 @@
 //! inside the enclosures (in front of the mounting plate, behind the door), blocked by
 //! the walls, by devices, rails, busbars and accessories (with a clearance) and by
 //! keep-out reservations. Cable ducts and routing paths are channels: the way through
-//! them is cheaper than through free air. Walls between bayed enclosures are crossed
-//! at cable passages only.
+//! them is cheaper than through free air; a cable too thick for a duct keeps out of it.
+//! A route keeps half its thickness from what blocks the cells; a turn where its bend
+//! (rounded with the bend radius) would not keep clear of them costs more. Walls between
+//! bayed enclosures are crossed at cable passages only.
 
 use super::{Class, PathKind, ReserveMode, RouteKind, RoutingRules};
 use crate::model::Project;
@@ -27,6 +29,12 @@ const MAX_CELLS: usize = 1_500_000;
 /// Cost factor of a horizontal step in the open space of a room (see
 /// [`Space::mark_open`]).
 const OPEN: f32 = 10.0;
+/// Cells of room measured around the blocked ones (see [`Space::measure`]).
+const ROOM: u8 = 8;
+/// How far a bend of radius r rounding a right-angled corner lies inside it: (√2 − 1) r.
+pub const CORNER_CUT: f32 = std::f32::consts::SQRT_2 - 1.0;
+/// Extra cost of a turn without room for its bend, in turns.
+const TIGHT: f32 = 4.0;
 
 /// A routing path in the grid and what runs through it.
 #[derive(Clone, Debug, PartialEq)]
@@ -64,6 +72,8 @@ pub struct Request<'a> {
     pub area: f32,
     /// Extra cost of a turn (mm), from the bend radius.
     pub turn: f32,
+    /// Half the outer diameter: the room the route keeps from what blocks the cells.
+    pub half: f32,
 }
 
 /// A way through the grid.
@@ -82,7 +92,11 @@ pub struct Space {
     pub n: [usize; 3],
     block: Vec<u8>,
     owner: Vec<u64>,
-    duct: Vec<bool>,
+    /// Inner size (mm) of the cable duct a cell lies in, 0 for none.
+    duct: Vec<f32>,
+    /// Cells from each cell to the nearest blocked one (at most [`ROOM`]); empty until
+    /// [`Space::measure`]: room everywhere.
+    room: Vec<u8>,
     /// Routing path of a cell: index + 1 into `paths`, 0 for none.
     path: Vec<u16>,
     /// Classes a reservation keeps the cell for (bits); 0: any.
@@ -168,7 +182,8 @@ impl Space {
             n,
             block: vec![WALL; total],
             owner: vec![0; total],
-            duct: vec![false; total],
+            duct: vec![0.0; total],
+            room: Vec::new(),
             path: vec![0; total],
             reserved: vec![0; total],
             occ: vec![0; total],
@@ -270,6 +285,7 @@ impl Space {
                 s.crossings.push(Crossing { x: x.at[0], y, z });
             }
         }
+        s.measure();
         s
     }
 
@@ -295,7 +311,11 @@ impl Space {
                         }
                     }
                 }
-                ItemKind::Duct if it.face == panel::Face::Plate || e.is_room() => self.cells_in(bx).into_iter().for_each(|idx| self.duct[idx] = true),
+                ItemKind::Duct if it.face == panel::Face::Plate || e.is_room() => {
+                    // Its inside: across and as deep as it is, less its walls.
+                    let size = (it.w.min(it.h).min(it.d) - 4.0).max(1.0);
+                    self.cells_in(bx).into_iter().for_each(|idx| self.duct[idx] = size);
+                }
                 _ => {}
             }
         }
@@ -343,6 +363,62 @@ impl Space {
                 self.column[x] = k;
             }
         }
+    }
+
+    /// Measures the room around the blocked cells (once the space is complete): a cell
+    /// k cells from the nearest blocked one along every axis has `k` (the cube around it
+    /// of k - 1 cells is free).
+    pub(super) fn measure(&mut self) {
+        let total = self.block.len();
+        let mut covered: Vec<bool> = self.block.iter().map(|&b| b != 0).collect();
+        let mut room: Vec<u8> = covered.iter().map(|&c| if c { 0 } else { ROOM }).collect();
+        let strides = [1, self.n[0], self.n[0] * self.n[1]];
+        for k in 1..ROOM {
+            for (&stride, &n) in strides.iter().zip(&self.n) {
+                let mut grown = covered.clone();
+                for idx in (0..total).filter(|&i| covered[i]) {
+                    let c = (idx / stride) % n;
+                    if c > 0 {
+                        grown[idx - stride] = true;
+                    }
+                    if c + 1 < n {
+                        grown[idx + stride] = true;
+                    }
+                }
+                covered = grown;
+            }
+            for idx in 0..total {
+                if covered[idx] && room[idx] == ROOM {
+                    room[idx] = k;
+                }
+            }
+        }
+        self.room = room;
+    }
+
+    /// Room (mm) from the centre of a cell to the nearest blocked cell.
+    fn room_mm(&self, idx: usize) -> f32 {
+        self.room.get(idx).map_or(f32::INFINITY, |&k| if k >= ROOM { f32::INFINITY } else { (k as f32 - 0.5) * self.cell })
+    }
+
+    /// The cell lies near an end of the request: a route leaves its device there.
+    fn near_end(&self, idx: usize, req: &Request) -> bool {
+        req.at.iter().any(|q| dist(self.centre(idx), *q) <= 3.0 * self.cell + req.half)
+    }
+
+    /// The bend radius each corner of a way can have (`radius` at most, less where it
+    /// would come nearer than half the thickness to a blocked cell); 0 at the ends.
+    pub fn corner_radii(&self, points: &[V3], half: f32, radius: f32) -> Vec<f32> {
+        let n = points.len();
+        (0..n)
+            .map(|i| {
+                if i == 0 || i + 1 == n {
+                    return 0.0;
+                }
+                let room = self.cell_of(points[i]).map_or(0.0, |idx| self.room_mm(idx)) - half;
+                radius.min((room / CORNER_CUT).max(0.0))
+            })
+            .collect()
     }
 
     /// Blocks the cells whose centre lies in a box (walls, cabinets, door swings).
@@ -447,7 +523,15 @@ impl Space {
             BODY => req.ignore.contains(&self.owner[idx]) && req.at.iter().any(|q| dist(self.centre(idx), *q) <= 2.0 * self.cell),
             _ => false,
         };
-        free && (self.reserved[idx] == 0 || self.reserved[idx] & req.class.bit() != 0)
+        // As thick as it is: room around it, and only through ducts it fits into.
+        let fits = req.kind == RouteKind::Wire || ((self.duct[idx] == 0.0 || self.duct[idx] >= 2.0 * req.half) && (self.room_mm(idx) >= req.half || self.near_end(idx, req)));
+        free && fits && (self.reserved[idx] == 0 || self.reserved[idx] & req.class.bit() != 0)
+    }
+
+    /// A route may turn at the cell: its bend keeps half its thickness from the blocked
+    /// cells (near its ends it may turn anywhere).
+    fn turn_room(&self, idx: usize, req: &Request) -> bool {
+        req.kind == RouteKind::Wire || self.room_mm(idx) >= req.half + CORNER_CUT * req.turn || self.near_end(idx, req)
     }
 
     /// The path a cell belongs to, if the request may use it as a channel.
@@ -459,7 +543,7 @@ impl Space {
     /// The cell is a channel for the request: a cable duct (not for tubes) or one of
     /// its routing paths.
     fn channel(&self, idx: usize, req: &Request) -> bool {
-        (self.duct[idx] && req.kind != RouteKind::Tube) || self.path_for(idx, req).is_some()
+        (self.duct[idx] > 0.0 && req.kind != RouteKind::Tube) || self.path_for(idx, req).is_some()
     }
 
     /// Cost factor of a step into the cell (`axis` 1: up or down).
@@ -580,7 +664,11 @@ impl Space {
                 if turning && straight > 0 && !straight_on(prev, state, straight) {
                     continue;
                 }
-                let turn = if turning { req.turn } else { 0.0 };
+                let turn = match (turning, turning && self.turn_room(idx, req)) {
+                    (false, _) => 0.0,
+                    (true, true) => req.turn,
+                    (true, false) => req.turn * (1.0 + TIGHT),
+                };
                 let ng = g + self.cell * self.factor(ni, axis, req, rules) + turn;
                 let ns = ni * 7 + nd;
                 if stamp[ns] != run || ng < best[ns] {

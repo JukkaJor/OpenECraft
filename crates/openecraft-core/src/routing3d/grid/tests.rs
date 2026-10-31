@@ -14,7 +14,7 @@ fn single() -> Enclosure {
 }
 
 fn req(ignore: &[u64]) -> Request<'_> {
-    Request { kind: RouteKind::Cable, class: Class::Signal, ignore, at: [[0.0; 3]; 2], area: 50.0, turn: 12.5 }
+    Request { kind: RouteKind::Cable, class: Class::Signal, ignore, at: [[0.0; 3]; 2], area: 50.0, turn: 12.5, half: 3.0 }
 }
 
 fn space(prj: &Project) -> Space {
@@ -177,4 +177,61 @@ fn a_short_stretch_between_bends_moves_to_an_end() {
     assert_eq!(points, vec![a, c1, [c1[0], c4[1], c1[2]], c4, b]);
     let mut kept = vec![a, c1, c2, c3, c4, b];
     assert!(!s.spread_bends(&mut kept, &req(&[]), &RoutingRules::default()), "long enough for a small bend radius");
+}
+
+/// Distance of a point from a box (0 inside).
+fn from_box(q: V3, lo: V3, hi: V3) -> f32 {
+    let d = [0, 1, 2].map(|i| (lo[i] - q[i]).max(q[i] - hi[i]).max(0.0));
+    (d[0] * d[0] + d[1] * d[1] + d[2] * d[2]).sqrt()
+}
+
+#[test]
+fn thick_cables_keep_half_their_thickness_from_devices() {
+    let prj = project(with_block());
+    let s = space(&prj);
+    let (lo, hi) = crate::panel::item_box(&prj.layout.enclosures[0], &prj.layout.enclosures[0].items[0]);
+    let (a, b) = ([60.0, 375.0, 60.0], [550.0, 375.0, 60.0]);
+    let nearest = |half: f32| {
+        let r = Request { at: [a, b], half, ..req(&[]) };
+        let w = s.route(a, b, &r, &RoutingRules::default()).expect("a way around");
+        w.cells.iter().map(|&c| s.centre(c)).filter(|q| dist(*q, a) > 120.0 && dist(*q, b) > 120.0).map(|q| from_box(q, lo, hi)).fold(f32::INFINITY, f32::min)
+    };
+    let (thin, thick) = (nearest(3.0), nearest(40.0));
+    assert!(thick >= 40.0 && thick > thin, "thin {thin}, thick {thick}");
+}
+
+#[test]
+fn cables_keep_out_of_ducts_too_small_for_them() {
+    let mut e = single();
+    e.items.push(PanelItem { id: 3, kind: ItemKind::Duct, x: 0.0, y: 0.0, w: 40.0, h: 750.0, d: 60.0, ..Default::default() });
+    let prj = project(e);
+    let s = space(&prj);
+    let rules = RoutingRules::default();
+    let (a, b) = ([60.0, 60.0, 50.0], [60.0, 740.0, 50.0]);
+    // A thin cable runs in the duct, one thicker than its inside not.
+    assert!(s.route(a, b, &Request { at: [a, b], ..req(&[]) }, &rules).unwrap().free < 100.0);
+    let thick = s.route(a, b, &Request { at: [a, b], half: 25.0, ..req(&[]) }, &rules).unwrap();
+    assert!(thick.free > 500.0, "{}", thick.free);
+    let duct = |q: V3| q[0] < 25.0 + 40.0 && q[1] > 25.0 + 100.0 && q[1] < 25.0 + 650.0;
+    assert!(!thick.cells.iter().any(|&c| duct(s.centre(c))), "{:?}", thick.points);
+}
+
+#[test]
+fn bends_are_rounded_as_far_as_the_room_around_them_allows() {
+    let prj = project(with_block());
+    let s = space(&prj);
+    let (lo, hi) = crate::panel::item_box(&prj.layout.enclosures[0], &prj.layout.enclosures[0].items[0]);
+    // A corner just beside the device and one in the open.
+    let at = |q: V3| s.centre(s.cell_of(q).unwrap());
+    let close = at([hi[0] + 20.0, 375.0, 60.0]);
+    let open = at([550.0, 150.0, 120.0]);
+    let radii = s.corner_radii(&[[0.0; 3], close, open, [600.0, 150.0, 120.0]], 5.0, 100.0);
+    assert_eq!((radii[0], radii[3], radii[2]), (0.0, 0.0, 100.0));
+    assert!(radii[1] < 100.0, "{radii:?}");
+    // What is left of the bend keeps clear of the device: (√2 − 1) r inside the corner.
+    assert!(from_box(close, lo, hi) - CORNER_CUT * radii[1] >= 5.0 - 0.01, "{radii:?}");
+    // A space never measured has room everywhere.
+    let mut unmeasured = Space::empty([0.0; 3], [100.0; 3], 25.0);
+    unmeasured.block.iter_mut().for_each(|b| *b = 0);
+    assert_eq!(unmeasured.corner_radii(&[[0.0; 3], [50.0; 3], [100.0; 3]], 5.0, 80.0)[1], 80.0);
 }

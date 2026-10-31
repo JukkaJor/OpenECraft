@@ -197,3 +197,11 @@ fn tubes_are_closed_round_and_face_outwards() {
     assert!(bent.iter().any(|(_, k)| *k == 9));
 }
 
+#[test]
+fn each_corner_gets_its_own_radius() {
+    let path = [[0.0, 0.0, 0.0], [500.0, 0.0, 0.0], [500.0, 500.0, 0.0], [0.0, 500.0, 0.0]];
+    let round = fillet_each(&path, &[0.0, 50.0, 0.0, 0.0], 4);
+    assert!(!round.contains(&path[1]) && round.contains(&path[2]), "{round:?}");
+    assert!(round.iter().any(|q| dist(*q, [450.0, 0.0, 0.0]) < 0.01));
+    assert_eq!(fillet_each(&path, &[], 4), path.to_vec());
+}
