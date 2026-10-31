@@ -13,6 +13,21 @@ unit), technical, mounting (dimensions, weight) data, accessories and a **functi
 template** per part (e.g. coil A1/A2, main contacts, 13/14 NO). The database is stored
 in the app storage (desktop) / local storage (browser).
 
+- **Accessories** that only work with other parts (auxiliary and signal contacts,
+  contact blocks, tab *Accessories*): a part lists its accessories, an accessory can
+  name the parts it fits (*Fits these parts*) – either side makes the pair, so one
+  accessory serves many parts and a manufacturer's data can add one without changing
+  its main parts (the Hager CZ001 signal contact names the RCCB CCA216D, the CDA440D
+  names the CZ001). An accessory is flagged as such and says where it is mounted: on
+  the front (stacked in depth), on the left or right side (beside the part on the rail)
+  or not at all. In a project the device's *Parts* tab offers the accessories that fit
+  its parts (*Add accessory*) and shows the part each one sits on; its functions add to
+  the device's contacts; the check `accessories` reports an accessory on a device
+  without a part it fits; the panel layout and the 3D view draw it at its place with
+  its own terminals, and the device gets wider or deeper. Command line / MCP:
+  `list_accessories`, `add_accessory`; parts server: `GET /parts/{number}/accessories`;
+  CSV columns `Accessory`, `Accessory mounting`, `Fits`; BMEcat references of the kinds
+  `accessories` and `base_product`; EPLAN XML `P_ARTICLE_ISACCESSORY`.
 - **Assemblies**: a part can consist of component parts with quantities (tab
   *Accessories*, CSV column `Components`: `NUM:2|NUM2`); the bill of materials lists
   them under the assembly (nested assemblies resolved, priced as included).

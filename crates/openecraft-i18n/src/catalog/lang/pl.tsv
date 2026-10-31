@@ -6398,3 +6398,28 @@ Shows the mating face of a plug: pin layout of its part, the position of each pi
 Makes the wires at the pins of a plug cores of a flat (ribbon) cable: pin n takes core n, as on IDC connectors	Czyni przewody na pinach złącza żyłami kabla płaskiego (taśmy): pin n dostaje żyłę n, jak w złączach IDC
 Cable tag, e.g. -W20	Oznaczenie kabla, np. -W20
 Side of the plug the cable leaves: socket or pin (default: socket)	Strona złącza, z której wychodzi kabel: socket lub pin (domyślnie: socket)
+Fits	Pasuje do
+Fits {}	Pasuje do {}
+The accessory fits none of the device's parts	Akcesorium nie pasuje do żadnej części urządzenia
+{}: accessory {} fits none of the device's parts	{}: akcesorium {} nie pasuje do żadnej części urządzenia
+Part accessories	Akcesoria części
+Unknown device: {}	Nieznane urządzenie: {}
+{} fits none of the parts of {}	{} nie pasuje do żadnej części {}
+Accessories only work together with the parts they fit. A part lists its accessories, an accessory the parts it fits; either side is enough.	Akcesoria działają tylko razem z częściami, do których pasują. Część wymienia swoje akcesoria, akcesorium części, do których pasuje; wystarczy jedna strona.
+Accessories of this part	Akcesoria tej części
+This part is an accessory	Ta część jest akcesorium
+It only works attached to one of the parts it fits; the project check reports it on a device without such a part	Działa tylko zamocowane na jednej z części, do których pasuje; kontrola projektu zgłasza je w urządzeniu bez takiej części
+Where the accessory sits on the part it fits, in the panel layout and the 3D view	Gdzie akcesorium znajduje się na pasującej części, w układzie szafy i w widoku 3D
+Fits these parts	Pasuje do tych części
+➕ Add part	➕ Dodaj część
+Accessory, mounted: {}	Akcesorium, montaż: {}
+Give a device tag or a part number	Podaj oznaczenie urządzenia lub numer części
+Lists and renames devices, adds accessories to their parts	Wyświetla i zmienia nazwy urządzeń, dodaje akcesoria do ich części
+Lists the accessories that fit a part or the parts of a device, and the parts an accessory fits (project parts, built-in and bundled catalogs)	Wyświetla akcesoria pasujące do części lub części urządzenia oraz części, do których pasuje akcesorium (części projektu, katalogi wbudowane i dołączone)
+Device tag: the accessories that can still be added to its parts	Oznaczenie urządzenia: akcesoria, które można jeszcze dodać do jego części
+Adds an accessory to a device; it must fit one of the device's parts	Dodaje akcesorium do urządzenia; musi pasować do jednej z części urządzenia
+Part number of the accessory	Numer części akcesorium
+On the front	Z przodu
+On the left side	Z lewej strony
+On the right side	Z prawej strony
+Not mounted	Niezamontowane

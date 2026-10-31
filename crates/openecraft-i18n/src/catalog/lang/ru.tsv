@@ -6397,3 +6397,28 @@ Shows the mating face of a plug: pin layout of its part, the position of each pi
 Makes the wires at the pins of a plug cores of a flat (ribbon) cable: pin n takes core n, as on IDC connectors	Делает провода на контактах разъёма жилами плоского кабеля (шлейфа): контакт n получает жилу n, как у разъёмов IDC
 Cable tag, e.g. -W20	Обозначение кабеля, напр. -W20
 Side of the plug the cable leaves: socket or pin (default: socket)	Сторона разъёма, с которой уходит кабель: socket или pin (по умолчанию: socket)
+Fits	Подходит к
+Fits {}	Подходит к {}
+The accessory fits none of the device's parts	Принадлежность не подходит ни к одному изделию устройства
+{}: accessory {} fits none of the device's parts	{}: принадлежность {} не подходит ни к одному изделию устройства
+Part accessories	Принадлежности изделий
+Unknown device: {}	Неизвестное устройство: {}
+{} fits none of the parts of {}	{} не подходит ни к одному изделию {}
+Accessories only work together with the parts they fit. A part lists its accessories, an accessory the parts it fits; either side is enough.	Принадлежности работают только вместе с изделиями, к которым они подходят. Изделие перечисляет свои принадлежности, принадлежность — изделия, к которым подходит; достаточно одной стороны.
+Accessories of this part	Принадлежности этого изделия
+This part is an accessory	Это изделие — принадлежность
+It only works attached to one of the parts it fits; the project check reports it on a device without such a part	Работает только на одном из изделий, к которым подходит; проверка проекта сообщает о нём в устройстве без такого изделия
+Where the accessory sits on the part it fits, in the panel layout and the 3D view	Где принадлежность располагается на подходящем изделии, в компоновке шкафа и в 3D-виде
+Fits these parts	Подходит к этим изделиям
+➕ Add part	➕ Добавить изделие
+Accessory, mounted: {}	Принадлежность, монтаж: {}
+Give a device tag or a part number	Укажите обозначение устройства или номер изделия
+Lists and renames devices, adds accessories to their parts	Выводит и переименовывает устройства, добавляет принадлежности к их изделиям
+Lists the accessories that fit a part or the parts of a device, and the parts an accessory fits (project parts, built-in and bundled catalogs)	Выводит принадлежности, подходящие к изделию или изделиям устройства, и изделия, к которым подходит принадлежность (изделия проекта, встроенные и поставляемые каталоги)
+Device tag: the accessories that can still be added to its parts	Обозначение устройства: принадлежности, которые ещё можно добавить к его изделиям
+Adds an accessory to a device; it must fit one of the device's parts	Добавляет принадлежность к устройству; она должна подходить к одному из изделий устройства
+Part number of the accessory	Номер изделия принадлежности
+On the front	Спереди
+On the left side	Слева
+On the right side	Справа
+Not mounted	Не монтируется

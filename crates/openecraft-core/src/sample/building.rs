@@ -6,7 +6,9 @@
 //! penetrations into the technical room +TR: control cabinets with the PLC and the
 //! pump starters, tanks, booster pumps and the pressure vessel, the generator junction
 //! box of the PV system, Victron MultiPlus-II inverter / chargers and Inverter RS on
-//! the wall, a Cerbo GX and Pylontech batteries in a 19-inch rack.
+//! the wall, a Cerbo GX and Pylontech batteries in a 19-inch rack. The residual
+//! current device of the backup outputs carries a Hager CZ001 signal contact (an
+//! accessory beside it on the rail) that lights a lamp when it trips.
 //!
 //! The manufacturer parts come from the catalogs a new parts server starts with
 //! ([`crate::parts::bundled`]).
@@ -283,7 +285,8 @@ const DEVICES: &[(&str, &[&str])] = &[
     ("=ESS+ACD-F1", &["HAG.MCN150"]),
     ("=ESS+ACD-F2", &["HAG.MCN150"]),
     ("=ESS+ACD-F3", &["HAG.MCN150"]),
-    ("=ESS+ACD-F10", &["HAG.CDA440D"]),
+    ("=ESS+ACD-F10", &["HAG.CDA440D", "HAG.CZ001"]),
+    ("=ESS+ACD-P10", &["GEN.LMP-DIN-RD-230"]),
     ("=ESS+ACD-F11", &["HAG.MCN116"]),
     ("=ESS+ACD-F12", &["HAG.MCN110"]),
     ("=ESS+ACD-F13", &["HAG.MCN110"]),

@@ -215,6 +215,15 @@ fn building_services_route_from_room_to_room() {
     for part in ["HAG.LT0057", "HAG.LT056", "HAG.LT253", "HAG.ECR300C", "VIC.PMP482505010", "VIC.PIN482601000", "VIC.BPP900450100", "PYL.US5000", "DEH.952515"] {
         assert!(prj.parts.iter().any(|p| p.number == part), "{part}");
     }
+    // The residual current device carries its signal contact beside it on the rail;
+    // its NC contact switches the trip lamp.
+    let f10 = "=ESS+ACD-F10";
+    assert_eq!(crate::parts::attached_to(&prj, None, f10, "HAG.CZ001").map(|p| p.number.as_str()), Some("HAG.CDA440D"));
+    let (ei, it) = crate::panel::locate(&prj, f10).expect("-F10 placed");
+    assert_eq!((l.enclosures[ei].name.as_str(), it.w), ("+ACD", 79.0));
+    assert!(crate::panel::device_points(&prj, it).iter().any(|p| p.pin == "21" && p.pos[0] < it.x + 9.0));
+    let f10s: Vec<_> = prj.pages.iter().flat_map(|p| &p.symbols).filter(|s| s.tag.ends_with("-F10")).map(|s| (s.tag.clone(), s.sym.clone(), s.pins.clone())).collect();
+    assert!(f10s.iter().any(|(_, sym, pins)| sym == "nc" && pins == &["21", "22"]), "{f10s:?}");
     // Sections in two levels, the pages numbered after them.
     assert!(prj.sections.iter().any(|s| s.parent != 0));
     assert!(prj.pages.iter().any(|p| p.name == "2.1.1") && prj.pages.iter().any(|p| p.name == "7.2.4"), "{:?}", prj.pages.iter().map(|p| &p.name).collect::<Vec<_>>());

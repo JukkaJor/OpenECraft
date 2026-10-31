@@ -8,7 +8,7 @@ use crate::part_editor::{part_summary, size_text};
 use egui::{Color32, RichText};
 use openecraft_i18n::{tr, tr_fmt};
 use crate::icons::{self, Icon};
-use openecraft_parts::api::PartQuery;
+use openecraft_parts::api::{Accessories, PartQuery};
 use openecraft_parts::portal::{check_updates, lifecycle_from_key, top_group_from_key, Facet, HistoryEntry, Lifecycle, PartUpdate, SearchResult, Sort};
 use openecraft_parts::{date_from_unix, productgroups, Part, PRODUCT_GROUPS};
 use std::collections::BTreeSet;
@@ -37,6 +37,8 @@ pub struct Browser {
     /// The whole part shown in the details (with its 2D and 3D models), by number;
     /// `None` inside: the server does not have it.
     pub detail: Option<(String, Option<Part>)>,
+    /// Accessories of the part shown in the details and the parts it fits, by number.
+    pub accessories: Option<(String, Accessories)>,
     pub favorites: Vec<String>,
     pub only_favorites: bool,
     /// Result of the last update check and the server versions it compared with.
@@ -188,6 +190,21 @@ impl Browser {
         Some(n)
     }
 
+    /// The accessories and the parts the selected part fits, once they arrived.
+    pub fn selected_accessories(&self) -> Option<&Accessories> {
+        match &self.accessories {
+            Some((n, a)) if self.selected.as_ref() == Some(n) => Some(a),
+            _ => None,
+        }
+    }
+
+    /// Shows another part in the details (searches for it).
+    pub fn show_part(&mut self, number: &str) {
+        self.text = number.to_string();
+        self.selected = Some(number.to_string());
+        self.clear_filters();
+    }
+
     /// Takes a server reply. `local`: the parts an update check compares with.
     pub fn apply(&mut self, reply: &Reply, local: &[Part]) {
         match reply {
@@ -199,6 +216,7 @@ impl Browser {
                 self.result = Some(r.clone());
             }
             Reply::History(number, Ok(h)) => self.history = Some((number.clone(), h.clone())),
+            Reply::Accessories(number, Ok(a)) => self.accessories = Some((number.clone(), a.clone())),
             Reply::Detail(number, Ok(p)) if self.detail.as_ref().is_some_and(|(n, _)| n == number) => self.detail = Some((number.clone(), p.as_deref().cloned())),
             Reply::Favorites(Ok(f)) => {
                 self.favorites = f.clone();
@@ -501,6 +519,7 @@ pub fn browser(ui: &mut egui::Ui, b: &mut Browser, client: &mut ServerClient, lo
                 };
                 if let Some(n) = b.detail_due() {
                     client.detail(&ctx, &n);
+                    client.accessories(&ctx, &n);
                 }
                 let full = b.selected_detail().cloned();
                 let p = full.clone().unwrap_or(brief);
@@ -523,9 +542,7 @@ pub fn browser(ui: &mut egui::Ui, b: &mut Browser, client: &mut ServerClient, lo
                         client.fetch(&ctx, std::slice::from_ref(&p.number));
                     }
                     if !p.successor.is_empty() && icons::text_button(ui, Icon::Next, &tr_fmt!("Successor {}", p.successor)).clicked() {
-                        b.text = p.successor.clone();
-                        b.selected = Some(p.successor.clone());
-                        b.clear_filters();
+                        b.show_part(&p.successor.clone());
                     }
                     if signed_in.is_some() {
                         let fav = b.is_favorite(&p.number);
@@ -534,6 +551,22 @@ pub fn browser(ui: &mut egui::Ui, b: &mut Browser, client: &mut ServerClient, lo
                         }
                     }
                 });
+                if p.accessory {
+                    ui.label(RichText::new(tr_fmt!("Accessory, mounted: {}", tr(p.accessory_mount.title()))).weak());
+                }
+                let related = b.selected_accessories().map(|a| [(tr("Accessories"), a.accessories.clone()), (tr("Fits"), a.fits.clone())]);
+                for (title, list) in related.into_iter().flatten().filter(|(_, l)| !l.is_empty()) {
+                    ui.add_space(6.0);
+                    ui.strong(title);
+                    for a in list {
+                        ui.horizontal(|ui| {
+                            if ui.link(RichText::new(&a.number).monospace()).clicked() {
+                                b.show_part(&a.number);
+                            }
+                            ui.label(RichText::new(&a.description).weak());
+                        });
+                    }
+                }
                 if let Some(full) = full.filter(|f| f.model_2d.is_some() || f.model_3d.is_some()) {
                     ui.add_space(6.0);
                     ui.strong(tr("Graphics"));

@@ -12,10 +12,12 @@
 //! - role based access control of the servers ([`access`])
 //! - the HTTP API types of the parts server ([`api`]), its data portal model
 //!   (catalogs, lifecycle, attachments, users, faceted search, update check: [`portal`])
+//! - accessories that fit other parts ([`accessory`])
 //! - the EPLAN product groups with their exchange numbers ([`productgroups`])
 //! - pin layouts and mating faces of plug connectors ([`connector`])
 
 pub mod access;
+pub mod accessory;
 pub mod api;
 mod bmecat;
 pub mod bundled;
@@ -37,6 +39,7 @@ mod text;
 pub mod vec3;
 pub mod xml;
 
+pub use accessory::AccessoryMount;
 pub use bmecat::{from_bmecat, is_bmecat};
 pub use catalog::{add_generated_models, default_catalog, nozzles, shaft, Nozzle, Shaft};
 pub use connection::{default_connection_points, points_from_text, points_to_text, upper_side, ConnectionPoint, Exit};

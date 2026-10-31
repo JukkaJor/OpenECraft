@@ -132,6 +132,24 @@ async fn history_of_changes() {
 }
 
 #[tokio::test]
+async fn accessories_of_both_sides() {
+    let app = app(Some(TOKEN));
+    // The RCCB lists the signal contact, the signal contact names a second RCCB.
+    call(&app, "PUT", "/api/v1/parts/HAG.CDA440D", Some(TOKEN), r#"{"accessories": ["HAG.CZ001"]}"#).await;
+    call(&app, "PUT", "/api/v1/parts/HAG.CCA216D", Some(TOKEN), "{}").await;
+    call(&app, "PUT", "/api/v1/parts/HAG.CZ001", Some(TOKEN), r#"{"accessory": true, "accessory_mount": "left", "fits": ["HAG.CCA216D"]}"#).await;
+    let cz: Accessories = json(&app, "GET", "/api/v1/parts/HAG.CZ001/accessories", None, "").await;
+    assert!(cz.accessories.is_empty());
+    assert_eq!(cz.fits.iter().map(|p| p.number.as_str()).collect::<Vec<_>>(), ["HAG.CCA216D", "HAG.CDA440D"]);
+    for main in ["HAG.CDA440D", "HAG.CCA216D"] {
+        let acc: Accessories = json(&app, "GET", &format!("/api/v1/parts/{main}/accessories"), None, "").await;
+        assert_eq!(acc.accessories.iter().map(|p| p.number.as_str()).collect::<Vec<_>>(), ["HAG.CZ001"], "{main}");
+        assert_eq!(acc.accessories[0].accessory_mount, openecraft_parts::AccessoryMount::Left);
+    }
+    assert_eq!(call(&app, "GET", "/api/v1/parts/NONE/accessories", None, "").await.0, StatusCode::NOT_FOUND);
+}
+
+#[tokio::test]
 async fn users_roles_and_sessions() {
     let app = app(Some(TOKEN));
     let editor = sign_up(&app, "eve", "Editor", "").await;

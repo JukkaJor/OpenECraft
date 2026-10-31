@@ -28,9 +28,10 @@ fn bundled_catalogs_are_consistent() {
             // Terminals take their designation from the device tag; accessories have no functions.
             assert!(p.functions.iter().all(|f| f.kind == FnKind::Terminal || !f.pin_list().is_empty()), "{}: function template", p.number);
             assert!(!p.functions.is_empty() || mounting || matches!(p.subgroup.as_str(), "Accessories" | "End bracket"), "{}: no functions", p.number);
-            for a in &p.accessories {
+            for a in p.accessories.iter().chain(&p.fits) {
                 assert!(bundle.parts.iter().any(|q| &q.number == a), "{}: accessory {a} missing", p.number);
             }
+            assert!(!p.accessory || !crate::accessory::mains_of(&bundle.parts, p).is_empty(), "{}: accessory fits nothing", p.number);
             // Every part with dimensions has a generated model, mounting material too.
             assert_eq!(p.model_3d.is_some(), p.width > 0.0 && p.height > 0.0 && p.depth > 0.0, "{}: generated model", p.number);
             // Units are written alike in every catalog (the facets list each spelling).
@@ -56,4 +57,13 @@ fn victron_devices_are_wall_mountable() {
     let bmv = victron.parts.iter().find(|p| p.number == "VIC.BAM030712000").unwrap();
     assert!(!bmv.wall_mountable() && bmv.mounting_data.door_cutout.is_some());
     assert!(victron.parts.iter().all(|p| p.model_3d.is_some()));
+}
+
+#[test]
+fn hager_signal_contact_fits_several_rccbs() {
+    let hager = load("hager").unwrap();
+    let cz = hager.parts.iter().find(|p| p.number == "HAG.CZ001").unwrap();
+    assert!(cz.accessory && cz.accessory_mount == crate::AccessoryMount::Left);
+    let mains: Vec<&str> = crate::accessory::mains_of(&hager.parts, cz).iter().map(|p| p.number.as_str()).collect();
+    assert_eq!(mains, ["HAG.CCA216D", "HAG.CDA440D", "HAG.CDA463D"]);
 }

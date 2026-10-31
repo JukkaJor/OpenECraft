@@ -133,7 +133,16 @@ with a command line, an MCP server, a parts server and a project server.
   MDT, Phoenix Contact, Pylontech, Siemens, Victron, Weidmüller) also feed the example
   projects. Parts are dragged from parts management or the
   data portal onto a schematic page, imported into the parts database on the way when
-  needed, and placed as a device with the part.
+  needed, and placed as a device with the part. Accessories that only work with other
+  parts (auxiliary and signal contacts, contact blocks) know the parts they fit from
+  either side, so one accessory serves many parts (the Hager CZ001 signal contact fits
+  the residual current devices CDA440D and CCA216D): the data portal and the parts
+  server show both directions, the device's Parts tab, the command line and the MCP
+  server offer the accessories that fit its parts, the project check reports an
+  accessory without such a part, and the panel layout and the 3D view mount them
+  beside or in front of their part with their own terminals. CSV, BMEcat and EPLAN XML
+  carry them; the building services example signals a tripped residual current
+  device through its CZ001.
 - **Data exchange:** PDF, DXF / DWG, SVG; the panel as glTF, STEP, IGES, IFC, JT and
   Parasolid; ERP / PDM / PLM connectors and Autodesk Vault.
 - **Teams and automation:** a project server with page locks, roles and Active

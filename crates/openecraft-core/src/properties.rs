@@ -739,6 +739,7 @@ fn part_value(prj: &Project, obj: &Object, key: &str) -> String {
             "part.mounting" => p.mounting.clone(),
             "part.functions" => p.template_summary(),
             "part.accessories" => p.accessories.join(", "),
+            "part.fits" => p.fits.join(", "),
             "part.certificates" => p.certificates.clone(),
             "part.datasheet" => p.datasheet.clone(),
             _ => String::new(),

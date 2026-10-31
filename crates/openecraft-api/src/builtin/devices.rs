@@ -1,4 +1,4 @@
-//! Device commands: list, rename, assign parts.
+//! Device commands: list, rename, assign parts, accessories of their parts.
 
 use crate::builtin::common::{check_placeholders, int_in, page_index};
 use crate::params::{optional, param, Args, Kind};
@@ -8,14 +8,15 @@ use openecraft_core::index::Index;
 use openecraft_core::model::Project;
 use openecraft_core::numbering::{self, DeviceNumbering};
 use openecraft_core::ops;
-use openecraft_i18n::{tr_const, tr_fmt};
+use openecraft_core::parts::{self, PartsDb};
+use openecraft_i18n::{tr, tr_const, tr_fmt};
 use serde_json::{json, Value};
 
 pub struct Devices;
 
 impl Plugin for Devices {
     fn info(&self) -> Info {
-        info("devices", tr_const!("Devices"), tr_const!("Lists and renames devices"))
+        info("devices", tr_const!("Devices"), tr_const!("Lists and renames devices, adds accessories to their parts"))
     }
 
     fn register(&self, reg: &mut Registry) -> Result<(), String> {
@@ -40,6 +41,25 @@ pub static COMMANDS: &[Spec] = &[
         run: rename_device,
     },
     Spec {
+        name: "list_accessories",
+        help: tr_const!("Lists the accessories that fit a part or the parts of a device, and the parts an accessory fits (project parts, built-in and bundled catalogs)"),
+        params: &[
+            optional("tag", Kind::Str, tr_const!("Device tag: the accessories that can still be added to its parts")),
+            optional("part", Kind::Str, tr_const!("Part number")),
+        ],
+        run: list_accessories,
+    },
+    Spec {
+        name: "add_accessory",
+        help: tr_const!("Adds an accessory to a device; it must fit one of the device's parts"),
+        params: &[
+            param("tag", Kind::Str, tr_const!("Device tag")),
+            param("part", Kind::Str, tr_const!("Part number of the accessory")),
+            optional("count", Kind::Int, tr_const!("Quantity (default 1)")),
+        ],
+        run: add_accessory,
+    },
+    Spec {
         name: "list_unplaced",
         help: tr_const!("Lists PLC channels and functions of the assigned parts that are not placed yet, with the symbol, tag, label and pins for place_symbol"),
         params: &[],
@@ -60,6 +80,41 @@ pub static COMMANDS: &[Spec] = &[
         run: renumber_devices,
     },
 ];
+
+/// The parts accessories are looked up in: the generic catalog and the manufacturer
+/// catalogs shipped with OpenECraft.
+fn accessory_db() -> PartsDb {
+    PartsDb { parts: parts::bundled::default_parts() }
+}
+
+fn brief(p: &parts::Part) -> Value {
+    json!({ "number": p.number, "description": p.description, "mount": p.accessory_mount.key() })
+}
+
+fn list_accessories(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let db = accessory_db();
+    if let Some(tag) = a.str("tag").filter(|t| !t.trim().is_empty()) {
+        if !prj.devices.contains_key(tag) {
+            return Err(tr_fmt!("No device {}", tag));
+        }
+        let choices: Vec<Value> = parts::accessory_choices(prj, Some(&db), tag).into_iter().map(|(p, main)| json!({ "fits": main, "accessory": brief(&p) })).collect();
+        return Ok(json!({ "tag": tag, "accessories": choices }));
+    }
+    let number = a.str("part").filter(|n| !n.trim().is_empty()).ok_or_else(|| tr("Give a device tag or a part number").to_string())?;
+    let pool: Vec<parts::Part> = prj.parts.iter().cloned().chain(db.parts.into_iter().filter(|p| !prj.parts.iter().any(|q| q.number == p.number))).collect();
+    let part = pool.iter().find(|p| p.number == number).ok_or_else(|| tr_fmt!("Unknown part: {}", number))?;
+    let accessories: Vec<Value> = parts::accessory::accessories_of(&pool, part).into_iter().map(brief).collect();
+    let fits: Vec<Value> = parts::accessory::mains_of(&pool, part).into_iter().map(|p| json!({ "number": p.number, "description": p.description })).collect();
+    Ok(json!({ "part": number, "accessory": part.accessory, "mount": part.accessory_mount.key(), "accessories": accessories, "fits": fits }))
+}
+
+fn add_accessory(prj: &mut Project, a: &Args) -> Result<Value, String> {
+    let (tag, number) = (a.req("tag").trim(), a.req("part").trim());
+    let count = int_in(a, "count", 1, 999)?.unwrap_or(1) as u32;
+    let main = parts::add_accessory(prj, &accessory_db(), tag, number, count)?;
+    let assigned: Vec<Value> = prj.devices[tag].parts.iter().map(|r| json!({ "number": r.number, "count": r.count })).collect();
+    Ok(json!({ "tag": tag, "accessory": number, "fits": main, "parts": assigned }))
+}
 
 fn list_unplaced(prj: &mut Project, _: &Args) -> Result<Value, String> {
     let item = |kind: &str, u: openecraft_core::unplaced::Unplaced| json!({ "kind": kind, "tag": u.tag, "symbol": u.symbol, "label": u.label, "pins": u.pins, "title": u.title });
@@ -97,7 +152,18 @@ fn list_devices(prj: &mut Project, _: &Args) -> Result<Value, String> {
     let list = idx.sorted_tags().into_iter().map(|tag| {
         let e = &idx.devices[tag];
         let data = prj.devices.get(tag);
-        let parts: Vec<Value> = data.map(|d| d.parts.iter().map(|r| json!({ "number": r.number, "count": r.count })).collect()).unwrap_or_default();
+        let on = |n: &str| prj.parts.iter().any(|p| p.number == n && p.accessory).then(|| parts::attached_to(prj, None, tag, n).map(|m| m.number.clone()));
+        let parts: Vec<Value> = data
+            .map(|d| {
+                d.parts
+                    .iter()
+                    .map(|r| match on(&r.number) {
+                        Some(main) => json!({ "number": r.number, "count": r.count, "accessory_of": main }),
+                        None => json!({ "number": r.number, "count": r.count }),
+                    })
+                    .collect()
+            })
+            .unwrap_or_default();
         json!({
             "tag": tag,
             "description": data.map(|d| d.description.as_str()).unwrap_or_default(),

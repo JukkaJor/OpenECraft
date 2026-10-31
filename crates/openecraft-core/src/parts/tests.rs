@@ -84,6 +84,34 @@ fn parts_are_added_to_devices() {
 }
 
 #[test]
+fn accessories_are_added_to_the_devices_they_fit() {
+    let mut prj = Project::default();
+    let db = PartsDb { parts: bundled::default_parts() };
+    assign(&mut prj, &db, "-F1", "HAG.CCA216D");
+    assign(&mut prj, &db, "-F2", "HAG.MBN106");
+    // The signal contact names the RCCB it fits; the breaker has no accessories.
+    let choices: Vec<String> = accessory_choices(&prj, Some(&db), "-F1").into_iter().map(|(p, main)| format!("{} {main}", p.number)).collect();
+    assert_eq!(choices, ["HAG.CZ001 HAG.CCA216D"]);
+    assert!(accessory_choices(&prj, Some(&db), "-F2").is_empty());
+    assert_eq!(add_accessory(&mut prj, &db, "-F1", "HAG.CZ001", 1).unwrap(), "HAG.CCA216D");
+    assert!(prj.parts.iter().any(|p| p.number == "HAG.CZ001"), "copied into the project");
+    assert!(accessory_choices(&prj, Some(&db), "-F1").is_empty(), "already on the device");
+    assert!(add_accessory(&mut prj, &db, "-F2", "HAG.CZ001", 1).unwrap_err().contains("fits none"));
+    assert!(add_accessory(&mut prj, &db, "-F9", "HAG.CZ001", 1).is_err());
+    // Its contacts add to the functions of the device.
+    let kinds: Vec<FnKind> = available_functions(&prj, None, "-F1").into_iter().map(|f| f.kind).collect();
+    assert_eq!(kinds, [FnKind::ResidualCurrent, FnKind::No, FnKind::Nc]);
+    assert!(loose_accessories(&prj).is_empty());
+    // Taken off its RCCB, the signal contact is loose.
+    prj.devices.get_mut("-F1").unwrap().parts.remove(0);
+    assert_eq!(loose_accessories(&prj), [("-F1".to_string(), "HAG.CZ001".to_string())]);
+}
+
+fn assign(prj: &mut Project, db: &PartsDb, tag: &str, number: &str) {
+    add_to_device(prj, db, tag, number, 1);
+}
+
+#[test]
 fn generic_parts_come_from_the_catalog_when_missing_in_the_database() {
     let mut prj = Project::default();
     ensure_in_project(&mut prj, &PartsDb { parts: Vec::new() }, "GEN.DUCT-60X80");

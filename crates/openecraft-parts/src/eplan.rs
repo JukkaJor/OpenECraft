@@ -165,6 +165,7 @@ fn part_of(el: &Element, variant: Option<&Element>) -> Option<Part> {
     part.certificates = text("P_ARTICLE_CERTIFICATE");
     // A number is one of EPLAN's mounting sites, 0 none.
     part.mounting = text("P_ARTICLE_MOUNTINGSITE");
+    part.accessory = matches!(text("P_ARTICLE_ISACCESSORY").to_ascii_lowercase().as_str(), "1" | "true" | "yes");
     if part.mounting == "0" {
         part.mounting.clear();
     }
@@ -303,6 +304,7 @@ pub fn to_eplan_xml(parts: &[Part]) -> String {
             ("P_ARTICLE_PRODUCTTOPGROUP", c.top_group.to_string()),
             ("P_ARTICLE_PRODUCTGROUP", c.group.to_string()),
             ("P_ARTICLE_PRODUCTSUBGROUP", c.subgroup.to_string()),
+            ("P_ARTICLE_ISACCESSORY", if p.accessory { "1".into() } else { String::new() }),
         ];
         out.push_str("  <part");
         for (k, v) in attrs.iter().filter(|(_, v)| !v.is_empty()) {

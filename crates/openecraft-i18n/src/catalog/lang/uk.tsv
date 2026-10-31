@@ -6397,3 +6397,28 @@ Shows the mating face of a plug: pin layout of its part, the position of each pi
 Makes the wires at the pins of a plug cores of a flat (ribbon) cable: pin n takes core n, as on IDC connectors	Робить проводи на контактах роз'єму жилами плоского кабелю (шлейфу): контакт n отримує жилу n, як у роз'ємів IDC
 Cable tag, e.g. -W20	Позначення кабелю, напр. -W20
 Side of the plug the cable leaves: socket or pin (default: socket)	Бік роз'єму, з якого виходить кабель: socket або pin (типово: socket)
+Fits	Підходить до
+Fits {}	Підходить до {}
+The accessory fits none of the device's parts	Приладдя не підходить до жодного виробу пристрою
+{}: accessory {} fits none of the device's parts	{}: приладдя {} не підходить до жодного виробу пристрою
+Part accessories	Приладдя виробів
+Unknown device: {}	Невідомий пристрій: {}
+{} fits none of the parts of {}	{} не підходить до жодного виробу {}
+Accessories only work together with the parts they fit. A part lists its accessories, an accessory the parts it fits; either side is enough.	Приладдя працює лише разом із виробами, до яких воно підходить. Виріб перелічує своє приладдя, приладдя — вироби, до яких підходить; достатньо одного боку.
+Accessories of this part	Приладдя цього виробу
+This part is an accessory	Цей виріб — приладдя
+It only works attached to one of the parts it fits; the project check reports it on a device without such a part	Працює лише на одному з виробів, до яких підходить; перевірка проєкту повідомляє про нього в пристрої без такого виробу
+Where the accessory sits on the part it fits, in the panel layout and the 3D view	Де приладдя розташоване на відповідному виробі, у компонуванні шафи та в 3D-вигляді
+Fits these parts	Підходить до цих виробів
+➕ Add part	➕ Додати виріб
+Accessory, mounted: {}	Приладдя, монтаж: {}
+Give a device tag or a part number	Вкажіть позначення пристрою або номер виробу
+Lists and renames devices, adds accessories to their parts	Виводить і перейменовує пристрої, додає приладдя до їхніх виробів
+Lists the accessories that fit a part or the parts of a device, and the parts an accessory fits (project parts, built-in and bundled catalogs)	Виводить приладдя, що підходить до виробу або виробів пристрою, і вироби, до яких підходить приладдя (вироби проєкту, вбудовані та постачені каталоги)
+Device tag: the accessories that can still be added to its parts	Позначення пристрою: приладдя, яке ще можна додати до його виробів
+Adds an accessory to a device; it must fit one of the device's parts	Додає приладдя до пристрою; воно має підходити до одного з виробів пристрою
+Part number of the accessory	Номер виробу приладдя
+On the front	Спереду
+On the left side	Ліворуч
+On the right side	Праворуч
+Not mounted	Не монтується

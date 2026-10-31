@@ -6391,3 +6391,28 @@ Shows the mating face of a plug: pin layout of its part, the position of each pi
 Makes the wires at the pins of a plug cores of a flat (ribbon) cable: pin n takes core n, as on IDC connectors	プラグのピンの電線をフラットケーブルの心線にします: IDC コネクタと同様にピン n に心線 n
 Cable tag, e.g. -W20	ケーブルのタグ、例: -W20
 Side of the plug the cable leaves: socket or pin (default: socket)	ケーブルが出るプラグの側: socket または pin (既定: socket)
+Fits	適合先
+Fits {}	{} に適合
+The accessory fits none of the device's parts	このアクセサリは機器のどの部品にも適合しません
+{}: accessory {} fits none of the device's parts	{}: アクセサリ {} は機器のどの部品にも適合しません
+Part accessories	部品アクセサリ
+Unknown device: {}	不明な機器: {}
+{} fits none of the parts of {}	{0} は {1} のどの部品にも適合しません
+Accessories only work together with the parts they fit. A part lists its accessories, an accessory the parts it fits; either side is enough.	アクセサリは適合する部品と組み合わせた場合にのみ機能します。部品はそのアクセサリを、アクセサリは適合する部品を示します。どちらか一方だけで足ります。
+Accessories of this part	この部品のアクセサリ
+This part is an accessory	この部品はアクセサリです
+It only works attached to one of the parts it fits; the project check reports it on a device without such a part	適合する部品のいずれかに取り付けた場合にのみ機能します。そのような部品のない機器ではプロジェクトチェックが報告します
+Where the accessory sits on the part it fits, in the panel layout and the 3D view	適合する部品上でのアクセサリの位置（盤レイアウトと 3D ビュー）
+Fits these parts	これらの部品に適合
+➕ Add part	➕ 部品を追加
+Accessory, mounted: {}	アクセサリ、取付: {}
+Give a device tag or a part number	機器記号または部品番号を指定してください
+Lists and renames devices, adds accessories to their parts	機器の一覧表示と名前変更、部品へのアクセサリ追加
+Lists the accessories that fit a part or the parts of a device, and the parts an accessory fits (project parts, built-in and bundled catalogs)	部品または機器の部品に適合するアクセサリと、アクセサリが適合する部品を一覧表示します（プロジェクト部品、内蔵および同梱カタログ）
+Device tag: the accessories that can still be added to its parts	機器記号: その部品にまだ追加できるアクセサリ
+Adds an accessory to a device; it must fit one of the device's parts	機器にアクセサリを追加します。機器のいずれかの部品に適合する必要があります
+Part number of the accessory	アクセサリの部品番号
+On the front	前面
+On the left side	左側
+On the right side	右側
+Not mounted	取り付けなし

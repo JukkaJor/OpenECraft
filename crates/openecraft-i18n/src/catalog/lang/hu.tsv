@@ -6398,3 +6398,28 @@ Shows the mating face of a plug: pin layout of its part, the position of each pi
 Makes the wires at the pins of a plug cores of a flat (ribbon) cable: pin n takes core n, as on IDC connectors	A csatlakozó lábain lévő vezetékeket szalagkábel ereivé teszi: az n. láb az n. eret kapja, mint az IDC csatlakozóknál
 Cable tag, e.g. -W20	Kábel jelölése, pl. -W20
 Side of the plug the cable leaves: socket or pin (default: socket)	A csatlakozó oldala, ahol a kábel kilép: socket vagy pin (alapértelmezés: socket)
+Fits	Illeszkedik
+Fits {}	Illeszkedik ehhez: {}
+The accessory fits none of the device's parts	A tartozék a készülék egyik cikkéhez sem illeszkedik
+{}: accessory {} fits none of the device's parts	{}: a(z) {} tartozék a készülék egyik cikkéhez sem illeszkedik
+Part accessories	Cikktartozékok
+Unknown device: {}	Ismeretlen készülék: {}
+{} fits none of the parts of {}	{0} nem illeszkedik a(z) {1} egyik cikkéhez sem
+Accessories only work together with the parts they fit. A part lists its accessories, an accessory the parts it fits; either side is enough.	A tartozékok csak azokkal a cikkekkel működnek, amelyekhez illeszkednek. A cikk felsorolja a tartozékait, a tartozék azokat a cikkeket, amelyekhez illeszkedik; elég az egyik oldal.
+Accessories of this part	A cikk tartozékai
+This part is an accessory	Ez a cikk tartozék
+It only works attached to one of the parts it fits; the project check reports it on a device without such a part	Csak az egyik illeszkedő cikkre szerelve működik; a projektellenőrzés jelzi az ilyen cikk nélküli készüléknél
+Where the accessory sits on the part it fits, in the panel layout and the 3D view	Hol helyezkedik el a tartozék az illeszkedő cikken, a szekrényelrendezésben és a 3D-nézetben
+Fits these parts	Ezekhez a cikkekhez illeszkedik
+➕ Add part	➕ Cikk hozzáadása
+Accessory, mounted: {}	Tartozék, szerelés: {}
+Give a device tag or a part number	Adjon meg készülékjelet vagy cikkszámot
+Lists and renames devices, adds accessories to their parts	Készülékek listázása és átnevezése, tartozékok hozzáadása a cikkeikhez
+Lists the accessories that fit a part or the parts of a device, and the parts an accessory fits (project parts, built-in and bundled catalogs)	Felsorolja a cikkhez vagy egy készülék cikkeihez illeszkedő tartozékokat, és azokat a cikkeket, amelyekhez egy tartozék illeszkedik (projektcikkek, beépített és mellékelt katalógusok)
+Device tag: the accessories that can still be added to its parts	Készülékjel: a cikkeihez még hozzáadható tartozékok
+Adds an accessory to a device; it must fit one of the device's parts	Tartozékot ad egy készülékhez; illeszkednie kell a készülék valamelyik cikkéhez
+Part number of the accessory	A tartozék cikkszáma
+On the front	Elöl
+On the left side	A bal oldalon
+On the right side	A jobb oldalon
+Not mounted	Nincs felszerelve

@@ -52,7 +52,7 @@ pub fn to_csv(parts: &[Part]) -> String {
         out.push(';');
         out.push_str(key);
     }
-    out.push_str(";Components");
+    out.push_str(";Components;Accessory;Accessory mounting;Fits");
     out.push('\n');
     for p in parts {
         let functions = p
@@ -103,7 +103,7 @@ pub fn to_csv(parts: &[Part]) -> String {
             p.successor.clone(),
         ];
         let typed = crate::MOUNTING_KEYS.iter().map(|k| p.mounting_data.get(k).unwrap_or_default());
-        let components = std::iter::once(crate::components_to_text(&p.components));
+        let components = [crate::components_to_text(&p.components), if p.accessory { "yes".into() } else { String::new() }, if p.accessory_mount.is_auto() { String::new() } else { p.accessory_mount.key().into() }, p.fits.join(",")];
         out.push_str(&row.into_iter().chain(typed).chain(components).map(|c| csv_escape(&c)).collect::<Vec<_>>().join(";"));
         out.push('\n');
     }
@@ -156,6 +156,7 @@ pub fn from_csv(text: &str) -> Result<Vec<Part>, String> {
     let idx: Vec<Option<usize>> = CSV_FIELDS.iter().map(|f| col(f)).collect();
     let typed: Vec<(&str, usize)> = crate::MOUNTING_KEYS.iter().filter_map(|k| Some((*k, col(k)?))).collect();
     let components_col = col("Components");
+    let accessory_cols = [col("Accessory"), col("Accessory mounting"), col("Fits")];
     let mut parts = Vec::new();
     for r in data {
         let get = |i: usize| idx[i].and_then(|c| r.get(c)).map(|s| s.trim().to_string()).unwrap_or_default();
@@ -222,6 +223,10 @@ pub fn from_csv(text: &str) -> Result<Vec<Part>, String> {
             if let Some(c) = components_col {
                 part.components = crate::components_from_text(r.get(c).map(|s| s.as_str()).unwrap_or_default());
             }
+            let [flag, mount, fits] = accessory_cols.map(|c| c.and_then(|c| r.get(c)).map(|s| s.trim()).unwrap_or_default());
+            part.accessory = matches!(flag.to_ascii_lowercase().as_str(), "yes" | "true" | "1" | "x");
+            part.accessory_mount = crate::AccessoryMount::from_key(mount).unwrap_or_default();
+            part.fits = fits.split(',').map(|s| s.trim().to_string()).filter(|s| !s.is_empty()).collect();
             for (key, c) in &typed {
                 let v = r.get(*c).map(|s| s.trim()).unwrap_or_default();
                 if !v.is_empty() && !part.mounting_data.set(key, v) {

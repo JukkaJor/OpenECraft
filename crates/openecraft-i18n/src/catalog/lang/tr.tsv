@@ -6398,3 +6398,28 @@ Shows the mating face of a plug: pin layout of its part, the position of each pi
 Makes the wires at the pins of a plug cores of a flat (ribbon) cable: pin n takes core n, as on IDC connectors	Bir konnektörün pinlerindeki telleri yassı (şerit) kablonun damarları yapar: IDC konnektörlerdeki gibi pin n, damar n'yi alır
 Cable tag, e.g. -W20	Kablo etiketi, ör. -W20
 Side of the plug the cable leaves: socket or pin (default: socket)	Kablonun çıktığı konnektör tarafı: socket veya pin (varsayılan: socket)
+Fits	Uyumlu
+Fits {}	{} ile uyumlu
+The accessory fits none of the device's parts	Aksesuar cihazın hiçbir parçasına uymuyor
+{}: accessory {} fits none of the device's parts	{}: {} aksesuarı cihazın hiçbir parçasına uymuyor
+Part accessories	Parça aksesuarları
+Unknown device: {}	Bilinmeyen cihaz: {}
+{} fits none of the parts of {}	{0}, {1} cihazının hiçbir parçasına uymuyor
+Accessories only work together with the parts they fit. A part lists its accessories, an accessory the parts it fits; either side is enough.	Aksesuarlar yalnızca uydukları parçalarla birlikte çalışır. Bir parça aksesuarlarını, bir aksesuar uyduğu parçaları listeler; tek taraf yeterlidir.
+Accessories of this part	Bu parçanın aksesuarları
+This part is an accessory	Bu parça bir aksesuardır
+It only works attached to one of the parts it fits; the project check reports it on a device without such a part	Yalnızca uyduğu parçalardan birine takılıyken çalışır; proje kontrolü böyle bir parçası olmayan cihazda bunu bildirir
+Where the accessory sits on the part it fits, in the panel layout and the 3D view	Aksesuarın uyduğu parçada nerede durduğu, pano yerleşiminde ve 3D görünümde
+Fits these parts	Bu parçalarla uyumlu
+➕ Add part	➕ Parça ekle
+Accessory, mounted: {}	Aksesuar, montaj: {}
+Give a device tag or a part number	Bir cihaz etiketi veya parça numarası girin
+Lists and renames devices, adds accessories to their parts	Cihazları listeler ve yeniden adlandırır, parçalarına aksesuar ekler
+Lists the accessories that fit a part or the parts of a device, and the parts an accessory fits (project parts, built-in and bundled catalogs)	Bir parçaya veya bir cihazın parçalarına uyan aksesuarları ve bir aksesuarın uyduğu parçaları listeler (proje parçaları, yerleşik ve birlikte gelen kataloglar)
+Device tag: the accessories that can still be added to its parts	Cihaz etiketi: parçalarına hâlâ eklenebilecek aksesuarlar
+Adds an accessory to a device; it must fit one of the device's parts	Bir cihaza aksesuar ekler; cihazın parçalarından birine uymalıdır
+Part number of the accessory	Aksesuarın parça numarası
+On the front	Önde
+On the left side	Sol tarafta
+On the right side	Sağ tarafta
+Not mounted	Monte edilmez

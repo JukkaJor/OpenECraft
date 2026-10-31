@@ -6398,3 +6398,28 @@ Shows the mating face of a plug: pin layout of its part, the position of each pi
 Makes the wires at the pins of a plug cores of a flat (ribbon) cable: pin n takes core n, as on IDC connectors	Gör ledarna vid en kontakts stift till ledare i en flatkabel: stift n får ledare n, som på IDC-kontakter
 Cable tag, e.g. -W20	Kabelbeteckning, t.ex. -W20
 Side of the plug the cable leaves: socket or pin (default: socket)	Kontaktens sida där kabeln går ut: socket eller pin (standard: socket)
+Fits	Passar till
+Fits {}	Passar till {}
+The accessory fits none of the device's parts	Tillbehöret passar inte till någon av enhetens artiklar
+{}: accessory {} fits none of the device's parts	{}: tillbehöret {} passar inte till någon av enhetens artiklar
+Part accessories	Artikeltillbehör
+Unknown device: {}	Okänd enhet: {}
+{} fits none of the parts of {}	{} passar inte till någon artikel i {}
+Accessories only work together with the parts they fit. A part lists its accessories, an accessory the parts it fits; either side is enough.	Tillbehör fungerar bara tillsammans med de artiklar de passar till. En artikel listar sina tillbehör, ett tillbehör de artiklar det passar till; en sida räcker.
+Accessories of this part	Tillbehör till den här artikeln
+This part is an accessory	Den här artikeln är ett tillbehör
+It only works attached to one of the parts it fits; the project check reports it on a device without such a part	Det fungerar bara monterat på en av de artiklar det passar till; projektkontrollen rapporterar det på en enhet utan en sådan artikel
+Where the accessory sits on the part it fits, in the panel layout and the 3D view	Var tillbehöret sitter på artikeln det passar till, i kapslingslayouten och 3D-vyn
+Fits these parts	Passar till dessa artiklar
+➕ Add part	➕ Lägg till artikel
+Accessory, mounted: {}	Tillbehör, monterat: {}
+Give a device tag or a part number	Ange en enhetsbeteckning eller ett artikelnummer
+Lists and renames devices, adds accessories to their parts	Listar och byter namn på enheter, lägger till tillbehör till deras artiklar
+Lists the accessories that fit a part or the parts of a device, and the parts an accessory fits (project parts, built-in and bundled catalogs)	Listar tillbehör som passar till en artikel eller en enhets artiklar, och de artiklar ett tillbehör passar till (projektartiklar, inbyggda och medföljande kataloger)
+Device tag: the accessories that can still be added to its parts	Enhetsbeteckning: tillbehör som fortfarande kan läggas till dess artiklar
+Adds an accessory to a device; it must fit one of the device's parts	Lägger till ett tillbehör till en enhet; det måste passa till en av enhetens artiklar
+Part number of the accessory	Tillbehörets artikelnummer
+On the front	På framsidan
+On the left side	På vänster sida
+On the right side	På höger sida
+Not mounted	Inte monterat
