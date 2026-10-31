@@ -1,7 +1,7 @@
 //! Cable bundles and their branches: stretches that several routed items share. The
 //! routes are traced through a grid; where the same items run along consecutive
-//! cells they form one bundle, and where items join or leave there is a branch. In a
-//! bundle the items lie side by side, each on a lane of its own ([`spread`]).
+//! cells they form one bundle, and where items join or leave there is a branch. Ways
+//! running together lie side by side, each on a lane of its own ([`spread_ways`]).
 
 use super::{Class, RoutedItem};
 use crate::parts::vec3::{add, cross, dot, norm, sub, V3};
@@ -66,16 +66,14 @@ fn edges_along(keys: &[Key]) -> impl Iterator<Item = Edge> + '_ {
     keys.windows(2).filter(|w| (0..3).map(|j| (w[0][j] - w[1][j]).abs()).sum::<i32>() == 1).map(|w| (w[0].min(w[1]), w[0].max(w[1])))
 }
 
-/// The edges between consecutive cells with the items along them, and the chains of
-/// edges two or more items share (the nodes, the items).
+/// The edges between consecutive cells with what runs along them (the owners of the
+/// `stretches`), and the chains of edges two or more share (the nodes, the owners).
 #[allow(clippy::type_complexity)]
-fn chains(items: &[RoutedItem], cell: f32) -> (BTreeMap<Edge, BTreeSet<usize>>, Vec<(Vec<Key>, Vec<usize>)>) {
+fn chains(stretches: &[(usize, &[V3])], cell: f32) -> (BTreeMap<Edge, BTreeSet<usize>>, Vec<(Vec<Key>, Vec<usize>)>) {
     let mut edges: BTreeMap<Edge, BTreeSet<usize>> = BTreeMap::new();
-    for (i, it) in items.iter().enumerate().filter(|(_, it)| it.routed()) {
-        for (_, points) in it.stretches() {
-            for e in edges_along(&keys_along(points, cell)) {
-                edges.entry(e).or_default().insert(i);
-            }
+    for &(owner, points) in stretches {
+        for e in edges_along(&keys_along(points, cell)) {
+            edges.entry(e).or_default().insert(owner);
         }
     }
     let shared: BTreeMap<Edge, &BTreeSet<usize>> = edges.iter().filter(|(_, s)| s.len() >= 2).map(|(k, s)| (*k, s)).collect();
@@ -125,7 +123,8 @@ fn chains(items: &[RoutedItem], cell: f32) -> (BTreeMap<Edge, BTreeSet<usize>>, 
 /// Bundles and branches of the routed items (`cell`: grid edge length).
 pub fn find(items: &[RoutedItem], cell: f32) -> (Vec<Bundle>, Vec<Branch>) {
     let centre = |k: Key| -> V3 { [0, 1, 2].map(|i| k[i] as f32 * cell) };
-    let (edges, chains) = chains(items, cell);
+    let stretches: Vec<(usize, &[V3])> = items.iter().enumerate().filter(|(_, it)| it.routed()).flat_map(|(i, it)| it.stretches().into_iter().map(move |(_, p)| (i, p))).collect();
+    let (edges, chains) = chains(&stretches, cell);
     let shared: BTreeMap<Edge, &BTreeSet<usize>> = edges.iter().filter(|(_, s)| s.len() >= 2).map(|(k, s)| (*k, s)).collect();
     let mut at: BTreeMap<Key, Vec<Edge>> = BTreeMap::new();
     for e in edges.keys() {
@@ -166,69 +165,129 @@ pub fn find(items: &[RoutedItem], cell: f32) -> (Vec<Bundle>, Vec<Branch>) {
     (bundles, branches)
 }
 
-/// Each routed item's stretches ([`RoutedItem::stretches`]) drawn apart from the items
-/// it shares them with, with the bend radius of each corner: in a bundle every item has
-/// a lane of its own, the lanes side by side across the bundle as far apart as its
-/// thickest item and turned with it round its corners. A straight stretch of a route
-/// lies on its lane of the bundle it shares most of, with a short step where it joins
-/// another; the ends stay where they are.
-pub fn spread(items: &[RoutedItem], cell: f32) -> Vec<Vec<(Vec<V3>, Vec<f32>)>> {
-    let (_, chains) = chains(items, cell);
-    // The lane of each item along each edge of its bundles: the bundle and the offset.
-    let mut lanes: HashMap<(Edge, usize), (usize, V3)> = HashMap::new();
-    for (b, (chain, members)) in chains.iter().enumerate() {
-        let gap = members.iter().map(|&i| items[i].diameter).fold(0.0, f32::max) + 1.0;
-        let cols = (members.len() as f32).sqrt().ceil() as usize;
-        let rows = members.len().div_ceil(cols);
+/// A polyline laid out with others by [`spread_ways`]: its corners, their bend radii, its
+/// outer diameter.
+pub struct Way<'a> {
+    pub points: &'a [V3],
+    pub radii: &'a [f32],
+    pub diameter: f32,
+}
+
+/// The ways drawn apart from those they run together with, with the bend radius of each
+/// corner. Straight stretches along the same axis that overlap and lie closer than
+/// their thicknesses together (or to one that does) form a group with a lane for each,
+/// the lanes side by side around the middle of the group as far apart as its thickest
+/// way and turned like the bundles round their corners (traced through a grid of
+/// `cell`), so that no two ways run inside each other; at its corners a way steps from
+/// lane to lane, its ends stay where they are.
+pub fn spread_ways(ways: &[Way], cell: f32) -> Vec<(Vec<V3>, Vec<f32>)> {
+    let stretches: Vec<(usize, &[V3])> = ways.iter().enumerate().map(|(i, w)| (i, w.points)).collect();
+    let (_, chains) = chains(&stretches, cell);
+    // Across each line of the grid the directions of the bundles on it, turned with
+    // them round their corners.
+    let line_of = |e: &Edge| -> Line {
+        let axis = (0..3).find(|&k| e.0[k] != e.1[k]).unwrap_or(0);
+        let mut at = e.0;
+        at[axis] = 0;
+        (axis, at)
+    };
+    let mut across: BTreeMap<Line, (V3, V3)> = BTreeMap::new();
+    for (chain, _) in &chains {
         let dir = |j: usize| -> V3 { [0, 1, 2].map(|k| (chain[j + 1][k] - chain[j][k]) as f32) };
         let first = dir(0);
         let axis = (0..3).find(|&k| first[k] != 0.0).unwrap_or(0);
-        let unit = |k: usize| -> V3 { [0, 1, 2].map(|i| if i == k { 1.0 } else { 0.0 }) };
         let (mut u, mut v) = (unit((axis + 1) % 3), unit((axis + 2) % 3));
         for j in 0..chain.len() - 1 {
             let d = dir(j);
             if j > 0 && d != dir(j - 1) {
-                // Turned with the bundle: what pointed along it now points along the
-                // new way, what pointed the new way now points back.
+                // What pointed along the bundle now points along the new way, what
+                // pointed the new way now points back.
                 let (before, w) = (dir(j - 1), cross(dir(j - 1), d));
                 let turn = |x: V3| add(add(scale(d, dot(x, before)), scale(before, -dot(x, d))), scale(w, dot(x, w)));
                 (u, v) = (turn(u), turn(v));
             }
-            let e = (chain[j].min(chain[j + 1]), chain[j].max(chain[j + 1]));
-            for (k, &i) in members.iter().enumerate() {
-                let (c, r) = ((k % cols) as f32 - (cols - 1) as f32 / 2.0, (k / cols) as f32 - (rows - 1) as f32 / 2.0);
-                lanes.insert((e, i), (b, add(scale(u, c * gap), scale(v, r * gap))));
+            across.entry(line_of(&(chain[j].min(chain[j + 1]), chain[j].max(chain[j + 1])))).or_insert((u, v));
+        }
+    }
+    // The straight stretches along an axis: way, stretch, axis, from, to, the point.
+    let mut runs: Vec<(usize, usize, usize, f32, f32, V3)> = Vec::new();
+    for (i, way) in ways.iter().enumerate() {
+        for (j, s) in way.points.windows(2).enumerate() {
+            let moving: Vec<usize> = (0..3).filter(|&k| (s[0][k] - s[1][k]).abs() > 1e-3).collect();
+            if let [axis] = moving[..] {
+                runs.push((i, j, axis, s[0][axis].min(s[1][axis]), s[0][axis].max(s[1][axis]), s[0]));
             }
         }
     }
-    items
-        .iter()
+    // Groups of runs that lie inside each other (joined, through the ones in between).
+    let mut root: Vec<usize> = (0..runs.len()).collect();
+    fn find(root: &mut [usize], mut i: usize) -> usize {
+        while root[i] != i {
+            root[i] = root[root[i]];
+            i = root[i];
+        }
+        i
+    }
+    let thickest = ways.iter().map(|w| w.diameter).fold(0.0, f32::max);
+    let mut order: Vec<usize> = (0..runs.len()).collect();
+    let side = |r: &(usize, usize, usize, f32, f32, V3)| r.5[(r.2 + 1) % 3];
+    order.sort_by(|&a, &b| runs[a].2.cmp(&runs[b].2).then(side(&runs[a]).total_cmp(&side(&runs[b]))));
+    for (n, &a) in order.iter().enumerate() {
+        let ra = runs[a];
+        for &b in &order[n + 1..] {
+            let rb = runs[b];
+            if rb.2 != ra.2 || side(&rb) - side(&ra) > thickest + 1.0 {
+                break;
+            }
+            let reach = (ways[ra.0].diameter + ways[rb.0].diameter) / 2.0;
+            let apart = (0..3).filter(|&k| k != ra.2).map(|k| (ra.5[k] - rb.5[k]).powi(2)).sum::<f32>().sqrt();
+            if ra.0 != rb.0 && apart < reach && ra.4.min(rb.4) - ra.3.max(rb.3) > 1.0 {
+                let (x, y) = (find(&mut root, a), find(&mut root, b));
+                root[x] = y;
+            }
+        }
+    }
+    let mut groups: BTreeMap<usize, Vec<usize>> = BTreeMap::new();
+    for r in 0..runs.len() {
+        let g = find(&mut root, r);
+        groups.entry(g).or_default().push(r);
+    }
+    // The move of each run onto its lane, across its axis.
+    let mut moves: HashMap<(usize, usize), V3> = HashMap::new();
+    for members in groups.values().filter(|m| m.len() >= 2) {
+        let axis = runs[members[0]].2;
+        let middle = scale(members.iter().fold([0.0; 3], |m, &r| add(m, runs[r].5)), 1.0 / members.len() as f32);
+        let line = (axis, {
+            let mut k = key_of(middle, cell);
+            k[axis] = 0;
+            k
+        });
+        let (u, v) = across.get(&line).copied().unwrap_or((unit((axis + 1) % 3), unit((axis + 2) % 3)));
+        let gap = members.iter().map(|&r| ways[runs[r].0].diameter).fold(0.0, f32::max) + 1.0;
+        let cols = (members.len() as f32).sqrt().ceil() as usize;
+        let rows = members.len().div_ceil(cols);
+        for (k, &r) in members.iter().enumerate() {
+            let (c, row) = ((k % cols) as f32 - (cols - 1) as f32 / 2.0, (k / cols) as f32 - (rows - 1) as f32 / 2.0);
+            let lane = add(middle, add(scale(u, c * gap), scale(v, row * gap)));
+            let mut to = sub(lane, runs[r].5);
+            to[axis] = 0.0;
+            moves.insert((runs[r].0, runs[r].1), to);
+        }
+    }
+    ways.iter()
         .enumerate()
-        .map(|(i, it)| {
-            let radii = it.stretch_radii();
-            it.stretches()
-                .into_iter()
-                .enumerate()
-                .map(|(s, (_, points))| {
-                    let radii = radii.get(s).copied().unwrap_or_default();
-                    // The lane of each straight stretch: of the bundle it shares most cells with.
-                    let offsets: Vec<V3> = points
-                        .windows(2)
-                        .map(|seg| {
-                            let mut count: BTreeMap<usize, (usize, V3)> = BTreeMap::new();
-                            for e in edges_along(&keys_along(seg, cell)) {
-                                if let Some(&(b, o)) = lanes.get(&(e, i)) {
-                                    count.entry(b).or_insert((0, o)).0 += 1;
-                                }
-                            }
-                            count.values().max_by_key(|(n, _)| *n).map_or([0.0; 3], |(_, o)| *o)
-                        })
-                        .collect();
-                    lay(points, radii, &offsets)
-                })
-                .collect()
+        .map(|(i, way)| {
+            let offsets: Vec<V3> = (0..way.points.len().saturating_sub(1)).map(|j| moves.get(&(i, j)).copied().unwrap_or([0.0; 3])).collect();
+            lay(way.points, way.radii, &offsets)
         })
         .collect()
+}
+
+/// A line of the grid: its axis and the cell across it (the axis left at 0).
+type Line = (usize, Key);
+
+fn unit(k: usize) -> V3 {
+    [0, 1, 2].map(|i| if i == k { 1.0 } else { 0.0 })
 }
 
 fn scale(a: V3, f: f32) -> V3 {

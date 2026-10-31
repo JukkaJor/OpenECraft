@@ -80,14 +80,15 @@ fn legs_are_bundled_on_their_own() {
 fn items_of_a_bundle_lie_side_by_side_and_do_not_cross() {
     // A and B run the same way round two corners; C on its own.
     let route = vec![[0.0, -300.0, 0.0], [0.0, 0.0, 0.0], [500.0, 0.0, 0.0], [500.0, 500.0, 0.0], [900.0, 500.0, 0.0]];
-    let items = vec![
+    let items = [
         item("A", Class::Power, 10.0, route.clone()),
         item("B", Class::Power, 10.0, route.clone()),
         item("C", Class::Power, 10.0, vec![[0.0, 2000.0, 0.0], [500.0, 2000.0, 0.0], [500.0, 2500.0, 0.0]]),
     ];
-    let laid = spread(&items, 25.0);
-    let (a, b) = (&laid[0][0].0, &laid[1][0].0);
-    assert_eq!(laid[2][0].0, items[2].points, "alone it stays as it is");
+    let ways: Vec<Way> = items.iter().map(|it| Way { points: &it.points, radii: &it.radii, diameter: it.diameter }).collect();
+    let laid = spread_ways(&ways, 25.0);
+    let (a, b) = (&laid[0].0, &laid[1].0);
+    assert_eq!(laid[2].0, items[2].points, "alone it stays as it is");
     // The ends stay where they are.
     assert_eq!((a[0], a[a.len() - 1], b[0]), (route[0], route[4], route[0]));
     assert_eq!((a.len(), b.len()), (5, 5));

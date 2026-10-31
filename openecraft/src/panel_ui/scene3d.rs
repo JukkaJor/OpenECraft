@@ -10,6 +10,7 @@ use openecraft_core::analysis::Analysis;
 use openecraft_core::model::Project;
 use openecraft_core::panel::{self, Face, ItemKind, Opening, Role, SitePose, PLATE_MARGIN, PLATE_Z};
 use openecraft_core::parts::vec3::{self, cross, dot, norm, sub, V3};
+use openecraft_core::routing3d::bundles::{self, Way};
 use openecraft_core::routing3d::RouteKind;
 use egui::Color32;
 use std::hash::{Hash, Hasher};
@@ -23,6 +24,25 @@ pub(super) const ON_TOP: u8 = OUTER_WALLS + 1;
 /// Sides of the round tubes of cables and tubes, and of the many thin wires.
 const TUBE_SIDES: usize = 10;
 const WIRE_SIDES: usize = 6;
+/// Grid (mm) the wires, cables and tubes running together are found on, to be laid
+/// side by side.
+const LANE_CELL: f32 = 8.0;
+
+/// A wire, cable or tube drawn as a round tube, before it is laid beside the others it
+/// runs with: its corners and their bend radii, how it looks and what it is.
+struct TubeWay {
+    points: Vec<V3>,
+    bends: Vec<f32>,
+    diameter: f32,
+    color: Color32,
+    stripe: Option<Color32>,
+    width: f32,
+    on_top: bool,
+    target: RouteRef,
+    /// Sides of the tube and points per quarter turn of its bends.
+    sides: usize,
+    steps: usize,
+}
 
 /// A flat face of the view: a triangle of a model or a side of a box.
 pub(super) struct SceneFace {
@@ -242,6 +262,8 @@ impl PanelUi {
         // passes through are left out.
         let mut fingers: Vec<(usize, std::ops::Range<usize>, (V3, V3))> = Vec::new();
         let mut tube_ways: Vec<(Vec<V3>, f32)> = Vec::new();
+        // The wires, cables and tubes drawn as tubes, laid side by side once all are known.
+        let mut pending: Vec<TubeWay> = Vec::new();
         // Wire segments among the equipment, cut at the boxes once all of them are known.
         let mut equipment_wires: Vec<SceneLine> = Vec::new();
         // Whether a box is the object's own (not enlarged by a turn of the door or the
@@ -498,21 +520,20 @@ impl PanelUi {
                         .collect(),
                 };
                 // Bent round their corners as round tubes.
-                let tube = diameter > 0.0;
                 let bend = prj.layout.routing.bend_radius(RouteKind::Wire, diameter);
                 for path in &paths {
                     let path: Vec<V3> = path.iter().map(|q| pose.apply(*q)).collect();
-                    let path = if tube { vec3::fillet(&path, bend, 2) } else { path };
-                    if tube {
-                        tube_faces(&mut s.tubes, &path, diameter, color, stripe, WIRE_SIDES);
-                        tube_ways.push((path.clone(), diameter / 2.0));
+                    if diameter > 0.0 {
+                        let bends = vec![bend; path.len()];
+                        pending.push(TubeWay { points: path, bends, diameter, color, stripe, width, on_top: selected, target: RouteRef::Wire(wi), sides: WIRE_SIDES, steps: 2 });
+                        continue;
                     }
                     for seg in path.windows(2) {
                         let (a, b) = (seg[0], seg[1]);
                         if selected {
-                            s.lines.push(SceneLine { a, b, color, stripe: None, least: width, diameter, tube });
+                            s.lines.push(SceneLine { a, b, color, stripe: None, least: width, diameter, tube: false });
                         } else {
-                            equipment_wires.push(SceneLine { a, b, color, stripe, least: width, diameter, tube });
+                            equipment_wires.push(SceneLine { a, b, color, stripe, least: width, diameter, tube: false });
                         }
                         s.picks.push((a, b, RouteRef::Wire(wi)));
                     }
@@ -550,16 +571,13 @@ impl PanelUi {
         };
         let keys: Vec<usize> = shown.iter().map(|s| s.0).collect();
         for line in self.routing_lines_3d(prj, an, &keys, &to_view, selected_wire) {
-            // Wires, cables and tubes bent round their corners with their bend radius,
-            // as round tubes (a two-colour one with a stripe along it).
-            let tube = line.diameter > 0.0;
-            let points = if tube { vec3::fillet_each(&line.points, &line.bends, 4) } else { line.points };
-            if tube {
-                tube_faces(&mut s.tubes, &points, line.diameter, line.color, line.stripe, TUBE_SIDES);
-                tube_ways.push((points.clone(), line.diameter / 2.0));
+            if line.diameter > 0.0 {
+                let (sides, steps) = if matches!(line.target, RouteRef::Wire(_)) { (WIRE_SIDES, 2) } else { (TUBE_SIDES, 4) };
+                pending.push(TubeWay { points: line.points, bends: line.bends, diameter: line.diameter, color: line.color, stripe: line.stripe, width: line.width, on_top: line.on_top, target: line.target, sides, steps });
+                continue;
             }
-            for seg in points.windows(2) {
-                let l = SceneLine { a: seg[0], b: seg[1], color: line.color, stripe: line.stripe, least: line.width, diameter: line.diameter, tube };
+            for seg in line.points.windows(2) {
+                let l = SceneLine { a: seg[0], b: seg[1], color: line.color, stripe: line.stripe, least: line.width, diameter: 0.0, tube: false };
                 if line.on_top {
                     s.lines.push(SceneLine { stripe: None, ..l });
                 } else {
@@ -567,6 +585,27 @@ impl PanelUi {
                 }
                 if !matches!(line.target, RouteRef::None) {
                     s.picks.push((seg[0], seg[1], line.target.clone()));
+                }
+            }
+        }
+        // Wires, cables and tubes that run together side by side, each on a lane of its own,
+        // bent round their corners with their bend radius as round tubes (a two-colour one
+        // with a stripe along it).
+        let ways: Vec<Way> = pending.iter().map(|t| Way { points: &t.points, radii: &t.bends, diameter: t.diameter }).collect();
+        let laid = bundles::spread_ways(&ways, LANE_CELL);
+        for (t, (points, bends)) in pending.iter().zip(laid) {
+            let points = vec3::fillet_each(&points, &bends, t.steps);
+            tube_faces(&mut s.tubes, &points, t.diameter, t.color, t.stripe, t.sides);
+            tube_ways.push((points.clone(), t.diameter / 2.0));
+            for seg in points.windows(2) {
+                let l = SceneLine { a: seg[0], b: seg[1], color: t.color, stripe: t.stripe, least: t.width, diameter: t.diameter, tube: true };
+                if t.on_top {
+                    s.lines.push(SceneLine { stripe: None, ..l });
+                } else {
+                    equipment_wires.push(l);
+                }
+                if !matches!(t.target, RouteRef::None) {
+                    s.picks.push((seg[0], seg[1], t.target.clone()));
                 }
             }
         }

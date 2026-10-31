@@ -302,6 +302,45 @@ fn wires_entering_the_ducts_take_out_the_fingers_they_pass() {
 }
 
 #[test]
+fn wires_running_together_lie_side_by_side() {
+    // In the ducts of the demo cabinet many wires run the same way: no two straight runs
+    // of different wires lie inside each other.
+    let prj = openecraft_core::sample::demo_project();
+    let an = Analysis::build(&prj);
+    let mut ui = PanelUi { show_wires: true, ..Default::default() };
+    let shown = ui.shown_3d(&prj, 0);
+    let scene = ui.scene_3d(&prj, &an, 0, &shown);
+    let axis = |a: [f32; 3], b: [f32; 3]| {
+        let along: Vec<usize> = (0..3).filter(|&k| (a[k] - b[k]).abs() > 0.01).collect();
+        (along.len() == 1 && (a[along[0]] - b[along[0]]).abs() > 30.0).then(|| along[0])
+    };
+    let runs: Vec<(usize, usize, [f32; 3], [f32; 3])> = scene
+        .picks
+        .iter()
+        .filter_map(|(a, b, t)| match t {
+            routing_ui::RouteRef::Wire(wi) => axis(*a, *b).map(|k| (*wi, k, *a, *b)),
+            _ => None,
+        })
+        .collect();
+    let radius = |wi: usize| openecraft_core::harness::outer_diameter(&an.wiring[wi].cross_section) / 2.0;
+    let mut together = 0;
+    for (i, &(w1, k1, a1, b1)) in runs.iter().enumerate() {
+        for &(w2, k2, a2, b2) in &runs[i + 1..] {
+            if w1 == w2 || k1 != k2 {
+                continue;
+            }
+            let overlap = a1[k1].max(b1[k1]).min(a2[k1].max(b2[k1])) - a1[k1].min(b1[k1]).max(a2[k1].min(b2[k1]));
+            let apart = (0..3).filter(|&k| k != k1).map(|k| (a1[k] - a2[k]).powi(2)).sum::<f32>().sqrt();
+            if overlap > 10.0 && apart < radius(w1) + radius(w2) + 2.0 {
+                together += 1;
+                assert!(apart >= radius(w1) + radius(w2) - 0.01, "{} and {} inside each other: {a1:?} {b1:?} / {a2:?} {b2:?}", an.wiring[w1].number, an.wiring[w2].number);
+            }
+        }
+    }
+    assert!(together > 10, "{together} runs side by side");
+}
+
+#[test]
 fn face_summaries_count_openings_apart() {
     let item = |kind: ItemKind, opening: Opening| PanelItem { kind, opening, ..Default::default() };
     let rail = item(ItemKind::Rail, Opening::Cutout);

@@ -65,7 +65,7 @@ with a command line, an MCP server, a parts server and a project server.
   connection points; cable cores are drawn with their cable. Routes keep half their
   thickness from what is around them and turn where their bends have room, cables keep
   out of cable ducts too small for them; View › Open cable ducts leaves out the covers
-  of the ducts. Routes that share a stretch lie side by side, each on a lane of its own,
+  of the ducts. Wires, cables and tubes that run together lie side by side, each on a lane of its own,
   and where wires and cables pass through the wall of a duct its fingers are left out. The title bar can show
   the frame time and the frames per second (Settings › Appearance). A placed device is shown in the
   panel layout or the 3D view from its context menu in the schematic. Pumps, tanks
