@@ -65,13 +65,15 @@ Every schematic connection between placed devices is routed from its connection 
 through the cable duct network (shortest path) → wire list with lengths, wires shown in
 2D / 3D.
 
-**Duct fill levels**: cross sections of the routed wires (with insulation) against the
-duct cross section at its fullest stretch; ducts coloured green / orange / red in the
+**Duct fill levels**: cross sections of the routed wires (with insulation), cables and
+tubes against the cross section inside the duct (between its walls, base and cover) at
+its fullest stretch; ducts coloured green / orange / red in the
 front view, fill level in the duct properties, limit in the enclosure properties (70 %
 by default); report *Duct fill levels*, the check warns above the limit and hints above
 80 % of it; when a duct is overfull, the wiring is routed again, thickest wires first,
 and wires take a detour (up to 10 × longer) around stretches they would fill above the
-limit; the selected device shows its connection points.
+limit; cables and tubes routed in 3D do the same around the stretches the wires and the
+cables before them already fill; the selected device shows its connection points.
 
 ## Climate
 

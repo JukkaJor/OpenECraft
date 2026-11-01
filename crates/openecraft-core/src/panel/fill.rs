@@ -1,8 +1,9 @@
 //! Fill levels of the cable ducts: the cross sections of the routed wires (with their
-//! insulation) against the cross section of the duct, at the fullest stretch; and the
-//! lanes the wires lie on side by side inside a duct ([`duct_lanes`]).
+//! insulation), cables and tubes against the cross section inside the duct, at the
+//! fullest stretch; and the lanes the wires lie on side by side inside a duct
+//! ([`duct_lanes`]).
 
-use super::{profile, ItemKind, PanelItem, Route, RoutedWire};
+use super::{DuctRun, ItemKind, PanelItem, Route, RoutedWire};
 use crate::model::Project;
 use std::collections::HashMap;
 pub use crate::model::panel::Stretch;
@@ -12,7 +13,7 @@ pub use crate::model::panel::Stretch;
 pub struct DuctFill {
     pub enclosure: usize,
     pub duct: u64,
-    /// Cross section of the duct (width × depth) in mm².
+    /// Cross section inside the duct ([`duct_inside`]) in mm².
     pub capacity: f32,
     /// Highest fill level in percent.
     pub percent: f32,
@@ -20,12 +21,27 @@ pub struct DuctFill {
     /// vertical ducts).
     pub from: f32,
     pub to: f32,
-    /// Wires in that stretch.
+    /// Wires, cables and tubes in that stretch.
     pub wires: usize,
-    /// All wires that run through the duct somewhere.
+    /// All wires, cables and tubes that run through the duct somewhere.
     pub total_wires: usize,
     /// Outer diameters of all of them, mm.
     pub diameters: Vec<f32>,
+}
+
+/// A cable or tube routed through cable ducts (the wires bring their own routes).
+#[derive(Clone, Debug, PartialEq)]
+pub struct DuctContent {
+    pub enclosure: usize,
+    pub runs: Vec<DuctRun>,
+    /// Outer diameter, mm.
+    pub diameter: f32,
+}
+
+/// Cross section (mm²) inside a cable duct, between its walls, base and cover.
+pub fn duct_capacity(it: &PanelItem) -> f32 {
+    let (width, depth) = duct_inside(it);
+    width.max(0.0) * depth.max(0.0)
 }
 
 /// Room (mm) between two wires lying side by side in a duct.
@@ -120,8 +136,9 @@ pub fn wire_area(cross_section: &str) -> f32 {
     std::f32::consts::PI / 4.0 * d * d
 }
 
-/// Fill levels of all ducts that wires run through, by enclosure and duct order.
-pub fn duct_fill(prj: &Project, wiring: &[RoutedWire]) -> Vec<DuctFill> {
+/// Fill levels of all ducts that wires (and the cables and tubes of `contents`) run
+/// through, by enclosure and duct order.
+pub fn duct_fill(prj: &Project, wiring: &[RoutedWire], contents: &[DuctContent]) -> Vec<DuctFill> {
     // (enclosure, duct id) -> stretches of the wires, the wires (by index)
     let mut runs: HashMap<(usize, u64), Vec<Stretch>> = HashMap::new();
     let mut through: HashMap<(usize, u64), std::collections::BTreeMap<usize, f32>> = HashMap::new();
@@ -136,13 +153,20 @@ pub fn duct_fill(prj: &Project, wiring: &[RoutedWire]) -> Vec<DuctFill> {
             }
         }
     }
+    for (ci, c) in contents.iter().enumerate() {
+        let area = std::f32::consts::PI / 4.0 * c.diameter * c.diameter;
+        for r in c.runs.iter().filter(|r| r.to - r.from > 0.01) {
+            runs.entry((c.enclosure, r.duct)).or_default().push(Stretch { from: r.from, to: r.to, area });
+            through.entry((c.enclosure, r.duct)).or_default().insert(wiring.len() + ci, c.diameter);
+        }
+    }
     let mut out = Vec::new();
     for (ei, e) in prj.layout.enclosures.iter().enumerate() {
         for d in e.items.iter().filter(|i| i.kind == ItemKind::Duct) {
             let Some(list) = runs.get(&(ei, d.id)) else { continue };
-            let (w, depth) = profile(prj, ItemKind::Duct, &d.part);
-            let capacity = w * depth;
+            let capacity = duct_capacity(d);
             let best = fullest(list.iter());
+            let diameters: Vec<f32> = through.get(&(ei, d.id)).map(|t| t.values().copied().collect()).unwrap_or_default();
             out.push(DuctFill {
                 enclosure: ei,
                 duct: d.id,
@@ -151,8 +175,8 @@ pub fn duct_fill(prj: &Project, wiring: &[RoutedWire]) -> Vec<DuctFill> {
                 from: best.1,
                 to: best.2,
                 wires: best.3,
-                total_wires: list.len(),
-                diameters: through.get(&(ei, d.id)).map(|t| t.values().copied().collect()).unwrap_or_default(),
+                total_wires: diameters.len(),
+                diameters,
             });
         }
     }
@@ -179,10 +203,7 @@ impl DuctLoads {
             .enclosures
             .iter()
             .flat_map(|e| e.items.iter().filter(|i| i.kind == ItemKind::Duct))
-            .map(|d| {
-                let (w, depth) = profile(prj, ItemKind::Duct, &d.part);
-                (d.id, w * depth)
-            })
+            .map(|d| (d.id, duct_capacity(d)))
             .collect();
         DuctLoads { capacity, runs: HashMap::new(), limit: prj.layout.duct_fill_limit }
     }

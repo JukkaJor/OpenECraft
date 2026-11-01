@@ -301,3 +301,39 @@ fn fittings_in_a_pipe_are_turned_to_the_pipes_they_join() {
     }
     assert_eq!(checked, 2);
 }
+
+#[test]
+fn duct_runs_take_the_part_of_a_segment_inside_the_duct() {
+    let mut e = crate::panel::Enclosure::default();
+    e.items.push(PanelItem { id: 3, kind: ItemKind::Duct, x: 100.0, y: 100.0, w: 40.0, h: 400.0, d: 60.0, ..Default::default() });
+    let (lo, hi) = panel::item_box(&e, &e.items[0]);
+    let mid = |y: f32| [(lo[0] + hi[0]) / 2.0, y, (lo[2] + hi[2]) / 2.0];
+    // Down the duct and on past its end (into a crossing duct, to a terminal).
+    let runs = duct_runs(&e, &[mid(lo[1] + 50.0), mid(hi[1] + 200.0)]);
+    assert_eq!(runs.len(), 1);
+    assert_eq!(runs[0].duct, 3);
+    assert!((runs[0].from - 150.0).abs() < 1e-3 && (runs[0].to - 501.0).abs() < 1e-3, "{runs:?}");
+    // Into the duct from the side and along it.
+    let side = [lo[0] - 100.0, lo[1] + 50.0, (lo[2] + hi[2]) / 2.0];
+    let runs = duct_runs(&e, &[side, mid(lo[1] + 50.0), mid(lo[1] + 150.0)]);
+    assert_eq!(runs.iter().map(|r| (r.from, r.to)).collect::<Vec<_>>(), vec![(150.0, 250.0)]);
+    // Beside the duct: nothing.
+    assert!(duct_runs(&e, &[[lo[0] - 10.0, lo[1], lo[2]], [lo[0] - 10.0, hi[1], lo[2]]]).is_empty());
+}
+
+#[test]
+fn cables_in_the_ducts_count_in_their_fill() {
+    let prj = (crate::sample::EXAMPLES.iter().find(|x| x.key == "conveyor").unwrap().build)();
+    let an = Analysis::checked(&prj);
+    let contents = duct_contents(&prj, &an.routing);
+    assert!(!contents.is_empty(), "the motor cables run through the ducts");
+    for c in &contents {
+        for r in &c.runs {
+            let f = an.duct_fill.iter().find(|f| f.enclosure == c.enclosure && f.duct == r.duct).expect("fill of the duct");
+            assert!(f.diameters.contains(&c.diameter), "{f:?}");
+        }
+    }
+    // Also a duct no wire runs through.
+    let wired = |f: &&crate::panel::DuctFill| an.wiring.iter().any(|w| w.stretches().any(|(e, r)| e == f.enclosure && r.runs.iter().any(|r| r.duct == f.duct)));
+    assert!(an.duct_fill.iter().any(|f| !wired(&f)));
+}

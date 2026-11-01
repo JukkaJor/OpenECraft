@@ -72,7 +72,7 @@ pub fn room_space(prj: &Project, ri: usize, pos: &[V3], poses: &[SitePose], rule
     for ci in panel::cabinets_in(&prj.layout, ri) {
         s.block_box(shift(cabinet_box(prj, poses, ri, ci)));
     }
-    s.add_enclosure(e, ri, o, rules);
+    s.add_enclosure(e, ri, o, rules, prj.layout.duct_fill_limit);
     s.mark_open(KEEP_TO_SURFACES);
     s.measure();
     s
