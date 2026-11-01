@@ -217,6 +217,29 @@ fn cables_keep_out_of_ducts_too_small_for_them() {
 }
 
 #[test]
+fn cables_keep_out_of_stretches_of_ducts_filled_to_the_limit() {
+    let mut e = single();
+    e.items.push(PanelItem { id: 3, kind: ItemKind::Duct, x: 0.0, y: 0.0, w: 40.0, h: 750.0, d: 60.0, ..Default::default() });
+    let prj = project(e);
+    let mut s = space(&prj);
+    let rules = RoutingRules::default();
+    let (a, b) = ([60.0, 60.0, 50.0], [60.0, 740.0, 50.0]);
+    let r = Request { at: [a, b], ..req(&[]) };
+    let w = s.route(a, b, &r, &rules).unwrap();
+    assert!(w.free < 100.0);
+    // 70 % of the 1998 mm² inside: 1399 mm². The lower half filled close to it.
+    let before = s.loads();
+    let lower: Vec<usize> = w.cells.iter().copied().filter(|&c| s.centre(c)[1] > 400.0).collect();
+    s.load_ducts(&lower, 1360.0);
+    assert!(!s.full_as(&before, r.area), "the next cable no longer fits there");
+    assert!(s.full_as(&before, 10.0), "a thin wire still does");
+    let full = s.route(a, b, &r, &rules).unwrap();
+    let in_duct = |w: &Way, y: (f32, f32)| w.cells.iter().filter(|&&c| s.channel(c, &r) && s.centre(c)[1] > y.0 && s.centre(c)[1] < y.1).count();
+    assert_eq!(in_duct(&full, (450.0, 700.0)), 0, "{:?}", full.points);
+    assert!(in_duct(&full, (100.0, 350.0)) > 0, "the upper half stays free: {:?}", full.points);
+}
+
+#[test]
 fn bends_are_rounded_as_far_as_the_room_around_them_allows() {
     let prj = project(with_block());
     let s = space(&prj);

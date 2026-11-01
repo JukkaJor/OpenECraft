@@ -167,7 +167,7 @@ impl Analysis {
             || (crate::field::plan(prj, &conns), crate::revision::pending(prj)),
         );
         step(Step::Ducts);
-        let fill = panel::duct_fill(prj, &wiring);
+        let fill = panel::duct_fill(prj, &wiring, &crate::routing3d::duct_contents(prj, &routing));
         Analysis {
             id: NEXT_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed),
             index: idx,

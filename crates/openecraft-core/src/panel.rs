@@ -36,7 +36,7 @@ pub use assembly::{assembly, mounted, Assembly, Piece};
 pub use checks::{box_gap, class_collisions, class_title, clearances, data_number, device_class, device_kinds, floor_height, heights, item_class, item_name, validate, CheckKind, ClassRule, Clearances, Finding, PanelRules, CLASSES};
 pub use drives::{drives, Drive, DriveKind, DRIVE, DRIVEN_BY};
 pub use fastening::{fastening_material, Fastening};
-pub use fill::{duct_fill, duct_inside, duct_lanes, duct_lanes_in_order, wire_area, DuctFill, DuctLoads, LANE_GAP, OVERFILL_COST};
+pub use fill::{duct_capacity, duct_fill, duct_inside, duct_lanes, duct_lanes_in_order, wire_area, DuctContent, DuctFill, DuctLoads, LANE_GAP, OVERFILL_COST};
 pub use lineup::{add_facing_cutout, add_passage, bay_right_of, lineup_of, lineups, neighbours, next_passage_place, passages, positions, route_across, set_site, site_poses, unbay, Leg, Passage, SitePlace, SitePose, LINEUP_GAP, PASSAGE_DIAMETER};
 pub use macros::{all_macros, builtin_macros, group_members, insert_macro, macro_from_items, ItemGroup, PanelMacro};
 pub use placement::{align, apply_anchors, apply_one_anchor, arrange_on_rail, capture_anchors, distribute, pattern_copy, Align, AlignTo, Anchor};
@@ -1717,7 +1717,7 @@ pub fn virtual_wiring(prj: &Project, conns: &[Connection]) -> (Vec<RoutedWire>, 
 /// longer. Without overfull ducts the shortest routes stay.
 fn reroute_overfull(prj: &Project, routed: &mut [RoutedWire], ends: &[(WireEnd, WireEnd)]) {
     let limit = prj.layout.duct_fill_limit;
-    if !duct_fill(prj, routed).iter().any(|f| f.percent > limit) {
+    if !duct_fill(prj, routed, &[]).iter().any(|f| f.percent > limit) {
         return;
     }
     let areas: Vec<f32> = routed.iter().map(|w| wire_area(&w.cross_section)).collect();

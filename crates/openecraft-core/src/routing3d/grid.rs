@@ -3,7 +3,8 @@
 //! inside the enclosures (in front of the mounting plate, behind the door), blocked by
 //! the walls, by devices, rails, busbars and accessories (with a clearance) and by
 //! keep-out reservations. Cable ducts and routing paths are channels: the way through
-//! them is cheaper than through free air; a cable too thick for a duct keeps out of it.
+//! them is cheaper than through free air; a cable too thick for a duct keeps out of it,
+//! and a stretch of a duct it would fill above the fill limit costs more.
 //! A route keeps half its thickness from what blocks the cells; a turn where its bend
 //! (rounded with the bend radius) would not keep clear of them costs more. Cables and
 //! tubes keep apart from the ones routed before them by their thicknesses: none runs
@@ -69,6 +70,14 @@ pub struct PathCells {
     pub items: usize,
 }
 
+/// A stretch of a cable duct one cell long: the cross-section the fill limit allows in
+/// it and what runs through it, mm².
+#[derive(Clone, Copy, Debug, PartialEq)]
+struct Section {
+    capacity: f32,
+    used: f32,
+}
+
 /// Where wires may cross from one enclosure into the next: the boundary `x` and the
 /// opening's `y` and `z` ranges.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -113,6 +122,9 @@ pub struct Space {
     owner: Vec<u64>,
     /// Inner size (mm) of the cable duct a cell lies in, 0 for none.
     duct: Vec<f32>,
+    /// Stretch of a cable duct a cell lies in: index + 1 into `sections`, 0 for none.
+    section: Vec<u32>,
+    sections: Vec<Section>,
     /// Cells from each cell to the nearest blocked one (at most [`ROOM`]); empty until
     /// [`Space::measure`]: room everywhere.
     room: Vec<u8>,
@@ -206,6 +218,8 @@ impl Space {
             block: vec![WALL; total],
             owner: vec![0; total],
             duct: vec![0.0; total],
+            section: vec![0; total],
+            sections: Vec::new(),
             room: Vec::new(),
             taken: vec![f32::NEG_INFINITY; total],
             path: vec![0; total],
@@ -301,7 +315,7 @@ impl Space {
             }
         }
         for &k in lineup {
-            s.add_enclosure(&encs[k], k, pos[k], rules);
+            s.add_enclosure(&encs[k], k, pos[k], rules, prj.layout.duct_fill_limit);
         }
         for w in lineup.windows(2) {
             for x in panel::passages(&prj.layout, pos, w[0]) {
@@ -315,8 +329,9 @@ impl Space {
 
     /// Adds what is in enclosure `k` (at `o`, enclosure coordinates + `o` = grid
     /// coordinates) to the free space: its items, reservations and routing paths.
-    /// Cable ducts are channels on the mounting plate, in a room on every face.
-    pub(super) fn add_enclosure(&mut self, e: &Enclosure, k: usize, o: V3, rules: &RoutingRules) {
+    /// Cable ducts are channels on the mounting plate, in a room on every face, filled
+    /// up to `limit` percent of their inside.
+    pub(super) fn add_enclosure(&mut self, e: &Enclosure, k: usize, o: V3, rules: &RoutingRules, limit: f32) {
         let shift = |(a, b): (V3, V3), m: f32| ([a[0] + o[0] - m, a[1] + o[1] - m, a[2] + o[2] - m], [b[0] + o[0] + m, b[1] + o[1] + m, b[2] + o[2] + m]);
         for it in &e.items {
             let bx = shift(panel::item_box(e, it), 0.0);
@@ -338,7 +353,18 @@ impl Space {
                 ItemKind::Duct if it.face == panel::Face::Plate || e.is_room() => {
                     // Its inside: across and as deep as it is, less its walls.
                     let size = (it.w.min(it.h).min(it.d) - 4.0).max(1.0);
-                    self.cells_in(bx).into_iter().for_each(|idx| self.duct[idx] = size);
+                    let cells = self.cells_in(bx);
+                    // Its stretches along it, one cell long.
+                    let axis = (0..3).max_by(|&a, &b| (bx.1[a] - bx.0[a]).total_cmp(&(bx.1[b] - bx.0[b]))).unwrap_or(0);
+                    let first = cells.iter().map(|&i| self.coords(i)[axis]).min().unwrap_or(0);
+                    let last = cells.iter().map(|&i| self.coords(i)[axis]).max().unwrap_or(0);
+                    let base = self.sections.len();
+                    let capacity = panel::duct_capacity(it) * limit / 100.0;
+                    self.sections.extend((first..=last).map(|_| Section { capacity, used: 0.0 }));
+                    for idx in cells {
+                        self.duct[idx] = size;
+                        self.section[idx] = (base + self.coords(idx)[axis] - first) as u32 + 1;
+                    }
                 }
                 _ => {}
             }
@@ -592,6 +618,11 @@ impl Space {
         (p.kind.accepts(req.kind) && (p.classes == 0 || p.classes & req.class.bit() != 0)).then_some(p)
     }
 
+    /// The stretch of a cable duct a cell lies in.
+    fn section_of(&self, idx: usize) -> Option<&Section> {
+        self.sections.get((self.section[idx] as usize).checked_sub(1)?)
+    }
+
     /// The cell is a channel for the request: a cable duct (not for tubes) or one of
     /// its routing paths.
     fn channel(&self, idx: usize, req: &Request) -> bool {
@@ -606,6 +637,9 @@ impl Space {
             f *= OPEN;
         }
         if self.path_for(idx, req).is_some_and(|p| p.capacity > 0.0 && p.used + req.area > p.capacity) {
+            f *= FULL;
+        }
+        if self.section_of(idx).is_some_and(|s| s.capacity > 0.0 && s.used + req.area > s.capacity) {
             f *= FULL;
         }
         if self.zone[idx] & req.class.apart_bits() != 0 {
@@ -892,11 +926,19 @@ impl Space {
         (reach, known)
     }
 
-    /// For a route of cross-section `area`, the routing paths are full or not as they
-    /// were with the cross-sections `before` in them (`used` of [`Space::paths`]).
-    pub fn paths_full_as(&self, before: &[f32], area: f32) -> bool {
-        let full = |used: f32, p: &PathCells| p.capacity > 0.0 && used + area > p.capacity;
-        before.len() == self.paths.len() && self.paths.iter().zip(before).all(|(p, &used)| full(used, p) == full(p.used, p))
+    /// The cross-sections in the routing paths and in the stretches of the cable ducts,
+    /// for [`Space::full_as`].
+    pub fn loads(&self) -> Vec<f32> {
+        self.paths.iter().map(|p| p.used).chain(self.sections.iter().map(|s| s.used)).collect()
+    }
+
+    /// For a route of cross-section `area`, the routing paths and the stretches of the
+    /// cable ducts are full or not as they were with the cross-sections `before` in them
+    /// ([`Space::loads`]).
+    pub fn full_as(&self, before: &[f32], area: f32) -> bool {
+        let full = |used: f32, capacity: f32| capacity > 0.0 && used + area > capacity;
+        let now = self.paths.iter().map(|p| (p.used, p.capacity)).chain(self.sections.iter().map(|s| (s.used, s.capacity)));
+        before.len() == self.paths.len() + self.sections.len() && now.zip(before).all(|((used, capacity), &old)| full(old, capacity) == full(used, capacity))
     }
 
     /// A way that was routed before (frozen) is still possible: its cells are passable
@@ -922,6 +964,17 @@ impl Space {
             let pc = &mut self.paths[p as usize - 1];
             pc.used += area;
             pc.items += 1;
+        }
+    }
+
+    /// Registers the cross-section of a route through the cells in the stretches of the
+    /// cable ducts it runs through (once in each).
+    pub fn load_ducts(&mut self, cells: &[usize], area: f32) {
+        let mut seen: Vec<u32> = cells.iter().map(|&i| self.section[i]).filter(|&s| s != 0).collect();
+        seen.sort_unstable();
+        seen.dedup();
+        for s in seen {
+            self.sections[s as usize - 1].used += area;
         }
     }
 
