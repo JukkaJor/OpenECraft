@@ -56,6 +56,7 @@ zoom, language, check results and the messages of the session.
 | Help | `F1` opens the tutorial chapter of the pane in use; the Help pane has the quick guide (the first hour, with links into the tutorial), the tutorial, keyboard shortcuts; *Help › Tutorial*, *Help › Start page* (all 13 chapters), *Help › About OpenECraft* |
 | Dialogs | open centred over the editor and keep the place and size they were given; `Esc` closes the one on top, *Cancel* drops what was typed; the command search closes on a click outside |
 | Pan / zoom | right or middle mouse drag / mouse wheel, `F` fits the page; *View › Zoom*: fit page, zoom 100 %, zoom in, zoom out |
+| Moving in 3D | drag: orbit; right / middle or Shift+drag: pan; wheel: zoom at the pointer (on into a room); double-click: look at what was clicked; `W` `A` `S` `D` / arrow keys, `Q` `E`: move (Shift: faster); bar in the view: front, left, right, rear, top, isometric, *Fit* (`Home`) |
 | Pages | `Page Up` / `Page Down`, *Pages* navigator (its context menu also adds a schematic page after the page, renumbers and deletes pages), page switch of the quick access row |
 | Undo / redo | `Ctrl+Z` / `Ctrl+Y`; the undo list of the quick access row undoes several steps |
 | Copy / paste | `Ctrl+C` / `Ctrl+X` / `Ctrl+V`, *Home › Cut* / *Copy* / *Paste* |

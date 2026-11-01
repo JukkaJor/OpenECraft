@@ -15,7 +15,11 @@ line-ups, rooms of the building with their floor-standing equipment and pipe run
   place" list with their real dimensions from the parts data (contactor + auxiliary
   block add up in depth, terminal strips are as long as their terminals and spares) and
   snapped onto rails; move (devices travel with their rail), rotate, delete.
-- 2D front view and a 3D view (orbit, pan, zoom, click to select). Walls, ceilings and
+- 2D front view and a 3D view: drag to orbit, right / middle or Shift+drag to pan, the
+  wheel zooms at the pointer and walks on into a room, a double-click turns to what was
+  clicked and closes in, `W` `A` `S` `D` / arrow keys and `Q` `E` move through the view
+  (Shift: faster), the bar in the view has the standard views and *Fit* (`Home`); click
+  to select. Walls, ceilings and
   doors seen from the outside are see-through (*Wall opacity* in the settings, under
   Appearance); *Hide walls in front* leaves out the walls between the eye and the inside,
   *Hide ceiling* the ceilings of the rooms. Wires are drawn in their colour (two-colour

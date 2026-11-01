@@ -25,6 +25,16 @@ fn the_matrix_projects_as_the_processor_does() {
 }
 
 #[test]
+fn unprojecting_reverses_the_projection() {
+    let cam = camera();
+    for q in [[0.0, 0.0, 0.0], [600.0, 1800.0, 400.0], [-900.0, 300.0, 2500.0]] {
+        let (screen, z) = cam.project(Pos2::ZERO, q).unwrap();
+        let back = cam.unproject(screen.to_vec2(), z);
+        assert!((0..3).all(|k| (back[k] - q[k]).abs() < 0.05), "{q:?} {back:?}");
+    }
+}
+
+#[test]
 fn the_depths_reach_from_the_scene_to_its_farthest_corner() {
     let bounds = ([0.0, 0.0, 0.0], [1000.0, 2000.0, 500.0]);
     let (near, far) = depth_range(bounds, [500.0, 1000.0, 3500.0]);
