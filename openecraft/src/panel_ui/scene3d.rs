@@ -334,12 +334,15 @@ fn unordered<T: Hash>(items: impl Iterator<Item = T>) -> u64 {
 /// A wire's way along the plate lifted over the boxes it would pass through: just
 /// before one it rises in front of it (half its thickness and a little more), just
 /// after it it goes down again.
-fn over(points: &[V3], blockers: &[(V3, V3)], half: f32) -> Vec<V3> {
+fn over(points: &[V3], blockers: &[(V3, V3)], ducts: &[(V3, V3)], half: f32) -> Vec<V3> {
     let margin = half + 1.0;
     let mut out: Vec<V3> = points.first().copied().into_iter().collect();
     for s in points.windows(2) {
         let (a, b) = (s[0], s[1]);
         let at = |t: f32| [0, 1, 2].map(|k| a[k] + (b[k] - a[k]) * t);
+        // Where the stretch runs inside the cable ducts: it goes up behind a duct and
+        // comes down before one, through their walls, not their covers.
+        let in_ducts: Vec<(f32, f32)> = ducts.iter().filter_map(|(lo, hi)| vec3::segment_in_box(a, b, (*lo, *hi))).collect();
         // The stretches inside the boxes (grown by the wire) and how far in front of the
         // plate their fronts are, joined where they overlap.
         let mut hits: Vec<(f32, f32, f32)> = blockers
@@ -356,8 +359,15 @@ fn over(points: &[V3], blockers: &[(V3, V3)], half: f32) -> Vec<V3> {
             }
         }
         for (t0, t1, front) in joined {
-            let (p, q) = (at(t0), at(t1));
-            out.extend([p, [p[0], p[1], front], [q[0], q[1], front], q]);
+            // Lifted outside the ducts only: inside them it stays under their covers.
+            let mut pieces = vec![(t0, t1)];
+            for &(d0, d1) in &in_ducts {
+                pieces = pieces.into_iter().flat_map(|(a, b)| [(a, b.min(d0)), (a.max(d1), b)]).filter(|(a, b)| b - a > 1e-4).collect();
+            }
+            for (t0, t1) in pieces {
+                let (p, q) = (at(t0), at(t1));
+                out.extend([p, [p[0], p[1], front], [q[0], q[1], front], q]);
+            }
         }
         out.push(b);
     }
@@ -377,6 +387,38 @@ fn leave_device(along: &mut Vec<V3>, own: (V3, V3), height: f32) {
     along.drain(..n);
     let q = along[0];
     along.insert(0, [q[0], q[1], height]);
+}
+
+/// A wire's way out of its device ([`leave_device`]) whose first point outside the
+/// device lies in a cable duct: it comes down from the connection point's height to
+/// the duct's depth just before the duct's wall (seen on the plate), not inside the
+/// duct through its cover.
+fn down_before_duct(along: &mut Vec<V3>, terminal: V3, ducts: &[(V3, V3)], half: f32) {
+    if along.len() < 2 {
+        return;
+    }
+    let (top, q) = (along[0], along[1]);
+    if top[0] != q[0] || top[1] != q[1] {
+        return;
+    }
+    let inside = |p: V3, (lo, hi): &(V3, V3)| p[0] > lo[0] && p[0] < hi[0] && p[1] > lo[1] && p[1] < hi[1];
+    let Some(d) = ducts.iter().find(|d| inside(q, d) && !inside(terminal, d)) else { return };
+    // Where the way from the terminal to the point in the duct enters the duct.
+    let (a, b) = (terminal, q);
+    let mut entering: f32 = 0.0;
+    for k in 0..2 {
+        if (b[k] - a[k]).abs() > 1e-6 {
+            let (t1, t2) = ((d.0[k] - a[k]) / (b[k] - a[k]), (d.1[k] - a[k]) / (b[k] - a[k]));
+            entering = entering.max(t1.min(t2));
+        }
+    }
+    let len = ((b[0] - a[0]).powi(2) + (b[1] - a[1]).powi(2)).sqrt();
+    if len < 1e-3 {
+        return;
+    }
+    let t = (entering - (half + 1.0) / len).clamp(0.0, 1.0);
+    let c = [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+    along.splice(0..1, [[c[0], c[1], top[2]], [c[0], c[1], q[2]]]);
 }
 
 /// The fingers (indices) a tube passes through: each of `ways` with its radius, the
@@ -668,7 +710,7 @@ impl PanelUi {
                         let across = if it.w >= it.h { 1 } else { 0 };
                         (lo[across], hi[across]) = (b0[across] + side, b1[across] - side);
                         (lo[2], hi[2]) = (b0[2] + side, b0[2] + side + depth);
-                        channels.push(Channel { inside: seen(up_box((lo, hi))), floor: pose.turn([0.0, 0.0, 1.0]) });
+                        channels.push(Channel { inside: seen(up_box((lo, hi))), floor: pose.turn([0.0, 0.0, 1.0]), rim: panel::duct_walls(it).0 - side });
                         lids.push(seen(up_box(([b0[0], b0[1], b1[2]], [b1[0], b1[1], b1[2] + dpt]))));
                     }
                     for (bx, [r, g, b], finger) in panel::duct_boxes(e, it, !self.open_ducts) {
@@ -728,6 +770,7 @@ impl PanelUi {
                 })
                 .collect();
             let in_cable = |w: &panel::RoutedWire| !w.cable.is_empty() && an.routing.item(&w.cable).is_some_and(|c| c.routed());
+            let duct_boxes: Vec<(V3, V3)> = e.items.iter().filter(|i| i.kind == ItemKind::Duct && i.face == Face::Plate).map(|i| up_box(panel::item_box(e, i))).collect();
             for (wi, wire) in an.wiring.iter().enumerate().filter(|(_, wire)| wire.in_enclosure(k) && !routed_3d(wire)) {
                 let selected = Some(wi) == selected_wire;
                 if in_cable(wire) && !selected {
@@ -779,14 +822,16 @@ impl PanelUi {
                             let own = |id: u64| blockers.iter().find(|b| b.0 == id).map(|b| b.1);
                             if let (None, None, Some(t), Some(b)) = (entry, a, wire.terminals.0.map(up), own(wire.items.0)) {
                                 leave_device(&mut along, b, t[2]);
+                                down_before_duct(&mut along, t, &duct_boxes, diameter / 2.0);
                             }
                             if let (None, None, Some(t), Some(b)) = (exit, b, wire.terminals.1.map(up), own(wire.items.1)) {
                                 along.reverse();
                                 leave_device(&mut along, b, t[2]);
+                                down_before_duct(&mut along, t, &duct_boxes, diameter / 2.0);
                                 along.reverse();
                             }
                             let around: Vec<(V3, V3)> = blockers.iter().filter(|(id, _)| *id != wire.items.0 && *id != wire.items.1).map(|(_, b)| *b).collect();
-                            v.extend(over(&along, &around, diameter / 2.0));
+                            v.extend(over(&along, &around, &duct_boxes, diameter / 2.0));
                             v.extend(exit.map(passage));
                             match (exit, b) {
                                 (None, Some(b)) => v.extend(door_end(b, &wire.door_routes.1, route.points.last(), z).into_iter().rev()),

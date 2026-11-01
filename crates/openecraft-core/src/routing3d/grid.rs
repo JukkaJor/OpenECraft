@@ -3,7 +3,9 @@
 //! inside the enclosures (in front of the mounting plate, behind the door), blocked by
 //! the walls, by devices, rails, busbars and accessories (with a clearance) and by
 //! keep-out reservations. Cable ducts and routing paths are channels: the way through
-//! them is cheaper than through free air; a cable too thick for a duct keeps out of it.
+//! them is cheaper than through free air; a cable too thick for a duct keeps out of it,
+//! one that fits enters and leaves the ducts of a cabinet through the slots of their
+//! walls (never through their base or cover) and keeps off their walls outside them.
 //! The room around every cell is measured from what blocks the space (its boxes and
 //! walls themselves, not the cells they block): a route keeps half its thickness from
 //! all of it but the items at its ends, and where it cannot (near its ends, or within
@@ -84,6 +86,9 @@ pub struct PathCells {
     pub capacity: f32,
     pub used: f32,
     pub items: usize,
+    /// Not a routing path of the layout: the cable way of a 19-inch rack beside its
+    /// mounting rails.
+    pub implied: bool,
 }
 
 /// Where wires may cross from one enclosure into the next: the boundary `x` and the
@@ -103,6 +108,19 @@ struct Crossing {
 enum Solid {
     Box { lo: V3, hi: V3, owner: u64 },
     Room { plan: Vec<[f32; 2]>, origin: V3, height: f32 },
+}
+
+/// A cable duct of a cabinet: its box, the axis it runs along, and the heights above
+/// its base of the closed rim of its slotted walls and of their top (its cover lies on
+/// them). A route outside it keeps off it, one enters and leaves it through its walls
+/// between the rim and the top, never through its base or its cover.
+#[derive(Clone, Debug, PartialEq)]
+struct DuctBox {
+    lo: V3,
+    hi: V3,
+    axis: usize,
+    rim: f32,
+    top: f32,
 }
 
 /// What is routed.
@@ -165,6 +183,13 @@ pub struct Space {
     owner: Vec<u64>,
     /// Inner size (mm) of the cable duct a cell lies in, 0 for none.
     duct: Vec<f32>,
+    /// The cable duct of a cabinet a cell lies in (index + 1 into `ducts`, 0 for none).
+    duct_of: Vec<u16>,
+    ducts: Vec<DuctBox>,
+    /// Room (mm) from the centre of each cell outside the cable ducts of the cabinets
+    /// to the nearest of them (index + 1, 0 for none within reach); empty until
+    /// [`Space::measure`].
+    duct_room: Vec<(f32, u16)>,
     /// What blocks the space, until [`Space::measure`].
     solids: Vec<Solid>,
     /// Room (mm) from the centre of each cell to the nearest solid, which item that is
@@ -191,8 +216,10 @@ pub struct Space {
     /// Enclosure of each cell column along x (index into the layout), `usize::MAX`
     /// outside.
     column: Vec<usize>,
-    /// Cells in the open space of a room, away from its surfaces; empty in a line-up.
-    open: Vec<bool>,
+    /// How far (in cells) each cell of a room lies from its surfaces, `open_cells` + 1
+    /// at most (see [`Space::mark_open`]); empty in a line-up.
+    open: Vec<u8>,
+    open_cells: u32,
 }
 
 thread_local! {
@@ -223,15 +250,16 @@ struct Search {
     runs: Vec<(u32, f32)>,
     run_stamp: Vec<u32>,
     /// What a step into each cell costs for the request, up or down and along the
-    /// other axes (less than 0: not passable), where `pass_stamp` is the search's.
-    pass: Vec<(f32, f32)>,
+    /// other axes, and how it can be passed ([`NO`]: not at all), where `pass_stamp`
+    /// is the search's.
+    pass: Vec<(f32, f32, u8)>,
     pass_stamp: Vec<u32>,
     run: u32,
 }
 
 /// The memos of a search: what the steps into the cells cost and the runs out of them.
 struct Memo<'a> {
-    pass: &'a mut [(f32, f32)],
+    pass: &'a mut [(f32, f32, u8)],
     pass_stamp: &'a mut [u32],
     runs: &'a mut [(u32, f32)],
     run_stamp: &'a mut [u32],
@@ -251,7 +279,7 @@ impl Search {
                 settled: vec![0; cells],
                 runs: vec![(u32::MAX, 0.0); cells * 6],
                 run_stamp: vec![0; cells * 6],
-                pass: vec![(-1.0, -1.0); cells],
+                pass: vec![(-1.0, -1.0, NO); cells],
                 pass_stamp: vec![0; cells],
                 run: 0,
             };
@@ -285,6 +313,9 @@ impl Space {
             block: vec![WALL; total],
             owner: vec![0; total],
             duct: vec![0.0; total],
+            duct_of: vec![0; total],
+            ducts: Vec::new(),
+            duct_room: Vec::new(),
             solids: Vec::new(),
             room: Vec::new(),
             room_owner: Vec::new(),
@@ -299,15 +330,17 @@ impl Space {
             crossings: Vec::new(),
             column: vec![usize::MAX; n[0]],
             open: Vec::new(),
+            open_cells: 0,
         }
     }
 
-    /// Marks the free cells farther than `distance` from the walls, the ceiling (the
-    /// top of the grid) and the items standing or hanging in the room as its open
-    /// space: running through it horizontally costs more, so pipes and cables keep to
-    /// the walls and the ceiling and drop straight to a device standing in the room.
+    /// Measures how far (in cells) the free cells lie from the walls, the ceiling (the
+    /// top of the grid) and the items standing or hanging in the room, up to `distance`:
+    /// running through the room horizontally costs the more the farther from them (see
+    /// [`Space::open_factor`]), so pipes and cables keep to the walls and the ceiling
+    /// and drop straight to a device standing in the room.
     pub(super) fn mark_open(&mut self, distance: f32) {
-        let k = (distance / self.cell).ceil() as u32;
+        let k = ((distance / self.cell).ceil() as u32).clamp(1, 200);
         let total = self.block.len();
         let mut dist = vec![u32::MAX; total];
         let mut queue = std::collections::VecDeque::new();
@@ -330,7 +363,8 @@ impl Space {
                 }
             }
         }
-        self.open = dist.into_iter().map(|d| d == u32::MAX).collect();
+        self.open = dist.into_iter().map(|d| d.min(k + 1) as u8).collect();
+        self.open_cells = k;
     }
 
     /// The grid of a line-up (`pos`: [`panel::positions`]).
@@ -370,6 +404,9 @@ impl Space {
         }
         for &k in lineup {
             s.add_enclosure(&encs[k], k, pos[k], rules);
+            if panel::is_rack(&encs[k]) {
+                s.add_rack_ways(&encs[k], k, pos[k]);
+            }
         }
         let mut passages: Vec<panel::Passage> = Vec::new();
         for w in lineup.windows(2) {
@@ -412,7 +449,16 @@ impl Space {
                 ItemKind::Duct if it.face == panel::Face::Plate || e.is_room() => {
                     // Its inside: across and as deep as it is, less its walls.
                     let size = (it.w.min(it.h).min(it.d) - 4.0).max(1.0);
-                    self.cells_in(self.widened(bx)).into_iter().for_each(|idx| self.duct[idx] = size);
+                    let cells = self.cells_in(self.widened(bx));
+                    cells.iter().for_each(|&idx| self.duct[idx] = size);
+                    // In a cabinet its walls bound the routes outside it and the ways
+                    // into it (a tray in a room is open).
+                    if !e.is_room() {
+                        let (rim, top, _) = panel::duct_walls(it);
+                        self.ducts.push(DuctBox { lo: bx.0, hi: bx.1, axis: usize::from(it.w < it.h), rim, top });
+                        let mark = self.ducts.len() as u16;
+                        cells.iter().for_each(|&idx| self.duct_of[idx] = mark);
+                    }
                 }
                 _ => {}
             }
@@ -441,11 +487,36 @@ impl Space {
                 capacity: p.capacity(),
                 used: 0.0,
                 items: 0,
+                implied: false,
             });
             let mark = self.paths.len() as u16;
             // At least the cells around the centre line.
             let r = (p.width / 2.0).max(self.cell * 0.75);
             for idx in self.cells_near(&pts, r) {
+                if self.path[idx] == 0 {
+                    self.path[idx] = mark;
+                }
+            }
+        }
+    }
+
+    /// The cable ways of a 19-inch rack `e` (at `o`): the space beside its mounting
+    /// rails from its front to its rear is a channel the routes run along, leaving it
+    /// for the devices in the rack; the rails themselves block the space.
+    fn add_rack_ways(&mut self, e: &Enclosure, k: usize, o: V3) {
+        let rails = panel::rack::rail_boxes(e);
+        let (l, r) = (rails.iter().map(|b| b.0[0]).fold(f32::INFINITY, f32::min), rails.iter().map(|b| b.1[0]).fold(f32::NEG_INFINITY, f32::max));
+        for (lo, hi) in rails {
+            self.block_box((add(lo, o), add(hi, o)));
+        }
+        let t = e.wall();
+        for (x0, x1) in [(t, l), (r, e.width - t)] {
+            if x1 <= x0 {
+                continue;
+            }
+            self.paths.push(PathCells { enclosure: k, id: 0, kind: PathKind::Any, classes: 0, capacity: 0.0, used: 0.0, items: 0, implied: true });
+            let mark = self.paths.len() as u16;
+            for idx in self.cells_in((add(o, [x0, t, PLATE_Z]), add(o, [x1, e.height - t, e.depth - t]))) {
                 if self.path[idx] == 0 {
                     self.path[idx] = mark;
                 }
@@ -541,6 +612,16 @@ impl Space {
             }
         }
         self.solids = solids;
+        self.duct_room = vec![(cap, 0); total];
+        for k in 0..self.ducts.len() {
+            let (lo, hi) = (self.ducts[k].lo, self.ducts[k].hi);
+            for idx in self.cells_in((lo.map(|v| v - cap), hi.map(|v| v + cap))) {
+                let d = box_distance(self.centre(idx), lo, hi);
+                if self.block[idx] != WALL && self.duct_of[idx] == 0 && d < self.duct_room[idx].0 {
+                    self.duct_room[idx] = (d, k as u16 + 1);
+                }
+            }
+        }
     }
 
     /// A solid of the item `key` lies `d` mm from the centre of a cell.
@@ -567,9 +648,10 @@ impl Space {
         }
     }
 
-    /// The cell lies near an end of the request.
+    /// The cell lies near an end of the request: within a few cells of it, or as far as
+    /// the route runs straight out of it (half its bend radius) at least.
     fn near_end(&self, idx: usize, req: &Request) -> bool {
-        req.at.iter().any(|q| dist(self.centre(idx), *q) <= 3.0 * self.cell + req.half)
+        req.at.iter().any(|q| dist(self.centre(idx), *q) <= (3.0 * self.cell).max(req.turn * 0.5) + req.half)
     }
 
     /// The request keeps apart from the cables and tubes routed before it in the cell
@@ -680,6 +762,22 @@ impl Space {
         } else {
             (c >= cells).then(|| idx - cells * stride)
         }
+    }
+
+    /// The cell `other` lies beside `idx`, across the axis of `dir` along one other axis,
+    /// within `cells` steps: the direction towards it and how many steps.
+    fn beside(&self, idx: usize, dir: usize, other: usize, cells: usize) -> Option<(usize, usize)> {
+        let (c, o) = (self.coords(idx), self.coords(other));
+        let mut found = None;
+        for axis in (0..3).filter(|&k| k != dir / 2) {
+            if c[axis] != o[axis] {
+                if found.is_some() {
+                    return None;
+                }
+                found = Some((axis * 2 + usize::from(o[axis] > c[axis]), c[axis].abs_diff(o[axis])));
+            }
+        }
+        found.filter(|&(_, k)| c[dir / 2] == o[dir / 2] && k >= 1 && k <= cells)
     }
 
     /// The cell `other` lies ahead of `idx` in direction `dir`, within `cells` steps.
@@ -836,8 +934,8 @@ impl Space {
     fn factor(&self, idx: usize, axis: usize, req: &Request, rules: &RoutingRules) -> f32 {
         let channel = self.channel(idx, req);
         let mut f = if channel { 1.0 } else { rules.free_factor.max(1.0) };
-        if !channel && axis != 1 && self.open.get(idx) == Some(&true) {
-            f *= OPEN;
+        if !channel && axis != 1 {
+            f *= self.open_factor(idx);
         }
         if self.path_for(idx, req).is_some_and(|p| p.capacity > 0.0 && p.used + req.area > p.capacity) {
             f *= FULL;
@@ -846,6 +944,45 @@ impl Space {
             f *= rules.segregation_factor.max(1.0);
         }
         f
+    }
+
+    /// Cost factor of a horizontal step into a cell of a room by how far it lies from
+    /// the room's surfaces: none next to them, [`OPEN`] from the distance of
+    /// [`Space::mark_open`] on, in between as far as it is.
+    fn open_factor(&self, idx: usize) -> f32 {
+        match self.open.get(idx) {
+            Some(&d) if d > 1 => 1.0 + (OPEN - 1.0) * ((d - 1) as f32 / (self.open_cells.max(2) - 1) as f32).min(1.0),
+            _ => 1.0,
+        }
+    }
+
+    /// What the walls of the cabinets' cable ducts make of the step from cell `a` into
+    /// its neighbour `b` in direction `dir`: `None` where it is barred, through the base
+    /// or the cover of a duct, or through its walls below their rim or above their top
+    /// (a cell either way); otherwise whether the route is squeezed against a duct
+    /// it runs along outside, nearer than half its thickness, with a little less room
+    /// (heading into or out of a duct through its wall it comes as near as it likes).
+    fn duct_step(&self, a: usize, b: usize, dir: usize, req: &Request) -> Option<bool> {
+        let (da, db) = (self.duct_of[a], self.duct_of[b]);
+        if da != db && (da == 0 || db == 0) {
+            if dir / 2 == 2 {
+                return None;
+            }
+            let d = &self.ducts[da.max(db) as usize - 1];
+            let z = self.centre(if da != 0 { a } else { b })[2] - d.lo[2];
+            return (z - req.half >= d.rim - self.cell && z + req.half <= d.top + self.cell).then_some(false);
+        }
+        let Some(&(room, k)) = self.duct_room.get(b).filter(|_| db == 0) else { return Some(false) };
+        if k == 0 || room >= req.half {
+            return Some(false);
+        }
+        // Beside the duct (not over its cover) heading at its wall or away from it.
+        let d = &self.ducts[k as usize - 1];
+        let z = self.centre(b)[2];
+        if dir / 2 != d.axis && dir / 2 != 2 && z >= d.lo[2] && z <= d.hi[2] {
+            return Some(false);
+        }
+        (room + self.cell * 0.5 >= req.half || self.near_end(b, req)).then_some(true)
     }
 
     /// Crossing between the cells `a` and `b` (neighbours along x) is allowed: in the
@@ -865,7 +1002,7 @@ impl Space {
     /// The step from cell `a` into its neighbour `b` in direction `dir` is open for
     /// the request.
     fn step_ok(&self, a: usize, b: usize, dir: usize, req: &Request) -> bool {
-        self.passable(b, req) && (dir / 2 != 0 || self.crossing_ok(a, b))
+        self.passable(b, req) && (dir / 2 != 0 || self.crossing_ok(a, b)) && self.duct_step(a, b, dir, req).is_some()
     }
 
     /// The cost of the step from cell `a` into its neighbour `b` in direction `dir`,
@@ -874,16 +1011,18 @@ impl Space {
     fn step_cost(&self, memo: &mut Memo, a: usize, b: usize, dir: usize, req: &Request, rules: &RoutingRules) -> Option<f32> {
         if memo.pass_stamp[b] != memo.run {
             memo.pass[b] = match self.level(b, req, true) {
-                NO => (-1.0, -1.0),
-                level => {
-                    let squeeze = if level == SQUEEZED { SQUEEZE } else { 1.0 };
-                    (self.cell * self.factor(b, 1, req, rules) * squeeze, self.cell * self.factor(b, 0, req, rules) * squeeze)
-                }
+                NO => (-1.0, -1.0, NO),
+                level => (self.cell * self.factor(b, 1, req, rules), self.cell * self.factor(b, 0, req, rules), level),
             };
             memo.pass_stamp[b] = memo.run;
         }
-        let cost = if dir / 2 == 1 { memo.pass[b].0 } else { memo.pass[b].1 };
-        (cost >= 0.0 && (dir / 2 != 0 || self.crossing_ok(a, b))).then_some(cost)
+        let (up, along, level) = memo.pass[b];
+        if level == NO || (dir / 2 == 0 && !self.crossing_ok(a, b)) {
+            return None;
+        }
+        let against_duct = self.duct_step(a, b, dir, req)?;
+        let cost = if dir / 2 == 1 { up } else { along };
+        Some(if level == SQUEEZED || against_duct { cost * SQUEEZE } else { cost })
     }
 
     /// The nearest passable cell to a point (searching a few cells around it).
@@ -929,31 +1068,49 @@ impl Space {
         let dir = axis * 2 + usize::from(sign > 0.0);
         let within = |idx: usize| limit.is_none_or(|l| (self.centre(idx)[axis] - l) * sign <= 0.0);
         let ahead = |idx: usize| (self.centre(idx)[axis] - q[axis]) * sign + out;
-        let mut first = None;
-        for k in 0..LEAD_CELLS {
-            let mut p = q;
-            p[axis] += sign * (k as f32 + 0.5) * self.cell;
-            let Some(idx) = self.cell_of(p) else { break };
-            if !within(idx) {
-                break;
+        // The cells straight out of `from`.
+        let from = |from: V3| -> Option<Vec<usize>> {
+            let mut first = None;
+            for k in 0..LEAD_CELLS {
+                let mut p = from;
+                p[axis] += sign * (k as f32 + 0.5) * self.cell;
+                let Some(idx) = self.cell_of(p) else { break };
+                if !within(idx) {
+                    break;
+                }
+                if self.passable(idx, req) {
+                    first = Some(idx);
+                    break;
+                }
             }
-            if self.passable(idx, req) {
-                first = Some(idx);
-                break;
+            let mut cells = vec![first?];
+            for _ in 0..straight {
+                let last = cells[cells.len() - 1];
+                if ahead(last) >= far {
+                    break;
+                }
+                match self.step(last, dir) {
+                    Some(next) if within(next) && self.step_ok(last, next, dir, req) => cells.push(next),
+                    _ => break,
+                }
+            }
+            Some(cells)
+        };
+        // Barred before it ran `far` straight out of the end, the way may leave it from
+        // the cell beside (a cell aside at most), where it runs farther.
+        let mut best = from(q);
+        if best.as_ref().is_none_or(|c| ahead(c[c.len() - 1]) < far) {
+            for other in (0..3).filter(|&k| k != axis) {
+                for side in [-1.0, 1.0] {
+                    let mut p = q;
+                    p[other] += side * self.cell;
+                    if let Some(cells) = from(p).filter(|c| best.as_ref().is_none_or(|b| c.len() > b.len())) {
+                        best = Some(cells);
+                    }
+                }
             }
         }
-        let mut cells = vec![first?];
-        for _ in 0..straight {
-            let last = cells[cells.len() - 1];
-            if ahead(last) >= far {
-                break;
-            }
-            match self.step(last, dir) {
-                Some(next) if within(next) && self.step_ok(last, next, dir, req) => cells.push(next),
-                _ => break,
-            }
-        }
-        Some((cells, dir))
+        Some((best?, dir))
     }
 
     /// The cheapest way from `a` to `b`, or `None` if there is none.
@@ -1139,6 +1296,24 @@ impl Space {
                             relax!(at * 7 + nd, ng + close(k));
                         }
                         continue;
+                    }
+                    // The goal beside the run, fewer cells aside than a run, back in the
+                    // direction it came (the way into the end running on): a lane change
+                    // with an S-bend into it.
+                    if let Some((sd, k2)) = (straight > 1 && dir < 6).then(|| self.beside(at, nd, goal, straight - 1)).flatten() {
+                        if sd == dir && (ends.arrive == 6 || sd == ends.arrive) {
+                            let back = if self.turn_room(at, nd, sd, req) { req.turn } else { req.turn * (1.0 + TIGHT) };
+                            let (mut c, mut cost) = (at, ng + back);
+                            for _ in 0..k2 {
+                                match self.step(c, sd).and_then(|ni| self.step_cost(&mut memo, c, ni, sd, req, rules).map(|x| (ni, x))) {
+                                    Some((ni, x)) => (c, cost) = (ni, cost + x),
+                                    None => break,
+                                }
+                            }
+                            if c == goal {
+                                relax!(goal * 7 + sd, cost);
+                            }
+                        }
                     }
                     if dir < 6 && k < straight {
                         // Fewer cells aside than a run, then a turn and a run: back into

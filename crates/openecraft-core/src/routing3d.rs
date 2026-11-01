@@ -475,6 +475,26 @@ pub fn accessories<'a>(prj: &'a Project, ei: usize, subgroup: &str) -> Vec<&'a P
     prj.layout.enclosures[ei].items.iter().filter(|i| i.kind == ItemKind::Accessory && part_subgroup(prj, &i.part) == Some(subgroup)).collect()
 }
 
+/// The cable glands the cables routed so far go through (by item id).
+#[derive(Default)]
+struct Glands {
+    taken: HashMap<u64, usize>,
+}
+
+impl Glands {
+    /// The gland for a cable of `diameter` among the `candidates` (each with how far it
+    /// is from where the cable heads), taken: the nearest one whose clamping range the
+    /// diameter fits and no cable took before, otherwise the nearest that fits,
+    /// otherwise the nearest free one, otherwise the nearest.
+    fn pick<'a>(&mut self, prj: &Project, candidates: Vec<(&'a PanelItem, f32)>, diameter: f32) -> Option<&'a PanelItem> {
+        let fits = |g: &PanelItem| panel::clamping_range(prj, &g.part).is_none_or(|(min, max)| diameter >= min && diameter <= max);
+        let key = |g: &PanelItem, d: f32| (!fits(g), self.taken.contains_key(&g.id), d);
+        let best = candidates.into_iter().min_by(|a, b| key(a.0, a.1).partial_cmp(&key(b.0, b.1)).unwrap_or(std::cmp::Ordering::Equal).then(a.0.id.cmp(&b.0.id)))?;
+        *self.taken.entry(best.0.id).or_default() += 1;
+        Some(best.0)
+    }
+}
+
 /// Where a device is reached (layout coordinates): the middle of the connection points
 /// the schematic connection points `pins` (the cores of a cable) land on, the cores
 /// parting there to each of them, otherwise the middle of its front; devices of a placed
@@ -564,13 +584,13 @@ fn pins_at(prj: &Project, cores: &[&Connection], tag: &str) -> Vec<PinRef> {
     cores.iter().flat_map(|c| [c.a, c.b]).filter(at).collect()
 }
 
-/// Where a cable or tube from the field enters the enclosure: the nearest cable
-/// gland, otherwise the middle of the bottom.
-fn entry_end(prj: &Project, pos: &[V3], ei: usize, near: V3) -> End {
+/// Where a cable or tube from the field enters the enclosure: a cable gland
+/// ([`Glands::pick`]), otherwise the middle of the bottom.
+fn entry_end(prj: &Project, pos: &[V3], ei: usize, near: V3, glands: &mut Glands, diameter: f32) -> End {
     let e = &prj.layout.enclosures[ei];
-    let glands = accessories(prj, ei, "Cable gland");
     let at = |it: &PanelItem, depth: f32| add(panel::face_point(e, it.face, [it.x + it.w / 2.0, it.y + it.h / 2.0, depth]), pos[ei]);
-    match glands.into_iter().min_by(|a, b| manhattan(at(a, 5.0), near).total_cmp(&manhattan(at(b, 5.0), near)).then(a.id.cmp(&b.id))) {
+    let candidates: Vec<(&PanelItem, f32)> = accessories(prj, ei, "Cable gland").into_iter().map(|g| (g, manhattan(at(g, 5.0), near))).collect();
+    match glands.pick(prj, candidates, diameter) {
         Some(g) => End { tag: g.part.clone(), enclosure: Some(ei), point: Some(at(g, 5.0)), item: Some(g.id), leave: Some(norm(sub(at(g, 6.0), at(g, 5.0)))), ..Default::default() },
         None => {
             let q = [e.width / 2.0, e.height - e.wall() - 5.0, (PLATE_Z + e.depth) / 2.0];
@@ -686,7 +706,7 @@ fn outside(prj: &Project, tag: &str) -> bool {
 /// one is in a room and the other one is not outside or the room has no building
 /// entry.
 /// `pins`: the schematic connection points of the cores at `a` and `b`.
-fn ends_between(prj: &Project, pos: &[V3], a: &str, b: &str, pins: [&[PinRef]; 2]) -> Option<[End; 2]> {
+fn ends_between(prj: &Project, pos: &[V3], a: &str, b: &str, pins: [&[PinRef]; 2], glands: &mut Glands, diameter: f32) -> Option<[End; 2]> {
     let (ea, eb) = (device_end(prj, pos, a, pins[0]), device_end(prj, pos, b, pins[1]));
     let in_room = |e: &End| e.enclosure.is_some_and(|k| prj.layout.enclosures[k].is_room());
     match (ea.point, eb.point) {
@@ -695,8 +715,8 @@ fn ends_between(prj: &Project, pos: &[V3], a: &str, b: &str, pins: [&[PinRef]; 2
         (None, Some(p)) if in_room(&eb) => outside(prj, a).then(|| building_entry(prj, pos, eb.enclosure?, p).map(|e| [End { tag: a.into(), ..e }, eb.clone()])).flatten(),
         // Both in one device group: part of its base.
         _ if ea.item.is_some() && ea.item == eb.item => None,
-        (Some(p), None) => Some([ea.clone(), End { tag: b.into(), ..entry_end(prj, pos, ea.enclosure?, p) }]),
-        (None, Some(p)) => Some([End { tag: a.into(), ..entry_end(prj, pos, eb.enclosure?, p) }, eb]),
+        (Some(p), None) => Some([ea.clone(), End { tag: b.into(), ..entry_end(prj, pos, ea.enclosure?, p, glands, diameter) }]),
+        (None, Some(p)) => Some([End { tag: a.into(), ..entry_end(prj, pos, eb.enclosure?, p, glands, diameter) }, eb]),
         _ => Some([ea, eb]),
     }
 }
@@ -755,7 +775,7 @@ pub fn analyse_cached(prj: &Project, wiring: &mut [RoutedWire], conns: &[Connect
         Err(key) => {
             let (rest, lang, jobs) = *key;
             let before = wiring.to_vec();
-            let routing = route(prj, wiring, jobs.clone(), progress, crate::parallel::threads().min(ROUTING_THREADS));
+            let routing = route(prj, wiring, jobs.clone(), Glands::default(), progress, crate::parallel::threads().min(ROUTING_THREADS));
             cache.last = Some(Box::new(Last { prj: rest, lang, jobs, wiring: before, routed: wiring.to_vec(), routing: routing.clone() }));
             routing
         }
@@ -784,16 +804,20 @@ fn lookup(prj: &Project, wiring: &mut [RoutedWire], conns: &[Connection], open: 
 }
 
 /// What is to be routed: the cables, hoses and the wires that are no cores of a cable,
-/// in the order they are routed.
+/// in the order they are routed (the cable glands of the line-ups taken, the thickest
+/// cable first).
 fn jobs(prj: &Project, wiring: &[RoutedWire], conns: &[Connection], open: &Netlist) -> Vec<Job> {
     let rules = &prj.layout.routing;
     let pos = panel::positions(&prj.layout);
     let mut jobs: Vec<Job> = Vec::new();
+    let mut glands = Glands::default();
     // Cables
-    for c in &prj.cables {
+    let mut cables: Vec<&Cable> = prj.cables.iter().collect();
+    cables.sort_by(|a, b| cable_diameter(b).total_cmp(&cable_diameter(a)).then(a.tag.cmp(&b.tag)));
+    for c in cables {
         let cores: Vec<&Connection> = conns.iter().filter(|x| x.cable == c.tag).collect();
         let Some((a, b)) = cable_end_tags(prj, c, &cores) else { continue };
-        let Some(ends) = ends_between(prj, &pos, &a, &b, [&pins_at(prj, &cores, &a), &pins_at(prj, &cores, &b)]) else { continue };
+        let Some(ends) = ends_between(prj, &pos, &a, &b, [&pins_at(prj, &cores, &a), &pins_at(prj, &cores, &b)], &mut glands, cable_diameter(c)) else { continue };
         let shielded = is_shielded(c);
         jobs.push(Job {
             kind: RouteKind::Cable,
@@ -814,7 +838,7 @@ fn jobs(prj: &Project, wiring: &[RoutedWire], conns: &[Connection], open: &Netli
     // depth at both ends for the cut length. They end at the nozzles of their devices,
     // the routes coming to them twice as far straight out of them as they are thick.
     let tag = |p: crate::netlist::PinRef| prj.pages[p.page].symbols[p.sym].tag.clone();
-    let hoses: Vec<(crate::fluid::Hose, [End; 2])> = crate::fluid::hoses(prj, open).into_iter().filter_map(|h| ends_between(prj, &pos, &tag(h.a), &tag(h.b), [&[], &[]]).map(|e| (h, e))).collect();
+    let hoses: Vec<(crate::fluid::Hose, [End; 2])> = crate::fluid::hoses(prj, open).into_iter().filter_map(|h| ends_between(prj, &pos, &tag(h.a), &tag(h.b), [&[], &[]], &mut glands, tube_diameter(&h.size)).map(|e| (h, e))).collect();
     let turned = turned_fittings(prj, &pos, &hoses);
     for (h, mut ends) in hoses {
         let diameter = tube_diameter(&h.size);
@@ -883,7 +907,7 @@ fn jobs(prj: &Project, wiring: &[RoutedWire], conns: &[Connection], open: &Netli
 /// Routes the `jobs` one after the other, the searches of a class on up to `workers`
 /// threads at the same time (with the same routes).
 #[allow(clippy::too_many_lines)]
-fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, progress: &dyn Fn(usize, usize), workers: usize) -> Routing {
+fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, mut glands: Glands, progress: &dyn Fn(usize, usize), workers: usize) -> Routing {
     let rules = &prj.layout.routing;
     let pos = panel::positions(&prj.layout);
     let lineups = panel::lineups(&prj.layout);
@@ -923,7 +947,7 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, progress: &dy
             let rooms: Vec<Option<usize>> = job.ends.iter().map(|e| e.enclosure.and_then(room_of_end)).collect();
             match (rooms[0], rooms[1]) {
                 (Some(r), Some(other)) if !known && job.kind != RouteKind::Wire => {
-                    room::plan_legs(prj, &pos, &poses, &lineup_of, [r, other], &links, &job.ends).ok_or_else(|| if r != other { tr("no wall penetration leads from room to room") } else { tr("not in the same line-up or room") }.to_string())
+                    room::plan_legs(prj, &pos, &poses, &lineup_of, [r, other], &links, &job.ends, &mut glands, job.diameter).ok_or_else(|| if r != other { tr("no wall penetration leads from room to room") } else { tr("not in the same line-up or room") }.to_string())
                 }
                 _ => Err(tr("not in the same line-up or room").to_string()),
             }
@@ -1177,7 +1201,7 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, progress: &dy
     }
     let mut paths = Vec::new();
     for space in spaces.values() {
-        for p in &space.paths {
+        for p in space.paths.iter().filter(|p| !p.implied) {
             paths.push(PathUse { enclosure: p.enclosure, path: p.id, items: p.items, area: p.used, capacity: p.capacity });
             if p.capacity > 0.0 && p.used > p.capacity {
                 let e = &prj.layout.enclosures[p.enclosure];

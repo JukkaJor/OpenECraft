@@ -361,3 +361,40 @@ fn cables_keep_apart_in_free_air() {
     // Wires are not kept apart.
     assert!(s.still_apart(&first.cells, &Request { kind: RouteKind::Wire, ..req(&[]) }));
 }
+
+#[test]
+fn ducts_are_entered_through_their_walls_and_kept_off_outside() {
+    // A horizontal duct 100 wide and 80 deep across the plate (y 400 .. 500).
+    let mut e = single();
+    e.items.push(PanelItem { id: 3, kind: ItemKind::Duct, x: 100.0, y: 400.0, w: 400.0, h: 100.0, d: 80.0, ..Default::default() });
+    let prj = project(e);
+    let s = space(&prj);
+    let rules = RoutingRules::default();
+    let (lo, hi) = (add([100.0, 400.0, 0.0], [crate::panel::PLATE_MARGIN, crate::panel::PLATE_MARGIN, PLATE_Z]), add([500.0, 500.0, 80.0], [crate::panel::PLATE_MARGIN, crate::panel::PLATE_MARGIN, PLATE_Z]));
+    let in_duct = |c: usize| s.duct_of[c] != 0;
+    // A cable 30 mm thick across the duct: through its walls at the height of their
+    // slots (above the rim of 20, below the top at 77.5), never through its cover.
+    let (a, b) = ([325.0, 325.0, lo[2] + 40.0], [325.0, 625.0, lo[2] + 40.0]);
+    let cable = Request { at: [a, b], half: 15.0, turn: 50.0, ..req(&[]) };
+    let w = s.route(a, b, &cable, &rules).expect("across the duct");
+    let crossings: Vec<&[usize]> = w.cells.windows(2).filter(|c| in_duct(c[0]) != in_duct(c[1])).collect();
+    assert_eq!(crossings.len(), 2, "{:?}", w.points);
+    for c in crossings {
+        let (p, q) = (s.centre(c[0]), s.centre(c[1]));
+        assert!(p[2] == q[2] && p[0] == q[0], "through the wall: {p:?} {q:?}");
+        let z = p[2] - lo[2];
+        assert!(z - 15.0 >= 20.0 - 12.5 && z + 15.0 <= 77.5 + 12.5, "at the slots: {z}");
+    }
+    // From in front of the duct to behind it: not down through the cover.
+    let (a, b) = ([325.0, 475.0, hi[2] + 60.0], [325.0, 625.0, lo[2] + 40.0]);
+    let w = s.route(a, b, &Request { at: [a, b], ..cable }, &rules).expect("round the duct");
+    assert!(w.cells.windows(2).all(|c| in_duct(c[0]) == in_duct(c[1]) || s.centre(c[0])[2] == s.centre(c[1])[2]), "{:?}", w.points);
+    // A cable too thick for the duct running along it keeps half its thickness off it
+    // (but near its ends).
+    let (a, b) = ([125.0, 545.0, lo[2] + 40.0], [525.0, 545.0, lo[2] + 40.0]);
+    let thick = Request { at: [a, b], half: 40.0, ..cable };
+    let w = s.route(a, b, &thick, &rules).expect("along the duct");
+    for &c in w.cells.iter().filter(|&&c| s.centre(c)[0] > 200.0 && s.centre(c)[0] < 450.0) {
+        assert!(from_box(s.centre(c), lo, hi) >= 40.0 - 0.5, "{:?}", w.points);
+    }
+}

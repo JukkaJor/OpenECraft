@@ -173,6 +173,9 @@ pub fn find(items: &[RoutedItem], cell: f32) -> (Vec<Bundle>, Vec<Branch>) {
 pub struct Channel {
     pub inside: (V3, V3),
     pub floor: V3,
+    /// Height above the floor of its inside up to which its walls are closed (the rim
+    /// below the slots of a cable duct): a way crosses them above it.
+    pub rim: f32,
 }
 
 /// A polyline laid out with others by [`spread_ways`]: its corners, their bend radii, its
@@ -347,9 +350,82 @@ pub fn spread_ways(ways: &[Way], cell: f32, obstacles: &[(V3, V3)], channels: &[
         .enumerate()
         .map(|(i, way)| {
             let offsets: Vec<V3> = (0..way.points.len().saturating_sub(1)).map(|j| moves.get(&(i, j)).copied().unwrap_or([0.0; 3])).collect();
-            lay(way.points, way.radii, &offsets)
+            let (points, radii) = lay(way.points, way.radii, &offsets);
+            over_rims(points, radii, way.diameter / 2.0, channels)
         })
         .collect()
+}
+
+/// The axis away from a channel's floor, which way along it, and where the floor is.
+fn floor_of(c: &Channel) -> (usize, f32, f32) {
+    let up = (0..3).max_by(|&a, &b| c.floor[a].abs().total_cmp(&c.floor[b].abs())).unwrap_or(2);
+    let sign = c.floor[up].signum();
+    (up, sign, if sign > 0.0 { c.inside.0[up] } else { c.inside.1[up] })
+}
+
+/// The polyline with its ways into, out of and through a channel lifted over the closed
+/// rim of the channel's walls: where it would cross a wall lower than the rim and half
+/// its thickness (`half`), it rises to that height inside the channel at the corner
+/// before the wall (or just before the wall, coming through the channel from wall to
+/// wall) and runs across at it, down again behind the wall.
+fn over_rims(points: Vec<V3>, radii: Vec<f32>, half: f32, channels: &[Channel]) -> (Vec<V3>, Vec<f32>) {
+    let rimmed: Vec<&Channel> = channels.iter().filter(|c| c.rim > 0.0).collect();
+    if rimmed.is_empty() {
+        return (points, radii);
+    }
+    let inside = |c: &Channel, x: V3| (0..3).all(|k| x[k] >= c.inside.0[k] - 1.0 && x[k] <= c.inside.1[k] + 1.0);
+    let mut out: Vec<(V3, f32)> = Vec::with_capacity(points.len() + 4);
+    for (&q, &r) in points.iter().zip(&radii) {
+        let Some(&(p, rp)) = out.last() else {
+            out.push((q, r));
+            continue;
+        };
+        let (along, len) = (sub(q, p), dist(p, q));
+        if len > 1e-3 {
+            let step = scale(along, ((half + 1.0) / len).min(0.5));
+            for c in &rimmed {
+                let (up, sign, base) = floor_of(c);
+                let height = |x: V3| (x[up] - base) * sign;
+                let need = c.rim + half;
+                let lift = |x: V3| add(x, scale(c.floor, (need - height(x)).max(0.0)));
+                match (inside(c, p), inside(c, q)) {
+                    (true, false) | (false, true) => {
+                        let leaving = inside(c, p);
+                        // Where it crosses the wall: the end of the part inside.
+                        let t = segment_in_box(p, q, c.inside).map_or(0.5, |(t0, t1)| if leaving { t1 } else { t0 });
+                        let cross = add(p, scale(along, t));
+                        if height(cross) < need {
+                            if leaving {
+                                if height(p) < need {
+                                    out.push((lift(p), rp));
+                                }
+                                out.push((lift(add(cross, step)), rp));
+                            } else {
+                                out.push((lift(sub(cross, step)), r));
+                                if height(q) < need {
+                                    out.push((lift(q), r));
+                                }
+                            }
+                        }
+                        break;
+                    }
+                    (false, false) => {
+                        let Some((t0, t1)) = segment_in_box(p, q, c.inside).filter(|(t0, t1)| t1 - t0 > 1e-3) else { continue };
+                        let (cross_in, cross_out) = (add(p, scale(along, t0)), add(p, scale(along, t1)));
+                        if height(cross_in) < need || height(cross_out) < need {
+                            out.push((lift(sub(cross_in, step)), rp));
+                            out.push((lift(add(cross_out, step)), rp));
+                        }
+                        break;
+                    }
+                    (true, true) => {}
+                }
+            }
+        }
+        out.push((q, r));
+    }
+    out.dedup_by(|a, b| dist(a.0, b.0) < 0.01);
+    out.into_iter().unzip()
 }
 
 /// A straight stretch of a way along an axis: way, stretch, axis, from, to, a point.
@@ -535,7 +611,19 @@ pub fn separate_with(strands: &[Strand], obstacles: &[(V3, V3)], channels: &[Cha
     let walls: Vec<(V3, V3)> = channels.iter().map(|c| c.inside).chain(insides.iter().copied()).collect();
     let thickest = radius.iter().fold(0.0f32, |m, r| m.max(*r));
     let grown: Vec<(V3, V3)> = obstacles.iter().map(|(lo, hi)| (lo.map(|v| v - thickest), hi.map(|v| v + thickest))).collect();
-    let (wall_cells, obstacle_cells) = (BoxGrid::new(&walls), BoxGrid::new(&grown));
+    // Over the closed rim of a channel's walls a sample stays, in the channel and up to
+    // its thickness outside it: the axis away from the floor, which way, the floor, the
+    // rim.
+    let rimmed: Vec<&Channel> = channels.iter().filter(|c| c.rim > 0.0).collect();
+    let rims: Vec<(usize, f32, f32, f32)> = rimmed
+        .iter()
+        .map(|c| {
+            let (up, sign, floor) = floor_of(c);
+            (up, sign, floor, c.rim)
+        })
+        .collect();
+    let rim_boxes: Vec<(V3, V3)> = rimmed.iter().map(|c| (c.inside.0.map(|v| v - thickest - 1.0), c.inside.1.map(|v| v + thickest + 1.0))).collect();
+    let (wall_cells, obstacle_cells, rim_cells) = (BoxGrid::new(&walls), BoxGrid::new(&grown), BoxGrid::new(&rim_boxes));
     let keep = |i: usize, mut p: V3| -> V3 {
         let (o, r, st) = (was[i], radius[owner[i]], &strands[owner[i]]);
         // Never further than a few times its thickness from where it was routed.
@@ -553,6 +641,13 @@ pub fn separate_with(strands: &[Strand], obstacles: &[(V3, V3)], channels: &[Cha
         for b in wall_cells.at(o).iter().map(|&w| walls[w as usize]).filter(|b| within(o, *b)) {
             for k in 0..3 {
                 p[k] = p[k].clamp((b.0[k] + r).min(o[k]), (b.1[k] - r).max(o[k]));
+            }
+        }
+        for w in rim_cells.at(o).iter().map(|&w| w as usize).filter(|&w| within(o, rim_boxes[w])) {
+            let (up, sign, floor, rim) = rims[w];
+            let least = floor + sign * (rim + r);
+            if (o[up] - least) * sign >= -0.01 && (p[up] - least) * sign < 0.0 {
+                p[up] = least;
             }
         }
         for &(lo, hi) in obstacle_cells.at(p).iter().map(|&b| &obstacles[b as usize]) {

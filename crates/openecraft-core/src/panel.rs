@@ -768,6 +768,13 @@ pub fn strip_cells(prj: &Project, it: &PanelItem) -> Vec<Cell> {
 /// Colours of a slotted cable duct and its cover.
 const DUCT_COLORS: ([u8; 3], [u8; 3]) = ([150, 153, 150], [166, 169, 166]);
 
+/// The walls of a slotted cable duct: the heights above its base of their closed rim
+/// and of their top (the cover lies on it), and their thickness.
+pub fn duct_walls(it: &PanelItem) -> (f32, f32, f32) {
+    let t = 2.0f32.min(it.w.min(it.h) / 4.0).min(it.d / 4.0);
+    ((it.d * 0.25).max(t), it.d - 2.5f32.min(it.d / 4.0), t)
+}
+
 /// The parts of a slotted cable duct (enclosure coordinates, colour, whether it is a
 /// finger): the base, the side walls slotted into fingers above a closed rim, and the
 /// `cover` on top.
@@ -776,8 +783,7 @@ pub fn duct_boxes(e: &Enclosure, it: &PanelItem, cover: bool) -> Vec<((V3, V3), 
     let frame = face_frame(e, it.face);
     let along_x = it.w >= it.h;
     let (len, width) = if along_x { (it.w, it.h) } else { (it.h, it.w) };
-    let t = 2.0f32.min(width / 4.0).min(it.d / 4.0);
-    let (rim, top) = ((it.d * 0.25).max(t), it.d - 2.5f32.min(it.d / 4.0));
+    let (rim, top, t) = duct_walls(it);
     let mut out = Vec::new();
     // A box from ranges along, across and above the face.
     let mut add = |a: (f32, f32), c: (f32, f32), z: (f32, f32), color: [u8; 3], finger: bool| {
@@ -981,6 +987,13 @@ pub fn place_device_on(prj: &mut Project, enc: usize, tag: &str, at: P, face: Fa
 /// Technical value of a part as a number ("Outside: 25" → 25).
 pub fn tech_number(part: &crate::parts::Part, name: &str) -> Option<f32> {
     part.data_value(name)?.trim().trim_end_matches("mm").trim().replace(',', ".").parse().ok()
+}
+
+/// Clamping range of a cable gland part in mm (technical data "Clamping range min" /
+/// "max"), from the project's parts or the catalog.
+pub fn clamping_range(prj: &Project, part: &str) -> Option<(f32, f32)> {
+    let p = prj.parts.iter().chain(crate::parts::catalog()).find(|p| p.number == part)?;
+    Some((tech_number(p, "Clamping range min")?, tech_number(p, "Clamping range max")?))
 }
 
 /// Faces an accessory can be mounted on (part data `Faces: Left, Right`); all faces

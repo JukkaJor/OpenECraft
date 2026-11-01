@@ -18,7 +18,7 @@ fn duct_fingers_a_tube_passes_through_are_left_out() {
 fn wires_along_the_plate_go_over_what_stands_in_their_way() {
     // A run 30 mm in front of the plate crosses a busbar 20 .. 70 mm in front of it.
     let busbar = ([100.0, 0.0, 20.0], [200.0, 50.0, 70.0]);
-    let way = over(&[[0.0, 25.0, 30.0], [300.0, 25.0, 30.0]], &[busbar], 1.5);
+    let way = over(&[[0.0, 25.0, 30.0], [300.0, 25.0, 30.0]], &[busbar], &[], 1.5);
     assert_eq!((way[0], way[way.len() - 1]), ([0.0, 25.0, 30.0], [300.0, 25.0, 30.0]));
     assert!(way.iter().any(|q| q[2] >= 72.5), "in front of it: {way:?}");
     for s in way.windows(2) {
@@ -26,7 +26,7 @@ fn wires_along_the_plate_go_over_what_stands_in_their_way() {
     }
     // Beside it nothing changes.
     let beside = [[0.0, 80.0, 30.0], [300.0, 80.0, 30.0]];
-    assert_eq!(over(&beside, &[busbar], 1.5), beside.to_vec());
+    assert_eq!(over(&beside, &[busbar], &[], 1.5), beside.to_vec());
 }
 
 #[test]
@@ -41,4 +41,38 @@ fn wires_leave_their_own_devices_at_the_height_of_their_connection_points() {
     let mut same = outside.clone();
     leave_device(&mut same, ([0.0, 0.0, 0.0], [50.0, 80.0, 70.0]), 60.0);
     assert_eq!(same, outside);
+}
+
+#[test]
+fn wires_come_down_before_the_ducts_not_through_their_covers() {
+    // A run at duct depth (z 30) crosses a device (z up to 70) standing right before a
+    // duct (y 100 .. 150, 60 deep): it comes down before the wall of the duct, not into
+    // it through its cover.
+    let device = ([100.0, 0.0, 0.0], [200.0, 100.0, 70.0]);
+    let duct = ([0.0, 100.0, 0.0], [300.0, 150.0, 60.0]);
+    let way = over(&[[150.0, -50.0, 30.0], [150.0, 125.0, 30.0]], &[device], &[duct], 1.5);
+    let down = way.windows(2).find(|s| s[0][2] > 30.0 && s[1][2] == 30.0).expect("comes down");
+    assert!(down[1][1] <= 100.0, "{way:?}");
+    assert_eq!(way[way.len() - 1], [150.0, 125.0, 30.0]);
+    // Without the duct it comes down right behind the device.
+    let plain = over(&[[150.0, -50.0, 30.0], [150.0, 125.0, 30.0]], &[device], &[], 1.5);
+    assert!(plain.windows(2).any(|s| s[0][2] > 30.0 && s[1][2] == 30.0 && s[1][1] > 100.0), "{plain:?}");
+}
+
+#[test]
+fn wires_come_down_to_the_duct_before_its_wall() {
+    // Out of a device (connection point at y 200, z 150) to a duct (y 0 .. 80, 100 deep)
+    // whose depth the way runs at: it comes down just before the wall of the duct, not
+    // inside the duct through its cover.
+    let duct = ([0.0, 0.0, 20.0], [600.0, 80.0, 100.0]);
+    let mut along = vec![[300.0, 40.0, 150.0], [300.0, 40.0, 50.0], [100.0, 40.0, 50.0]];
+    down_before_duct(&mut along, [300.0, 200.0, 150.0], &[duct], 1.5);
+    assert_eq!(along[0][2], 150.0);
+    assert!(along[0][1] >= 80.0 + 2.0 && along[0][1] < 90.0, "{along:?}");
+    assert_eq!(along[1], [along[0][0], along[0][1], 50.0]);
+    assert_eq!(&along[2..], &[[300.0, 40.0, 50.0], [100.0, 40.0, 50.0]]);
+    // Outside the ducts it stays as it is.
+    let mut plain = vec![[300.0, 140.0, 150.0], [300.0, 140.0, 50.0]];
+    down_before_duct(&mut plain, [300.0, 200.0, 150.0], &[duct], 1.5);
+    assert_eq!(plain, vec![[300.0, 140.0, 150.0], [300.0, 140.0, 50.0]]);
 }

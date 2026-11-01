@@ -241,7 +241,7 @@ fn searches_at_the_same_time_give_the_same_routes() {
     let route_on = |workers: usize| {
         let mut wiring = crate::panel::virtual_wiring(&prj, &an.connections).0;
         let jobs = jobs(&prj, &wiring, &an.connections, &an.open);
-        let routing = route(&prj, &mut wiring, jobs, &|_, _| {}, workers);
+        let routing = route(&prj, &mut wiring, jobs, Glands::default(), &|_, _| {}, workers);
         (routing, wiring)
     };
     let (one, four) = (route_on(1), route_on(4));
@@ -300,4 +300,21 @@ fn fittings_in_a_pipe_are_turned_to_the_pipes_they_join() {
         checked += 1;
     }
     assert_eq!(checked, 2);
+}
+
+#[test]
+fn cables_take_the_glands_that_fit_them() {
+    let prj = Project::default();
+    let gland = |id: u64, part: &str| PanelItem { id, kind: ItemKind::Accessory, part: part.into(), ..Default::default() };
+    let (m20, m32, m32b, m25) = (gland(1, "GEN.GLAND-M20"), gland(2, "GEN.GLAND-M32"), gland(3, "GEN.GLAND-M32"), gland(4, "GEN.GLAND-M25"));
+    let mut glands = Glands::default();
+    // The nearest that fits the cable, even farther off than one that does not.
+    assert_eq!(glands.pick(&prj, vec![(&m32, 10.0), (&m20, 100.0)], 10.0).map(|g| g.id), Some(1));
+    // Each thick cable its own gland; a third shares the nearest.
+    assert_eq!(glands.pick(&prj, vec![(&m32, 10.0), (&m32b, 50.0)], 20.0).map(|g| g.id), Some(2));
+    assert_eq!(glands.pick(&prj, vec![(&m32, 10.0), (&m32b, 50.0)], 20.0).map(|g| g.id), Some(3));
+    assert_eq!(glands.pick(&prj, vec![(&m32, 10.0), (&m32b, 50.0)], 20.0).map(|g| g.id), Some(2));
+    // None fits: a free one before a taken one; nothing without glands.
+    assert_eq!(glands.pick(&prj, vec![(&m32, 10.0), (&m25, 50.0)], 30.0).map(|g| g.id), Some(4));
+    assert_eq!(glands.pick(&prj, vec![], 30.0), None);
 }

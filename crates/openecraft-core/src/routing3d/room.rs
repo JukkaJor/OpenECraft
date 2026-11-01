@@ -11,9 +11,9 @@
 //! ([`crate::panel::positions`]) like the coordinates of an enclosure.
 
 use super::grid::Space;
-use super::{accessories, End, RoutingRules};
+use super::{accessories, End, Glands, RoutingRules};
 use crate::model::Project;
-use crate::panel::{self, Face, SitePose};
+use crate::panel::{self, Face, PanelItem, SitePose};
 use crate::parts::vec3::{add, manhattan, norm, sub, V3};
 use openecraft_i18n::tr;
 use std::collections::{HashMap, VecDeque};
@@ -79,13 +79,14 @@ pub fn room_space(prj: &Project, ri: usize, pos: &[V3], poses: &[SitePose], rule
     s
 }
 
-/// Where a route leaves the cabinet `ci` standing in room `ri` towards `near` (room
-/// coordinates): the nearest cable gland on the roof, a side or the rear of the
-/// cabinet, otherwise of its line-up, otherwise the middle of its roof (`true`). Gives
-/// the end in the cabinet (leaving it into the cabinet), where the way through the
-/// room starts (layout coordinates) and the direction it leaves there, away from the
-/// cabinet.
-pub(super) fn room_entry(prj: &Project, pos: &[V3], poses: &[SitePose], ri: usize, ci: usize, near: V3) -> (End, V3, V3, bool) {
+/// Where a route of `diameter` leaves the cabinet `ci` standing in room `ri` towards
+/// `near` (room coordinates): a cable gland on the roof, a side or the rear of the
+/// cabinet, otherwise of its line-up ([`Glands::pick`]), otherwise the middle of its
+/// roof (`true`). Gives the end in the cabinet (leaving it into the cabinet), where the
+/// way through the room starts (layout coordinates) and the direction it leaves there,
+/// away from the cabinet.
+#[allow(clippy::too_many_arguments)]
+pub(super) fn room_entry(prj: &Project, pos: &[V3], poses: &[SitePose], ri: usize, ci: usize, near: V3, glands: &mut Glands, diameter: f32) -> (End, V3, V3, bool) {
     let has_gland = |k: usize| accessories(prj, k, "Cable gland").iter().any(|g| ROOM_SIDES.contains(&g.face));
     let lineup = panel::lineup_of(&prj.layout, ci);
     let cabinets = if has_gland(ci) { vec![ci] } else { lineup };
@@ -100,19 +101,20 @@ pub(super) fn room_entry(prj: &Project, pos: &[V3], poses: &[SitePose], ri: usiz
         let outside = in_room(-OUTSIDE);
         (end, add(outside, pos[ri]), norm(sub(outside, in_room(-OUTSIDE + 1.0))))
     };
-    let mut best: Option<(f32, (End, V3, V3))> = None;
+    let mut candidates: Vec<(&PanelItem, f32)> = Vec::new();
+    let mut cabinet_of: HashMap<u64, usize> = HashMap::new();
     for k in cabinets {
         let e = &prj.layout.enclosures[k];
         for g in accessories(prj, k, "Cable gland").into_iter().filter(|g| ROOM_SIDES.contains(&g.face)) {
             let c = [g.x + g.w / 2.0, g.y + g.h / 2.0];
             let outside = cabinet_in_room(prj, poses, ri, k, panel::face_point(e, g.face, [c[0], c[1], -OUTSIDE]));
-            let d = manhattan(outside, near);
-            if best.as_ref().is_none_or(|b| d < b.0) {
-                best = Some((d, through(k, g.face, c, g.part.clone(), Some(g.id))));
-            }
+            candidates.push((g, manhattan(outside, near)));
+            cabinet_of.insert(g.id, k);
         }
     }
-    if let Some((_, (end, at, leave))) = best {
+    if let Some(g) = glands.pick(prj, candidates, diameter) {
+        let k = cabinet_of[&g.id];
+        let (end, at, leave) = through(k, g.face, [g.x + g.w / 2.0, g.y + g.h / 2.0], g.part.clone(), Some(g.id));
         return (end, at, leave, false);
     }
     let e = &prj.layout.enclosures[ci];
@@ -178,7 +180,7 @@ pub(super) fn nearest_link(links: &[panel::WallLink], l: panel::WallLink, from: 
 /// the other entry to the other device. Gives the legs, whether an entry is the middle
 /// of a roof and the length of the ways through the walls.
 #[allow(clippy::too_many_arguments)]
-pub(super) fn plan_legs(prj: &Project, pos: &[V3], poses: &[SitePose], lineup_of: &dyn Fn(usize) -> Option<usize>, rooms: [usize; 2], links: &[panel::WallLink], ends: &[End; 2]) -> Option<(Vec<LegPlan>, bool, f32)> {
+pub(super) fn plan_legs(prj: &Project, pos: &[V3], poses: &[SitePose], lineup_of: &dyn Fn(usize) -> Option<usize>, rooms: [usize; 2], links: &[panel::WallLink], ends: &[End; 2], taken: &mut Glands, diameter: f32) -> Option<(Vec<LegPlan>, bool, f32)> {
     let mut chain = if rooms[0] == rooms[1] { Vec::new() } else { room_chain(links, rooms[0], rooms[1])? };
     // An end in room coordinates of its room.
     let in_room = |ri: usize, end: &End| -> Option<V3> {
@@ -204,7 +206,7 @@ pub(super) fn plan_legs(prj: &Project, pos: &[V3], poses: &[SitePose], lineup_of
         if k == ri {
             continue;
         }
-        let (entry, start, out, by_roof) = room_entry(prj, pos, poses, ri, k, near[i]);
+        let (entry, start, out, by_roof) = room_entry(prj, pos, poses, ri, k, near[i], taken, diameter);
         roof |= by_roof;
         glands.extend(entry.item);
         let inside = (entry.point?, entry.leave.unwrap_or(zero));

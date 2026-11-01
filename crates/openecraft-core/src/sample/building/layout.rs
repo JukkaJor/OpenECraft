@@ -168,8 +168,11 @@ fn enclosures(prj: &mut Project, db: &PartsDb) -> [usize; 5] {
         panel::RAIL_PART,
         panel::DUCT_PART,
         "GEN.BB-3X30X10",
+        "GEN.GLAND-M16",
         "GEN.GLAND-M20",
         "GEN.GLAND-M32",
+        "GEN.GLAND-M40",
+        "GEN.GLAND-M63",
         "GEN.DUCT-100X80",
         "GEN.DUCT-100X120",
         "GEN.DUCT-80X80",
@@ -204,11 +207,13 @@ fn enclosures(prj: &mut Project, db: &PartsDb) -> [usize; 5] {
     on_rail(prj, md, 1250.0, 560.0, &["=MD+MD-T11"]);
     panel::place_accessory(prj, md, "GEN.PE-BAR-10", Face::Plate, p(120.0, 1760.0));
     panel::place_accessory(prj, md, "GEN.HANDLE-SWING", Face::Door, p(890.0, 900.0));
-    // The main cable comes in above its terminals, the feeders leave above the duct
-    // on the right.
-    gland_over(prj, md, "GEN.GLAND-M32", "=MD+MD-X0");
+    // The main cable comes in above its terminals, the feeders leave through glands
+    // of their own above the top duct, up to the duct on the right.
+    gland_over(prj, md, "GEN.GLAND-M63", "=MD+MD-X0");
     let duct_x = panel::PLATE_MARGIN + prj.layout.enclosures[md].plate_size().0 - panel::profile(prj, ItemKind::Duct, "GEN.DUCT-100X80").0 / 2.0;
-    gland_at(prj, md, "GEN.GLAND-M25", duct_x, 87.5);
+    for k in 0..3 {
+        gland_at(prj, md, "GEN.GLAND-M40", duct_x - 40.0 - 75.0 * k as f32, 87.5);
+    }
 
     // Automation cabinet +CC1 and pump cabinet +CC2, bayed: power at the top, the PLC
     // and the EtherCAT terminals at the bottom; the sensor cables leave through the
@@ -281,7 +286,14 @@ fn enclosures(prj: &mut Project, db: &PartsDb) -> [usize; 5] {
     for (what, unit) in [("GEN.RK-BLANK-1U", 17), ("=ESS+RACK-X3", 30), ("GEN.RK-CABLE-1U", 39), ("=ESS+RACK-K2", 40), ("GEN.RK-PATCH-24P", 41)] {
         panel::mount_in_rack(prj, rack, what, Some(unit)).expect("19-inch part");
     }
-    gland(prj, rack, "GEN.GLAND-M32", Face::Roof, 300.0, 500.0);
+    // Each cable its own gland in the roof: the battery cables, the supply of the PDU
+    // and the patch cables.
+    for (i, part) in ["GEN.GLAND-M32", "GEN.GLAND-M32", "GEN.GLAND-M32", "GEN.GLAND-M32", "GEN.GLAND-M20"].into_iter().enumerate() {
+        gland(prj, rack, part, Face::Roof, 100.0 + 80.0 * i as f32, 400.0);
+    }
+    for i in 0..6 {
+        gland(prj, rack, "GEN.GLAND-M16", Face::Roof, 100.0 + 60.0 * i as f32, 520.0);
+    }
     [md, cc1, rack, acd, gak]
 }
 
