@@ -509,8 +509,9 @@ fn scale(a: V3, f: f32) -> V3 {
 }
 
 /// The polyline with its straight stretches moved by `offsets` (one per stretch), the
-/// ends kept: a corner where both moved stretches meet, otherwise the corner on the first
-/// one and a step across both onto the second (never back).
+/// ends kept: the corner where the moved stretches meet (it slides along the first one),
+/// where they do not meet the corner on the first one nearest to the second and a step
+/// across onto the second.
 fn lay(points: &[V3], radii: &[f32], offsets: &[V3]) -> (Vec<V3>, Vec<f32>) {
     let n = points.len();
     if n < 3 || offsets.iter().all(|o| *o == [0.0; 3]) {
@@ -521,7 +522,9 @@ fn lay(points: &[V3], radii: &[f32], offsets: &[V3]) -> (Vec<V3>, Vec<f32>) {
         let (o1, o2) = (offsets[j - 1], offsets[j]);
         let (d1, d2) = (norm(sub(points[j], points[j - 1])), norm(sub(points[j + 1], points[j])));
         let r = radii.get(j).copied().unwrap_or(0.0);
-        let corner = add(points[j], add(o1, scale(d1, dot(sub(o2, o1), d1))));
+        let w = cross(d1, d2);
+        let along = if dot(w, w) > 1e-6 { -dot(cross(sub(o1, o2), d2), w) / dot(w, w) } else { dot(sub(o2, o1), d1) };
+        let corner = add(add(points[j], o1), scale(d1, along));
         let to_second = sub(add(points[j], o2), corner);
         let step = sub(to_second, scale(d2, dot(to_second, d2)));
         out.push((corner, r));
@@ -573,7 +576,24 @@ const MOST_MOVE_EXTRA: f32 = 20.0;
 /// apart ([`separate`]); `progress` as for [`separate_with`].
 pub fn lay_out(ways: &[Way], cell: f32, obstacles: &[(V3, V3)], channels: &[Channel], insides: &[(V3, V3)], progress: &dyn Fn(usize, usize) -> bool) -> Option<Vec<Vec<V3>>> {
     let laid = spread_ways(ways, cell, obstacles, channels, insides);
-    let bent: Vec<Vec<V3>> = ways.iter().zip(&laid).map(|(w, (points, radii))| fillet_each(points, radii, w.steps)).collect();
+    let bent: Vec<Vec<V3>> = ways
+        .iter()
+        .zip(&laid)
+        .map(|(w, (points, radii))| {
+            let mut bent = fillet_each(points, radii, w.steps);
+            // Bent, it comes no nearer to the surface it runs along than its lowest corner.
+            if w.rest != [0.0; 3] {
+                let least = points.iter().map(|q| dot(*q, w.rest)).fold(f32::INFINITY, f32::min);
+                for q in &mut bent {
+                    let h = dot(*q, w.rest);
+                    if h < least {
+                        *q = add(*q, scale(w.rest, least - h));
+                    }
+                }
+            }
+            bent
+        })
+        .collect();
     let tails = |points: &[V3], radii: &[f32]| -> [f32; 2] {
         let n = points.len();
         let r = |i: usize| radii.get(i).copied().unwrap_or(0.0);

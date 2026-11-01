@@ -15,6 +15,7 @@ fn item(key: &str, class: Class, diameter: f32, points: Vec<V3>) -> RoutedItem {
         length: 0.0,
         cut: 0.0,
         diameter,
+        bend_radius: 0.0,
         free: 0.0,
         bends: 0,
         shielded: false,
@@ -172,6 +173,16 @@ fn ways_along_a_duct_lie_inside_it() {
     for (i, a) in middles.iter().enumerate() {
         assert!(middles[i + 1..].iter().all(|b| crate::parts::vec3::dist(*a, *b) >= 8.0), "{middles:?}");
     }
+}
+
+#[test]
+fn a_moved_stretch_meets_a_slanting_one_where_their_lines_cross() {
+    // The first stretch (along x) moved down by 20 meets the second one, slanting up at
+    // 45 degrees, 20 earlier along x: no step back and forth at the corner.
+    let points = [[0.0, 0.0, 50.0], [100.0, 0.0, 50.0], [200.0, 0.0, 150.0]];
+    let (laid, _) = lay(&points, &[0.0; 3], &[[0.0, 0.0, -20.0], [0.0; 3]]);
+    assert_eq!(laid.len(), 3, "{laid:?}");
+    assert!(crate::parts::vec3::dist(laid[1], [80.0, 0.0, 30.0]) < 0.01, "{laid:?}");
 }
 
 #[test]

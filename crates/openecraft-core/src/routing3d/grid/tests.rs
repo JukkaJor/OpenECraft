@@ -258,29 +258,9 @@ fn cables_keep_out_of_ducts_too_small_for_them() {
 }
 
 #[test]
-fn bends_are_rounded_as_far_as_the_room_around_them_allows() {
-    let prj = project(with_block());
-    let s = space(&prj);
-    let (lo, hi) = crate::panel::item_box(&prj.layout.enclosures[0], &prj.layout.enclosures[0].items[0]);
-    // Along under the device, round its lower right corner up its right side (the bend
-    // swings into the corner), and away from it into the open.
-    let at = |q: V3| s.centre(s.cell_of(q).unwrap());
-    let corner = at([hi[0] + 12.0, hi[1] + 12.0, 60.0]);
-    let open = at([corner[0], 150.0, 60.0]);
-    let radii = s.corner_radii(&[[200.0, corner[1], 60.0], corner, open, [560.0, 150.0, 60.0]], 5.0, 100.0, &[]);
-    assert_eq!((radii[0], radii[3], radii[2]), (0.0, 0.0, 100.0));
-    assert!(radii[1] > 0.0 && radii[1] <= 25.0, "{radii:?}");
-    // The middle of what is left of the bend keeps clear of the device: (√2 − 1) r
-    // inside the corner.
-    let middle = add(corner, scale(norm([-1.0, -1.0, 0.0]), CORNER_CUT * radii[1]));
-    assert!(from_box(middle, lo, hi) >= 5.0 - 0.01, "{radii:?}");
-    // The same corner turning away from the device has room for the whole bend.
-    let away = s.corner_radii(&[[corner[0], 600.0, 60.0], corner, [560.0, corner[1], 60.0]], 5.0, 100.0, &[]);
-    assert_eq!(away[1], 100.0, "{away:?}");
-    // A space never measured has room everywhere.
-    let mut unmeasured = Space::empty([0.0; 3], [100.0; 3], 25.0);
-    unmeasured.block.iter_mut().for_each(|b| *b = 0);
-    assert_eq!(unmeasured.corner_radii(&[[0.0; 3], [50.0; 3], [100.0; 3]], 5.0, 80.0, &[])[1], 80.0);
+fn every_corner_keeps_the_full_bend_radius() {
+    assert_eq!(corner_radii(&[[0.0; 3], [100.0, 0.0, 0.0], [100.0, 100.0, 0.0], [200.0, 100.0, 0.0]], 80.0), vec![0.0, 80.0, 80.0, 0.0]);
+    assert_eq!(corner_radii(&[[0.0; 3], [100.0, 0.0, 0.0]], 80.0), vec![0.0, 0.0]);
 }
 
 #[test]

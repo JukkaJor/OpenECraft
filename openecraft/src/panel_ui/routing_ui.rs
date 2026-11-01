@@ -556,6 +556,9 @@ impl PanelUi {
             ui.label(tr("Diameter / bends"));
             ui.label(format!("{:.1} mm / {}", it.diameter, it.bends));
             ui.end_row();
+            ui.label(tr("Min. bend radius"));
+            ui.label(format!("{:.0} mm", it.bend_radius));
+            ui.end_row();
             ui.label(tr("Bundles"));
             ui.label(r.bundles_of(idx).len().to_string());
             ui.end_row();

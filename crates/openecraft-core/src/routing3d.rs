@@ -281,6 +281,8 @@ pub struct RoutedItem {
     pub cut: f32,
     /// Outer diameter, mm.
     pub diameter: f32,
+    /// The least bend radius of the route (from its thickness and the rules), mm.
+    pub bend_radius: f32,
     /// Length outside ducts and routing paths, mm.
     pub free: f32,
     pub bends: usize,
@@ -1028,6 +1030,7 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, mut glands: G
             length: 0.0,
             cut: 0.0,
             diameter: job.diameter,
+            bend_radius: job.area_radius(rules).1,
             free: 0.0,
             bends: 0,
             shielded: job.shielded,
@@ -1092,7 +1095,7 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, mut glands: G
             if job.kind != RouteKind::Wire {
                 space.take(&points, job.diameter / 2.0, reach);
             }
-            let radii = space.corner_radii(&points, job.diameter / 2.0, radius, &ignore);
+            let radii = grid::corner_radii(&points, radius);
             ways.push((leg.lineup, points, free, radii));
         }
         if rerouted {

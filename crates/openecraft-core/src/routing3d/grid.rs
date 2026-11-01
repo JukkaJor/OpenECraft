@@ -11,8 +11,8 @@
 //! all of it but the items at its ends, and where it cannot (near its ends, or within
 //! half a cell of it where there is no other way) it is squeezed through at a price. A
 //! turn where its bend, rounded with the bend radius, would not keep clear costs more.
-//! A route leaves each of its ends straight on, as far as half its bend radius, and
-//! between two of its bends it runs straight at least as far; a lane change with an
+//! A route leaves each of its ends straight on, as far as its bend radius, and between
+//! two of its bends it runs straight at least half as far; a lane change with an
 //! S-bend is free of that, bends closer to each other cost more the closer they are.
 //! Cables and tubes keep apart from the ones routed before them by their thicknesses:
 //! none runs inside another in free air (in a duct or routing path they lie side by
@@ -22,7 +22,7 @@
 use super::{Class, PathKind, ReserveMode, RouteKind, RoutingRules};
 use crate::model::Project;
 use crate::panel::{self, Enclosure, ItemKind, PLATE_Z};
-use crate::parts::vec3::{add, dist, norm, scale, sub, V3};
+use crate::parts::vec3::{add, dist, scale, sub, V3};
 use std::cell::RefCell;
 use std::cmp::Reverse;
 use std::collections::BinaryHeap;
@@ -678,26 +678,6 @@ impl Space {
         cells.iter().all(|&i| self.apart(i, req))
     }
 
-    /// The bend radius each corner of a way can have (`radius` at most, halved while
-    /// its bend would come nearer than half the thickness to what blocks the space, but
-    /// the items `ignore`); 0 at the ends.
-    pub fn corner_radii(&self, points: &[V3], half: f32, radius: f32, ignore: &[u64]) -> Vec<f32> {
-        let n = points.len();
-        (0..n)
-            .map(|i| {
-                if i == 0 || i + 1 == n {
-                    return 0.0;
-                }
-                let (from, to) = (norm(sub(points[i], points[i - 1])), norm(sub(points[i + 1], points[i])));
-                let mut r = radius;
-                while r > 1.0 && !self.bend_room(points[i], from, to, r, half, ignore) {
-                    r /= 2.0;
-                }
-                if r > 1.0 { r } else { 0.0 }
-            })
-            .collect()
-    }
-
     /// A bend of radius `radius` rounding the corner at `corner` between the directions
     /// `from` and `to` keeps `half` from what blocks the space (but the items `ignore`):
     /// the middle of its arc, which lies inside the corner, is in a free cell (or the
@@ -1059,11 +1039,11 @@ impl Space {
     /// The way out of an end at `q` in the direction `leave`: the cells from the first
     /// passable one along it (its centre ahead of `q`) straight on, until the route is
     /// `far` mm (with the `out` it runs straight already) out of the end, as far as
-    /// `straight` cells at most and never beyond `limit` along the axis, and the
+    /// `cells` cells at most and never beyond `limit` along the axis, and the
     /// direction. `None` where `leave` runs along no axis or none of the first cells
     /// along it is passable.
     #[allow(clippy::too_many_arguments)]
-    fn lead(&self, q: V3, leave: V3, limit: Option<f32>, out: f32, far: f32, req: &Request, straight: usize) -> Option<(Vec<usize>, usize)> {
+    fn lead(&self, q: V3, leave: V3, limit: Option<f32>, out: f32, far: f32, req: &Request, cells: usize) -> Option<(Vec<usize>, usize)> {
         let (axis, sign) = Space::axis_of(leave)?;
         let dir = axis * 2 + usize::from(sign > 0.0);
         let within = |idx: usize| limit.is_none_or(|l| (self.centre(idx)[axis] - l) * sign <= 0.0);
@@ -1083,18 +1063,18 @@ impl Space {
                     break;
                 }
             }
-            let mut cells = vec![first?];
-            for _ in 0..straight {
-                let last = cells[cells.len() - 1];
+            let mut way = vec![first?];
+            for _ in 0..cells {
+                let last = way[way.len() - 1];
                 if ahead(last) >= far {
                     break;
                 }
                 match self.step(last, dir) {
-                    Some(next) if within(next) && self.step_ok(last, next, dir, req) => cells.push(next),
+                    Some(next) if within(next) && self.step_ok(last, next, dir, req) => way.push(next),
                     _ => break,
                 }
             }
-            Some(cells)
+            Some(way)
         };
         // Barred before it ran `far` straight out of the end, the way may leave it from
         // the cell beside (a cell aside at most), where it runs farther.
@@ -1121,12 +1101,13 @@ impl Space {
     /// [`Space::route`] with the costs to the goal of a search of the same request before
     /// (where they still hold), and the costs it used.
     pub fn route_with(&self, a: V3, b: V3, req: &Request, rules: &RoutingRules, known: Option<&GoalCosts>) -> (Option<Way>, Option<GoalCosts>) {
-        // Cables and tubes run straight out of their ends and on between their bends
-        // for half their bend radius, where there is a way like that.
+        // Cables and tubes run straight out of their ends for their bend radius and on
+        // between their bends for half of it, where there is a way like that.
         let straight = if req.kind == RouteKind::Wire { 0 } else { (req.turn * 0.5 / self.cell).ceil() as usize };
-        let far = req.turn * 0.5;
-        let lead_in = self.lead(a, req.leave[0], self.lead_limit(a, req.leave[0], b, req.leave[1]), req.out[0], far, req, straight);
-        let lead_out = self.lead(b, req.leave[1], self.lead_limit(b, req.leave[1], a, req.leave[0]), req.out[1], far, req, straight);
+        let far = if req.kind == RouteKind::Wire { 0.0 } else { req.turn };
+        let cells = (far / self.cell).ceil() as usize;
+        let lead_in = self.lead(a, req.leave[0], self.lead_limit(a, req.leave[0], b, req.leave[1]), req.out[0], far, req, cells);
+        let lead_out = self.lead(b, req.leave[1], self.lead_limit(b, req.leave[1], a, req.leave[0]), req.out[1], far, req, cells);
         // Where the route cannot leave an end straight on (or has no direction there),
         // it starts at the nearest passable cell.
         let mut ends = Ends { lead_in: Vec::new(), dir: 6, lead_out: Vec::new(), arrive: 6 };
@@ -1619,6 +1600,14 @@ pub fn bends(points: &[V3]) -> (usize, f32) {
     let n = points.len().saturating_sub(2);
     let inner = points.windows(2).skip(1).take(points.len().saturating_sub(3)).map(|s| dist(s[0], s[1])).fold(f32::INFINITY, f32::min);
     (n, inner)
+}
+
+/// The bend radius of each corner of a way: `radius`, the least the route may bend
+/// with, at every corner (the 3D view bends corners too close for separate arcs as one
+/// curve of it), none at the ends.
+pub fn corner_radii(points: &[V3], radius: f32) -> Vec<f32> {
+    let n = points.len();
+    (0..n).map(|i| if i == 0 || i + 1 == n { 0.0 } else { radius }).collect()
 }
 
 /// Stretches of a polyline between two bends shorter than `least`: between corners

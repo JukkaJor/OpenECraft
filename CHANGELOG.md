@@ -90,7 +90,7 @@ with a command line, an MCP server, a parts server and a project server.
   grid included), so thick cables and pipes keep half their thickness from all of them;
   where there is no room for that a route is squeezed through and the project check says
   so. A route leaves its device, cable gland, nozzle or wall penetration straight on for
-  half its bend radius, runs at least that far between two bends, changes lanes with an
+  its bend radius, runs at least half that far between two bends, changes lanes with an
   S-bend (drawn as one), and bends closer than that only where nothing else fits; the
   thickest cables of a class are routed first. In a cabinet a cable enters and leaves a
   cable duct through the slots of its walls, never through its base or its cover, and
@@ -104,7 +104,12 @@ with a command line, an MCP server, a parts server and a project server.
   cable gland whose clamping range fits it and that no other cable took, the thickest
   cables first, and a route whose way into its end runs beside it changes lanes into it
   with an S-bend. A connection takes the cross-section of a wire drawn with one at its
-  connection point (a tap off a busbar) rather than the busbar's.
+  connection point (a tap off a busbar) rather than the busbar's. Every wire, cable and
+  tube has a least bend radius, a multiple of its thickness from the routing rules
+  (hoses their own), shown in the route and wire properties: the 3D view bends every
+  corner with it, and corners too close for separate arcs as one smooth curve no
+  tighter than it where the stretches around allow; wires through one cable passage
+  pass it side by side.
   Devices mounted on a busbar system are connected by its bars instead of wires. The title bar can show
   the frame time and the frames per second (Settings › Appearance). A placed device is shown in the
   panel layout or the 3D view from its context menu in the schematic. Pumps, tanks

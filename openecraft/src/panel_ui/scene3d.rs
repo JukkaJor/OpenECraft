@@ -539,6 +539,27 @@ impl PanelUi {
         let shown_wire = |i: usize| shown.iter().any(|(k, _)| an.wiring[i].in_enclosure(*k));
         let selected_wire = self.wire_index(an).filter(|i| shown_wire(*i));
         let wire_ends = selected_wire.map(|i| an.wiring[i].items);
+        // Wires through one cable passage pass it side by side, each on a place of its
+        // own in a square round the middle of the passage.
+        let mut through_passages: std::collections::HashMap<[i32; 3], Vec<usize>> = std::collections::HashMap::new();
+        for (wi, w) in an.wiring.iter().enumerate() {
+            for (_, _, entry, exit) in w.stretch_passages() {
+                for q in [entry, exit].into_iter().flatten() {
+                    let list = through_passages.entry(q.map(|v| v.round() as i32)).or_default();
+                    if !list.contains(&wi) {
+                        list.push(wi);
+                    }
+                }
+            }
+        }
+        let slot = |q: V3, wi: usize| -> V3 {
+            let Some(list) = through_passages.get(&q.map(|v| v.round() as i32)) else { return [0.0; 3] };
+            let Some(k) = list.iter().position(|&w| w == wi) else { return [0.0; 3] };
+            let gap = list.iter().map(|&w| openecraft_core::harness::outer_diameter(&an.wiring[w].cross_section)).fold(0.0, f32::max) + 1.0;
+            let cols = (list.len() as f32).sqrt().ceil() as usize;
+            let rows = list.len().div_ceil(cols);
+            [0.0, ((k % cols) as f32 - (cols - 1) as f32 / 2.0) * gap, ((k / cols) as f32 - (rows - 1) as f32 / 2.0) * gap]
+        };
         for &(k, pose) in shown {
             let e = &prj.layout.enclosures[k];
             let swing = |q: V3| {
@@ -790,7 +811,7 @@ impl PanelUi {
                     path.into_iter().enumerate().map(|(i, v)| if i < n { swing(up(v)) } else { up(v) }).collect()
                 };
                 // Cable passages (line-up coordinates) in this enclosure's view.
-                let passage = |q: V3| up([q[0] - pos[k][0], q[1] - pos[k][1], q[2] - pos[k][2]]);
+                let passage = |q: V3| vec3::add(up([q[0] - pos[k][0], q[1] - pos[k][1], q[2] - pos[k][2]]), slot(q, wi));
                 let paths: Vec<(usize, Vec<V3>)> = match wire.door {
                     (Some(a), Some(b)) if wire.on_door() => match &wire.door_routes.0 {
                         Some(r) => vec![(0, panel::door_jumper_path(e, a, b, r).into_iter().map(|v| swing(up(v))).collect())],
