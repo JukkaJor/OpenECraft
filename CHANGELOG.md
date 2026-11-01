@@ -84,8 +84,8 @@ with a command line, an MCP server, a parts server and a project server.
   shows them as routed until then). Cables and tubes keep apart from each other in free air already when they are
   routed. A cable duct too small for its wires to lie side by side is an error of the project check.
   The fill level of a cable duct counts the cables and tubes routed through it as well as its wires,
-  against the cross section inside the duct; cables and tubes keep out of the stretches of a duct
-  they would fill above the limit.
+  against the cross section inside the duct, also for the ducts on the walls, ceiling and floor of a
+  room; cables and tubes keep out of the stretches of a duct they would fill above the limit.
   A cable ends a little before the device and its cores part from there in smooth curves, each coming
   into its connection point from the side its wires leave it; cables and wires run on through the cable
   glands, wall penetrations and cable passages between cabinets and rooms in one piece, bent round

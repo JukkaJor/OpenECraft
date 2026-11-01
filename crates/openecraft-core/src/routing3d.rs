@@ -12,7 +12,7 @@
 use crate::model::{Cable, Project};
 use crate::netlist::{Connection, Netlist, PinRef};
 use crate::panel::{self, Face, ItemKind, Layout, PanelItem, RoutedWire, DUCT_PROFILE, PLATE_MARGIN, PLATE_Z};
-use crate::parts::vec3::{add, dist, manhattan, scale, sub, V3};
+use crate::parts::vec3::{add, dist, dot, manhattan, scale, sub, V3};
 use openecraft_i18n::{tr, tr_fmt};
 use std::collections::{BTreeMap, HashMap};
 
@@ -1238,15 +1238,16 @@ fn apply_to_wire(prj: &Project, pos: &[V3], w: &mut RoutedWire, points: &[V3], e
     w.length = w.plate_length() + extra;
 }
 
-/// Stretches of the ducts on the plate a 3D route (enclosure coordinates) runs through.
-/// Every segment counts with the part of it inside the duct, also one that runs on
-/// beyond the duct (into the crossing duct at a corner, past its end).
+/// Stretches of the ducts a 3D route (enclosure coordinates) runs through: on the
+/// mounting plate of a cabinet, on every face of a room. Every segment counts with the
+/// part of it inside the duct, also one that runs on beyond the duct (into the crossing
+/// duct at a corner, past its end).
 pub(crate) fn duct_runs(e: &panel::Enclosure, pts: &[V3]) -> Vec<panel::DuctRun> {
     let mut runs: Vec<panel::DuctRun> = Vec::new();
     for s in pts.windows(2) {
         let (a, b) = (s[0], s[1]);
         let dir = sub(b, a);
-        for d in e.items.iter().filter(|i| i.kind == ItemKind::Duct && i.face == Face::Plate) {
+        for d in e.items.iter().filter(|i| i.kind == ItemKind::Duct && (i.face == Face::Plate || e.is_room())) {
             let (lo, hi) = panel::item_box(e, d);
             let (mut t0, mut t1) = (0.0f32, 1.0f32);
             for i in 0..3 {
@@ -1264,8 +1265,11 @@ pub(crate) fn duct_runs(e: &panel::Enclosure, pts: &[V3]) -> Vec<panel::DuctRun>
             if t1 < t0 {
                 continue;
             }
-            let i = if d.horizontal() { 0 } else { 1 };
-            let (s0, s1) = (a[i] + dir[i] * t0 - PLATE_MARGIN, a[i] + dir[i] * t1 - PLATE_MARGIN);
+            // Along the duct in the coordinates of its face.
+            let [o, u, w, _] = panel::face_frame(e, d.face);
+            let along = if d.horizontal() { u } else { w };
+            let at = |t: f32| dot(sub(add(a, scale(dir, t)), o), along) / dot(along, along);
+            let (s0, s1) = (at(t0), at(t1));
             if (s1 - s0).abs() > 0.01 {
                 runs.push(panel::DuctRun { duct: d.id, from: s0.min(s1), to: s0.max(s1) });
             }

@@ -67,7 +67,8 @@ through the cable duct network (shortest path) → wire list with lengths, wires
 
 **Duct fill levels**: cross sections of the routed wires (with insulation), cables and
 tubes against the cross section inside the duct (between its walls, base and cover) at
-its fullest stretch; ducts coloured green / orange / red in the
+its fullest stretch, on the mounting plate as on the walls, ceiling and floor of a room;
+ducts coloured green / orange / red in the
 front view, fill level in the duct properties, limit in the enclosure properties (70 %
 by default); report *Duct fill levels*, the check warns above the limit and hints above
 80 % of it; when a duct is overfull, the wiring is routed again, thickest wires first,

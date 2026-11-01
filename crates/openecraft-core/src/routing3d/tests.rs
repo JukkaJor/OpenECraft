@@ -337,3 +337,18 @@ fn cables_in_the_ducts_count_in_their_fill() {
     let wired = |f: &&crate::panel::DuctFill| an.wiring.iter().any(|w| w.stretches().any(|(e, r)| e == f.enclosure && r.runs.iter().any(|r| r.duct == f.duct)));
     assert!(an.duct_fill.iter().any(|f| !wired(&f)));
 }
+
+#[test]
+fn cables_in_the_ducts_of_a_room_count_in_their_fill() {
+    let prj = (crate::sample::EXAMPLES.iter().find(|x| x.key == "pump_room").unwrap().build)();
+    let an = Analysis::checked(&prj);
+    let in_room: Vec<&crate::panel::DuctFill> = an.duct_fill.iter().filter(|f| prj.layout.enclosures[f.enclosure].is_room()).collect();
+    assert!(!in_room.is_empty(), "the cables along the ceiling of the room");
+    for f in in_room {
+        let d = prj.layout.enclosures[f.enclosure].item(f.duct).unwrap();
+        assert!(f.total_wires > 0 && f.percent > 0.0, "{f:?}");
+        // The fullest stretch along the duct, in the coordinates of its face.
+        let (lo, hi) = if d.horizontal() { (d.x, d.x + d.w) } else { (d.y, d.y + d.h) };
+        assert!(f.from >= lo - 1.0 && f.to <= hi + 1.0 && f.to > f.from, "{f:?} on {lo}..{hi}");
+    }
+}
