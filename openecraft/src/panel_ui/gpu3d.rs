@@ -46,6 +46,13 @@ impl Camera {
         Some((center + egui::vec2(dot(v, self.right) / z * self.f, -dot(v, self.up) / z * self.f), z))
     }
 
+    /// The point at depth `z` seen at `at` points from the centre of the view (the
+    /// reverse of [`Camera::project`]).
+    pub fn unproject(&self, at: Vec2, z: f32) -> V3 {
+        let k = z / self.f;
+        std::array::from_fn(|i| self.eye[i] + self.fwd[i] * z + self.right[i] * at.x * k - self.up[i] * at.y * k)
+    }
+
     /// Matrix (column major) to the clip space of a view of `size` points that shows the
     /// depths `near` .. `far`; it projects as [`Camera::project`].
     pub fn matrix(&self, size: Vec2, near: f32, far: f32) -> [f32; 16] {

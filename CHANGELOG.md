@@ -50,7 +50,11 @@ with a command line, an MCP server, a parts server and a project server.
   its walls and ceiling instead of crossing it, and their bends keep the bend radius
   apart. The 3D view is drawn by the graphics card (OpenGL 3 / WebGL 2, with a depth
   buffer and anti-aliasing; Settings › Appearance switches it off), and drawn by the
-  processor it keeps what it shows between frames: large rooms turn smoothly. Devices without a 3D
+  processor it keeps what it shows between frames: large rooms turn smoothly. Moving in the
+  3D view: the wheel zooms at the pointer and walks on into a room, Shift+drag pans as the
+  right button does, a double-click turns the camera to what was clicked and closes in,
+  W A S D / the arrow keys and Q E move through it (Shift: faster), and a bar in the view
+  has the standard views (front, left, right, rear, top, isometric) and *Fit* (`Home`). Devices without a 3D
   model of their own get a detailed, coloured one by what they are (pumps, vessels,
   valves, heat pumps, inverters, rack batteries, …); devices of the bundled catalogs
   (Victron, Pylontech, Hager, DEHN, Beckhoff, Phoenix Contact, Siemens) are drawn after

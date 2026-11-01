@@ -183,6 +183,8 @@ impl App {
                 (tr("Esc"), tr("Cancel / select tool / clear selection")),
                 (tr("Wheel / right or middle drag"), tr("Zoom / pan")),
                 (tr("Shift + click / drag"), tr("Add to selection")),
+                (tr("W A S D / arrows, Q / E"), tr("Move through the 3D view (Shift: faster)")),
+                (tr("Double-click (3D view)"), tr("Look at the point clicked, closer")),
                 ("Alt / F10", tr("Key tips of the ribbon")),
             ]
             .into_iter()
