@@ -6371,3 +6371,4 @@ Open cable ducts	Otevřít kabelové kanály
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	Ve 3D zobrazení vynechá víka všech kabelových kanálů: vodiče v nich jsou vidět
 {}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: kabelový kanál na {} mm je příliš malý: jeho {} vodičů nelze položit vedle sebe
 Laying out the wires, cables and tubes…	Rozmísťování vodičů, kabelů a trubek…
+{} {}: no room to keep half its thickness from what is around it	{} {}: není místo pro zachování poloviny tloušťky od okolí

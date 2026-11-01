@@ -6371,3 +6371,4 @@ Open cable ducts	Otwórz korytka kablowe
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	W widoku 3D pomija pokrywy wszystkich korytek kablowych: przewody w nich są widoczne
 {}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: kanał kablowy na {} mm za mały: jego {} przewodów nie da się ułożyć obok siebie
 Laying out the wires, cables and tubes…	Układanie przewodów, kabli i węży…
+{} {}: no room to keep half its thickness from what is around it	{} {}: brak miejsca, aby zachować połowę grubości od otoczenia

@@ -6371,3 +6371,4 @@ Open cable ducts	Kábelcsatornák megnyitása
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	A 3D nézetben elhagyja az összes kábelcsatorna fedelét: a bennük lévő vezetékek láthatók
 {}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: a kábelcsatorna {} mm-nél túl kicsi: {} vezetéke nem fektethető egymás mellé
 Laying out the wires, cables and tubes…	Vezetékek, kábelek és csövek elrendezése…
+{} {}: no room to keep half its thickness from what is around it	{} {}: nincs hely a fél vastagságnyi távolság tartására a környezettől

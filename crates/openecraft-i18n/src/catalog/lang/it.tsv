@@ -6371,3 +6371,4 @@ Open cable ducts	Apri canaline
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	Nella vista 3D omette i coperchi di tutte le canaline: i fili al loro interno sono visibili
 {}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: canalina a {} mm troppo piccola: i suoi {} fili non possono essere posati uno accanto all'altro
 Laying out the wires, cables and tubes…	Disposizione di conduttori, cavi e tubi…
+{} {}: no room to keep half its thickness from what is around it	{} {}: nessuno spazio per mantenere metà del suo spessore da ciò che lo circonda

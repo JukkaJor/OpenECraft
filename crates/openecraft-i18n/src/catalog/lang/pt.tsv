@@ -6371,3 +6371,4 @@ Open cable ducts	Abrir canaletas
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	Na vista 3D, omitir as tampas de todas as canaletas: os fios nelas ficam visíveis
 {}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: canaleta em {} mm pequena demais: seus {} fios não podem ser passados lado a lado
 Laying out the wires, cables and tubes…	Dispondo fios, cabos e tubos…
+{} {}: no room to keep half its thickness from what is around it	{} {}: sem espaço para manter metade da sua espessura do que está em redor

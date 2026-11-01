@@ -12,7 +12,7 @@
 use crate::model::{Cable, Project};
 use crate::netlist::{Connection, Netlist, PinRef};
 use crate::panel::{self, Face, ItemKind, Layout, PanelItem, RoutedWire, DUCT_PROFILE, PLATE_MARGIN, PLATE_Z};
-use crate::parts::vec3::{add, dist, manhattan, scale, sub, V3};
+use crate::parts::vec3::{add, dist, manhattan, norm, scale, sub, V3};
 use openecraft_i18n::{tr, tr_fmt};
 use std::collections::{BTreeMap, HashMap};
 
@@ -239,6 +239,10 @@ pub struct End {
     /// The end of the nozzle of the device a tube ends at (layout coordinates): the
     /// route comes to `point` straight out of it and goes on into it.
     pub nozzle: Option<V3>,
+    /// The direction the route leaves `point` in, where known (a unit vector): out of
+    /// the nozzle, away from the wall of a cable gland, the way the cores leave their
+    /// connection points or away from the face a device is mounted on.
+    pub leave: Option<V3>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -491,8 +495,13 @@ fn device_end(prj: &Project, pos: &[V3], tag: &str, pins: &[PinRef]) -> End {
                 n => at.iter().fold([0.0; 3], |s, q| add(s, q.0)).map(|v| v / n as f32),
             };
             let in_layout = |q: V3| add(panel::face_point(e, it.face, q), pos[ei]);
+            let direction = |x: V3| sub(in_layout(add(q, x)), in_layout(q));
+            // The route leaves the way the cores leave (where they agree), otherwise
+            // away from the face.
+            let out = at.iter().fold([0.0; 3], |s, p| add(s, p.1));
+            let leave = if at.is_empty() || dist(out, [0.0; 3]) < 0.5 { direction([0.0, 0.0, 1.0]) } else { direction(out) };
             let (cores, exits) = if at.len() > 1 { at.into_iter().map(|(q, x)| (in_layout(q), sub(in_layout(add(q, x)), in_layout(q)))).unzip() } else { Default::default() };
-            End { tag: tag.into(), enclosure: Some(ei), point: Some(in_layout(q)), item: Some(it.id), cores, exits, nozzle: None }
+            End { tag: tag.into(), enclosure: Some(ei), point: Some(in_layout(q)), item: Some(it.id), cores, exits, nozzle: None, leave: Some(norm(leave)) }
         }
         None => End { tag: tag.into(), ..Default::default() },
     }
@@ -546,6 +555,7 @@ fn at_nozzle(prj: &Project, pos: &[V3], end: &mut End, pin: PinRef, out: f32, tu
     let (tip, dir) = at[k];
     end.nozzle = Some(tip);
     end.point = Some(add(tip, scale(dir, out)));
+    end.leave = Some(norm(dir));
 }
 
 /// The schematic connection points of `cores` at the device `tag`.
@@ -559,12 +569,12 @@ fn pins_at(prj: &Project, cores: &[&Connection], tag: &str) -> Vec<PinRef> {
 fn entry_end(prj: &Project, pos: &[V3], ei: usize, near: V3) -> End {
     let e = &prj.layout.enclosures[ei];
     let glands = accessories(prj, ei, "Cable gland");
-    let at = |it: &PanelItem| add(panel::face_point(e, it.face, [it.x + it.w / 2.0, it.y + it.h / 2.0, 5.0]), pos[ei]);
-    match glands.into_iter().min_by(|a, b| manhattan(at(a), near).total_cmp(&manhattan(at(b), near)).then(a.id.cmp(&b.id))) {
-        Some(g) => End { tag: g.part.clone(), enclosure: Some(ei), point: Some(at(g)), item: Some(g.id), ..Default::default() },
+    let at = |it: &PanelItem, depth: f32| add(panel::face_point(e, it.face, [it.x + it.w / 2.0, it.y + it.h / 2.0, depth]), pos[ei]);
+    match glands.into_iter().min_by(|a, b| manhattan(at(a, 5.0), near).total_cmp(&manhattan(at(b, 5.0), near)).then(a.id.cmp(&b.id))) {
+        Some(g) => End { tag: g.part.clone(), enclosure: Some(ei), point: Some(at(g, 5.0)), item: Some(g.id), leave: Some(norm(sub(at(g, 6.0), at(g, 5.0)))), ..Default::default() },
         None => {
             let q = [e.width / 2.0, e.height - e.wall() - 5.0, (PLATE_Z + e.depth) / 2.0];
-            End { tag: tr("Bottom").to_string(), enclosure: Some(ei), point: Some(add(q, pos[ei])), item: None, ..Default::default() }
+            End { tag: tr("Bottom").to_string(), enclosure: Some(ei), point: Some(add(q, pos[ei])), item: None, leave: Some([0.0, -1.0, 0.0]), ..Default::default() }
         }
     }
 }
@@ -600,7 +610,8 @@ impl Job {
     /// What is routed along a leg through `space` (passing the items `ignore`).
     fn request<'a>(&self, leg: &room::LegPlan, space: &grid::Space, ignore: &'a [u64], rules: &RoutingRules) -> grid::Request<'a> {
         let (area, radius) = self.area_radius(rules);
-        grid::Request { kind: self.kind, class: self.class, ignore, at: [leg.a, leg.b], area, turn: (space.cell * 0.5).max(radius), half: self.diameter / 2.0 }
+        let out = |i: usize| self.ends[i].nozzle.zip(self.ends[i].point).map_or(0.0, |(tip, q)| dist(tip, q));
+        grid::Request { kind: self.kind, class: self.class, ignore, at: [leg.a, leg.b], leave: leg.leave, out: [out(0), out(1)], area, turn: (space.cell * 0.5).max(radius), half: self.diameter / 2.0 }
     }
 
     /// The items a leg may pass through: the devices at the ends, its cable glands.
@@ -653,7 +664,7 @@ fn building_entry(prj: &Project, pos: &[V3], ri: usize, near: V3) -> Option<End>
     let e = &prj.layout.enclosures[ri];
     let at = |it: &PanelItem| panel::entry_point(e, it).map(|q| add(q, pos[ri]));
     let it = panel::entries(e).into_iter().filter(|it| at(it).is_some()).min_by(|a, b| manhattan(at(a).unwrap_or(near), near).total_cmp(&manhattan(at(b).unwrap_or(near), near)).then(a.id.cmp(&b.id)))?;
-    Some(End { tag: tr("Building entry").to_string(), enclosure: Some(ri), point: at(it), item: Some(it.id), ..Default::default() })
+    Some(End { tag: tr("Building entry").to_string(), enclosure: Some(ri), point: at(it), item: Some(it.id), leave: panel::entry_direction(e, it), ..Default::default() })
 }
 
 /// The location of a device tag (`=F1+LOC-K1` → `LOC`), empty without one.
@@ -863,7 +874,9 @@ fn jobs(prj: &Project, wiring: &[RoutedWire], conns: &[Connection], open: &Netli
             set_length: 0.0,
         });
     }
-    jobs.sort_by(|a, b| a.class.cmp(&b.class).then(a.kind.cmp(&b.kind)).then(a.key.cmp(&b.key)));
+    // The thickest first within a class and kind: they take the straightest ways, the
+    // thinner ones go round them more easily.
+    jobs.sort_by(|a, b| a.class.cmp(&b.class).then(a.kind.cmp(&b.kind)).then(b.diameter.total_cmp(&a.diameter)).then(a.key.cmp(&b.key)));
     jobs
 }
 
@@ -888,6 +901,9 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, progress: &dy
     let mut problems: Vec<Problem> = Vec::new();
     let mut roof_entries: Vec<String> = Vec::new();
     let total = jobs.len();
+    // How far beyond its surface a cable or tube keeps the ones routed after it: half the
+    // thickness of the thickest.
+    let reach = jobs.iter().filter(|j| j.kind != RouteKind::Wire).map(|j| j.diameter / 2.0).fold(0.0, f32::max);
     let make_space = |lu: usize| if is_room(lu) { room::room_space(prj, lineups[lu][0], &pos, &poses, rules) } else { grid::Space::build(prj, &lineups[lu], &pos, rules) };
     // The legs of each job: in one line-up (or room) at once, otherwise through the rooms
     // the ends are in and the wall penetrations between them (with whether it enters a
@@ -901,7 +917,8 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, progress: &dy
                 return Err(tr("not in the panel layout").to_string());
             };
             if job.ends.iter().filter_map(|e| e.enclosure).all(|ei| lineup_of(ei) == Some(lu)) {
-                return Ok((vec![room::LegPlan { lineup: lu, a, b, ignore: Vec::new() }], false, 0.0));
+                let leave = [job.ends[0].leave.unwrap_or([0.0; 3]), job.ends[1].leave.unwrap_or([0.0; 3])];
+                return Ok((vec![room::LegPlan { lineup: lu, a, b, leave, ignore: Vec::new() }], false, 0.0));
             }
             let rooms: Vec<Option<usize>> = job.ends.iter().map(|e| e.enclosure.and_then(room_of_end)).collect();
             match (rooms[0], rooms[1]) {
@@ -1013,6 +1030,7 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, progress: &dy
         let thawed = thawed(job, legs);
         let mut ways: Vec<(usize, Vec<V3>, f32, Vec<f32>)> = Vec::new();
         let mut rerouted = false;
+        let mut squeezed = false;
         for (i, leg) in legs.iter().enumerate() {
             let space = spaces.entry(leg.lineup).or_insert_with(|| make_space(leg.lineup));
             // Classes that come later keep apart from those routed before them.
@@ -1030,12 +1048,16 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, progress: &dy
                     // Found ahead: taken where no routing path became full for it since and
                     // no route took its room (the same as searched now); otherwise searched
                     // again, with the costs to the goal worked out then where they still hold.
-                    let entry = ahead.remove(&(n, i)).filter(|e| space.paths_full_as(&e.1, area));
+                    let entry = ahead.remove(&(n, i));
+                    let fresh = entry.as_ref().is_some_and(|e| space.paths_full_as(&e.1, area));
                     match entry {
-                        Some((way, ..)) if way.as_ref().is_none_or(|w| space.still_apart(&w.cells, &req)) => way,
+                        Some((way, ..)) if fresh && way.as_ref().is_none_or(|w| space.still_apart(&w.cells, &req)) => way,
                         entry => space.route_with(leg.a, leg.b, &req, rules, entry.as_ref().and_then(|e| e.2.as_ref())).0,
                     }
-                    .map(|w| (w.points, w.cells, w.free))
+                    .map(|w| {
+                        squeezed |= w.squeezed;
+                        (w.points, w.cells, w.free)
+                    })
                 }
             };
             let Some((points, cells, free)) = way else {
@@ -1044,9 +1066,9 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, progress: &dy
             };
             space.occupy(&cells, job.class, area);
             if job.kind != RouteKind::Wire {
-                space.take(&points, job.diameter / 2.0);
+                space.take(&points, job.diameter / 2.0, reach);
             }
-            let radii = space.corner_radii(&points, job.diameter / 2.0, radius);
+            let radii = space.corner_radii(&points, job.diameter / 2.0, radius, &ignore);
             ways.push((leg.lineup, points, free, radii));
         }
         if rerouted {
@@ -1062,16 +1084,11 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, progress: &dy
             continue;
         }
         let mut length = 0.0;
-        let mut close_bends = false;
         for (_, points, free, _) in &ways {
             let (bends, shortest) = grid::bends(points);
             // Corners are rounded with the bend radius where the stretches allow it.
             let rounding = if bends > 0 { bends as f32 * radius.min(shortest / 2.0).max(0.0) * (2.0 - std::f32::consts::FRAC_PI_2) } else { 0.0 };
             length += grid::length(points) - rounding;
-            // Stretches between bends need room for the bend radius (half of it on each);
-            // the legs to the exact end points are left out.
-            let shortest = if points.len() > 4 { grid::bends(&points[1..points.len() - 1]).1 } else { f32::INFINITY };
-            close_bends |= bends > 0 && shortest < radius * 0.5;
             item.bends += bends;
             item.free += if known { 0.0 } else { *free };
         }
@@ -1095,8 +1112,14 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, progress: &dy
             (true, Some(wi)) => wiring[wi].length,
             _ => length + job.extra,
         };
+        // Stretches between bends need room for the bend radius (half of it on each);
+        // the ways out of the nozzles count, the lane changes are left out.
+        let close_bends = ways.iter().any(|(_, points, ..)| grid::close_bends(points, radius * 0.5) > 0);
         if close_bends && job.kind != RouteKind::Wire {
             problems.push(Problem { level: Level::Warning, message: tr_fmt!("{} {}: bends closer than the bend radius ({} mm)", job.kind.title(), job.label, format!("{radius:.0}")) });
+        }
+        if squeezed {
+            problems.push(Problem { level: Level::Warning, message: tr_fmt!("{} {}: no room to keep half its thickness from what is around it", job.kind.title(), job.label) });
         }
         // A hose with its length set in the schematic must reach along its route.
         if job.set_length > 0.0 && job.set_length + 0.5 < item.length {

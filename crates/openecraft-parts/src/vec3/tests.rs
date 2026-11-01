@@ -178,6 +178,29 @@ fn corners_are_rounded_with_the_bend_radius() {
 }
 
 #[test]
+fn a_lane_change_is_an_s_curve() {
+    // A jog of 50 between two long stretches, with a bend radius of 125: two arcs of
+    // 125 turning 36.9 degrees each, 75 along the way on each side; smooth, and
+    // nowhere outside the jog across the way.
+    let path = [[0.0, 0.0, 0.0], [1000.0, 0.0, 0.0], [1000.0, 50.0, 0.0], [2000.0, 50.0, 0.0]];
+    let round = fillet(&path, 125.0, 4);
+    assert_eq!((round[0], round[round.len() - 1]), (path[0], path[3]));
+    assert!(round.iter().all(|q| q[1] >= -1e-3 && q[1] <= 50.0 + 1e-3), "{round:?}");
+    assert!(round.iter().any(|q| dist(*q, [1000.0, 25.0, 0.0]) < 0.01), "through the middle of the jog: {round:?}");
+    let first = round.iter().position(|q| q[1] > 1e-3).unwrap();
+    assert!((round[first - 1][0] - 925.0).abs() < 1.0, "leaves the way 75 before the jog: {round:?}");
+    // The direction never turns by more than a step of the arcs (18.4 degrees).
+    for s in round.windows(3) {
+        let (u, v) = (norm(sub(s[1], s[0])), norm(sub(s[2], s[1])));
+        assert!(dot(u, v) > 0.94, "{s:?}");
+    }
+    // A jog wider than two radii is two ordinary bends with a straight bit between.
+    let wide = [[0.0, 0.0, 0.0], [1000.0, 0.0, 0.0], [1000.0, 400.0, 0.0], [2000.0, 400.0, 0.0]];
+    let round = fillet(&wide, 125.0, 4);
+    assert!(round.iter().any(|q| dist(*q, [1000.0, 125.0, 0.0]) < 0.01) && round.iter().any(|q| dist(*q, [1000.0, 275.0, 0.0]) < 0.01), "{round:?}");
+}
+
+#[test]
 fn tubes_are_closed_round_and_face_outwards() {
     let enclosed = |tris: &[(Tri, usize)]| tris.iter().map(|([a, b, c], _)| dot(*a, cross(*b, *c)) / 6.0).sum::<f32>();
     let straight = tube(&[[0.0, 0.0, 0.0], [0.0, 0.0, 1000.0]], 10.0, 12);

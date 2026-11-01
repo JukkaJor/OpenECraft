@@ -6371,3 +6371,4 @@ Open cable ducts	Öppna kabelkanaler
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	Utelämna locken på alla kabelkanaler i 3D-vyn: ledarna i dem syns
 {}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: kabelkanal vid {} mm för liten: dess {} ledare kan inte dras bredvid varandra
 Laying out the wires, cables and tubes…	Ledningar, kablar och slangar läggs ut…
+{} {}: no room to keep half its thickness from what is around it	{} {}: inget utrymme att hålla halva tjockleken från omgivningen

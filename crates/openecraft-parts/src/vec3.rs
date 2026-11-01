@@ -248,7 +248,10 @@ pub fn length(a: V3) -> f32 {
 
 /// The polyline with each corner rounded by an arc of `radius` (smaller where its
 /// segments are too short: an arc takes at most half of a segment between two corners
-/// and all of an end segment), `steps` points per quarter turn.
+/// and all of an end segment), `steps` points per quarter turn. A jog shorter than
+/// two radii between two right-angled corners that lead back into the direction
+/// before them (a lane change) is an S-curve of two arcs of one radius, as large as
+/// the segments on both sides allow.
 pub fn fillet(points: &[V3], radius: f32, steps: usize) -> Vec<V3> {
     fillet_each(points, &vec![radius; points.len()], steps)
 }
@@ -260,24 +263,50 @@ pub fn fillet_each(points: &[V3], radii: &[f32], steps: usize) -> Vec<V3> {
         return points.to_vec();
     }
     let n = points.len();
+    let radius = |i: usize| radii.get(i).copied().unwrap_or(0.0);
     let mut out = vec![points[0]];
-    for i in 1..n - 1 {
+    let mut i = 1;
+    while i < n - 1 {
         let (a, p, b) = (points[i - 1], points[i], points[i + 1]);
         let (la, lb) = (length(sub(p, a)), length(sub(b, p)));
-        let radius = radii.get(i).copied().unwrap_or(0.0);
-        if la < 1e-4 || lb < 1e-4 || radius <= 0.0 {
+        if la < 1e-4 || lb < 1e-4 || radius(i) <= 0.0 {
             out.push(p);
+            i += 1;
             continue;
         }
         let (u, v) = (scale(sub(p, a), 1.0 / la), scale(sub(b, p), 1.0 / lb));
+        // A lane change: across for less than two radii, then on as before.
+        if i + 2 < n && radius(i + 1) > 0.0 {
+            let lc = length(sub(points[i + 2], b));
+            let r_max = radius(i).min(radius(i + 1));
+            let w = if lc < 1e-4 { [0.0; 3] } else { scale(sub(points[i + 2], b), 1.0 / lc) };
+            if lc >= 1e-4 && lb < 2.0 * r_max && dot(u, v).abs() < 1e-3 && dot(u, w) > 0.999 {
+                let room = (if i == 1 { la } else { la / 2.0 }).min(if i + 1 == n - 2 { lc } else { lc / 2.0 });
+                // Arcs of angle θ: across 2 r (1 − cos θ) = lb, along r sin θ on each side.
+                let theta = (1.0 - lb / (2.0 * r_max)).acos().max(2.0 * (lb / (2.0 * room)).atan()).min(std::f32::consts::FRAC_PI_2);
+                let r = lb / (2.0 * (1.0 - theta.cos()));
+                let h = r * theta.sin();
+                let start = sub(p, scale(u, h));
+                let c1 = add(start, scale(v, r));
+                let middle = add(p, scale(v, lb / 2.0));
+                let k = ((theta / std::f32::consts::FRAC_PI_2 * steps as f32).ceil() as usize).max(2);
+                let arc: Vec<V3> = (0..=k).map(|j| theta * j as f32 / k as f32).map(|phi| add(c1, add(scale(v, -r * phi.cos()), scale(u, r * phi.sin())))).collect();
+                out.extend(arc.iter().copied());
+                // The second arc is the first turned round the middle of the jog.
+                out.extend(arc.iter().rev().skip(1).map(|q| sub(scale(middle, 2.0), *q)));
+                i += 2;
+                continue;
+            }
+        }
         let turn = dot(u, v).clamp(-1.0, 1.0).acos();
         if turn < 1e-3 || turn > 3.0 {
             out.push(p);
+            i += 1;
             continue;
         }
         let half = (turn / 2.0).tan();
         let room = (if i == 1 { la } else { la / 2.0 }).min(if i == n - 2 { lb } else { lb / 2.0 });
-        let t = (radius * half).min(room);
+        let t = (radius(i) * half).min(room);
         let r = t / half;
         let s = sub(p, scale(u, t));
         let w = norm(sub(v, scale(u, dot(u, v))));
@@ -287,6 +316,7 @@ pub fn fillet_each(points: &[V3], radii: &[f32], steps: usize) -> Vec<V3> {
             let phi = turn * j as f32 / k as f32;
             out.push(add(c, add(scale(w, -r * phi.cos()), scale(u, r * phi.sin()))));
         }
+        i += 1;
     }
     out.push(points[n - 1]);
     out.dedup_by(|x, y| length(sub(*x, *y)) < 1e-2);

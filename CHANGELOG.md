@@ -85,6 +85,14 @@ with a command line, an MCP server, a parts server and a project server.
   in the direction of their connection points and run round the rows of devices instead of behind or
   through them; wires leave their own devices over them, not through them. Wires, cables and pipes
   laid side by side are pushed at most a few times their thickness from their routes.
+  The 3D routing measures the room around a route from the devices, walls, mounting
+  plate, door and room walls themselves (thin busbars and rails between the cells of its
+  grid included), so thick cables and pipes keep half their thickness from all of them;
+  where there is no room for that a route is squeezed through and the project check says
+  so. A route leaves its device, cable gland, nozzle or wall penetration straight on for
+  half its bend radius, runs at least that far between two bends, changes lanes with an
+  S-bend (drawn as one), and bends closer than that only where nothing else fits; the
+  thickest cables of a class are routed first.
   Devices mounted on a busbar system are connected by its bars instead of wires. The title bar can show
   the frame time and the frames per second (Settings › Appearance). A placed device is shown in the
   panel layout or the 3D view from its context menu in the schematic. Pumps, tanks
