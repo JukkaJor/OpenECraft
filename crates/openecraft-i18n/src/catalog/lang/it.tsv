@@ -2768,7 +2768,6 @@ no way through the enclosure	nessun percorso attraverso l'armadio
 Only {}	Solo {}
 not routed: {}	non instradato: {}
 Frozen route of {} is no longer possible and was routed again	Il percorso congelato di {} non è più possibile ed è stato reinstradato
-{} {} cannot be routed: no way around the obstacles	{} {} non può essere instradato: nessun percorso attorno agli ostacoli
 {} {}: bends closer than the bend radius ({} mm)	{} {}: curve più strette del raggio di curvatura ({} mm)
 Segregation: {} run together with power conductors over {} mm	Separazione: {} corrono insieme a conduttori di potenza per {} mm
 {}: routing path {} is full ({} % of its usable cross-section)	{}: il percorso di instradamento {} è pieno ({} % della sua sezione utile)
@@ -6371,6 +6370,9 @@ Open cable ducts	Apri canaline
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	Nella vista 3D omette i coperchi di tutte le canaline: i fili al loro interno sono visibili
 {}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: canalina a {} mm troppo piccola: i suoi {} fili non possono essere posati uno accanto all'altro
 Laying out the wires, cables and tubes…	Disposizione di conduttori, cavi e tubi…
+{} {} cannot be routed: no way that keeps half its thickness clear of everything and bends with its radius of {} mm. Move its ends or make room for it.	{} {} non può essere instradato: nessun percorso che tenga metà del suo spessore libero da tutto e curvi con il suo raggio di {} mm. Spostare le estremità o fare spazio.
+Of the outer diameter, as laid fixed	Del diametro esterno, in posa fissa
+Of the outer diameter; pipes are bent with elbows of one and a half diameters	Del diametro esterno; le tubazioni sono curvate con curve di un diametro e mezzo
 Wire colour	Colore del filo
 Pin-out	Piedinatura
 No pin layout in the technical data of the part: the pins are shown in a row (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).	Nessuna disposizione dei pin nei dati tecnici dell'articolo: i pin sono mostrati in una fila (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).

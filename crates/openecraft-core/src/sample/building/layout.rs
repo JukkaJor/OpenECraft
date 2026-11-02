@@ -168,8 +168,11 @@ fn enclosures(prj: &mut Project, db: &PartsDb) -> [usize; 5] {
         panel::RAIL_PART,
         panel::DUCT_PART,
         "GEN.BB-3X30X10",
+        "GEN.GLAND-M16",
         "GEN.GLAND-M20",
         "GEN.GLAND-M32",
+        "GEN.GLAND-M40",
+        "GEN.GLAND-M63",
         "GEN.DUCT-100X80",
         "GEN.DUCT-100X120",
         "GEN.DUCT-80X80",
@@ -186,17 +189,19 @@ fn enclosures(prj: &mut Project, db: &PartsDb) -> [usize; 5] {
     // meters and terminals on rails; every cable goes up through a gland right above
     // the device it lands on.
     let md = cabinet(prj, "GEN.TS-1000X2000X600", "+MD", "GEN.DUCT-100X80", &[900.0, 1250.0, 1550.0], &[180.0, 760.0, 1100.0, 1400.0, 1700.0]);
-    // The ducts above and below the fuse switch disconnectors hold the 185 mm² feeders:
-    // deeper, so that they lie side by side in them.
+    // The ducts above and below the fuse switch disconnectors hold the 185 mm² feeders,
+    // the one below the meters their cables, the one along the right edge takes them
+    // up to their glands: deeper, so that they lie side by side in them, cross one
+    // over the other and bend in them with their bend radius.
     let deep = panel::profile(prj, ItemKind::Duct, "GEN.DUCT-100X120").1;
-    for it in prj.layout.enclosures[md].items.iter_mut().filter(|i| i.kind == ItemKind::Duct && [130.0, 710.0].contains(&i.y)) {
+    for it in prj.layout.enclosures[md].items.iter_mut().filter(|i| i.kind == ItemKind::Duct && ([0.0, 130.0, 710.0, 1050.0].contains(&i.y) || (i.h > i.w && i.x > 400.0))) {
         it.part = "GEN.DUCT-100X120".into();
         it.d = deep;
     }
-    profile(prj, md, ItemKind::Busbar, "GEN.BB-3X30X10", (100.0, 300.0), (840.0, 300.0));
-    // The incoming terminals below the bars, the fuse switch disconnectors on them.
-    panel::place_device(prj, md, "=MD+MD-X0", p(100.0, 380.0));
-    for (tag, x) in [("=MD+MD-Q1", 260.0), ("=MD+MD-Q2", 380.0), ("=MD+MD-Q3", 560.0)] {
+    // The incoming terminals feed the bars they are mounted on (the main cable comes
+    // straight down to them from its gland), the fuse switch disconnectors sit on them.
+    profile(prj, md, ItemKind::Busbar, "GEN.BB-3X30X10", (120.0, 300.0), (840.0, 300.0));
+    for (tag, x) in [("=MD+MD-X0", 140.0), ("=MD+MD-Q1", 260.0), ("=MD+MD-Q2", 380.0), ("=MD+MD-Q3", 560.0)] {
         panel::place_device(prj, md, tag, p(x, 255.0));
     }
     on_rail(prj, md, 900.0, 240.0, &["=MD+MD-P1", "=MD+MD-P2", "=MD+MD-P3", "=MD+MD-F11", "=MD+MD-F10"]);
@@ -204,11 +209,13 @@ fn enclosures(prj: &mut Project, db: &PartsDb) -> [usize; 5] {
     on_rail(prj, md, 1250.0, 560.0, &["=MD+MD-T11"]);
     panel::place_accessory(prj, md, "GEN.PE-BAR-10", Face::Plate, p(120.0, 1760.0));
     panel::place_accessory(prj, md, "GEN.HANDLE-SWING", Face::Door, p(890.0, 900.0));
-    // The main cable comes in above its terminals, the feeders leave above the duct
-    // on the right.
-    gland_over(prj, md, "GEN.GLAND-M32", "=MD+MD-X0");
+    // The main cable comes in above its terminals, the feeders leave through glands
+    // of their own above the top duct, up to the duct on the right.
+    gland_over(prj, md, "GEN.GLAND-M63", "=MD+MD-X0");
     let duct_x = panel::PLATE_MARGIN + prj.layout.enclosures[md].plate_size().0 - panel::profile(prj, ItemKind::Duct, "GEN.DUCT-100X80").0 / 2.0;
-    gland_at(prj, md, "GEN.GLAND-M25", duct_x, 87.5);
+    for k in 0..3 {
+        gland_at(prj, md, "GEN.GLAND-M40", duct_x - 40.0 - 75.0 * k as f32, 87.5);
+    }
 
     // Automation cabinet +CC1 and pump cabinet +CC2, bayed: power at the top, the PLC
     // and the EtherCAT terminals at the bottom; the sensor cables leave through the
@@ -281,7 +288,14 @@ fn enclosures(prj: &mut Project, db: &PartsDb) -> [usize; 5] {
     for (what, unit) in [("GEN.RK-BLANK-1U", 17), ("=ESS+RACK-X3", 30), ("GEN.RK-CABLE-1U", 39), ("=ESS+RACK-K2", 40), ("GEN.RK-PATCH-24P", 41)] {
         panel::mount_in_rack(prj, rack, what, Some(unit)).expect("19-inch part");
     }
-    gland(prj, rack, "GEN.GLAND-M32", Face::Roof, 300.0, 500.0);
+    // Each cable its own gland in the roof: the battery cables, the supply of the PDU
+    // and the patch cables.
+    for (i, part) in ["GEN.GLAND-M32", "GEN.GLAND-M32", "GEN.GLAND-M32", "GEN.GLAND-M32", "GEN.GLAND-M20"].into_iter().enumerate() {
+        gland(prj, rack, part, Face::Roof, 100.0 + 80.0 * i as f32, 400.0);
+    }
+    for i in 0..6 {
+        gland(prj, rack, "GEN.GLAND-M16", Face::Roof, 100.0 + 60.0 * i as f32, 520.0);
+    }
     [md, cc1, rack, acd, gak]
 }
 
@@ -330,9 +344,9 @@ fn technical_room(prj: &mut Project, [cc1, rack, acd, gak]: [usize; 4]) {
         ("=PV+TR-T2", 2700.0, 800.0),
         ("=ESS+TR-K1", 3300.0, 1000.0),
         ("=ESS+TR-F1", 500.0, 1700.0),
-        ("=ESS+TR-F2", 800.0, 1700.0),
-        ("=ESS+TR-F3", 1100.0, 1700.0),
-        ("=ESS+TR-P1", 1400.0, 1700.0),
+        ("=ESS+TR-P1", 900.0, 1800.0),
+        ("=ESS+TR-F2", 1300.0, 1700.0),
+        ("=ESS+TR-F3", 1700.0, 1700.0),
     ] {
         panel::mount_on_wall(prj, tr, tag, Face::Wall(1), p(x, y)).unwrap_or_else(|e| panic!("{tag}: {e}"));
     }
@@ -359,9 +373,11 @@ fn technical_room(prj: &mut Project, [cc1, rack, acd, gak]: [usize; 4]) {
     for (machine, motor, riser) in [("=WAT+TR-GP1", "=WAT+TR-M1", 27.0), ("=WAT+TR-GP2", "=WAT+TR-M2", 27.0), ("=AIR+TR-GQ1", "=AIR+TR-M1", 0.0)] {
         crate::sample::drive(prj, tr, machine, motor, riser);
     }
-    fittings(prj, tr, Face::Wall(2), 1560.0, &[("=WAT+TR-QM3", 3000.0), ("=WAT+TR-RM2", 2200.0), ("=WAT+TR-RM3", 1800.0), ("=WAT+TR-QM4", 1000.0), ("=WAT+TR-UM2", 300.0)]);
-    // Hot water: cold water inlet, circulation and distribution beside them.
-    fittings(prj, tr, Face::Wall(2), 1560.0, &[("=HEAT+TR-QM2", 3500.0), ("=HEAT+TR-RM1", 3750.0), ("=HEAT+TR-RM2", 3950.0), ("=HEAT+TR-UM1", 4200.0), ("=HEAT+TR-UM2", 4800.0), ("=HEAT+TR-GP2", 5400.0), ("=HEAT+TR-QM1", 5720.0)]);
+    fittings(prj, tr, Face::Wall(2), 1560.0, &[("=WAT+TR-QM3", 2800.0), ("=WAT+TR-RM2", 2200.0), ("=WAT+TR-RM3", 1800.0), ("=WAT+TR-QM4", 1000.0), ("=WAT+TR-UM2", 300.0)]);
+    // Hot water beside them, in the order of the pipes: the valve and the distribution
+    // to the floors, the circulation return with its pump and check valve, the cold
+    // water inlet with its valve and check valve.
+    fittings(prj, tr, Face::Wall(2), 1560.0, &[("=HEAT+TR-QM1", 5720.0), ("=HEAT+TR-UM1", 5050.0), ("=HEAT+TR-UM2", 4350.0), ("=HEAT+TR-GP2", 4050.0), ("=HEAT+TR-RM2", 3800.0), ("=HEAT+TR-QM2", 3500.0), ("=HEAT+TR-RM1", 3250.0)]);
     panel::add_pipe_run(prj, tr, Face::Wall(2), &[p(200.0, 1560.0), p(5800.0, 1560.0)], None, Some(250.0), Some("PR2")).expect("pipe run");
     fittings(prj, tr, Face::Wall(1), 2000.0, &[("=HEAT+TR-GP1", 2300.0)]);
     // Compressed air: the distribution line along the common wall, each outlet hanging

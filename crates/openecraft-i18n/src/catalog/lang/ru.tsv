@@ -2767,7 +2767,6 @@ no way through the enclosure	нет пути через шкаф
 Only {}	Только {}
 not routed: {}	не проложено: {}
 Frozen route of {} is no longer possible and was routed again	Зафиксированная трасса {} больше невозможна и была проложена заново
-{} {} cannot be routed: no way around the obstacles	{} {} невозможно проложить: нет пути в обход препятствий
 {} {}: bends closer than the bend radius ({} mm)	{} {}: изгибы меньше радиуса изгиба ({} мм)
 Segregation: {} run together with power conductors over {} mm	Разделение: {} проходят вместе с силовыми проводниками на протяжении {} мм
 {}: routing path {} is full ({} % of its usable cross-section)	{}: путь прокладки {} заполнен ({} % полезного сечения)
@@ -6370,6 +6369,9 @@ Open cable ducts	Открыть кабельные каналы
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	В 3D-виде не показывать крышки всех кабельных каналов: провода в них становятся видны
 {}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: кабельный канал на {} мм слишком мал: его {} проводов нельзя проложить рядом друг с другом
 Laying out the wires, cables and tubes…	Раскладка проводов, кабелей и трубок…
+{} {} cannot be routed: no way that keeps half its thickness clear of everything and bends with its radius of {} mm. Move its ends or make room for it.	{} {} невозможно проложить: нет пути, который держит половину толщины от всего и изгибается с радиусом {} мм. Переместите концы или освободите место.
+Of the outer diameter, as laid fixed	От наружного диаметра, при стационарной прокладке
+Of the outer diameter; pipes are bent with elbows of one and a half diameters	От наружного диаметра; трубы гнутся отводами в полтора диаметра
 Wire colour	Цвет провода
 Pin-out	Распиновка
 No pin layout in the technical data of the part: the pins are shown in a row (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).	В технических данных изделия нет расположения контактов: контакты показаны в ряд (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).

@@ -43,7 +43,7 @@ pub use placement::{align, apply_anchors, apply_one_anchor, arrange_on_rail, cap
 pub use points::{device_points, exit_vector, nozzles, point_of, PlacedPoint};
 pub use rack::{is_rack, mount_in_rack, rack_units, RACK_SYSTEM, RACK_UNIT, RACK_WIDTH};
 pub use rooms::{
-    add_inner_wall, add_opening, add_pipe_run, add_wall_profile, pipe_run_offset, pipe_run_on_face, PIPE_RUN_WIDTH, inner_sides, moved_inner_wall, remove_inner_wall, side, INNER_WALL, door_zone, opening_sill, entries, entry_point, ENTRY_SILL, ENTRY_SIZE, DOOR_SIZE, WINDOW_SILL, WINDOW_SIZE, bounds, cabinet_problems, cabinets_in, check_outline, floor_cells, floor_footprint, floor_problems, footprint, inside_outline, mount_ok, mount_on_wall, moved_wall, new_room, normalize_outline, outline, room_face_from_key, room_face_key, room_face_title, room_faces,
+    add_inner_wall, add_opening, add_pipe_run, add_wall_profile, pipe_run_offset, pipe_run_on_face, PIPE_RUN_WIDTH, inner_sides, moved_inner_wall, remove_inner_wall, side, INNER_WALL, door_zone, opening_sill, entries, entry_direction, entry_point, ENTRY_SILL, ENTRY_SIZE, DOOR_SIZE, WINDOW_SILL, WINDOW_SIZE, bounds, cabinet_problems, cabinets_in, check_outline, floor_cells, floor_footprint, floor_problems, footprint, inside_outline, mount_ok, mount_on_wall, moved_wall, new_room, normalize_outline, outline, room_face_from_key, room_face_key, room_face_title, room_faces,
     room_of, room_place, rooms, set_outline, turned_place, set_room, stand_on_floor, stands_inside, wall_length_set, walls, Wall, MIN_WALL, ROOM_WALL,
     penetration_link, wall_links, WallLink, MAX_WALL_THICKNESS, PENETRATION_SIZE, PENETRATION_TOP,
 };
@@ -770,16 +770,23 @@ pub fn strip_cells(prj: &Project, it: &PanelItem) -> Vec<Cell> {
 /// Colours of a slotted cable duct and its cover.
 const DUCT_COLORS: ([u8; 3], [u8; 3]) = ([150, 153, 150], [166, 169, 166]);
 
+/// The walls of a slotted cable duct: the heights above its base of their closed rim
+/// and of their top (the cover lies on it), and their thickness.
+pub fn duct_walls(it: &PanelItem) -> (f32, f32, f32) {
+    let t = 2.0f32.min(it.w.min(it.h) / 4.0).min(it.d / 4.0);
+    ((it.d * 0.25).max(t), it.d - 2.5f32.min(it.d / 4.0), t)
+}
+
 /// The parts of a slotted cable duct (enclosure coordinates, colour, whether it is a
 /// finger): the base, the side walls slotted into fingers above a closed rim, and the
-/// `cover` on top.
+/// `cover` on top. Where another duct of the face joins it, its wall there is cut out
+/// (the ducts open into each other).
 pub fn duct_boxes(e: &Enclosure, it: &PanelItem, cover: bool) -> Vec<((V3, V3), [u8; 3], bool)> {
     let (wall, cover_color) = DUCT_COLORS;
     let frame = face_frame(e, it.face);
     let along_x = it.w >= it.h;
     let (len, width) = if along_x { (it.w, it.h) } else { (it.h, it.w) };
-    let t = 2.0f32.min(width / 4.0).min(it.d / 4.0);
-    let (rim, top) = ((it.d * 0.25).max(t), it.d - 2.5f32.min(it.d / 4.0));
+    let (rim, top, t) = duct_walls(it);
     let mut out = Vec::new();
     // A box from ranges along, across and above the face.
     let mut add = |a: (f32, f32), c: (f32, f32), z: (f32, f32), color: [u8; 3], finger: bool| {
@@ -788,15 +795,38 @@ pub fn duct_boxes(e: &Enclosure, it: &PanelItem, cover: bool) -> Vec<((V3, V3), 
         let q = in_frame(&frame, [it.x + x.1, it.y + y.1, it.z + z.1]);
         out.push((([0, 1, 2].map(|k| p[k].min(q[k])), [0, 1, 2].map(|k| p[k].max(q[k]))), color, finger));
     };
+    // Where other ducts join: the stretch along the duct and which of its walls (the
+    // one at across 0, the one at `width`) they open.
+    let (a0, c0) = if along_x { (it.x, it.y) } else { (it.y, it.x) };
+    let mut joins: Vec<(f32, f32, [bool; 2])> = Vec::new();
+    for o in e.items.iter().filter(|o| o.id != it.id && o.kind == ItemKind::Duct && o.face == it.face) {
+        let (lo, hi) = ([it.x.max(o.x - 1.0), it.y.max(o.y - 1.0)], [(it.x + it.w).min(o.x + o.w + 1.0), (it.y + it.h).min(o.y + o.h + 1.0)]);
+        if lo[0] >= hi[0] || lo[1] >= hi[1] {
+            continue;
+        }
+        let (along, across) = if along_x { ((lo[0], hi[0]), (lo[1], hi[1])) } else { ((lo[1], hi[1]), (lo[0], hi[0])) };
+        joins.push((along.0 - a0, along.1 - a0, [across.0 - c0 <= t + 0.5, across.1 - c0 >= width - t - 0.5]));
+    }
     add((0.0, len), (0.0, width), (0.0, t), wall, false);
     // Fingers about every 12.5 mm with the slots between them, one at each end.
     let finger = 6.0f32.min(len);
     let n = ((len - finger) / 12.5).floor().max(0.0) as usize + 1;
     let step = if n > 1 { (len - finger) / (n - 1) as f32 } else { 0.0 };
-    for c in [(0.0, t), (width - t, width)] {
-        add((0.0, len), c, (t, rim), wall, false);
+    for (side, c) in [(0.0, t), (width - t, width)].into_iter().enumerate() {
+        let cuts: Vec<(f32, f32)> = joins.iter().filter(|j| j.2[side]).map(|j| (j.0, j.1)).collect();
+        // The closed rim, in pieces between the joins.
+        let mut pieces: Vec<(f32, f32)> = vec![(0.0, len)];
+        for &(s0, s1) in &cuts {
+            pieces = pieces.into_iter().flat_map(|(a, b)| [(a, b.min(s0)), (a.max(s1), b)]).filter(|(a, b)| b - a > 0.01).collect();
+        }
+        for (a, b) in pieces {
+            add((a, b), c, (t, rim), wall, false);
+        }
         for i in 0..n {
             let a = i as f32 * step;
+            if cuts.iter().any(|&(s0, s1)| a + finger > s0 && a < s1) {
+                continue;
+            }
             add((a, a + finger), c, (rim, top), wall, true);
         }
     }
@@ -984,6 +1014,13 @@ pub fn place_device_on(prj: &mut Project, enc: usize, tag: &str, at: P, face: Fa
 /// Technical value of a part as a number ("Outside: 25" → 25).
 pub fn tech_number(part: &crate::parts::Part, name: &str) -> Option<f32> {
     part.data_value(name)?.trim().trim_end_matches("mm").trim().replace(',', ".").parse().ok()
+}
+
+/// Clamping range of a cable gland part in mm (technical data "Clamping range min" /
+/// "max"), from the project's parts or the catalog.
+pub fn clamping_range(prj: &Project, part: &str) -> Option<(f32, f32)> {
+    let p = prj.parts.iter().chain(crate::parts::catalog()).find(|p| p.number == part)?;
+    Some((tech_number(p, "Clamping range min")?, tech_number(p, "Clamping range max")?))
 }
 
 /// Faces an accessory can be mounted on (part data `Faces: Left, Right`); all faces
@@ -1784,7 +1821,10 @@ pub fn door_path(e: &Enclosure, at: V3, route: &Route, plate: V3) -> (Vec<V3>, u
     pts.extend(route.points.iter().map(|q| [q.x, q.y, bundle]));
     let hinge = pts.last().copied().unwrap_or(at);
     let n = pts.len();
+    // Down beside the hinge, clear of the cable duct along the plate's edge, then
+    // straight into the duct through its wall.
     pts.push([hinge[0], plate[1], e.depth - 3.0 * DOOR_BUNDLE]);
+    pts.push([hinge[0], plate[1], plate[2]]);
     pts.push(plate);
     (pts, n)
 }

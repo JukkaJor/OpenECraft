@@ -475,6 +475,14 @@ pub fn connections(prj: &Project, nl: &Netlist, open: &Netlist) -> Vec<Connectio
         let wires = crate::wirenum::wires_of(prj, net);
         let props = crate::potentials::props_of(prj, nl, net);
         let (color, cross_section) = (props.color, props.cross_section);
+        // A wire drawn with a cross-section of its own at a connection point (a tap off
+        // the bars of a busbar) gives it to the connection there: the thinner one where
+        // both ends have one.
+        let at_pin = |p: PinRef| -> Option<String> {
+            let s = &prj.pages[p.page].symbols[p.sym];
+            let q = prj.symbol(&s.sym)?.pin_world(p.pin, s.pos, s.rot, s.mirror);
+            prj.pages[p.page].wires.iter().find(|w| !w.cross_section.is_empty() && (w.a.same(q) || w.b.same(q)) && net.wires.contains(&(p.page, w.id))).map(|w| w.cross_section.clone())
+        };
         let (cable, core) = wires.iter().find(|w| !w.cable.is_empty()).map(|w| (w.cable.clone(), w.core.clone())).unwrap_or_default();
         let number = crate::wirenum::number_of(prj, net);
         let first = pins[0];
@@ -490,7 +498,7 @@ pub fn connections(prj: &Project, nl: &Netlist, open: &Netlist) -> Vec<Connectio
                 a: pair[0],
                 b: pair[1],
                 color: color.clone(),
-                cross_section: cross_section.clone(),
+                cross_section: [pair[0], pair[1]].into_iter().filter_map(at_pin).min_by(|a, b| crate::harness::outer_diameter(a).total_cmp(&crate::harness::outer_diameter(b))).unwrap_or_else(|| cross_section.clone()),
                 number: number.clone(),
                 cable: cable.clone(),
                 core: core.clone(),

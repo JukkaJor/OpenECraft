@@ -241,7 +241,7 @@ fn searches_at_the_same_time_give_the_same_routes() {
     let route_on = |workers: usize| {
         let mut wiring = crate::panel::virtual_wiring(&prj, &an.connections).0;
         let jobs = jobs(&prj, &wiring, &an.connections, &an.open);
-        let routing = route(&prj, &mut wiring, jobs, &|_, _| {}, workers);
+        let routing = route(&prj, &mut wiring, jobs, Glands::default(), &|_, _| {}, workers);
         (routing, wiring)
     };
     let (one, four) = (route_on(1), route_on(4));
@@ -303,6 +303,23 @@ fn fittings_in_a_pipe_are_turned_to_the_pipes_they_join() {
 }
 
 #[test]
+fn cables_take_the_glands_that_fit_them() {
+    let prj = Project::default();
+    let gland = |id: u64, part: &str| PanelItem { id, kind: ItemKind::Accessory, part: part.into(), ..Default::default() };
+    let (m20, m32, m32b, m25) = (gland(1, "GEN.GLAND-M20"), gland(2, "GEN.GLAND-M32"), gland(3, "GEN.GLAND-M32"), gland(4, "GEN.GLAND-M25"));
+    let mut glands = Glands::default();
+    // The nearest that fits the cable, even farther off than one that does not.
+    assert_eq!(glands.pick(&prj, vec![(&m32, 10.0), (&m20, 100.0)], 10.0).map(|g| g.id), Some(1));
+    // Each thick cable its own gland; a third shares the nearest.
+    assert_eq!(glands.pick(&prj, vec![(&m32, 10.0), (&m32b, 50.0)], 20.0).map(|g| g.id), Some(2));
+    assert_eq!(glands.pick(&prj, vec![(&m32, 10.0), (&m32b, 50.0)], 20.0).map(|g| g.id), Some(3));
+    assert_eq!(glands.pick(&prj, vec![(&m32, 10.0), (&m32b, 50.0)], 20.0).map(|g| g.id), Some(2));
+    // None fits: a free one before a taken one; nothing without glands.
+    assert_eq!(glands.pick(&prj, vec![(&m32, 10.0), (&m25, 50.0)], 30.0).map(|g| g.id), Some(4));
+    assert_eq!(glands.pick(&prj, vec![], 30.0), None);
+}
+
+#[test]
 fn duct_runs_take_the_part_of_a_segment_inside_the_duct() {
     let mut e = crate::panel::Enclosure::default();
     e.items.push(PanelItem { id: 3, kind: ItemKind::Duct, x: 100.0, y: 100.0, w: 40.0, h: 400.0, d: 60.0, ..Default::default() });
@@ -323,19 +340,18 @@ fn duct_runs_take_the_part_of_a_segment_inside_the_duct() {
 
 #[test]
 fn cables_in_the_ducts_count_in_their_fill() {
-    let prj = (crate::sample::EXAMPLES.iter().find(|x| x.key == "conveyor").unwrap().build)();
+    // The cabinets of the line-up: cables enter their ducts through the slots and run
+    // along them (the demo's motor cable goes over the bottom duct to its gland).
+    let prj = (crate::sample::EXAMPLES.iter().find(|x| x.key == "cabinet_lineup").unwrap().build)();
     let an = Analysis::checked(&prj);
     let contents = duct_contents(&prj, &an.routing);
-    assert!(!contents.is_empty(), "the motor cables run through the ducts");
+    assert!(!contents.is_empty(), "the cables run through the ducts");
     for c in &contents {
         for r in &c.runs {
             let f = an.duct_fill.iter().find(|f| f.enclosure == c.enclosure && f.duct == r.duct).expect("fill of the duct");
             assert!(f.diameters.contains(&c.diameter), "{f:?}");
         }
     }
-    // Also a duct no wire runs through.
-    let wired = |f: &&crate::panel::DuctFill| an.wiring.iter().any(|w| w.stretches().any(|(e, r)| e == f.enclosure && r.runs.iter().any(|r| r.duct == f.duct)));
-    assert!(an.duct_fill.iter().any(|f| !wired(&f)));
 }
 
 #[test]

@@ -40,11 +40,12 @@ pub(super) fn project() -> Project {
     }
     drive(&mut prj, r, "=P1+ER1-GP1", "=P1+FLD-M1", 62.0);
     // Front wall (seen from inside its left end is at x 6000): the valves and the gauge
-    // about 1.4 m above the floor beside the door, the pipe run past them in front.
-    for (what, x, y) in [("=P1+ER1-QM1", 3300.0, 1500.0), ("=P1+ER1-QM2", 2500.0, 1500.0), ("=P1+ER1-BP1", 2000.0, 1500.0)] {
+    // about 1.4 m above the floor beside the door, clear of the corner of the room (the
+    // pipes leave them straight for their bend radius), the pipe run past them in front.
+    for (what, x, y) in [("=P1+ER1-QM1", 3000.0, 1500.0), ("=P1+ER1-QM2", 2300.0, 1500.0), ("=P1+ER1-BP1", 1800.0, 1500.0)] {
         panel::mount_on_wall(&mut prj, r, what, Face::Wall(2), p(x, y)).expect("pump room");
     }
-    panel::add_pipe_run(&mut prj, r, Face::Wall(2), &[p(1700.0, 1560.0), p(3500.0, 1560.0)], Some(200.0), None, Some("PR1")).expect("pump room");
+    panel::add_pipe_run(&mut prj, r, Face::Wall(2), &[p(1700.0, 1560.0), p(3300.0, 1560.0)], Some(200.0), None, Some("PR1")).expect("pump room");
     // The motor cables leave the cabinets through glands in their roofs.
     panel::place_accessory(&mut prj, 0, "GEN.GLAND-M20", Face::Roof, p(680.0, 250.0));
     panel::place_accessory(&mut prj, 1, "GEN.GLAND-M20", Face::Roof, p(300.0, 250.0));

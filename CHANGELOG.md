@@ -101,6 +101,56 @@ with a command line, an MCP server, a parts server and a project server.
   in the direction of their connection points and run round the rows of devices instead of behind or
   through them; wires leave their own devices over them, not through them. Wires, cables and pipes
   laid side by side are pushed at most a few times their thickness from their routes.
+  The 3D routing measures the room around a route from the devices, walls, mounting
+  plate, door and room walls themselves (thin busbars and rails between the cells of its
+  grid included), so cables and pipes keep half their thickness from all of them, and
+  from each other, everywhere: a route that cannot is not routed, and the project check
+  reports it as an error that says to move its ends or make room for it. A route leaves
+  its device, cable gland, nozzle or wall penetration straight on for its bend radius,
+  runs two radii between two bends (the arcs of both fit between), turns only where its
+  arc keeps clear of everything too, changes lanes with an S-bend (checked and drawn as
+  one), and near its ends converges with the routes to the same end; the thickest cables
+  of a class are routed first. In a cabinet a cable enters and leaves a cable duct through
+  the slots of its walls, never through its base or its cover, lies in a duct over the rim
+  of its walls and under its cover, and keeps half its thickness off the ducts it runs
+  along outside them; in a 19-inch rack cables run along the space beside the mounting
+  rails and leave it for their devices; in a room, running through the open space costs
+  the more the farther from its surfaces, so cables and pipes keep close to the ceiling
+  and the walls. The 3D view holds wires and cables in that band of a duct where they
+  cross its walls (and leaves out the fingers they pass), cuts a duct's walls where
+  another duct joins it, and brings a wire down before the next duct instead of into it
+  through its cover, down beside the hinge of the door before the duct along the plate's
+  edge, and straight through a cable passage for its bend radius on both sides. A cable
+  takes the nearest cable gland whose clamping range fits it and that no other cable
+  took, the thickest cables first, and a route whose way into its end runs beside it
+  changes lanes into it with an S-bend. A connection takes the cross-section of a wire
+  drawn with one at its connection point (a tap off a busbar) rather than the busbar's.
+  Every wire, cable and tube has a least bend radius, a multiple of its thickness from
+  the routing rules (wires and cables four times it, as laid fixed; hoses five times it
+  or their own; pipes one and a half times it, a long-radius elbow), shown in the route
+  and wire properties: the 3D view bends every corner with it, and corners too close for
+  separate arcs as one smooth curve no tighter than it where the stretches around
+  allow; wires through one cable passage pass it side by side, and two wires on one
+  terminal leave it side by side. The wires of a room are routed in 3D between the
+  devices on its walls (a room has no mounting plate to route them along); wires routed
+  in 3D keep apart from the cables and from each other like cables do, outside the ducts
+  and routing paths; cables and tubes are routed before the wires of a class; and a
+  route comes up to another near its end only where that route is near one of its ends
+  too (cables converging on one gland or terminal), not across its run. The 3D view
+  keeps the wires and cables out of the walls, bases and covers of the cable ducts
+  (crossing the walls where they are held above the rim), lays the cores of a cable
+  where they part as they are and the rest clear of them, joins the legs of a route at
+  a cable gland with the corner before it in line instead of a slanted run, and lets
+  the cables of a rack run behind its 19-inch panels. A test of the editor checks that
+  nothing drawn in the 3D views of the example projects clips anything: other wires,
+  cables and pipes (beyond the overlap the layout leaves where they are packed: a
+  millimetre and a half between wires, two and a half millimetres where a cable or pipe
+  is involved), the ducts with their covers, the devices, the walls, plates and doors of
+  the cabinets and the walls, floors and ceilings of the rooms. In the building example
+  the incoming terminals of the main distribution feed the busbar they are mounted on,
+  its feeder ducts are deeper, and the shunt sits between the first two Lynx
+  distributors on the technical room's wall. A device standing on the floor of a room
+  without connection points of its own is connected on top, where its terminal box is.
   Devices mounted on a busbar system are connected by its bars instead of wires. The title bar can show
   the frame time and the frames per second (Settings › Appearance). A placed device is shown in the
   panel layout or the 3D view from its context menu in the schematic. Pumps, tanks

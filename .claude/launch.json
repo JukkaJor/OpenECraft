@@ -14,6 +14,12 @@
       "port": 8081
     },
     {
+      "name": "web-release",
+      "runtimeExecutable": "trunk",
+      "runtimeArgs": ["serve", "--config", "openecraft/Trunk.toml", "--release", "--port", "8083", "--dist", "target/dist-release"],
+      "port": 8083
+    },
+    {
       "name": "parts-manager-web",
       "runtimeExecutable": "trunk",
       "runtimeArgs": ["serve", "--config", "parts-manager/Trunk.toml", "--port", "8082", "--dist", "target/dist-parts-manager"],

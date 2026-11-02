@@ -1919,6 +1919,12 @@ impl PanelUi {
                 ui.label(format!("{} {}", w.color, w.cross_section));
                 ui.end_row();
             }
+            if !w.cross_section.is_empty() {
+                let diameter = openecraft_core::harness::outer_diameter(&w.cross_section);
+                ui.label(tr("Min. bend radius"));
+                ui.label(format!("{:.0} mm", prj.layout.routing.bend_radius(openecraft_core::routing3d::RouteKind::Wire, diameter)));
+                ui.end_row();
+            }
         });
         ui.label(
             RichText::new(tr_fmt!(

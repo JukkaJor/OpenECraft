@@ -694,12 +694,15 @@ pub struct WallLink {
     pub b: V3,
     /// Length of the way from `a` to `b` through the wall, mm.
     pub length: f32,
+    /// The directions the way leaves `a` into room `from` and `b` into room `to` in
+    /// (room coordinates of each): away from the wall.
+    pub leave: [V3; 2],
 }
 
 impl WallLink {
     /// The same way the other way round.
     pub fn reversed(&self) -> WallLink {
-        WallLink { from: self.to, to: self.from, a: self.b, b: self.a, ..*self }
+        WallLink { from: self.to, to: self.from, a: self.b, b: self.a, leave: [self.leave[1], self.leave[0]], ..*self }
     }
 }
 
@@ -732,7 +735,8 @@ pub fn penetration_link(prj: &Project, poses: &[SitePose], ri: usize, it: &Panel
             if l[1] > 0.0 && l[1] < t.height && inside_outline(&outline(t), [l[0], l[2]]) {
                 let dir = poses[k].unturn(out);
                 let b = [l[0] + dir[0] * PASS_OUT, l[1], l[2] + dir[2] * PASS_OUT];
-                return Some(WallLink { from: ri, item: it.id, to: k, a: at(PASS_OUT), b, length: d + 2.0 * PASS_OUT });
+                let leave = [[n[0], 0.0, n[1]], [dir[0], 0.0, dir[2]]];
+                return Some(WallLink { from: ri, item: it.id, to: k, a: at(PASS_OUT), b, length: d + 2.0 * PASS_OUT, leave });
             }
         }
         d += 5.0;
@@ -752,6 +756,13 @@ pub fn entry_point(e: &Enclosure, it: &PanelItem) -> Option<V3> {
     let (s, r, n) = (w.start(), w.right(), w.normal);
     let along = it.x + it.w / 2.0;
     Some([s[0] + r[0] * along + n[0] * PASS_OUT, it.y + it.h / 2.0, s[1] + r[1] * along + n[1] * PASS_OUT])
+}
+
+/// The direction into the room away from the wall an opening (a building entry) is
+/// in (room coordinates).
+pub fn entry_direction(e: &Enclosure, it: &PanelItem) -> Option<V3> {
+    let n = side(e, it.face)?.normal;
+    Some([n[0], 0.0, n[1]])
 }
 
 /// The ways through the walls of the layout: one for every wall penetration that

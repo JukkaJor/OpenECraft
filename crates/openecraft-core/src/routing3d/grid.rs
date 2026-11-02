@@ -4,21 +4,29 @@
 //! the walls, by devices, rails, busbars and accessories (with a clearance) and by
 //! keep-out reservations. Cable ducts and routing paths are channels: the way through
 //! them is cheaper than through free air; a cable too thick for a duct keeps out of it,
-//! and a stretch of a duct it would fill above the fill limit costs more.
-//! A route keeps half its thickness from what blocks the cells; a turn where its bend
-//! (rounded with the bend radius) would not keep clear of them costs more. Cables and
-//! tubes keep apart from the ones routed before them by their thicknesses: none runs
-//! inside another in free air (in a duct or routing path they lie side by side, but
-//! where they come up to their ends). Walls between
-//! bayed enclosures are crossed at cable passages only.
+//! one that fits enters and leaves the ducts of a cabinet through the slots of their
+//! walls (never through their base or cover) and keeps off their walls outside them.
+//! A stretch of a duct it would fill above the fill limit costs more.
+//! The room around every cell is measured from what blocks the space (its boxes and
+//! walls themselves, not the cells they block): a route keeps half its thickness from
+//! all of it but the items at its ends (near its ends the clearance round the items
+//! does not count, the items do). It turns only where its bend, rounded with the bend
+//! radius, keeps clear too. A route leaves each of its ends straight on, as far as its
+//! bend radius, and between two of its bends it runs straight for two radii (the arcs
+//! of both fit between them); a lane change with an S-bend is free of that. Where there
+//! is no way like that, there is no route.
+//! Cables and tubes keep apart from the ones routed before them by their thicknesses:
+//! none runs inside another in free air (in a duct or routing path they lie side by
+//! side, but where they come up to their ends). Walls between bayed enclosures are
+//! crossed at cable passages only.
 
 use super::{Class, PathKind, ReserveMode, RouteKind, RoutingRules};
 use crate::model::Project;
 use crate::panel::{self, Enclosure, ItemKind, PLATE_Z};
-use crate::parts::vec3::{add, dist, sub, V3};
+use crate::parts::vec3::{add, dist, scale, sub, V3};
 use std::cell::RefCell;
 use std::cmp::Reverse;
-use std::collections::BinaryHeap;
+use std::collections::{BinaryHeap, HashMap};
 
 /// Cell blocked by a wall, the outside or a keep-out reservation.
 const WALL: u8 = 2;
@@ -33,28 +41,34 @@ const MAX_CELLS: usize = 1_500_000;
 /// Cost factor of a horizontal step in the open space of a room (see
 /// [`Space::mark_open`]).
 const OPEN: f32 = 10.0;
-/// Cells of room measured around the blocked ones (see [`Space::measure`]).
-const ROOM: u8 = 8;
+/// How far (mm, at least [`ROOM_CELLS`] cells) the room around the cells is measured
+/// (see [`Space::measure`]): farther from everything a cell has room for anything.
+const ROOM_CAP: f32 = 300.0;
+const ROOM_CELLS: f32 = 8.0;
 /// How far a bend of radius r rounding a right-angled corner lies inside it: (√2 − 1) r.
 pub const CORNER_CUT: f32 = std::f32::consts::SQRT_2 - 1.0;
-/// Extra cost of a turn without room for its bend, in turns.
-const TIGHT: f32 = 4.0;
 /// Most cells whose costs to the goal a search keeps for searching again.
 const KEEP_COSTS: usize = 400_000;
+/// Cells looked at along the way out of an end for the cell the route leaves it in.
+const LEAD_CELLS: usize = 4;
+/// Edge (mm) of the coarse cells the solids are listed by ([`Space::point_clear`]), and
+/// how far (mm) round a solid it is listed: the thickest route that is checked exactly.
+const SOLID_CELL: f32 = 100.0;
+const SOLID_REACH: f32 = 64.0;
+
+/// How a cell can be passed: not at all, or freely (with half the thickness of room).
+const NO: u8 = 0;
+const FREE: u8 = 2;
 
 /// The costs to the goal a search worked out (the cells known with their costs, the
-/// highest), to search the same way again (the same start and goal, the same channels
-/// full) without working them out.
+/// highest), to search the same way again (the same channels full) without working
+/// them out: to a goal nearby as well, less the cost from it to this one.
 #[derive(Clone, Debug, PartialEq)]
 pub struct GoalCosts {
-    start: usize,
     goal: usize,
     cells: Vec<(u32, f32)>,
     reach: f32,
 }
-/// How far (mm) beyond half its thickness a route keeps the cells of the ones routed
-/// after it: up to half the thickness of the thickest of them.
-const REACH: f32 = 30.0;
 
 /// A routing path in the grid and what runs through it.
 #[derive(Clone, Debug, PartialEq)]
@@ -68,6 +82,9 @@ pub struct PathCells {
     pub capacity: f32,
     pub used: f32,
     pub items: usize,
+    /// Not a routing path of the layout: the cable way of a 19-inch rack beside its
+    /// mounting rails.
+    pub implied: bool,
 }
 
 /// A stretch of a cable duct one cell long: the cross-section the fill limit allows in
@@ -87,15 +104,49 @@ struct Crossing {
     z: [f32; 2],
 }
 
+/// What blocks the space, to measure the room around the cells: a box (an item with
+/// its clearance, a keep-out, a wall, a cabinet standing in a room) with the item it is
+/// (0 for none), or the walls, the ceiling and the floor of a room (its floor plan at
+/// an origin, the room's height).
+#[derive(Clone, Debug, PartialEq)]
+enum Solid {
+    Box { lo: V3, hi: V3, owner: u64 },
+    Room { plan: Vec<[f32; 2]>, origin: V3, height: f32 },
+}
+
+/// A cable duct of a cabinet: its box, the axis it runs along, and the heights above
+/// its base of the closed rim of its slotted walls and of their top (its cover lies on
+/// them). A route outside it keeps off it, one enters and leaves it through its walls
+/// between the rim and the top, never through its base or its cover.
+#[derive(Clone, Debug, PartialEq)]
+struct DuctBox {
+    lo: V3,
+    hi: V3,
+    axis: usize,
+    /// Heights above the bottom of the box: of the top of its base, of the rim of its
+    /// walls and of the underside of its cover.
+    base: f32,
+    rim: f32,
+    top: f32,
+}
+
 /// What is routed.
 #[derive(Clone, Copy, Debug)]
 pub struct Request<'a> {
     pub kind: RouteKind,
     pub class: Class,
-    /// Items the ends are at: their cells are passable, those of the items themselves
-    /// only near the start and the end `at` (a route leaves a device, not runs through it).
+    /// Items the ends are at: their cells are passable and the room they take does not
+    /// count, those of the items themselves only near the start and the end `at` (a
+    /// route leaves a device, not runs through it).
     pub ignore: &'a [u64],
     pub at: [V3; 2],
+    /// The direction the route leaves each end in (a unit vector along an axis; zero
+    /// where it may leave any way): it runs straight out of the end, as far as half its
+    /// bend radius where it can, before it bends.
+    pub leave: [V3; 2],
+    /// How far the route runs straight already before each end point (out of the
+    /// nozzle of a device), mm.
+    pub out: [f32; 2],
     /// Cross-section in mm² (capacity of the paths).
     pub area: f32,
     /// Extra cost of a turn (mm), from the bend radius.
@@ -114,24 +165,61 @@ pub struct Way {
     pub free: f32,
 }
 
+/// Where a run ends and what its cells cost, `None` where it is blocked.
+type RunEnd = Option<(usize, f32)>;
+
+/// Where a search begins and ends: the cells from the one the route leaves its start
+/// in to the one the search begins at (straight out of the start), the direction it
+/// heads there (6: none), the cells from the one the search ends at to the one the
+/// route arrives at its end in (straight into the end) and the direction it heads
+/// along them (6: none).
+struct Ends {
+    lead_in: Vec<usize>,
+    dir: usize,
+    lead_out: Vec<usize>,
+    arrive: usize,
+}
+
 pub struct Space {
     pub origin: V3,
     pub cell: f32,
     pub n: [usize; 3],
+    /// The clearance the items were grown by ([`RoutingRules::clearance`]).
+    clearance: f32,
     block: Vec<u8>,
     owner: Vec<u64>,
     /// Inner size (mm) of the cable duct a cell lies in, 0 for none.
     duct: Vec<f32>,
+    /// The cable duct of a cabinet a cell lies in (index + 1 into `ducts`, 0 for none).
+    duct_of: Vec<u16>,
+    ducts: Vec<DuctBox>,
+    /// Room (mm) from the centre of each cell outside the cable ducts of the cabinets
+    /// to the nearest of them (index + 1, 0 for none within reach); empty until
+    /// [`Space::measure`].
+    duct_room: Vec<(f32, u16)>,
     /// Stretch of a cable duct a cell lies in: index + 1 into `sections`, 0 for none.
     section: Vec<u32>,
     sections: Vec<Section>,
-    /// Cells from each cell to the nearest blocked one (at most [`ROOM`]); empty until
-    /// [`Space::measure`]: room everywhere.
-    room: Vec<u8>,
+    /// What blocks the space, until [`Space::measure`].
+    solids: Vec<Solid>,
+    /// The boxes of `solids` (indices) within [`SOLID_REACH`] of each coarse cell of
+    /// [`SOLID_CELL`] mm, for the room at points between the centres of the cells;
+    /// filled by [`Space::measure`].
+    solid_cells: HashMap<[i32; 3], Vec<u32>>,
+    /// Room (mm) from the centre of each cell to the nearest solid, which item that is
+    /// (index + 1 into `owners`, 0 for none) and the room to the nearest solid of
+    /// another item; empty until [`Space::measure`]: room everywhere.
+    room: Vec<f32>,
+    room_owner: Vec<u32>,
+    room_other: Vec<f32>,
+    owners: Vec<u64>,
     /// How far the cables and tubes routed through the space reach into each cell: the
     /// largest half thickness less the distance from its middle line (see
     /// [`Space::take`]).
     taken: Vec<f32>,
+    /// Every route that took the cell was near one of its own ends there: routes
+    /// converge there with the routes to the same end ([`Space::apart`]).
+    taken_end: Vec<bool>,
     /// Routing path of a cell: index + 1 into `paths`, 0 for none.
     path: Vec<u16>,
     /// Classes a reservation keeps the cell for (bits); 0: any.
@@ -145,8 +233,10 @@ pub struct Space {
     /// Enclosure of each cell column along x (index into the layout), `usize::MAX`
     /// outside.
     column: Vec<usize>,
-    /// Cells in the open space of a room, away from its surfaces; empty in a line-up.
-    open: Vec<bool>,
+    /// How far (in cells) each cell of a room lies from its surfaces, `open_cells` + 1
+    /// at most (see [`Space::mark_open`]); empty in a line-up.
+    open: Vec<u8>,
+    open_cells: u32,
 }
 
 thread_local! {
@@ -172,6 +262,37 @@ struct Search {
     to_goal: Vec<f32>,
     reached: Vec<u32>,
     settled: Vec<u32>,
+    /// The run out of each cell in each direction (cell × 6): where it ends
+    /// (`u32::MAX`: blocked) and what it costs, where `run_stamp` is the search's.
+    runs: Vec<(u32, f32)>,
+    run_stamp: Vec<u32>,
+    /// What a step into each cell costs for the request, up or down and along the
+    /// other axes, and how it can be passed ([`NO`]: not at all), where `pass_stamp`
+    /// is the search's.
+    pass: Vec<(f32, f32, u8)>,
+    pass_stamp: Vec<u32>,
+    /// Which turns at each cell are known (bit from × 6 + to) and which of them have
+    /// room for their bend, where `turn_stamp` is the search's.
+    turn_known: Vec<u64>,
+    turn_ok: Vec<u64>,
+    turn_stamp: Vec<u32>,
+    /// Which lane changes (cell, direction come in, direction aside, cells aside) have
+    /// room for their S-bend.
+    jogs: HashMap<(u32, u8, u8, u8), bool>,
+    run: u32,
+}
+
+/// The memos of a search: what the steps into the cells cost, the runs out of them and
+/// the turns in them.
+struct Memo<'a> {
+    pass: &'a mut [(f32, f32, u8)],
+    pass_stamp: &'a mut [u32],
+    runs: &'a mut [(u32, f32)],
+    run_stamp: &'a mut [u32],
+    turn_known: &'a mut [u64],
+    turn_ok: &'a mut [u64],
+    turn_stamp: &'a mut [u32],
+    jogs: &'a mut HashMap<(u32, u8, u8, u8), bool>,
     run: u32,
 }
 
@@ -186,12 +307,21 @@ impl Search {
                 to_goal: vec![f32::INFINITY; cells],
                 reached: vec![0; cells],
                 settled: vec![0; cells],
+                runs: vec![(u32::MAX, 0.0); cells * 6],
+                run_stamp: vec![0; cells * 6],
+                pass: vec![(-1.0, -1.0, NO); cells],
+                pass_stamp: vec![0; cells],
+                turn_known: vec![0; cells],
+                turn_ok: vec![0; cells],
+                turn_stamp: vec![0; cells],
+                jogs: HashMap::new(),
                 run: 0,
             };
         }
+        self.jogs.clear();
         self.run = self.run.wrapping_add(1);
         if self.run == 0 {
-            for v in [&mut self.stamp, &mut self.reached, &mut self.settled] {
+            for v in [&mut self.stamp, &mut self.reached, &mut self.settled, &mut self.run_stamp, &mut self.pass_stamp, &mut self.turn_stamp] {
                 v.fill(0);
             }
             self.run = 1;
@@ -215,13 +345,23 @@ impl Space {
             origin: min,
             cell,
             n,
+            clearance: 0.0,
             block: vec![WALL; total],
             owner: vec![0; total],
             duct: vec![0.0; total],
+            duct_of: vec![0; total],
+            ducts: Vec::new(),
+            duct_room: Vec::new(),
+            solids: Vec::new(),
+            solid_cells: HashMap::new(),
             section: vec![0; total],
             sections: Vec::new(),
             room: Vec::new(),
+            room_owner: Vec::new(),
+            room_other: Vec::new(),
+            owners: Vec::new(),
             taken: vec![f32::NEG_INFINITY; total],
+            taken_end: vec![true; total],
             path: vec![0; total],
             reserved: vec![0; total],
             occ: vec![0; total],
@@ -230,15 +370,17 @@ impl Space {
             crossings: Vec::new(),
             column: vec![usize::MAX; n[0]],
             open: Vec::new(),
+            open_cells: 0,
         }
     }
 
-    /// Marks the free cells farther than `distance` from the walls, the ceiling (the
-    /// top of the grid) and the items standing or hanging in the room as its open
-    /// space: running through it horizontally costs more, so pipes and cables keep to
-    /// the walls and the ceiling and drop straight to a device standing in the room.
+    /// Measures how far (in cells) the free cells lie from the walls, the ceiling (the
+    /// top of the grid) and the items standing or hanging in the room, up to `distance`:
+    /// running through the room horizontally costs the more the farther from them (see
+    /// [`Space::open_factor`]), so pipes and cables keep to the walls and the ceiling
+    /// and drop straight to a device standing in the room.
     pub(super) fn mark_open(&mut self, distance: f32) {
-        let k = (distance / self.cell).ceil() as u32;
+        let k = ((distance / self.cell).ceil() as u32).clamp(1, 200);
         let total = self.block.len();
         let mut dist = vec![u32::MAX; total];
         let mut queue = std::collections::VecDeque::new();
@@ -253,30 +395,16 @@ impl Space {
             if d >= k {
                 continue;
             }
-            let c = self.coords(idx);
-            for axis in 0..3 {
-                for up in [false, true] {
-                    let mut nc = c;
-                    if up {
-                        if c[axis] + 1 >= self.n[axis] {
-                            continue;
-                        }
-                        nc[axis] += 1;
-                    } else {
-                        if c[axis] == 0 {
-                            continue;
-                        }
-                        nc[axis] -= 1;
-                    }
-                    let ni = self.index(nc);
-                    if dist[ni] == u32::MAX {
-                        dist[ni] = d + 1;
-                        queue.push_back(ni);
-                    }
+            for nd in 0..6 {
+                let Some(ni) = self.step(idx, nd) else { continue };
+                if dist[ni] == u32::MAX {
+                    dist[ni] = d + 1;
+                    queue.push_back(ni);
                 }
             }
         }
-        self.open = dist.into_iter().map(|d| d == u32::MAX).collect();
+        self.open = dist.into_iter().map(|d| d.min(k + 1) as u8).collect();
+        self.open_cells = k;
     }
 
     /// The grid of a line-up (`pos`: [`panel::positions`]).
@@ -295,6 +423,7 @@ impl Space {
             (min, max) = ([0.0; 3], [1.0; 3]);
         }
         let mut s = Space::empty(min, max, rules.grid);
+        s.clearance = rules.clearance.max(0.0);
         let (n, total, cell) = (s.n, s.block.len(), s.cell);
         for i in 0..n[0] {
             let x = s.origin[0] + (i as f32 + 0.5) * cell;
@@ -316,12 +445,20 @@ impl Space {
         }
         for &k in lineup {
             s.add_enclosure(&encs[k], k, pos[k], rules, prj.layout.duct_fill_limit);
+            if panel::is_rack(&encs[k]) {
+                s.add_rack_ways(&encs[k], k, pos[k]);
+            }
         }
+        let mut passages: Vec<panel::Passage> = Vec::new();
         for w in lineup.windows(2) {
             for x in panel::passages(&prj.layout, pos, w[0]) {
                 let (y, z) = ([x.at[1] - x.half[0], x.at[1] + x.half[0]], [x.at[2] - x.half[1], x.at[2] + x.half[1]]);
                 s.crossings.push(Crossing { x: x.at[0], y, z });
+                passages.push(x);
             }
+        }
+        for &k in lineup {
+            s.add_walls(&encs[k], pos[k], &passages);
         }
         s.measure();
         s
@@ -338,7 +475,7 @@ impl Space {
             match it.kind {
                 ItemKind::Device | ItemKind::Rail | ItemKind::Busbar | ItemKind::Accessory => {
                     let around = shift(panel::item_box(e, it), rules.clearance);
-                    for idx in self.cells_in(around) {
+                    for idx in self.cells_in(self.widened(around)) {
                         if self.block[idx] == 0 {
                             self.block[idx] = ITEM;
                             self.owner[idx] = it.id;
@@ -349,21 +486,32 @@ impl Space {
                             self.block[idx] = BODY;
                         }
                     }
+                    self.solids.push(Solid::Box { lo: around.0, hi: around.1, owner: it.id });
                 }
                 ItemKind::Duct if it.face == panel::Face::Plate || e.is_room() => {
                     // Its inside: across and as deep as it is, less its walls.
                     let size = (it.w.min(it.h).min(it.d) - 4.0).max(1.0);
-                    let cells = self.cells_in(bx);
-                    // Its stretches along it, one cell long.
+                    let cells = self.cells_in(self.widened(bx));
+                    cells.iter().for_each(|&idx| self.duct[idx] = size);
+                    // Its stretches along it, one cell long, for the fill limit (the cells
+                    // inside it, not those beside it that reach into it).
+                    let inner = self.cells_in(bx);
                     let axis = (0..3).max_by(|&a, &b| (bx.1[a] - bx.0[a]).total_cmp(&(bx.1[b] - bx.0[b]))).unwrap_or(0);
-                    let first = cells.iter().map(|&i| self.coords(i)[axis]).min().unwrap_or(0);
-                    let last = cells.iter().map(|&i| self.coords(i)[axis]).max().unwrap_or(0);
+                    let first = inner.iter().map(|&i| self.coords(i)[axis]).min().unwrap_or(0);
+                    let last = inner.iter().map(|&i| self.coords(i)[axis]).max().unwrap_or(0);
                     let base = self.sections.len();
                     let capacity = panel::duct_capacity(it) * limit / 100.0;
                     self.sections.extend((first..=last).map(|_| Section { capacity, used: 0.0 }));
-                    for idx in cells {
-                        self.duct[idx] = size;
+                    for idx in inner {
                         self.section[idx] = (base + self.coords(idx)[axis] - first) as u32 + 1;
+                    }
+                    // In a cabinet its walls bound the routes outside it and the ways
+                    // into it (a tray in a room is open).
+                    if !e.is_room() {
+                        let (rim, top, base) = panel::duct_walls(it);
+                        self.ducts.push(DuctBox { lo: bx.0, hi: bx.1, axis: usize::from(it.w < it.h), base, rim, top });
+                        let mark = self.ducts.len() as u16;
+                        cells.iter().for_each(|&idx| self.duct_of[idx] = mark);
                     }
                 }
                 _ => {}
@@ -371,10 +519,12 @@ impl Space {
         }
         for r in &e.reservations {
             let bx = shift((r.min, r.max), 0.0);
-            for idx in self.cells_in(bx) {
-                match r.mode {
-                    ReserveMode::Keepout => self.block[idx] = WALL,
-                    ReserveMode::For(class) => self.reserved[idx] |= class.bit(),
+            match r.mode {
+                ReserveMode::Keepout => self.block_box(bx),
+                ReserveMode::For(class) => {
+                    for idx in self.cells_in(bx) {
+                        self.reserved[idx] |= class.bit();
+                    }
                 }
             }
         }
@@ -391,6 +541,7 @@ impl Space {
                 capacity: p.capacity(),
                 used: 0.0,
                 items: 0,
+                implied: false,
             });
             let mark = self.paths.len() as u16;
             // At least the cells around the centre line.
@@ -400,6 +551,52 @@ impl Space {
                     self.path[idx] = mark;
                 }
             }
+        }
+    }
+
+    /// The cable ways of a 19-inch rack `e` (at `o`): the space beside its mounting
+    /// rails from its front to its rear is a channel the routes run along, leaving it
+    /// for the devices in the rack; the rails themselves block the space.
+    fn add_rack_ways(&mut self, e: &Enclosure, k: usize, o: V3) {
+        let rails = panel::rack::rail_boxes(e);
+        let (l, r) = (rails.iter().map(|b| b.0[0]).fold(f32::INFINITY, f32::min), rails.iter().map(|b| b.1[0]).fold(f32::NEG_INFINITY, f32::max));
+        for (lo, hi) in rails {
+            self.block_box((add(lo, o), add(hi, o)));
+        }
+        let t = e.wall();
+        for (x0, x1) in [(t, l), (r, e.width - t)] {
+            if x1 <= x0 {
+                continue;
+            }
+            self.paths.push(PathCells { enclosure: k, id: 0, kind: PathKind::Any, classes: 0, capacity: 0.0, used: 0.0, items: 0, implied: true });
+            let mark = self.paths.len() as u16;
+            for idx in self.cells_in((add(o, [x0, t, PLATE_Z]), add(o, [x1, e.height - t, e.depth - t]))) {
+                if self.path[idx] == 0 {
+                    self.path[idx] = mark;
+                }
+            }
+        }
+    }
+
+    /// The walls of enclosure `e` (at `o`): its sides, roof and bottom, the mounting
+    /// plate with the rear wall and the door, the sides open at the cable `passages` to
+    /// the bayed neighbours.
+    fn add_walls(&mut self, e: &Enclosure, o: V3, passages: &[panel::Passage]) {
+        let (w, h, d, t) = (e.width, e.height, e.depth, e.wall());
+        let far = add(o, [w, h, d]);
+        let sides = [((o, [o[0] + t, far[1], far[2]]), o[0]), (([far[0] - t, o[1], o[2]], far), far[0])];
+        for (bx, x) in sides {
+            let openings: Vec<([f32; 2], [f32; 2])> = passages
+                .iter()
+                .filter(|p| (p.at[0] - x).abs() < 1.0)
+                .map(|p| ([p.at[1] - p.half[0], p.at[1] + p.half[0]], [p.at[2] - p.half[1], p.at[2] + p.half[1]]))
+                .collect();
+            for (lo, hi) in cut_openings(bx, &openings) {
+                self.solids.push(Solid::Box { lo, hi, owner: 0 });
+            }
+        }
+        for (lo, hi) in [(o, [far[0], o[1] + t, far[2]]), ([o[0], far[1] - t, o[2]], far), (o, [far[0], far[1], o[2] + PLATE_Z]), ([o[0], o[1], far[2] - t], far)] {
+            self.solids.push(Solid::Box { lo, hi, owner: 0 });
         }
     }
 
@@ -415,61 +612,189 @@ impl Space {
         }
     }
 
-    /// Measures the room around the blocked cells (once the space is complete): a cell
-    /// k cells from the nearest blocked one along every axis has `k` (the cube around it
-    /// of k - 1 cells is free).
+    /// The walls of a room with the floor `plan` (at `origin`, `height` high, y down
+    /// from the ceiling), its ceiling and its floor, to measure the room from.
+    pub(super) fn add_room(&mut self, plan: Vec<[f32; 2]>, origin: V3, height: f32) {
+        self.solids.push(Solid::Room { plan, origin, height });
+    }
+
+    /// How far the room around the cells is measured.
+    fn cap(&self) -> f32 {
+        ROOM_CAP.max(ROOM_CELLS * self.cell)
+    }
+
+    /// Measures the room around the cells (once the space is complete): from the
+    /// centre of each cell that is not a wall to the nearest of the solids, up to
+    /// [`Space::cap`], and to the nearest one of another item.
     pub(super) fn measure(&mut self) {
         let total = self.block.len();
-        let mut covered: Vec<bool> = self.block.iter().map(|&b| b != 0).collect();
-        let mut room: Vec<u8> = covered.iter().map(|&c| if c { 0 } else { ROOM }).collect();
-        let strides = [1, self.n[0], self.n[0] * self.n[1]];
-        for k in 1..ROOM {
-            for (&stride, &n) in strides.iter().zip(&self.n) {
-                let mut grown = covered.clone();
-                for idx in (0..total).filter(|&i| covered[i]) {
-                    let c = (idx / stride) % n;
-                    if c > 0 {
-                        grown[idx - stride] = true;
-                    }
-                    if c + 1 < n {
-                        grown[idx + stride] = true;
+        let cap = self.cap();
+        self.room = vec![cap; total];
+        self.room_owner = vec![0; total];
+        self.room_other = vec![cap; total];
+        let solids = std::mem::take(&mut self.solids);
+        for solid in &solids {
+            match solid {
+                Solid::Box { lo, hi, owner } => {
+                    let key = match *owner {
+                        0 => 0,
+                        id => match self.owners.iter().position(|&o| o == id) {
+                            Some(i) => i as u32 + 1,
+                            None => {
+                                self.owners.push(id);
+                                self.owners.len() as u32
+                            }
+                        },
+                    };
+                    for idx in self.cells_in((lo.map(|v| v - cap), hi.map(|v| v + cap))) {
+                        if self.block[idx] != WALL {
+                            let d = box_distance(self.centre(idx), *lo, *hi);
+                            self.note_room(idx, d, key);
+                        }
                     }
                 }
-                covered = grown;
-            }
-            for idx in 0..total {
-                if covered[idx] && room[idx] == ROOM {
-                    room[idx] = k;
+                Solid::Room { plan, origin, height } => {
+                    for idx in 0..total {
+                        if self.block[idx] == WALL {
+                            continue;
+                        }
+                        let c = sub(self.centre(idx), *origin);
+                        let d = c[1].min(height - c[1]).min(plan_distance(plan, [c[0], c[2]]));
+                        self.note_room(idx, d.max(0.0), 0);
+                    }
                 }
             }
         }
-        self.room = room;
+        self.solids = solids;
+        self.solid_cells.clear();
+        for (i, solid) in self.solids.iter().enumerate() {
+            if let Solid::Box { lo, hi, .. } = solid {
+                let key = |v: f32| (v / SOLID_CELL).floor() as i32;
+                let (a, b) = (lo.map(|v| key(v - SOLID_REACH)), hi.map(|v| key(v + SOLID_REACH)));
+                for x in a[0]..=b[0] {
+                    for y in a[1]..=b[1] {
+                        for z in a[2]..=b[2] {
+                            self.solid_cells.entry([x, y, z]).or_default().push(i as u32);
+                        }
+                    }
+                }
+            }
+        }
+        self.duct_room = vec![(cap, 0); total];
+        for k in 0..self.ducts.len() {
+            let (lo, hi) = (self.ducts[k].lo, self.ducts[k].hi);
+            for idx in self.cells_in((lo.map(|v| v - cap), hi.map(|v| v + cap))) {
+                let d = box_distance(self.centre(idx), lo, hi);
+                if self.block[idx] != WALL && self.duct_of[idx] == 0 && d < self.duct_room[idx].0 {
+                    self.duct_room[idx] = (d, k as u16 + 1);
+                }
+            }
+        }
     }
 
-    /// Room (mm) from the centre of a cell to the nearest blocked cell.
-    fn room_mm(&self, idx: usize) -> f32 {
-        self.room.get(idx).map_or(f32::INFINITY, |&k| if k >= ROOM { f32::INFINITY } else { (k as f32 - 0.5) * self.cell })
+    /// A solid of the item `key` lies `d` mm from the centre of a cell.
+    fn note_room(&mut self, idx: usize, d: f32, key: u32) {
+        if d < self.room[idx] {
+            if key != self.room_owner[idx] {
+                self.room_other[idx] = self.room[idx];
+            }
+            self.room[idx] = d;
+            self.room_owner[idx] = key;
+        } else if key != self.room_owner[idx] && d < self.room_other[idx] {
+            self.room_other[idx] = d;
+        }
     }
 
-    /// The cell lies near an end of the request: a route leaves its device there.
+    /// Room (mm) from the centre of a cell to the nearest solid but those of the items
+    /// `ignore`.
+    fn room_for(&self, idx: usize, ignore: &[u64]) -> f32 {
+        let Some(&room) = self.room.get(idx) else { return f32::INFINITY };
+        match self.room_owner[idx] {
+            0 => room,
+            k if ignore.contains(&self.owners[k as usize - 1]) => self.room_other[idx],
+            _ => room,
+        }
+    }
+
+    /// The cell lies near an end of the request: within a few cells of it, or as far as
+    /// the route runs straight out of it (its bend radius) and changes lanes into that
+    /// (another radius, a cell to spare) at least: there routes to one end converge.
     fn near_end(&self, idx: usize, req: &Request) -> bool {
-        req.at.iter().any(|q| dist(self.centre(idx), *q) <= 3.0 * self.cell + req.half)
+        self.near_point(self.centre(idx), req)
     }
 
-    /// The request keeps apart from the cables and tubes routed before it in the cell
-    /// (wires do not; in a cable duct or routing path they lie side by side, as far as
-    /// it holds them; where it comes up to its ends it need not).
+    fn near_point(&self, p: V3, req: &Request) -> bool {
+        let zone = self.end_zone(req);
+        req.at.iter().any(|q| dist(p, *q) <= zone)
+    }
+
+    /// How far from its ends a request converges with the routes to the same end (and
+    /// the clearance round the items there does not count): the straight way out and
+    /// a bend, at least three cells.
+    pub fn end_zone(&self, req: &Request) -> f32 {
+        (3.0 * self.cell).max(2.0 * req.turn + self.cell) + req.half
+    }
+
+    /// The point `p` (between the centres of the cells) has half the request's thickness
+    /// of room from every solid (but the items it ignores; near an end the clearance
+    /// round an item does not count), worked out exactly from the solids near it; `None`
+    /// for a request thicker than they are listed for.
+    fn point_clear(&self, p: V3, req: &Request) -> Option<bool> {
+        if req.half > SOLID_REACH {
+            return None;
+        }
+        let near_end = self.near_point(p, req);
+        let key = p.map(|v| (v / SOLID_CELL).floor() as i32);
+        for &i in self.solid_cells.get(&key).map(Vec::as_slice).unwrap_or(&[]) {
+            let Solid::Box { lo, hi, owner } = &self.solids[i as usize] else { continue };
+            if *owner != 0 && req.ignore.contains(owner) {
+                continue;
+            }
+            let need = if *owner != 0 && near_end { req.half - self.clearance } else { req.half };
+            if box_distance(p, *lo, *hi) < need {
+                return Some(false);
+            }
+        }
+        for solid in &self.solids {
+            if let Solid::Room { plan, origin, height } = solid {
+                let c = sub(p, *origin);
+                if c[1].min(height - c[1]).min(plan_distance(plan, [c[0], c[2]])) < req.half {
+                    return Some(false);
+                }
+            }
+        }
+        Some(true)
+    }
+
+    /// The cell has room for the request: half its thickness from the nearest solid
+    /// (but the items it ignores), less `off`, how far the route runs from the cell's
+    /// centre. Near an end the clearance round an item does not count (the route comes
+    /// up to the terminals there), the item itself does.
+    fn clear(&self, idx: usize, off: f32, req: &Request) -> bool {
+        let room = self.room_for(idx, req.ignore) - off;
+        room >= req.half || (self.room_owner.get(idx).is_some_and(|&o| o != 0) && self.near_end(idx, req) && room + self.clearance >= req.half)
+    }
+
+    /// The request keeps apart from the routes before it in the cell (in a cable duct
+    /// or routing path they lie side by side, as far as it holds them; where it comes
+    /// up to its ends it need not, where those routes were near their ends too: they
+    /// converge on one gland or terminal).
     fn apart(&self, idx: usize, req: &Request) -> bool {
-        req.kind == RouteKind::Wire || self.taken[idx] + req.half + 0.5 <= 0.0 || self.channel(idx, req) || self.near_end(idx, req)
+        self.taken[idx] + req.half + 0.5 <= 0.0 || self.channel(idx, req) || (self.near_end(idx, req) && self.taken_end[idx])
     }
 
-    /// A cable or tube of half thickness `half` routed along `points`: the routes after
-    /// it keep apart from it.
-    pub fn take(&mut self, points: &[V3], half: f32) {
-        for idx in self.cells_near(points, half + REACH) {
+    /// A route of half thickness `half` along `points`: the routes after it keep apart
+    /// from it, up to `reach` mm beyond its surface (half the thickness of the thickest
+    /// of them), but near their ends where it was near one of its own
+    /// (`ends`: the end points and how far from them, [`Space::end_zone`]).
+    pub fn take(&mut self, points: &[V3], half: f32, reach: f32, ends: &[(V3, f32)]) {
+        for idx in self.cells_near(points, half + reach) {
             let c = self.centre(idx);
             let d = points.windows(2).map(|s| dist_to_segment(c, s[0], s[1])).fold(f32::INFINITY, f32::min);
             self.taken[idx] = self.taken[idx].max(half - d);
+            if !ends.iter().any(|(q, zone)| dist(c, *q) <= *zone) {
+                self.taken_end[idx] = false;
+            }
         }
     }
 
@@ -479,26 +804,110 @@ impl Space {
         cells.iter().all(|&i| self.apart(i, req))
     }
 
-    /// The bend radius each corner of a way can have (`radius` at most, less where it
-    /// would come nearer than half the thickness to a blocked cell); 0 at the ends.
-    pub fn corner_radii(&self, points: &[V3], half: f32, radius: f32) -> Vec<f32> {
-        let n = points.len();
-        (0..n)
-            .map(|i| {
-                if i == 0 || i + 1 == n {
-                    return 0.0;
-                }
-                let room = self.cell_of(points[i]).map_or(0.0, |idx| self.room_mm(idx)) - half;
-                radius.min((room / CORNER_CUT).max(0.0))
-            })
-            .collect()
+    /// A bend of radius `radius` rounding the corner at `corner` from the direction
+    /// `from` into `to` keeps half the request's thickness from what blocks the space
+    /// (but the items it ignores): every cell its arc runs through is passable with that
+    /// much room (less how far the arc runs from the cell's centre), and where the arc
+    /// passes the wall of a cable duct it does so as a route may ([`Space::duct_pass`]).
+    fn bend_room(&self, corner: V3, from: V3, to: V3, radius: f32, req: &Request) -> bool {
+        let n = ((radius * std::f32::consts::FRAC_PI_2) / (self.cell * 0.5)).ceil().max(2.0) as usize;
+        let mut last: Option<(usize, V3)> = None;
+        (0..=n).all(|k| {
+            let phi = std::f32::consts::FRAC_PI_2 * k as f32 / n as f32;
+            let p = add(corner, add(scale(from, radius * (phi.sin() - 1.0)), scale(to, radius * (1.0 - phi.cos()))));
+            self.point_room(p, &mut last, req)
+        })
     }
 
-    /// Blocks the cells whose centre lies in a box (walls, cabinets, door swings).
+    /// A lane change from the cell `idx`, come to in direction `dir`: `cells` cells
+    /// across in direction `aside` and back into `dir`, drawn as an S-bend of two arcs
+    /// of the bend radius (two quarter turns where it is wide enough for them), keeps
+    /// half the request's thickness from what blocks the space, like [`Space::bend_room`].
+    fn jog_room(&self, idx: usize, dir: usize, aside: usize, cells: usize, req: &Request) -> bool {
+        let (u, v) = (unit(dir), unit(aside));
+        let (c1, r) = (self.centre(idx), req.turn);
+        let lb = cells as f32 * self.cell;
+        if lb >= 2.0 * r {
+            return self.bend_room(c1, u, v, r, req) && self.bend_room(add(c1, scale(v, lb)), v, u, r, req);
+        }
+        // Arcs of angle θ: across 2 r (1 − cos θ) = lb, along r sin θ on each side; the
+        // second arc is the first turned round the middle of the jog.
+        let theta = (1.0 - lb / (2.0 * r)).acos();
+        let start = sub(c1, scale(u, r * theta.sin()));
+        let centre = add(start, scale(v, r));
+        let middle = add(c1, scale(v, lb / 2.0));
+        let n = ((r * theta) / (self.cell * 0.5)).ceil().max(2.0) as usize;
+        let first: Vec<V3> = (0..=n).map(|k| theta * k as f32 / n as f32).map(|phi| add(centre, add(scale(v, -r * phi.cos()), scale(u, r * phi.sin())))).collect();
+        let second: Vec<V3> = first.iter().rev().skip(1).map(|q| sub(scale(middle, 2.0), *q)).collect();
+        let mut last: Option<(usize, V3)> = None;
+        first.into_iter().chain(second).all(|p| self.point_room(p, &mut last, req))
+    }
+
+    /// A point of a bend (after the one in `last`, which it becomes) has half the
+    /// request's thickness of room from what blocks the space: its cell is passable
+    /// (but for the item boxes the room is measured from), the room at the point itself
+    /// where it can be worked out, otherwise that of its cell less how far the point
+    /// lies from the cell's centre, and from the cell before it the bend passes the walls
+    /// of the ducts as a route may.
+    fn point_room(&self, p: V3, last: &mut Option<(usize, V3)>, req: &Request) -> bool {
+        let Some(m) = self.cell_of(p) else { return false };
+        let barred = self.block[m] == WALL || (self.reserved[m] != 0 && self.reserved[m] & req.class.bit() == 0) || (req.kind != RouteKind::Wire && self.duct[m] > 0.0 && self.duct[m] < 2.0 * req.half) || !self.apart(m, req);
+        if barred {
+            return false;
+        }
+        let room = match self.point_clear(p, req) {
+            Some(ok) => ok,
+            None => self.passable(m, req) && self.clear(m, dist(p, self.centre(m)), req),
+        };
+        if !room {
+            return false;
+        }
+        if let Some((l, q)) = last.filter(|(l, _)| *l != m) {
+            if !self.duct_pass(l, q, m, p, req) {
+                return false;
+            }
+        }
+        *last = Some((m, p));
+        true
+    }
+
+    /// A route may pass from the point `p` in cell `a` to the point `q` in cell `b` as
+    /// far as the walls of the cable ducts go: not into or out of a duct through its base
+    /// or its cover (the point outside lies over or under the duct), through a wall only
+    /// with half its thickness between the wall's rim and its top.
+    fn duct_pass(&self, a: usize, p: V3, b: usize, q: V3, req: &Request) -> bool {
+        let (da, db) = (self.duct_of[a], self.duct_of[b]);
+        if da == db || (da != 0 && db != 0) {
+            return true;
+        }
+        let d = &self.ducts[da.max(db) as usize - 1];
+        let outside = if da == 0 { p } else { q };
+        let over = (0..2).all(|k| outside[k] > d.lo[k] + 1e-3 && outside[k] < d.hi[k] - 1e-3);
+        let z = outside[2] - d.lo[2];
+        !over && self.in_band(z, d.rim, d.top, req.half)
+    }
+
+    /// Blocks the cells whose centre lies in a box (walls, cabinets, door swings,
+    /// keep-outs), which the room is measured from as well.
     pub(super) fn block_box(&mut self, bx: (V3, V3)) {
-        for idx in self.cells_in(bx) {
+        for idx in self.cells_in(self.widened(bx)) {
             self.block[idx] = WALL;
         }
+        self.solids.push(Solid::Box { lo: bx.0, hi: bx.1, owner: 0 });
+    }
+
+    /// The box widened to at least a cell along every axis (about its middle), so that
+    /// it covers the centre of a cell along each: a way between the centres of cells it
+    /// does not cover never crosses it.
+    fn widened(&self, (mut lo, mut hi): (V3, V3)) -> (V3, V3) {
+        for k in 0..3 {
+            let lack = self.cell - (hi[k] - lo[k]);
+            if lack > 0.0 {
+                lo[k] -= lack / 2.0;
+                hi[k] += lack / 2.0;
+            }
+        }
+        (lo, hi)
     }
 
     /// The cell a point lies in is blocked by a wall or an item (or outside the grid).
@@ -518,6 +927,62 @@ impl Space {
     pub fn centre(&self, idx: usize) -> V3 {
         let c = self.coords(idx);
         [0, 1, 2].map(|i| self.origin[i] + (c[i] as f32 + 0.5) * self.cell)
+    }
+
+    /// The cell `cells` steps from `idx` in direction `dir`, if inside the grid.
+    fn beyond(&self, idx: usize, dir: usize, cells: usize) -> Option<usize> {
+        let (axis, up) = (dir / 2, dir % 2 == 1);
+        let stride = [1, self.n[0], self.n[0] * self.n[1]][axis];
+        let c = (idx / stride) % self.n[axis];
+        if up {
+            (c + cells < self.n[axis]).then(|| idx + cells * stride)
+        } else {
+            (c >= cells).then(|| idx - cells * stride)
+        }
+    }
+
+    /// The cell `other` lies beside `idx`, across the axis of `dir` along one other axis,
+    /// within `cells` steps: the direction towards it and how many steps.
+    fn beside(&self, idx: usize, dir: usize, other: usize, cells: usize) -> Option<(usize, usize)> {
+        let (c, o) = (self.coords(idx), self.coords(other));
+        let mut found = None;
+        for axis in (0..3).filter(|&k| k != dir / 2) {
+            if c[axis] != o[axis] {
+                if found.is_some() {
+                    return None;
+                }
+                found = Some((axis * 2 + usize::from(o[axis] > c[axis]), c[axis].abs_diff(o[axis])));
+            }
+        }
+        found.filter(|&(_, k)| c[dir / 2] == o[dir / 2] && k >= 1 && k <= cells)
+    }
+
+    /// The cell `other` lies ahead of `idx` in direction `dir`, within `cells` steps.
+    fn on_line(&self, idx: usize, dir: usize, other: usize, cells: usize) -> bool {
+        let (axis, up) = (dir / 2, dir % 2 == 1);
+        let stride = [1, self.n[0], self.n[0] * self.n[1]][axis] as i64;
+        let diff = other as i64 - idx as i64;
+        let steps = diff / stride;
+        let c = ((idx / stride as usize) % self.n[axis]) as i64;
+        diff % stride == 0 && steps != 0 && (up == (steps > 0)) && steps.unsigned_abs() as usize <= cells && c + steps >= 0 && ((c + steps) as usize) < self.n[axis]
+    }
+
+    /// The neighbour of a cell in direction `dir` (axis × 2 + 1 for up), if any.
+    fn step(&self, idx: usize, dir: usize) -> Option<usize> {
+        let (axis, up) = (dir / 2, dir % 2 == 1);
+        let mut c = self.coords(idx);
+        if up {
+            if c[axis] + 1 >= self.n[axis] {
+                return None;
+            }
+            c[axis] += 1;
+        } else {
+            if c[axis] == 0 {
+                return None;
+            }
+            c[axis] -= 1;
+        }
+        Some(self.index(c))
     }
 
     /// The cell a point lies in.
@@ -589,27 +1054,48 @@ impl Space {
         v
     }
 
-    fn passable(&self, idx: usize, req: &Request) -> bool {
-        self.open_for(idx, req) && self.apart(idx, req)
-    }
-
-    /// The cell is passable for the request but for the other routes in it.
-    fn open_for(&self, idx: usize, req: &Request) -> bool {
+    /// How the request can pass the cell (see [`NO`], [`SQUEEZED`], [`FREE`]), keeping
+    /// apart from the other routes where `apart`.
+    fn level(&self, idx: usize, req: &Request, apart: bool) -> u8 {
         let free = match self.block[idx] {
             0 => true,
             ITEM => req.ignore.contains(&self.owner[idx]),
             BODY => req.ignore.contains(&self.owner[idx]) && req.at.iter().any(|q| dist(self.centre(idx), *q) <= 2.0 * self.cell),
             _ => false,
         };
-        // As thick as it is: room around it, and only through ducts it fits into.
-        let fits = req.kind == RouteKind::Wire || ((self.duct[idx] == 0.0 || self.duct[idx] >= 2.0 * req.half) && (self.room_mm(idx) >= req.half || self.near_end(idx, req)));
-        free && fits && (self.reserved[idx] == 0 || self.reserved[idx] & req.class.bit() != 0)
+        // A cable only through ducts it fits into, in a cabinet's duct between its base
+        // and its cover; only classes a reservation is for.
+        if !free || (req.kind != RouteKind::Wire && self.duct[idx] > 0.0 && self.duct[idx] < 2.0 * req.half) || (self.reserved[idx] != 0 && self.reserved[idx] & req.class.bit() == 0) || (apart && !self.apart(idx, req)) {
+            return NO;
+        }
+        if req.kind != RouteKind::Wire && self.duct_of[idx] != 0 {
+            let d = &self.ducts[self.duct_of[idx] as usize - 1];
+            if !self.in_band(self.centre(idx)[2] - d.lo[2], d.base, d.top, req.half) {
+                return NO;
+            }
+        }
+        // As thick as it is: half its thickness of room around it.
+        if self.clear(idx, 0.0, req) {
+            FREE
+        } else {
+            NO
+        }
     }
 
-    /// A route may turn at the cell: its bend keeps half its thickness from the blocked
-    /// cells (near its ends it may turn anywhere).
-    fn turn_room(&self, idx: usize, req: &Request) -> bool {
-        req.kind == RouteKind::Wire || self.room_mm(idx) >= req.half + CORNER_CUT * req.turn || self.near_end(idx, req)
+    fn passable(&self, idx: usize, req: &Request) -> bool {
+        self.level(idx, req, true) != NO
+    }
+
+    /// The cell is passable for the request but for the other routes in it.
+    fn open_for(&self, idx: usize, req: &Request) -> bool {
+        self.level(idx, req, false) != NO
+    }
+
+    /// A route coming in direction `from` may turn at the cell into direction `to`: its
+    /// bend, rounded with the bend radius, keeps half its thickness from what blocks
+    /// the space.
+    fn turn_room(&self, idx: usize, from: usize, to: usize, req: &Request) -> bool {
+        self.bend_room(self.centre(idx), unit(from), unit(to), req.turn, req)
     }
 
     /// The path a cell belongs to, if the request may use it as a channel.
@@ -633,8 +1119,8 @@ impl Space {
     fn factor(&self, idx: usize, axis: usize, req: &Request, rules: &RoutingRules) -> f32 {
         let channel = self.channel(idx, req);
         let mut f = if channel { 1.0 } else { rules.free_factor.max(1.0) };
-        if !channel && axis != 1 && self.open.get(idx) == Some(&true) {
-            f *= OPEN;
+        if !channel && axis != 1 {
+            f *= self.open_factor(idx);
         }
         if self.path_for(idx, req).is_some_and(|p| p.capacity > 0.0 && p.used + req.area > p.capacity) {
             f *= FULL;
@@ -648,29 +1134,183 @@ impl Space {
         f
     }
 
+    /// Cost factor of a horizontal step into a cell of a room by how far it lies from
+    /// the room's surfaces: none next to them, [`OPEN`] from the distance of
+    /// [`Space::mark_open`] on, in between as far as it is.
+    fn open_factor(&self, idx: usize) -> f32 {
+        match self.open.get(idx) {
+            Some(&d) if d > 1 => 1.0 + (OPEN - 1.0) * ((d - 1) as f32 / (self.open_cells.max(2) - 1) as f32).min(1.0),
+            _ => 1.0,
+        }
+    }
+
+    /// A route of half thickness `half` through a cell whose centre lies `z` above the
+    /// bottom of a duct's box may lie between the heights `lo` and `hi` of the duct
+    /// (its base and its cover, the rim and the top of its walls): the band meets the
+    /// cell's extent; drawn, the route is laid at a height within both.
+    fn in_band(&self, z: f32, lo: f32, hi: f32, half: f32) -> bool {
+        (z - self.cell * 0.5).max(lo + half) <= (z + self.cell * 0.5).min(hi - half) + 1e-3
+    }
+
+    /// The walls of the cabinets' cable ducts let the step from cell `a` into its
+    /// neighbour `b` in direction `dir` pass: not through the base or the cover of a
+    /// duct, through its walls only with half the thickness between their rim and their
+    /// top ([`Space::in_band`]), and outside a duct no nearer to it than half the
+    /// thickness, unless heading into or out of it through its wall.
+    fn duct_step(&self, a: usize, b: usize, dir: usize, req: &Request) -> bool {
+        let (da, db) = (self.duct_of[a], self.duct_of[b]);
+        if da != db && (da == 0 || db == 0) {
+            if dir / 2 == 2 {
+                return false;
+            }
+            let d = &self.ducts[da.max(db) as usize - 1];
+            let z = self.centre(if da != 0 { a } else { b })[2] - d.lo[2];
+            return self.in_band(z, d.rim, d.top, req.half);
+        }
+        let Some(&(room, k)) = self.duct_room.get(b).filter(|_| db == 0) else { return true };
+        if k == 0 || room >= req.half {
+            return true;
+        }
+        // Beside the duct (not over its cover) heading at its wall or away from it.
+        let d = &self.ducts[k as usize - 1];
+        let z = self.centre(b)[2];
+        dir / 2 != d.axis && dir / 2 != 2 && z >= d.lo[2] && z <= d.hi[2]
+    }
+
     /// Crossing between the cells `a` and `b` (neighbours along x) is allowed: in the
-    /// same enclosure, or through a cable passage.
-    fn crossing_ok(&self, a: usize, b: usize) -> bool {
+    /// same enclosure, or through a cable passage with `half` the thickness inside it.
+    fn crossing_ok(&self, a: usize, b: usize, half: f32) -> bool {
         let (ca, cb) = (self.coords(a), self.coords(b));
         if self.column[ca[0]] == self.column[cb[0]] {
             return true;
         }
         let (pa, pb) = (self.centre(a), self.centre(b));
-        let tol = self.cell * 0.5;
         self.crossings.iter().any(|c| {
-            c.x >= pa[0].min(pb[0]) - 1e-3 && c.x <= pa[0].max(pb[0]) + 1e-3 && pa[1] >= c.y[0] - tol && pa[1] <= c.y[1] + tol && pa[2] >= c.z[0] - tol && pa[2] <= c.z[1] + tol
+            c.x >= pa[0].min(pb[0]) - 1e-3 && c.x <= pa[0].max(pb[0]) + 1e-3 && pa[1] >= c.y[0] + half - 1e-3 && pa[1] <= c.y[1] - half + 1e-3 && pa[2] >= c.z[0] + half - 1e-3 && pa[2] <= c.z[1] - half + 1e-3
         })
+    }
+
+    /// The step from cell `a` into its neighbour `b` in direction `dir` is open for
+    /// the request.
+    fn step_ok(&self, a: usize, b: usize, dir: usize, req: &Request) -> bool {
+        self.passable(b, req) && (dir / 2 != 0 || self.crossing_ok(a, b, req.half)) && self.duct_step(a, b, dir, req)
+    }
+
+    /// The cost of the step from cell `a` into its neighbour `b` in direction `dir`,
+    /// `None` where it is not open; what the steps into the cells cost is remembered
+    /// for the search.
+    fn step_cost(&self, memo: &mut Memo, a: usize, b: usize, dir: usize, req: &Request, rules: &RoutingRules) -> Option<f32> {
+        if memo.pass_stamp[b] != memo.run {
+            memo.pass[b] = match self.level(b, req, true) {
+                NO => (-1.0, -1.0, NO),
+                level => (self.cell * self.factor(b, 1, req, rules), self.cell * self.factor(b, 0, req, rules), level),
+            };
+            memo.pass_stamp[b] = memo.run;
+        }
+        let (up, along, level) = memo.pass[b];
+        if level == NO || (dir / 2 == 0 && !self.crossing_ok(a, b, req.half)) || !self.duct_step(a, b, dir, req) {
+            return None;
+        }
+        Some(if dir / 2 == 1 { up } else { along })
     }
 
     /// The nearest passable cell to a point (searching a few cells around it).
     fn nearest_passable(&self, q: V3, req: &Request) -> Option<usize> {
-        let r = self.cell * 4.0;
+        let r = self.cell * LEAD_CELLS as f32;
         let lo = [q[0] - r, q[1] - r, q[2] - r];
         let hi = [q[0] + r, q[1] + r, q[2] + r];
         if let Some(idx) = self.cell_of(q).filter(|&i| self.passable(i, req)) {
             return Some(idx);
         }
         self.cells_in((lo, hi)).into_iter().filter(|&i| self.passable(i, req)).min_by(|&a, &b| dist(self.centre(a), q).total_cmp(&dist(self.centre(b), q)).then(a.cmp(&b)))
+    }
+
+    /// The axis a direction runs along and which way (±1); `None` for one along no axis.
+    fn axis_of(leave: V3) -> Option<(usize, f32)> {
+        let axis = (0..3).max_by(|&i, &j| leave[i].abs().total_cmp(&leave[j].abs()))?;
+        let along = leave[axis].abs();
+        (along >= 1e-3 && along >= 0.9 * dist(leave, [0.0; 3])).then(|| (axis, leave[axis].signum()))
+    }
+
+    /// How far along its axis the way out of an end at `q` in the direction `leave` may
+    /// go at most, so that it does not pass the way out of the `other` end (leaving it
+    /// in `other_leave`) when that lies ahead: to the middle between the two where they
+    /// face each other, before the other end where it would run into it; `None` for no
+    /// limit.
+    fn lead_limit(&self, q: V3, leave: V3, other: V3, other_leave: V3) -> Option<f32> {
+        let (axis, sign) = Space::axis_of(leave)?;
+        if (other[axis] - q[axis]) * sign <= 0.0 {
+            return None;
+        }
+        if Space::axis_of(other_leave).is_some_and(|(oa, os)| oa == axis && os == -sign) {
+            return Some((q[axis] + other[axis]) / 2.0);
+        }
+        let lateral = (0..3).filter(|&i| i != axis).map(|i| (q[i] - other[i]).abs()).fold(0.0, f32::max);
+        (lateral <= 2.0 * self.cell).then_some(other[axis])
+    }
+
+    /// The way out of an end at `q` in the direction `leave`: the cells from the first
+    /// passable one along it (its centre ahead of `q`) straight on, until the route is
+    /// `far` mm (with the `out` it runs straight already) out of the end, as far as
+    /// `cells` cells at most and never beyond `limit` along the axis, the direction, and
+    /// whether it got that far (or to the limit). `None` where `leave` runs along no
+    /// axis or none of the first cells along it is passable.
+    #[allow(clippy::too_many_arguments)]
+    fn lead(&self, q: V3, leave: V3, limit: Option<f32>, out: f32, far: f32, req: &Request, cells: usize) -> Option<(Vec<usize>, usize, bool)> {
+        let (axis, sign) = Space::axis_of(leave)?;
+        let dir = axis * 2 + usize::from(sign > 0.0);
+        let within = |idx: usize| limit.is_none_or(|l| (self.centre(idx)[axis] - l) * sign <= 0.0);
+        let ahead = |idx: usize| (self.centre(idx)[axis] - q[axis]) * sign + out;
+        // The cells straight out of `from`, and whether they run far enough.
+        let from = |from: V3| -> Option<(Vec<usize>, bool)> {
+            let mut first = None;
+            for k in 0..LEAD_CELLS {
+                let mut p = from;
+                p[axis] += sign * (k as f32 + 0.5) * self.cell;
+                let Some(idx) = self.cell_of(p) else { break };
+                if !within(idx) {
+                    break;
+                }
+                if self.passable(idx, req) {
+                    first = Some(idx);
+                    break;
+                }
+            }
+            let mut way = vec![first?];
+            let mut cut = false;
+            for _ in 0..cells {
+                let last = way[way.len() - 1];
+                if ahead(last) >= far {
+                    break;
+                }
+                match self.step(last, dir) {
+                    Some(next) if !within(next) => {
+                        cut = true;
+                        break;
+                    }
+                    Some(next) if self.step_ok(last, next, dir, req) => way.push(next),
+                    _ => break,
+                }
+            }
+            let full = cut || ahead(way[way.len() - 1]) >= far;
+            Some((way, full))
+        };
+        // Barred before it ran `far` straight out of the end, the way may leave it from
+        // the cell beside (a cell aside at most), where it runs farther.
+        let mut best = from(q);
+        if best.as_ref().is_none_or(|c| !c.1) {
+            for other in (0..3).filter(|&k| k != axis) {
+                for side in [-1.0, 1.0] {
+                    let mut p = q;
+                    p[other] += side * self.cell;
+                    if let Some(cells) = from(p).filter(|c| best.as_ref().is_none_or(|b| c.0.len() > b.0.len())) {
+                        best = Some(cells);
+                    }
+                }
+            }
+        }
+        let (way, full) = best?;
+        Some((way, dir, full))
     }
 
     /// The cheapest way from `a` to `b`, or `None` if there is none.
@@ -681,41 +1321,89 @@ impl Space {
     /// [`Space::route`] with the costs to the goal of a search of the same request before
     /// (where they still hold), and the costs it used.
     pub fn route_with(&self, a: V3, b: V3, req: &Request, rules: &RoutingRules, known: Option<&GoalCosts>) -> (Option<Way>, Option<GoalCosts>) {
-        let (Some(start), Some(goal)) = (self.nearest_passable(a, req), self.nearest_passable(b, req)) else { return (None, None) };
-        // Cables and tubes turn only after half their bend radius straight on (but at
-        // the start), where there is a way like that.
-        let straight = if req.kind == RouteKind::Wire { 0 } else { (req.turn * 0.5 / self.cell).ceil() as usize };
-        let mut costs = known.filter(|k| k.start == start && k.goal == goal).cloned();
-        SEARCH.with_borrow_mut(|search| {
-            let way = self.search(search, a, b, start, goal, req, rules, straight, &mut costs).or_else(|| (straight > 0).then(|| self.search(search, a, b, start, goal, req, rules, 0, &mut costs)).flatten());
-            (way, costs)
-        })
+        // Ends closer than a cell that face each other (the nozzles of two fittings in
+        // line): straight from one to the other.
+        let facing = Space::axis_of(req.leave[0]).zip(Space::axis_of(req.leave[1])).is_some_and(|(x, y)| x.0 == y.0 && x.1 == -y.1);
+        if facing && dist(a, b) <= self.cell {
+            let mut cells: Vec<usize> = [self.cell_of(a), self.cell_of(b)].into_iter().flatten().filter(|&i| self.passable(i, req)).collect();
+            cells.dedup();
+            return (Some(Way { points: vec![a, b], cells, free: 0.0 }), known.cloned());
+        }
+        // The route runs straight out of its ends for its bend radius and on between its
+        // bends for two of them (the arcs of both fit between), a cell to spare.
+        let straight = (2.0 * req.turn / self.cell).ceil() as usize + 1;
+        let far = req.turn;
+        let cells = (far / self.cell).ceil() as usize;
+        let lead_in = self.lead(a, req.leave[0], self.lead_limit(a, req.leave[0], b, req.leave[1]), req.out[0], far, req, cells);
+        let lead_out = self.lead(b, req.leave[1], self.lead_limit(b, req.leave[1], a, req.leave[0]), req.out[1], far, req, cells);
+        // An end without a direction is left from the nearest passable cell; one the
+        // route cannot leave straight on for its bend radius cannot be left at all.
+        let mut ends = Ends { lead_in: Vec::new(), dir: 6, lead_out: Vec::new(), arrive: 6 };
+        match lead_in {
+            Some((cells, dir, true)) => (ends.lead_in, ends.dir) = (cells, dir),
+            Some(_) => return (None, None),
+            None if Space::axis_of(req.leave[0]).is_some() => return (None, None),
+            None => match self.nearest_passable(a, req) {
+                Some(idx) => ends.lead_in = vec![idx],
+                None => return (None, None),
+            },
+        }
+        match lead_out {
+            Some((mut cells, dir, true)) => {
+                cells.reverse();
+                if cells.len() > 1 {
+                    ends.arrive = dir ^ 1;
+                }
+                ends.lead_out = cells;
+            }
+            Some(_) => return (None, None),
+            None if Space::axis_of(req.leave[1]).is_some() => return (None, None),
+            None => match self.nearest_passable(b, req) {
+                Some(idx) => ends.lead_out = vec![idx],
+                None => return (None, None),
+            },
+        }
+        let mut costs = known.cloned();
+        SEARCH.with_borrow_mut(|search| (self.search(search, a, b, &ends, req, rules, straight, &mut costs), costs))
     }
 
-    /// The A* search of [`Space::route`] with the arrays of `search`; it turns only
-    /// after `straight` cells straight on since the last turn or from the start. It takes
-    /// the costs to the goal from `costs` where known, otherwise works them out and keeps
-    /// them there.
-    #[allow(clippy::too_many_arguments)]
-    fn search(&self, search: &mut Search, a: V3, b: V3, start: usize, goal: usize, req: &Request, rules: &RoutingRules, straight: usize, costs: &mut Option<GoalCosts>) -> Option<Way> {
+    /// The A* search of [`Space::route`] with the arrays of `search`, from the start to
+    /// the goal of `ends`: a turn is made only where its bend has room, and followed by
+    /// `straight` cells straight on (one at least), unless the way changes lanes with an
+    /// S-bend (a turn back into the direction it came within fewer cells, then straight
+    /// on); the way out of the start and into the goal is given by `ends`, the goal
+    /// reached heading along the way into the end. It takes the costs to the goal from
+    /// `costs` where known, otherwise works them out and keeps them there.
+    #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+    fn search(&self, search: &mut Search, a: V3, b: V3, ends: &Ends, req: &Request, rules: &RoutingRules, straight: usize, costs: &mut Option<GoalCosts>) -> Option<Way> {
+        let (start, goal) = (ends.lead_in[ends.lead_in.len() - 1], ends.lead_out[0]);
         // States: cell × direction it was entered in (6: none).
         let run = search.start(self.block.len());
-        let reach = match costs {
+        // The costs known lead to their own goal: from this one they are less by the
+        // cost from here to there (at least `reach` where it is not known).
+        let (reach, offset) = match costs {
             Some(known) => {
                 for &(idx, c) in &known.cells {
                     (search.to_goal[idx as usize], search.settled[idx as usize]) = (c, run);
                 }
-                known.reach
+                let offset = if known.goal == goal { 0.0 } else if search.settled[goal] == run { search.to_goal[goal] } else { known.reach };
+                (known.reach, offset)
             }
             None => {
                 let (reach, cells) = self.costs_to_goal(search, run, start, goal, req, rules);
+                // The start not reached even without turns: there is no way.
+                let reached = search.settled[start] == run;
                 if cells.len() <= KEEP_COSTS {
-                    *costs = Some(GoalCosts { start, goal, cells: cells.into_iter().map(|i| (i as u32, search.to_goal[i])).collect(), reach });
+                    *costs = Some(GoalCosts { goal, cells: cells.into_iter().map(|i| (i as u32, search.to_goal[i])).collect(), reach });
                 }
-                reach
+                if !reached {
+                    return None;
+                }
+                (reach, 0.0)
             }
         };
-        let Search { best, prev, stamp, to_goal, settled, .. } = search;
+        let Search { best, prev, stamp, to_goal, settled, runs, run_stamp, pass, pass_stamp, turn_known, turn_ok, turn_stamp, jogs, .. } = search;
+        let mut memo = Memo { pass, pass_stamp, runs, run_stamp, turn_known, turn_ok, turn_stamp, jogs, run };
         let mut heap = BinaryHeap::new();
         let gc = self.coords(goal);
         // Lower bound of the rest: the cost of the cells to the goal (at least `reach`
@@ -730,13 +1418,17 @@ impl Space {
                 if dir % 2 == 1 { c[axis] < gc[axis] } else { c[axis] > gc[axis] }
             };
             let turns = if apart == 0 { 0 } else if dir == 6 || towards { apart - 1 } else { apart };
-            let cells = if settled[idx] == run { to_goal[idx] } else { reach.max((0..3).map(|i| c[i].abs_diff(gc[i])).sum::<usize>() as f32 * self.cell) };
+            let known = if settled[idx] == run { to_goal[idx] } else { reach } - offset;
+            let cells = known.max((0..3).map(|i| c[i].abs_diff(gc[i])).sum::<usize>() as f32 * self.cell);
             cells + turns as f32 * req.turn
         };
         let key = |g: f32, state: usize| Reverse(((g + h(state)).to_bits(), state));
-        let first = start * 7 + 6;
-        (best[first], prev[first], stamp[first]) = (0.0, u32::MAX, run);
-        heap.push(key(0.0, first));
+        // The way out of the start costs its cells.
+        let first = start * 7 + ends.dir;
+        let g0 = ends.lead_in.windows(2).map(|w| self.step_cost(&mut memo, w[0], w[1], ends.dir, req, rules).unwrap_or(0.0)).sum::<f32>();
+        (best[first], prev[first], stamp[first]) = (g0, u32::MAX, run);
+        heap.push(key(g0, first));
+        let jump = straight.max(1);
         let mut found = None;
         while let Some(Reverse(popped)) = heap.pop() {
             let state = popped.1;
@@ -746,139 +1438,183 @@ impl Space {
             if key(g, state).0 != popped {
                 continue;
             }
-            if idx == goal {
+            if idx == goal && (ends.arrive == 6 || dir == ends.arrive) {
                 found = Some(state);
                 break;
             }
-            let c = self.coords(idx);
+            // A state reached more cheaply than before, from this one.
+            macro_rules! relax {
+                ($ns:expr, $ng:expr) => {{
+                    let (ns, ng): (usize, f32) = ($ns, $ng);
+                    if stamp[ns] != run || ng < best[ns] {
+                        (best[ns], prev[ns], stamp[ns]) = (ng, state as u32, run);
+                        heap.push(key(ng, ns));
+                    }
+                }};
+            }
+            // The state is known already at no more than this cost: no way through
+            // here, which costs at least that, improves it.
+            macro_rules! settled_under {
+                ($ns:expr, $floor:expr) => {{
+                    let (ns, floor): (usize, f32) = ($ns, $floor);
+                    stamp[ns] == run && best[ns] <= floor
+                }};
+            }
             for nd in 0..6 {
-                let (axis, up) = (nd / 2, nd % 2 == 1);
-                let mut nc = c;
-                if up {
-                    if c[axis] + 1 >= self.n[axis] {
-                        continue;
+                if nd == dir {
+                    // Straight on, one cell.
+                    if let Some((ni, cost)) = self.step(idx, nd).and_then(|ni| self.step_cost(&mut memo, idx, ni, nd, req, rules).map(|c| (ni, c))) {
+                        relax!(ni * 7 + nd, g + cost);
                     }
-                    nc[axis] += 1;
-                } else {
-                    if c[axis] == 0 {
-                        continue;
-                    }
-                    nc[axis] -= 1;
-                }
-                let ni = self.index(nc);
-                if !self.passable(ni, req) || (axis == 0 && !self.crossing_ok(idx, ni)) {
                     continue;
                 }
-                let turning = dir != 6 && dir != nd;
-                if turning && straight > 0 && !straight_on(prev, state, straight) {
-                    continue;
+                if dir < 6 && nd == dir ^ 1 {
+                    continue; // no way back
                 }
-                let turn = match (turning, turning && self.turn_room(idx, req)) {
-                    (false, _) => 0.0,
-                    (true, true) => req.turn,
-                    (true, false) => req.turn * (1.0 + TIGHT),
-                };
-                let ng = g + self.cell * self.factor(ni, axis, req, rules) + turn;
-                let ns = ni * 7 + nd;
-                if stamp[ns] != run || ng < best[ns] {
-                    (best[ns], prev[ns], stamp[ns]) = (ng, state as u32, run);
-                    heap.push(key(ng, ns));
+                // A turn (none at a start without direction), then straight on for
+                // `jump` cells (or to the goal, heading into its end), where all of them
+                // are open: where its bend has room, otherwise only as the first half of
+                // a lane change, whose S-bend is checked as a whole.
+                let turn_ok = dir == 6 || self.turn_memo(&mut memo, idx, dir, nd, req);
+                let run_cells = if dir < 6 { jump } else { 1 };
+                let (mut at, mut ng) = (idx, g + if dir < 6 { req.turn } else { 0.0 });
+                for k in 1..=run_cells {
+                    let Some((ni, cost)) = self.step(at, nd).and_then(|ni| self.step_cost(&mut memo, at, ni, nd, req, rules).map(|c| (ni, c))) else {
+                        at = usize::MAX;
+                        break;
+                    };
+                    ng += cost;
+                    at = ni;
+                    if at == goal {
+                        // Heading into the end the run ends here; across it, it runs on.
+                        if ends.arrive == 6 || nd == ends.arrive {
+                            break;
+                        }
+                        continue;
+                    }
+                    // The goal beside the run, fewer cells aside than a run, back in the
+                    // direction it came (the way into the end running on): a lane change
+                    // with an S-bend into it.
+                    if let Some((sd, k2)) = (straight > 1 && dir < 6).then(|| self.beside(at, nd, goal, straight - 1)).flatten() {
+                        if sd == dir && (ends.arrive == 6 || sd == ends.arrive) && self.jog_memo(&mut memo, idx, dir, nd, k, req) {
+                            let (mut c, mut cost) = (at, ng + req.turn);
+                            for _ in 0..k2 {
+                                match self.step(c, sd).and_then(|ni| self.step_cost(&mut memo, c, ni, sd, req, rules).map(|x| (ni, x))) {
+                                    Some((ni, x)) => (c, cost) = (ni, cost + x),
+                                    None => break,
+                                }
+                            }
+                            if c == goal {
+                                relax!(goal * 7 + sd, cost);
+                            }
+                        }
+                    }
+                    if dir < 6 && k < straight && self.jog_memo(&mut memo, idx, dir, nd, k, req) {
+                        // Fewer cells aside than a run, then back into the direction it
+                        // came and a run: a lane change with an S-bend.
+                        // The run lands `jump` cells on (unless it ends at the goal
+                        // before): known cheaper already, it is not looked at.
+                        let floor = ng + req.turn + jump as f32 * self.cell;
+                        if self.beyond(at, dir, jump).is_some_and(|end| settled_under!(end * 7 + dir, floor)) && !self.on_line(at, dir, goal, jump) {
+                            continue;
+                        }
+                        if let Some((fwd, fg)) = self.run_memo(&mut memo, at, dir, jump, goal, ends.arrive, req, rules) {
+                            relax!(fwd * 7 + dir, ng + req.turn + fg);
+                        }
+                    }
+                }
+                if at != usize::MAX && turn_ok {
+                    relax!(at * 7 + nd, ng);
                 }
             }
         }
         let mut state = found?;
+        // The cells of the way: the runs between the states filled in (a step aside
+        // first, then the run in the direction the state was entered in).
         let mut cells: Vec<usize> = vec![state / 7];
         while prev[state] != u32::MAX {
-            state = prev[state] as usize;
-            cells.push(state / 7);
+            let from = prev[state] as usize;
+            let (ca, cb) = (self.coords(from / 7), self.coords(state / 7));
+            let along = (state % 7) / 2;
+            let aside = (0..3).find(|&k| k != along && ca[k] != cb[k]);
+            let mut c = cb;
+            for axis in [Some(along), aside].into_iter().flatten() {
+                while c[axis] != ca[axis] {
+                    c[axis] = if ca[axis] < cb[axis] { c[axis] - 1 } else { c[axis] + 1 };
+                    cells.push(self.index(c));
+                }
+            }
+            state = from;
         }
         cells.reverse();
+        let mut all: Vec<usize> = ends.lead_in[..ends.lead_in.len() - 1].to_vec();
+        all.extend(cells);
+        all.extend_from_slice(&ends.lead_out[1..]);
         let mut points = vec![a];
-        points.extend(cells.iter().map(|&i| self.centre(i)));
+        points.extend(all.iter().map(|&i| self.centre(i)));
         points.push(b);
-        let mut points = simplify(points);
-        if self.spread_bends(&mut points, req, rules) {
-            let inner: Vec<V3> = std::iter::once(self.centre(start)).chain(points[1..points.len() - 1].iter().copied()).chain(std::iter::once(self.centre(goal))).collect();
-            cells = self.cells_along(&inner);
-        }
-        let free = cells.iter().filter(|&&i| !self.channel(i, req)).count() as f32 * self.cell;
-        Some(Way { points, cells, free })
+        let points = simplify(points);
+        let free = all.iter().filter(|&&i| !self.channel(i, req)).count() as f32 * self.cell;
+        Some(Way { points, cells: all, free })
     }
 
-    /// Moves the bends of a way apart where its stretches between bends are shorter
-    /// than half the turn (the bend radius): a stretch moves to the start or the end
-    /// of the way (the corners between move with it) or changes places with the next
-    /// one, where that costs at most a turn more, until no stretch inside the way is
-    /// too short or no move helps. Whether the way changed.
-    fn spread_bends(&self, points: &mut Vec<V3>, req: &Request, rules: &RoutingRules) -> bool {
-        let min = req.turn * 0.5;
-        // How much the stretches between bends lack (the first and the last count not),
-        // and how many lack anything.
-        let lack = |p: &[V3]| -> (usize, f32) {
-            if p.len() < 6 {
-                return (0, 0.0);
-            }
-            p[2..p.len() - 2].windows(2).map(|s| (min - dist(s[0], s[1])).max(0.0)).fold((0, 0.0), |(n, sum), l| (n + usize::from(l > 0.0), sum + l))
-        };
-        let heading = |a: V3, b: V3| [0, 1, 2].map(|i| (b[i] - a[i]).signum() as i8);
-        let turns = |p: &[V3]| p.windows(3).filter(|w| heading(w[0], w[1]) != heading(w[1], w[2])).count();
-        // Cost of the way between the cell centres (`None` where it is blocked).
-        let cost = |p: &[V3]| -> Option<f32> {
-            let inner = &p[1..p.len() - 1];
-            if inner.iter().any(|&q| self.cell_of(q).is_none()) {
-                return None;
-            }
-            let cells = self.cells_along(inner);
-            let free = cells.iter().all(|&i| self.passable(i, req)) && cells.windows(2).all(|w| self.coords(w[0])[0] == self.coords(w[1])[0] || self.crossing_ok(w[0], w[1]));
-            let axis = |a: usize, b: usize| (0..3).find(|&k| self.coords(a)[k] != self.coords(b)[k]).unwrap_or(0);
-            free.then(|| cells.windows(2).map(|w| self.factor(w[1], axis(w[0], w[1]), req, rules)).sum::<f32>() * self.cell + turns(p) as f32 * req.turn)
-        };
-        let mut changed = false;
-        for _ in 0..16 {
-            let now = lack(points);
-            if now.0 == 0 {
-                break;
-            }
-            let Some(base) = cost(points) else { break };
-            let n = points.len();
-            let mut candidates: Vec<Vec<V3>> = Vec::new();
-            // Stretch k (between the cell centres k and k + 1) to the end or to the start,
-            // or changed with the next one.
-            for k in 1..n.saturating_sub(2) {
-                let step = sub(points[k + 1], points[k]);
-                if k + 2 < n - 1 {
-                    let mut alt = points[..=k].to_vec();
-                    alt.extend(points[k + 2..n - 1].iter().map(|q| sub(*q, step)));
-                    alt.extend_from_slice(&points[n - 2..]);
-                    candidates.push(alt);
-                }
-                if k > 1 {
-                    let mut alt = points[..2].to_vec();
-                    alt.extend(points[1..=k].iter().map(|q| add(*q, step)));
-                    alt.extend_from_slice(&points[k + 2..]);
-                    candidates.push(alt);
-                }
-                if k + 2 < n - 1 {
-                    let mut alt = points.clone();
-                    alt[k + 1] = add(points[k], sub(points[k + 2], points[k + 1]));
-                    candidates.push(alt);
-                }
-            }
-            let better = candidates.into_iter().map(simplify).filter(|alt| {
-                let l = lack(alt);
-                (l.0, l.1) < (now.0, now.1) && cost(alt).is_some_and(|c| c <= base + req.turn)
-            });
-            let Some(best) = better.min_by(|a, b| lack(a).1.total_cmp(&lack(b).1)) else { break };
-            *points = best;
-            changed = true;
+    /// [`Space::jog_room`], remembered for the search.
+    fn jog_memo(&self, memo: &mut Memo, idx: usize, dir: usize, aside: usize, cells: usize, req: &Request) -> bool {
+        let key = (idx as u32, dir as u8, aside as u8, cells as u8);
+        if let Some(&ok) = memo.jogs.get(&key) {
+            return ok;
         }
-        changed
+        let ok = self.jog_room(idx, dir, aside, cells, req);
+        memo.jogs.insert(key, ok);
+        ok
+    }
+
+    /// [`Space::turn_room`], remembered for the search.
+    fn turn_memo(&self, memo: &mut Memo, idx: usize, from: usize, to: usize, req: &Request) -> bool {
+        if memo.turn_stamp[idx] != memo.run {
+            (memo.turn_known[idx], memo.turn_ok[idx], memo.turn_stamp[idx]) = (0, 0, memo.run);
+        }
+        let bit = 1u64 << (from * 6 + to);
+        if memo.turn_known[idx] & bit == 0 {
+            memo.turn_known[idx] |= bit;
+            if self.turn_room(idx, from, to, req) {
+                memo.turn_ok[idx] |= bit;
+            }
+        }
+        memo.turn_ok[idx] & bit != 0
+    }
+
+    /// A run of `cells` cells from `at` in direction `dir` (fewer up to the `goal` where
+    /// it heads into its end, `arrive`), where all of them are open: the cell it ends
+    /// at and what its cells cost (remembered for the search).
+    #[allow(clippy::too_many_arguments)]
+    fn run_memo(&self, memo: &mut Memo, at: usize, dir: usize, cells: usize, goal: usize, arrive: usize, req: &Request, rules: &RoutingRules) -> RunEnd {
+        let key = at * 6 + dir;
+        if memo.run_stamp[key] != memo.run {
+            let (mut end, mut g) = (at, 0.0);
+            let mut open = true;
+            for _ in 0..cells {
+                let Some((ni, cost)) = self.step(end, dir).and_then(|ni| self.step_cost(memo, end, ni, dir, req, rules).map(|c| (ni, c))) else {
+                    open = false;
+                    break;
+                };
+                g += cost;
+                end = ni;
+                if end == goal && (arrive == 6 || dir == arrive) {
+                    break;
+                }
+            }
+            memo.runs[key] = if open { (end as u32, g) } else { (u32::MAX, 0.0) };
+            memo.run_stamp[key] = memo.run;
+        }
+        let (e, c) = memo.runs[key];
+        (e != u32::MAX).then_some((e as usize, c))
     }
 
     /// The costs from the cells to `goal` without turns and without the other routes
     /// (Dijkstra backwards: they only make the way longer), until the one of `start` is
-    /// known. Gives the highest known cost (the other cells cost at least as much) and
-    /// the cells known.
+    /// known. Gives the
+    /// highest known cost (the other cells cost at least as much) and the cells known.
     fn costs_to_goal(&self, search: &mut Search, run: u32, start: usize, goal: usize, req: &Request, rules: &RoutingRules) -> (f32, Vec<usize>) {
         let Search { to_goal, reached, settled, .. } = search;
         let mut heap = BinaryHeap::new();
@@ -897,26 +1633,12 @@ impl Space {
                 break;
             }
             // Entering this cell from a neighbour costs its factor.
-            let c = self.coords(idx);
             for nd in 0..6 {
-                let (axis, up) = (nd / 2, nd % 2 == 1);
-                let mut nc = c;
-                if up {
-                    if c[axis] + 1 >= self.n[axis] {
-                        continue;
-                    }
-                    nc[axis] += 1;
-                } else {
-                    if c[axis] == 0 {
-                        continue;
-                    }
-                    nc[axis] -= 1;
-                }
-                let ni = self.index(nc);
-                if settled[ni] == run || !self.open_for(ni, req) || (axis == 0 && !self.crossing_ok(ni, idx)) {
+                let Some(ni) = self.step(idx, nd) else { continue };
+                if settled[ni] == run || !self.open_for(ni, req) || (nd / 2 == 0 && !self.crossing_ok(ni, idx, req.half)) {
                     continue;
                 }
-                let nd = reach + self.cell * self.factor(idx, axis, req, rules);
+                let nd = reach + self.cell * self.factor(idx, nd / 2, req, rules);
                 if reached[ni] != run || nd < to_goal[ni] {
                     (to_goal[ni], reached[ni]) = (nd, run);
                     heap.push(Reverse((nd.to_bits(), ni)));
@@ -947,7 +1669,7 @@ impl Space {
         let cells = self.cells_along(points);
         // The ends may lie in the walls (cable glands) or in their devices.
         let inner = if cells.len() > 2 { &cells[1..cells.len() - 1] } else { &[][..] };
-        inner.iter().all(|&i| self.passable(i, req)) && cells.windows(2).all(|w| self.coords(w[0])[0] == self.coords(w[1])[0] || self.crossing_ok(w[0], w[1]))
+        inner.iter().all(|&i| self.passable(i, req)) && cells.windows(2).all(|w| self.coords(w[0])[0] == self.coords(w[1])[0] || self.crossing_ok(w[0], w[1], req.half))
     }
 
     /// Registers what runs through the cells: its class (segregation) and its
@@ -1009,30 +1731,68 @@ impl Space {
     }
 }
 
-fn dist_to_segment(q: V3, a: V3, b: V3) -> f32 {
-    let ab = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
-    let l2 = ab[0] * ab[0] + ab[1] * ab[1] + ab[2] * ab[2];
-    let t = if l2 <= f32::EPSILON { 0.0 } else { (((q[0] - a[0]) * ab[0] + (q[1] - a[1]) * ab[1] + (q[2] - a[2]) * ab[2]) / l2).clamp(0.0, 1.0) };
-    dist(q, [a[0] + ab[0] * t, a[1] + ab[1] * t, a[2] + ab[2] * t])
+/// A slab with rectangular `openings` ([y range], [z range]) cut out of it, as boxes.
+fn cut_openings(slab: (V3, V3), openings: &[([f32; 2], [f32; 2])]) -> Vec<(V3, V3)> {
+    let mut boxes = vec![slab];
+    for &(y, z) in openings {
+        let mut next = Vec::new();
+        for (lo, hi) in boxes {
+            if y[0] >= hi[1] || y[1] <= lo[1] || z[0] >= hi[2] || z[1] <= lo[2] {
+                next.push((lo, hi));
+                continue;
+            }
+            // Above and below the opening across the whole slab, beside it between.
+            if y[0] > lo[1] {
+                next.push((lo, [hi[0], y[0], hi[2]]));
+            }
+            if y[1] < hi[1] {
+                next.push(([lo[0], y[1], lo[2]], hi));
+            }
+            let (ya, yb) = (y[0].max(lo[1]), y[1].min(hi[1]));
+            if z[0] > lo[2] {
+                next.push(([lo[0], ya, lo[2]], [hi[0], yb, z[0]]));
+            }
+            if z[1] < hi[2] {
+                next.push(([lo[0], ya, z[1]], [hi[0], yb, hi[2]]));
+            }
+        }
+        boxes = next;
+    }
+    boxes
 }
 
-/// The way to `state` (in `prev`) came at least `n` steps straight on in its
-/// direction, or straight from the start.
-fn straight_on(prev: &[u32], mut state: usize, n: usize) -> bool {
-    let dir = state % 7;
-    // The state is `n` steps from the last turn when its `n - 1` predecessors came the
-    // same way.
-    for _ in 1..n {
-        let p = prev[state];
-        if p == u32::MAX || p as usize % 7 == 6 {
-            return true;
-        }
-        if p as usize % 7 != dir {
-            return false;
-        }
-        state = p as usize;
+/// Distance of a point from a box (0 inside).
+fn box_distance(q: V3, lo: V3, hi: V3) -> f32 {
+    let d = [0, 1, 2].map(|i| (lo[i] - q[i]).max(q[i] - hi[i]).max(0.0));
+    (d[0] * d[0] + d[1] * d[1] + d[2] * d[2]).sqrt()
+}
+
+/// Distance of a point of a floor plan from its outline.
+fn plan_distance(plan: &[[f32; 2]], q: [f32; 2]) -> f32 {
+    let mut best = f32::INFINITY;
+    for i in 0..plan.len() {
+        let (a, b) = (plan[i], plan[(i + 1) % plan.len()]);
+        let ab = [b[0] - a[0], b[1] - a[1]];
+        let l2 = ab[0] * ab[0] + ab[1] * ab[1];
+        let t = if l2 <= f32::EPSILON { 0.0 } else { (((q[0] - a[0]) * ab[0] + (q[1] - a[1]) * ab[1]) / l2).clamp(0.0, 1.0) };
+        let p = [a[0] + ab[0] * t, a[1] + ab[1] * t];
+        best = best.min((q[0] - p[0]).hypot(q[1] - p[1]));
     }
-    true
+    best
+}
+
+/// Unit vector of a direction (axis × 2 + 1 for up).
+fn unit(dir: usize) -> V3 {
+    let mut v = [0.0; 3];
+    v[dir / 2] = if dir % 2 == 1 { 1.0 } else { -1.0 };
+    v
+}
+
+fn dist_to_segment(q: V3, a: V3, b: V3) -> f32 {
+    let ab = sub(b, a);
+    let l2 = ab[0] * ab[0] + ab[1] * ab[1] + ab[2] * ab[2];
+    let t = if l2 <= f32::EPSILON { 0.0 } else { (((q[0] - a[0]) * ab[0] + (q[1] - a[1]) * ab[1] + (q[2] - a[2]) * ab[2]) / l2).clamp(0.0, 1.0) };
+    dist(q, add(a, scale(ab, t)))
 }
 
 /// Removes repeated points and points in the middle of straight stretches.
@@ -1067,6 +1827,35 @@ pub fn bends(points: &[V3]) -> (usize, f32) {
     let n = points.len().saturating_sub(2);
     let inner = points.windows(2).skip(1).take(points.len().saturating_sub(3)).map(|s| dist(s[0], s[1])).fold(f32::INFINITY, f32::min);
     (n, inner)
+}
+
+/// The bend radius of each corner of a way: `radius`, the least the route may bend
+/// with, at every corner (the 3D view bends corners too close for separate arcs as one
+/// curve of it), none at the ends.
+pub fn corner_radii(points: &[V3], radius: f32) -> Vec<f32> {
+    let n = points.len();
+    (0..n).map(|i| if i == 0 || i + 1 == n { 0.0 } else { radius }).collect()
+}
+
+/// Stretches of a polyline between two bends shorter than `least`: between corners
+/// of the grid (the short ways from the ends onto it and out of the nozzles are no
+/// bends), not counting the lane changes with an S-bend (a stretch between two bends
+/// that turn it back into the direction it came).
+pub fn close_bends(points: &[V3], least: f32) -> usize {
+    let sign = |v: f32| if v > 1e-3 { 1 } else if v < -1e-3 { -1 } else { 0 };
+    let heading = |a: V3, b: V3| [0, 1, 2].map(|i| sign(b[i] - a[i]));
+    let along_axis = |h: [i8; 3]| h.iter().filter(|v| **v != 0).count() == 1;
+    let n = points.len();
+    if n < 4 {
+        return 0;
+    }
+    (1..n - 2)
+        .filter(|&i| {
+            // The stretch from corner i to corner i + 1.
+            let (before, along, after) = (heading(points[i - 1], points[i]), heading(points[i], points[i + 1]), heading(points[i + 1], points[i + 2]));
+            along_axis(before) && along_axis(along) && along_axis(after) && before != after && dist(points[i], points[i + 1]) < least
+        })
+        .count()
 }
 
 #[cfg(test)]

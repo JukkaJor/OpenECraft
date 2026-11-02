@@ -295,6 +295,18 @@ fn building_services_route_from_room_to_room() {
             assert!(!batteries.iter().any(|(lo, hi)| (0..3).all(|k| mid[k] > lo[k] && mid[k] < hi[k])), "{cable}: {seg:?}");
         }
     }
+    // Each of them through a cable gland of its own in the roof of the rack.
+    let mut tops: Vec<[i32; 3]> = ["=ESS-W71", "=ESS-W72", "=ESS-W73", "=ESS-W74"]
+        .iter()
+        .map(|cable| {
+            let (_, points) = an.routing.item(cable).unwrap().stretches().into_iter().find(|(leg, _)| *leg == Some(rack)).unwrap();
+            let q = points.iter().min_by(|a, b| a[1].total_cmp(&b[1])).unwrap();
+            [0, 1, 2].map(|k| q[k].round() as i32)
+        })
+        .collect();
+    tops.sort_unstable();
+    tops.dedup();
+    assert_eq!(tops.len(), 4, "{tops:?}");
     // The plate view of a cabinet shows the legs of its line-up only: the cable from
     // the main distribution to the PLC cabinet stays on the plate of each.
     let w11 = an.routing.item("=MD-W11").expect("=MD-W11");

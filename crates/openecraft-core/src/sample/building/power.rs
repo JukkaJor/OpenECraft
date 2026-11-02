@@ -90,6 +90,13 @@ fn busbar(g: &mut Pg) {
     }
 }
 
+/// The wire drawn last has the cross-section `cs` (a tap off the bars).
+fn tap(g: &mut Pg, cs: &str) {
+    if let Some(w) = g.prj.pages[g.page].wires.last_mut() {
+        w.cross_section = cs.into();
+    }
+}
+
 /// Cross-section of the bars of the busbar system (Cu 30 x 10 mm).
 const BUSBAR: &str = "300 mm²";
 
@@ -131,9 +138,15 @@ pub(super) fn feeder_q3(prj: &mut Project, section: u64) {
     // Surge arrester type 1 + 2 between the conductors and PE, with remote signalling.
     for (i, (x, l)) in [(40.0, "L1"), (48.0, "L2"), (56.0, "L3"), (64.0, "N")].into_iter().enumerate() {
         let text = if i == 0 { "Surge protection" } else { "" };
-        g.sym("spd", x, 80.0, 0, "-F10", "", text).pins(&[l, "PE"]).w(x, rails[i].0, x, 76.0).w(x, 84.0, x, 92.0);
+        g.sym("spd", x, 80.0, 0, "-F10", "", text).pins(&[l, "PE"]).w(x, rails[i].0, x, 76.0);
+        tap(&mut g, "35 mm²");
+        g.w(x, 84.0, x, 92.0);
+        tap(&mut g, "16 mm²");
     }
-    g.w(40.0, 92.0, 72.0, 92.0).w(72.0, 56.0, 72.0, 92.0);
+    g.w(40.0, 92.0, 72.0, 92.0);
+    tap(&mut g, "16 mm²");
+    g.w(72.0, 56.0, 72.0, 92.0);
+    tap(&mut g, "16 mm²");
     // Q3: the outputs spread to the current transformers; the voltage taps before them.
     g.sym("fuse_swdisc3", 120.0, 72.0, 0, "-Q3", "", "Pumps\nNH2 3 x 80 A");
     g.w(120.0, 24.0, 120.0, 68.0).w(128.0, 32.0, 128.0, 68.0).w(136.0, 40.0, 136.0, 68.0);

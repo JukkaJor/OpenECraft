@@ -16,6 +16,7 @@ fn item(key: &str, class: Class, diameter: f32, points: Vec<V3>) -> RoutedItem {
         length: 0.0,
         cut: 0.0,
         diameter,
+        bend_radius: 0.0,
         free: 0.0,
         bends: 0,
         shielded: false,

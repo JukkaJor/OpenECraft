@@ -93,8 +93,7 @@ pub fn material(prj: &Project) -> Vec<(String, f32, Vec<String>)> {
 
 /// Clamping range of a part in mm (technical data "Clamping range min" / "max").
 pub fn clamping_range(prj: &Project, part: &str) -> Option<(f32, f32)> {
-    let p = prj.parts.iter().chain(crate::parts::catalog()).find(|p| p.number == part)?;
-    Some((crate::panel::tech_number(p, "Clamping range min")?, crate::panel::tech_number(p, "Clamping range max")?))
+    crate::panel::clamping_range(prj, part)
 }
 
 /// Accessories of unknown cables, glands that do not fit the cable, and shielded field

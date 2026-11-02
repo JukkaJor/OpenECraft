@@ -168,13 +168,37 @@ fn corners_are_rounded_with_the_bend_radius() {
     assert!(arc.len() >= 3);
     assert!(arc.iter().all(|q| (dist(*q, [900.0, 100.0, 0.0]) - 100.0).abs() < 0.01), "{arc:?}");
     assert!(dist(arc[0], [900.0, 0.0, 0.0]) < 0.01 && dist(arc[arc.len() - 1], [1000.0, 100.0, 0.0]) < 0.01);
-    // Between two corners close together each arc takes half of the segment.
+    // Two corners too close together for their arcs bend as one curve through the
+    // middle between them.
     let zigzag = [[0.0, 0.0, 0.0], [100.0, 0.0, 0.0], [100.0, 100.0, 0.0], [200.0, 100.0, 0.0]];
     let round = fillet(&zigzag, 500.0, 4);
-    assert!(round.iter().all(|q| q[1] <= 100.0 && q[0] >= 0.0 && q[0] <= 200.0));
-    assert!(round.iter().any(|q| dist(*q, [100.0, 50.0, 0.0]) < 0.01), "the arcs meet half way: {round:?}");
+    assert!(round.iter().all(|q| q[1] >= -1e-3 && q[1] <= 100.0 + 1e-3 && q[0] >= -1e-3 && q[0] <= 200.0 + 1e-3), "{round:?}");
+    assert!(round.iter().any(|q| dist(*q, [100.0, 50.0, 0.0]) < 0.5), "through the middle: {round:?}");
     // Straight lines stay as they are.
     assert_eq!(fillet(&[[0.0; 3], [10.0, 0.0, 0.0], [20.0, 0.0, 0.0]], 50.0, 4).len(), 3);
+}
+
+#[test]
+fn a_lane_change_is_an_s_curve() {
+    // A jog of 50 between two long stretches, with a bend radius of 125: two arcs of
+    // 125 turning 36.9 degrees each, 75 along the way on each side; smooth, and
+    // nowhere outside the jog across the way.
+    let path = [[0.0, 0.0, 0.0], [1000.0, 0.0, 0.0], [1000.0, 50.0, 0.0], [2000.0, 50.0, 0.0]];
+    let round = fillet(&path, 125.0, 4);
+    assert_eq!((round[0], round[round.len() - 1]), (path[0], path[3]));
+    assert!(round.iter().all(|q| q[1] >= -1e-3 && q[1] <= 50.0 + 1e-3), "{round:?}");
+    assert!(round.iter().any(|q| dist(*q, [1000.0, 25.0, 0.0]) < 0.01), "through the middle of the jog: {round:?}");
+    let first = round.iter().position(|q| q[1] > 1e-3).unwrap();
+    assert!((round[first - 1][0] - 925.0).abs() < 1.0, "leaves the way 75 before the jog: {round:?}");
+    // The direction never turns by more than a step of the arcs (18.4 degrees).
+    for s in round.windows(3) {
+        let (u, v) = (norm(sub(s[1], s[0])), norm(sub(s[2], s[1])));
+        assert!(dot(u, v) > 0.94, "{s:?}");
+    }
+    // A jog wider than two radii is two ordinary bends with a straight bit between.
+    let wide = [[0.0, 0.0, 0.0], [1000.0, 0.0, 0.0], [1000.0, 400.0, 0.0], [2000.0, 400.0, 0.0]];
+    let round = fillet(&wide, 125.0, 4);
+    assert!(round.iter().any(|q| dist(*q, [1000.0, 125.0, 0.0]) < 0.01) && round.iter().any(|q| dist(*q, [1000.0, 275.0, 0.0]) < 0.01), "{round:?}");
 }
 
 #[test]
@@ -195,6 +219,33 @@ fn tubes_are_closed_round_and_face_outwards() {
         }
     }
     assert!(bent.iter().any(|(_, k)| *k == 9));
+}
+
+#[test]
+fn close_corners_get_arcs_that_fit_between_them() {
+    // A step of 20 between two right-angled corners into another plane: both corners
+    // rounded with arcs that share the stretch between them (radius 10 each), the way
+    // never beyond the corners.
+    let stair = [[0.0, 0.0, 0.0], [300.0, 0.0, 0.0], [300.0, 20.0, 0.0], [300.0, 20.0, 300.0]];
+    let round = fillet(&stair, 100.0, 4);
+    assert_eq!((round[0], round[round.len() - 1]), (stair[0], stair[3]));
+    assert!(!round.contains(&stair[1]) && !round.contains(&stair[2]), "{round:?}");
+    assert!(round.iter().all(|q| q[0] <= 300.0 + 1e-3 && q[1] >= -1e-3 && q[1] <= 20.0 + 1e-3), "{round:?}");
+    assert!(curvature(&round) * 10.0 <= 1.05, "{}", curvature(&round));
+    // A corner 60 from the start of the way: an arc of 60, from the start on.
+    let early = [[0.0, 0.0, 0.0], [60.0, 0.0, 0.0], [60.0, 400.0, 0.0]];
+    let round = fillet(&early, 100.0, 4);
+    assert_eq!(round[0], early[0]);
+    assert!(round.iter().all(|q| q[0] <= 60.0 + 1e-3), "{round:?}");
+    assert!(curvature(&round) * 60.0 <= 1.03, "{}", curvature(&round));
+    // Many corners in a row: each with an arc that fits, within the corners.
+    let stairs = [[0.0, 0.0, 0.0], [200.0, 0.0, 0.0], [200.0, 15.0, 0.0], [200.0, 15.0, 15.0], [200.0, 30.0, 15.0], [200.0, 30.0, 300.0]];
+    let round = fillet(&stairs, 50.0, 4);
+    assert!(round.iter().all(|q| q[0] <= 200.0 + 1e-3 && q[1] <= 30.0 + 1e-3 && q[2] <= 300.0 + 1e-3 && q[2] >= -1e-3), "{round:?}");
+    assert_eq!((round[0], round[round.len() - 1]), (stairs[0], stairs[5]));
+    // A corner turning by a few degrees only stays sharp.
+    let dogleg = [[0.0, 0.0, 0.0], [100.0, 0.0, 0.0], [200.0, 5.0, 0.0]];
+    assert_eq!(fillet(&dogleg, 50.0, 4), dogleg.to_vec());
 }
 
 #[test]

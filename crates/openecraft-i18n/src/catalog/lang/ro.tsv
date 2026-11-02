@@ -2768,7 +2768,6 @@ no way through the enclosure	nicio cale prin carcasă
 Only {}	Doar {}
 not routed: {}	nepozat: {}
 Frozen route of {} is no longer possible and was routed again	Traseul fixat al lui {} nu mai este posibil și a fost pozat din nou
-{} {} cannot be routed: no way around the obstacles	{} {} nu poate fi pozat: nicio cale de ocolire a obstacolelor
 {} {}: bends closer than the bend radius ({} mm)	{} {}: curburi mai strânse decât raza de curbură ({} mm)
 Segregation: {} run together with power conductors over {} mm	Separare: {} trec împreună cu conductoare de putere pe {} mm
 {}: routing path {} is full ({} % of its usable cross-section)	{}: calea de pozare {} este plină ({} % din secțiunea utilă)
@@ -6371,6 +6370,9 @@ Open cable ducts	Deschide canalele de cabluri
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	În vizualizarea 3D omite capacele tuturor canalelor de cabluri: firele din ele se văd
 {}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: canalul de cablu la {} mm este prea mic: cele {} fire ale sale nu pot fi pozate unul lângă altul
 Laying out the wires, cables and tubes…	Se așază conductoarele, cablurile și tuburile…
+{} {} cannot be routed: no way that keeps half its thickness clear of everything and bends with its radius of {} mm. Move its ends or make room for it.	{} {} nu poate fi pozat: nicio cale care păstrează jumătate din grosime liberă de tot și se curbează cu raza de {} mm. Mutați capetele sau faceți loc.
+Of the outer diameter, as laid fixed	Din diametrul exterior, pozat fix
+Of the outer diameter; pipes are bent with elbows of one and a half diameters	Din diametrul exterior; țevile se curbează cu coturi de un diametru și jumătate
 Wire colour	Culoarea firului
 Pin-out	Configurația pinilor
 No pin layout in the technical data of the part: the pins are shown in a row (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).	Nicio dispunere a pinilor în datele tehnice ale piesei: pinii sunt afișați pe un rând (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).

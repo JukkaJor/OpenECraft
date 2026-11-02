@@ -298,7 +298,7 @@ fn wires_run_through_the_cable_passages_in_one_bend() {
         let near = |a: [f32; 3]| vec3::dist(a, p) < 40.0;
         for s in segs.windows(2).filter(|s| vec3::dist(s[0].1, s[1].0) < 0.01 && near(s[0].1)) {
             let (u, v) = (vec3::norm(vec3::sub(s[0].1, s[0].0)), vec3::norm(vec3::sub(s[1].1, s[1].0)));
-            assert!(vec3::dot(u, v) > 0.6, "{} turns sharply at {:?}", w.number, s[0].1);
+            assert!(vec3::dot(u, v) > 0.6, "{} turns sharply at {:?}: {:?}", w.number, s[0].1, segs.iter().filter(|t| near(t.0)).map(|t| (t.0, t.1)).collect::<Vec<_>>());
             checked += 1;
         }
     }
@@ -854,5 +854,331 @@ fn cores_part_from_their_cable_without_lying_in_each_other() {
         for b in &cores[i + 1..] {
             assert!(vec3::dist(a.points[0], b.points[0]) >= a.diameter - 0.01, "{:?} {:?}", a.points[0], b.points[0]);
         }
+    }
+}
+
+/// Least distance between the segments `a`–`b` and `c`–`d`.
+fn segment_gap(a: [f32; 3], b: [f32; 3], c: [f32; 3], d: [f32; 3]) -> f32 {
+    use openecraft_core::parts::vec3::{add, dot, sub};
+    let (u, v, w) = (sub(b, a), sub(d, c), sub(a, c));
+    let (uu, uv, vv, uw, vw) = (dot(u, u), dot(u, v), dot(v, v), dot(u, w), dot(v, w));
+    let den = uu * vv - uv * uv;
+    let mut s = if den.abs() < 1e-6 { 0.0 } else { ((uv * vw - vv * uw) / den).clamp(0.0, 1.0) };
+    let t = if vv > 1e-9 { (uv * s + vw) / vv } else { 0.0 }.clamp(0.0, 1.0);
+    s = if uu > 1e-9 { (uv * t - uw) / uu } else { 0.0 }.clamp(0.0, 1.0);
+    let (p, q) = (add(a, u.map(|x| x * s)), add(c, v.map(|x| x * t)));
+    vec3::dist(p, q)
+}
+
+/// Least distance from the segment `a`–`b` to a box (sampled along the segment).
+fn box_gap(a: [f32; 3], b: [f32; 3], (lo, hi): ([f32; 3], [f32; 3])) -> f32 {
+    (0..=12)
+        .map(|k| {
+            let t = k as f32 / 12.0;
+            let q = [0, 1, 2].map(|i| a[i] + (b[i] - a[i]) * t);
+            let d = [0, 1, 2].map(|i| (lo[i] - q[i]).max(q[i] - hi[i]).max(0.0));
+            (d[0] * d[0] + d[1] * d[1] + d[2] * d[2]).sqrt()
+        })
+        .fold(f32::INFINITY, f32::min)
+}
+
+fn within_box(q: [f32; 3], (lo, hi): ([f32; 3], [f32; 3])) -> bool {
+    (0..3).all(|k| q[k] >= lo[k] && q[k] <= hi[k])
+}
+
+/// Distance of a point (x, z) from the edges of a floor plan.
+fn outline_gap(pts: &[[f32; 2]], q: [f32; 2]) -> f32 {
+    let mut least = f32::INFINITY;
+    for i in 0..pts.len() {
+        let (a, b) = (pts[i], pts[(i + 1) % pts.len()]);
+        let (ab, aq) = ([b[0] - a[0], b[1] - a[1]], [q[0] - a[0], q[1] - a[1]]);
+        let len2 = ab[0] * ab[0] + ab[1] * ab[1];
+        let t = if len2 < 1e-9 { 0.0 } else { ((aq[0] * ab[0] + aq[1] * ab[1]) / len2).clamp(0.0, 1.0) };
+        let p = [a[0] + ab[0] * t, a[1] + ab[1] * t];
+        least = least.min(((q[0] - p[0]).powi(2) + (q[1] - p[1]).powi(2)).sqrt());
+    }
+    least
+}
+
+/// What the wires, cables and tubes drawn in the 3D views of a project (every line-up
+/// and room) clip: each other and themselves (beyond the overlap the layout leaves
+/// where they are packed: a millimetre and a half between wires, two and a half
+/// millimetres where a cable or pipe is involved), the devices, busbars, rails and
+/// accessories, the bases, walls (but the fingers taken out) and covers of the cable
+/// ducts, the walls, plate and door of a cabinet (but where they go out through a
+/// gland or a passage), and the walls, floor and ceiling of a room; a line per clip.
+fn clipping_in_3d(prj: &Project) -> Vec<String> {
+    use openecraft_core::panel::{self, Face, ItemKind, Role, PLATE_Z};
+    use openecraft_core::parts::vec3::V3;
+    let an = Analysis::build(prj);
+    let pos = panel::positions(&prj.layout);
+    let tol = 0.3;
+    let mut out = Vec::new();
+    let scenes: Vec<usize> = (0..prj.layout.enclosures.len()).filter(|&k| prj.layout.enclosures[k].is_room() || panel::lineup_of(&prj.layout, k).first() == Some(&k)).collect();
+    for ei in scenes {
+        let mut ui = PanelUi { enclosure: ei, show_wires: true, ..Default::default() };
+        let shown = ui.shown_3d(prj, ei);
+        // The tubes are laid out on another thread: the scene with them laid out.
+        let ctx = egui::Context::default();
+        let mut s = ui.scene_3d(&ctx, prj, &an, ei, &shown);
+        let started = std::time::Instant::now();
+        while s.waiting.is_some() && started.elapsed().as_secs() < 600 {
+            std::thread::sleep(std::time::Duration::from_millis(20));
+            s = ui.scene_3d(&ctx, prj, &an, ei, &shown);
+        }
+        assert!(s.waiting.is_none(), "the layout of {} was not done", prj.layout.enclosures[ei].name);
+        let view = prj.layout.enclosures[ei].name.clone();
+        let label = |t: &routing_ui::RouteRef| match t {
+            routing_ui::RouteRef::Wire(wi) => format!("wire {} - {}", an.wiring[*wi].from, an.wiring[*wi].to),
+            routing_ui::RouteRef::Item(key) => key.clone(),
+            routing_ui::RouteRef::None => "?".into(),
+        };
+        let ends_of = |t: &routing_ui::RouteRef| -> Vec<u64> {
+            match t {
+                routing_ui::RouteRef::Wire(wi) => vec![an.wiring[*wi].items.0, an.wiring[*wi].items.1],
+                routing_ui::RouteRef::Item(key) => an.routing.item(key).map(|i| i.ends.iter().filter_map(|e| e.item).collect()).unwrap_or_default(),
+                routing_ui::RouteRef::None => Vec::new(),
+            }
+        };
+        // The tubes: way, radius, name, the items at the ends.
+        let tubes: Vec<(Vec<V3>, f32, String, Vec<u64>)> = s.tube_paths.iter().map(|(p, r, t)| (p.clone(), *r, label(t), ends_of(t))).collect();
+        // Wires to the door run along the door leaf: not held to the shell.
+        let on_door: Vec<bool> = s.tube_paths.iter().map(|(_, _, t)| matches!(t, routing_ui::RouteRef::Wire(wi) if an.wiring[*wi].door != (None, None))).collect();
+        // Solids (view coordinates) with the item they are (0: none) and a name; holes
+        // through the shells a tube may pass: glands, passages, openings.
+        let mut solids: Vec<((V3, V3), u64, String)> = Vec::new();
+        // The cable trays of a room: inside one a tube is off the room's surfaces.
+        let mut trays: Vec<(V3, V3)> = Vec::new();
+        // The boxes of the items (view coordinates) by id.
+        let mut boxes: std::collections::HashMap<u64, (V3, V3)> = std::collections::HashMap::new();
+        // Holes with how far round them a tube may still pass (through the shell).
+        let mut holes: Vec<((V3, V3), f32)> = Vec::new();
+        let grown = |(lo, hi): (V3, V3), g: f32| (lo.map(|v| v - g), hi.map(|v| v + g));
+        for &(k, pose) in &shown {
+            let e = &prj.layout.enclosures[k];
+            let h = e.height;
+            let seen = |(lo, hi): (V3, V3)| -> (V3, V3) {
+                let pts: Vec<V3> = (0..8).map(|c| pose.apply([[lo[0], hi[0]][c & 1], h - [lo[1], hi[1]][c >> 1 & 1], [lo[2], hi[2]][c >> 2]])).collect();
+                ([0, 1, 2].map(|i| pts.iter().map(|q| q[i]).fold(f32::INFINITY, f32::min)), [0, 1, 2].map(|i| pts.iter().map(|q| q[i]).fold(f32::NEG_INFINITY, f32::max)))
+            };
+            let name = |it: &openecraft_core::panel::PanelItem| if it.tag.is_empty() { format!("{} {}", e.name, it.part) } else { it.tag.clone() };
+            for it in &e.items {
+                let bx = panel::item_box(e, it);
+                boxes.insert(it.id, seen(bx));
+                if it.kind == ItemKind::Duct && e.is_room() {
+                    trays.push(seen(bx));
+                }
+                match it.kind {
+                    ItemKind::Device | ItemKind::Busbar | ItemKind::Rail => solids.push((seen(bx), it.id, name(it))),
+                    ItemKind::Accessory => {
+                        if openecraft_core::routing3d::accessories(prj, k, "Cable gland").iter().any(|g| g.id == it.id) {
+                            holes.push((seen(bx), e.wall() + 8.0));
+                        } else {
+                            solids.push((seen(bx), it.id, name(it)));
+                        }
+                    }
+                    ItemKind::Duct if it.face == Face::Plate && !e.is_room() => {
+                        for (part, _, finger) in panel::duct_boxes(e, it, true) {
+                            let b = seen(part);
+                            let drawn = s.faces.iter().filter(|f| f.item == Some((k, it.id))).any(|f| (0..f.n as usize).all(|i| within_box(f.pts[i], grown(b, 0.01))));
+                            if !finger || drawn {
+                                solids.push((b, it.id, format!("{} duct at ({:.0}, {:.0}){}", e.name, it.x, it.y, if finger { " (finger)" } else { "" })));
+                            }
+                        }
+                    }
+                    ItemKind::Cutout => holes.push((seen(bx), e.wall() + 1.0)),
+                    _ => {}
+                }
+            }
+            if e.is_room() {
+                for c in panel::components(e).into_iter().filter(|c| matches!(c.role, Role::RoomWall(Face::Inner(..)))) {
+                    for bx in c.boxes {
+                        solids.push((seen(bx), 0, format!("{} inner wall", e.name)));
+                    }
+                }
+            } else {
+                for p in panel::passages(&prj.layout, &pos, k) {
+                    let c = [p.at[0] - pos[k][0], p.at[1] - pos[k][1], p.at[2] - pos[k][2]];
+                    let t = e.wall() + 4.0;
+                    holes.push((seen(([c[0] - t, c[1] - p.half[0] - 1.0, c[2] - p.half[1] - 1.0], [c[0] + t, c[1] + p.half[0] + 1.0, c[2] + p.half[1] + 1.0])), 0.0));
+                }
+            }
+        }
+        let in_hole = |q: V3, r: f32| holes.iter().any(|(b, g)| within_box(q, grown(*b, g + 2.0 * r)));
+        // Points along a tube, every 10 mm at least.
+        let samples = |way: &[V3]| -> Vec<V3> {
+            let mut v = Vec::new();
+            for seg in way.windows(2) {
+                let n = (vec3::dist(seg[0], seg[1]) / 10.0).ceil().max(1.0) as usize;
+                for k in 0..n {
+                    let t = k as f32 / n as f32;
+                    v.push([0, 1, 2].map(|i| seg[0][i] + (seg[1][i] - seg[0][i]) * t));
+                }
+            }
+            v.extend(way.last().copied());
+            v
+        };
+        let room = prj.layout.enclosures[ei].is_room().then(|| (panel::outline(&prj.layout.enclosures[ei]), prj.layout.enclosures[ei].height));
+        for (ti, (way, r, what, ends)) in tubes.iter().enumerate() {
+            let r = *r;
+            // Solids.
+            for seg in way.windows(2) {
+                for (b, id, name) in &solids {
+                    if ends.contains(id) {
+                        continue;
+                    }
+                    let gap = box_gap(seg[0], seg[1], *b);
+                    if gap < r - tol {
+                        out.push(format!("{view}: {what} (r {r:.1}) into {name} [({:.1}, {:.1}, {:.1}) - ({:.1}, {:.1}, {:.1})] by {:.1} mm, segment ({:.1}, {:.1}, {:.1}) - ({:.1}, {:.1}, {:.1})", b.0[0], b.0[1], b.0[2], b.1[0], b.1[1], b.1[2], r - gap, seg[0][0], seg[0][1], seg[0][2], seg[1][0], seg[1][1], seg[1][2]));
+                        break;
+                    }
+                }
+            }
+            // Shells of the cabinets shown, and the room.
+            for q in samples(way) {
+                if in_hole(q, r) || on_door[ti] {
+                    continue;
+                }
+                let mut in_cabinet = false;
+                for &(k, pose) in &shown {
+                    let e = &prj.layout.enclosures[k];
+                    if e.is_room() {
+                        continue;
+                    }
+                    let l = pose.local(q);
+                    let (w, h, d, t) = (e.width, e.height, e.depth, e.wall());
+                    if l[0] <= 0.0 || l[0] >= w || l[1] <= 0.0 || l[1] >= h || l[2] <= 0.0 || l[2] >= d {
+                        continue;
+                    }
+                    in_cabinet = true;
+                    let bad = if l[0] < t + r - tol {
+                        Some("left wall")
+                    } else if l[0] > w - t - r + tol {
+                        Some("right wall")
+                    } else if l[1] < t + r - tol {
+                        Some("bottom")
+                    } else if l[1] > h - t - r + tol {
+                        Some("roof")
+                    } else if l[2] < PLATE_Z + r - tol {
+                        Some("mounting plate")
+                    } else if l[2] > d - t - r + tol {
+                        Some("door")
+                    } else {
+                        None
+                    };
+                    if let Some(bad) = bad {
+                        out.push(format!("{view}: {what} into the {bad} of {} at ({:.0}, {:.0}, {:.0})", e.name, l[0], l[1], l[2]));
+                    }
+                }
+                let in_tray = trays.iter().any(|b| within_box(q, grown(*b, 1.0)));
+                // Up to the device at its end a tube comes as near to the room's walls as
+                // the device stands.
+                let at_end = ends.iter().filter_map(|id| boxes.get(id)).any(|b| within_box(q, grown(*b, 2.0 * r + 1.0)));
+                if let (Some((outline, height)), false, false, false) = (&room, in_cabinet, in_tray, at_end) {
+                    let inside = panel::inside_outline(outline, [q[0], q[2]]);
+                    let gap = outline_gap(outline, [q[0], q[2]]);
+                    if !inside || gap < r - tol {
+                        out.push(format!("{view}: {what} into a wall of the room at ({:.0}, {:.0}, {:.0})", q[0], q[1], q[2]));
+                    } else if q[1] < r - tol {
+                        out.push(format!("{view}: {what} into the floor at ({:.0}, {:.0}, {:.0})", q[0], q[1], q[2]));
+                    } else if q[1] > height - r + tol {
+                        out.push(format!("{view}: {what} into the ceiling at ({:.0}, {:.0}, {:.0})", q[0], q[1], q[2]));
+                    }
+                    // The cabinets standing in the room (but through their glands).
+                    for &(k, pose) in shown.iter().filter(|s| !prj.layout.enclosures[s.0].is_room()) {
+                        let e = &prj.layout.enclosures[k];
+                        let l = pose.local(q);
+                        let d = [(-l[0]).max(l[0] - e.width), (-l[1]).max(l[1] - e.height), (-l[2]).max(l[2] - e.depth)].map(|v| v.max(0.0));
+                        let gap = (d[0] * d[0] + d[1] * d[1] + d[2] * d[2]).sqrt();
+                        if gap < r - tol {
+                            out.push(format!("{view}: {what} into cabinet {} by {:.1} mm at ({:.0}, {:.0}, {:.0})", e.name, r - gap, q[0], q[1], q[2]));
+                        }
+                    }
+                }
+            }
+        }
+        // Each other and themselves: the segments in a grid of cells.
+        let cell = 100.0;
+        let mut grid: std::collections::HashMap<[i32; 3], Vec<(usize, usize)>> = std::collections::HashMap::new();
+        let key = |v: f32| (v / cell).floor() as i32;
+        let cells_of = |a: V3, b: V3, r: f32| -> Vec<[i32; 3]> {
+            let lo = [0, 1, 2].map(|k| key(a[k].min(b[k]) - r));
+            let hi = [0, 1, 2].map(|k| key(a[k].max(b[k]) + r));
+            let mut v = Vec::new();
+            for x in lo[0]..=hi[0] {
+                for y in lo[1]..=hi[1] {
+                    for z in lo[2]..=hi[2] {
+                        v.push([x, y, z]);
+                    }
+                }
+            }
+            v
+        };
+        let along: Vec<Vec<f32>> = tubes
+            .iter()
+            .map(|(way, ..)| {
+                let mut v = vec![0.0];
+                for seg in way.windows(2) {
+                    v.push(v[v.len() - 1] + vec3::dist(seg[0], seg[1]));
+                }
+                v
+            })
+            .collect();
+        for (i, (way, r, ..)) in tubes.iter().enumerate() {
+            for j in 0..way.len().saturating_sub(1) {
+                for c in cells_of(way[j], way[j + 1], *r) {
+                    grid.entry(c).or_default().push((i, j));
+                }
+            }
+        }
+        let mut reported: std::collections::HashSet<(usize, usize)> = std::collections::HashSet::new();
+        for (i, (way, r, what, ends)) in tubes.iter().enumerate() {
+            for j in 0..way.len().saturating_sub(1) {
+                let mut seen: Vec<(usize, usize)> = Vec::new();
+                for c in cells_of(way[j], way[j + 1], *r) {
+                    for &(i2, j2) in grid.get(&c).map(Vec::as_slice).unwrap_or(&[]) {
+                        if (i2, j2) <= (i, j) || seen.contains(&(i2, j2)) {
+                            continue;
+                        }
+                        seen.push((i2, j2));
+                        let (way2, r2, what2, _) = &tubes[i2];
+                        if i2 == i {
+                            // The same tube: far enough along it to be another part.
+                            if (along[i][j] - along[i][j2]).abs() < 4.0 * r + vec3::dist(way[j], way[j + 1]) {
+                                continue;
+                            }
+                        } else if what2 == what {
+                            continue; // the cores of a cable with it and each other
+                        }
+                        // Two tubes ending at one connection point converge there, and
+                        // the cores of a cable part at its end item where the wires start.
+                        let ends_at = |w: &[V3]| [w.first(), w.last()].into_iter().flatten().copied().collect::<Vec<V3>>();
+                        let shared = ends_at(way).iter().any(|e| ends_at(way2).iter().any(|f| vec3::dist(*e, *f) < r + r2 + 1.0) && vec3::dist(*e, way[j]) < 60.0 * (r + r2));
+                        let (_, _, _, ends2) = &tubes[i2];
+                        let same_item = ends.iter().any(|id| ends2.contains(id) && boxes.get(id).is_some_and(|b| within_box(way[j], grown(*b, 4.0 * (r + r2) + 20.0))));
+                        if shared || same_item {
+                            continue;
+                        }
+                        // Pushed apart until they overlap by no more than the layout leaves
+                        // where they are packed.
+                        let wires = what.starts_with("wire ") && what2.starts_with("wire ");
+                        let left = if wires { 1.5 } else { 2.5 };
+                        let gap = segment_gap(way[j], way[j + 1], way2[j2], way2[j2 + 1]);
+                        if gap < r + r2 - left && reported.insert((i.min(i2), i.max(i2))) {
+                            out.push(format!("{view}: {what} and {what2} by {:.1} mm at ({:.0}, {:.0}, {:.0})", r + r2 - gap, way[j][0], way[j][1], way[j][2]));
+                        }
+                    }
+                }
+            }
+        }
+    }
+    out
+}
+
+#[test]
+fn nothing_drawn_in_3d_clips_anything() {
+    for (name, prj) in [("demo", openecraft_core::sample::demo_project()), ("pump_room", openecraft_core::sample::example("pump_room").unwrap()), ("building_services", openecraft_core::sample::example("building_services").unwrap())] {
+        let clips = clipping_in_3d(&prj);
+        assert!(clips.is_empty(), "{name}: {} clips:\n{}", clips.len(), clips.join("\n"));
     }
 }

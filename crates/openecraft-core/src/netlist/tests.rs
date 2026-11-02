@@ -97,3 +97,24 @@ fn wire_ends_touching_nothing_are_open() {
     let open = open_wire_ends(&prj, &prj.pages[0]);
     assert_eq!(open, vec![(1, p(100.0, 60.0)), (3, p(60.0, 40.0))]);
 }
+
+#[test]
+fn a_tap_with_its_own_cross_section_keeps_it() {
+    // The bars of a busbar (300 mm²) from the supply to -K1, a tap off them (35 mm²) to
+    // -K2: the connection to -K2 has the tap's cross-section, not the net's.
+    let mut prj = Project::default();
+    let page = &mut prj.pages[0];
+    page.symbols.push(sym(10, "pot_24", p(100.0, 40.0), "", "+24V"));
+    page.symbols.push(sym(11, "coil", p(100.0, 100.0), "-K1", ""));
+    page.symbols.push(sym(12, "coil", p(200.0, 100.0), "-K2", ""));
+    page.wires.push(Wire { id: 20, a: p(100.0, 44.0), b: p(100.0, 96.0), cross_section: "300 mm²".into(), ..Default::default() });
+    page.wires.push(Wire { id: 21, a: p(100.0, 70.0), b: p(200.0, 70.0), cross_section: "35 mm²".into(), ..Default::default() });
+    page.wires.push(Wire { id: 22, a: p(200.0, 70.0), b: p(200.0, 96.0), cross_section: "35 mm²".into(), ..Default::default() });
+    let nl = Netlist::build(&prj, true);
+    let open = Netlist::build(&prj, false);
+    let conns = connections(&prj, &nl, &open);
+    assert_eq!(conns.len(), 1);
+    assert_eq!((pin_designation(&prj, conns[0].a), pin_designation(&prj, conns[0].b)), ("-K1:A1".to_string(), "-K2:A1".to_string()));
+    assert_eq!(conns[0].cross_section, "35 mm²");
+    assert_eq!(crate::potentials::props_of(&prj, &nl, &open.nets[0]).cross_section, "300 mm²", "the net's own");
+}

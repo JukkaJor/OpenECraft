@@ -2765,7 +2765,6 @@ no way through the enclosure	외함을 통과하는 경로 없음
 Only {}	{}만
 not routed: {}	배선 경로 지정 안 됨: {}
 Frozen route of {} is no longer possible and was routed again	{}의 고정된 경로가 더 이상 불가능하여 경로가 다시 지정되었습니다
-{} {} cannot be routed: no way around the obstacles	{} {}의 배선 경로를 지정할 수 없음: 장애물을 우회하는 경로 없음
 {} {}: bends closer than the bend radius ({} mm)	{} {}: 굽힘이 굽힘 반경({} mm)보다 작음
 Segregation: {} run together with power conductors over {} mm	분리: {0}이(가) {1} mm 구간에서 전력 도체와 함께 지나감
 {}: routing path {} is full ({} % of its usable cross-section)	{0}: 배선 경로 {1}이(가) 가득 참(사용 가능 단면적의 {2} %)
@@ -6358,6 +6357,9 @@ Open cable ducts	케이블 덕트 열기
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	3D 보기에서 모든 케이블 덕트의 덮개를 생략합니다: 안의 전선이 보입니다
 {}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{0}: {1} mm 위치의 케이블 덕트가 너무 작습니다: 전선 {2}개를 나란히 배선할 수 없습니다
 Laying out the wires, cables and tubes…	전선, 케이블 및 튜브 배치 중…
+{} {} cannot be routed: no way that keeps half its thickness clear of everything and bends with its radius of {} mm. Move its ends or make room for it.	{} {}의 배선 경로를 지정할 수 없음: 모든 것에서 두께의 절반 간격을 유지하며 반경 {} mm로 굽는 경로 없음. 끝을 이동하거나 공간을 확보하십시오.
+Of the outer diameter, as laid fixed	외경의 배수, 고정 포설 시
+Of the outer diameter; pipes are bent with elbows of one and a half diameters	외경의 배수. 배관은 직경 1.5배의 곡관으로 굽힘
 Wire colour	전선 색상
 Pin-out	핀 배치
 No pin layout in the technical data of the part: the pins are shown in a row (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).	부품의 기술 데이터에 핀 배치가 없습니다: 핀이 한 줄로 표시됩니다 (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).

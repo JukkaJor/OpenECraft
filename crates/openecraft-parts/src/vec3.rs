@@ -246,51 +246,146 @@ pub fn length(a: V3) -> f32 {
     dot(a, a).sqrt()
 }
 
-/// The polyline with each corner rounded by an arc of `radius` (smaller where its
-/// segments are too short: an arc takes at most half of a segment between two corners
-/// and all of an end segment), `steps` points per quarter turn.
+/// The polyline with each corner rounded by an arc of `radius`, `steps` points per
+/// quarter turn; the radius is the least the way may bend with. Where the arcs of two
+/// corners do not both fit on the stretch between them, or the arc of a corner on an
+/// end stretch, they are drawn with the largest radius that fits (the corners share
+/// the stretch): the way never leaves the corners of the polyline. A jog shorter than
+/// two radii between two right-angled corners that lead back into the direction before
+/// them (a lane change) is an S-curve of two arcs of the radius. A corner turning by a
+/// few degrees only (a dog-leg onto the grid, a lane shift) stays as it is.
 pub fn fillet(points: &[V3], radius: f32, steps: usize) -> Vec<V3> {
     fillet_each(points, &vec![radius; points.len()], steps)
 }
 
-/// [`fillet`] with a radius for each corner (`radii[i]` for `points[i]`; missing ones
-/// keep their corner).
+/// Corners turning less than this (radians) stay sharp ([`fillet`]).
+const SHARP: f32 = 0.2;
+
+/// [`fillet`] with a radius for each corner (`radii[i]` for `points[i]`; missing or
+/// zero ones keep their corner).
 pub fn fillet_each(points: &[V3], radii: &[f32], steps: usize) -> Vec<V3> {
-    if points.len() < 3 {
-        return points.to_vec();
+    // Without repeated points.
+    let mut points: Vec<V3> = points.to_vec();
+    let mut radii: Vec<f32> = (0..points.len()).map(|i| radii.get(i).copied().unwrap_or(0.0)).collect();
+    let mut k = 1;
+    while k < points.len() {
+        if length(sub(points[k], points[k - 1])) < 1e-4 {
+            points.remove(k);
+            radii.remove(k);
+        } else {
+            k += 1;
+        }
     }
     let n = points.len();
+    if n < 3 {
+        return points;
+    }
+    let dir = |i: usize| norm(sub(points[i + 1], points[i]));
+    let len = |i: usize| length(sub(points[i + 1], points[i]));
+    // The turn at each corner (none at the ends and at corners that stay).
+    let turn: Vec<f32> = (0..n)
+        .map(|i| {
+            if i == 0 || i + 1 == n || radii[i] <= 0.0 {
+                return 0.0;
+            }
+            let t = dot(dir(i - 1), dir(i)).clamp(-1.0, 1.0).acos();
+            if t < SHARP { 0.0 } else { t.min(3.0) }
+        })
+        .collect();
+    // How far the arc of each corner reaches along the stretches on both sides of it:
+    // r tan(turn / 2), less where two arcs do not both fit on the stretch between them
+    // (both by the same share) or an arc does not fit on an end stretch.
+    let want: Vec<f32> = (0..n).map(|i| if turn[i] > 0.0 { radii[i] * (turn[i] / 2.0).tan() } else { 0.0 }).collect();
+    let mut tangent = want.clone();
+    for j in 0..n - 1 {
+        let need = want[j] + want[j + 1];
+        if need > len(j) + 1e-6 {
+            let f = len(j) / need;
+            tangent[j] = tangent[j].min(want[j] * f);
+            tangent[j + 1] = tangent[j + 1].min(want[j + 1] * f);
+        }
+    }
     let mut out = vec![points[0]];
-    for i in 1..n - 1 {
-        let (a, p, b) = (points[i - 1], points[i], points[i + 1]);
-        let (la, lb) = (length(sub(p, a)), length(sub(b, p)));
-        let radius = radii.get(i).copied().unwrap_or(0.0);
-        if la < 1e-4 || lb < 1e-4 || radius <= 0.0 {
-            out.push(p);
+    let mut i = 1;
+    while i + 1 < n {
+        if turn[i] <= 0.0 {
+            out.push(points[i]);
+            i += 1;
             continue;
         }
-        let (u, v) = (scale(sub(p, a), 1.0 / la), scale(sub(b, p), 1.0 / lb));
-        let turn = dot(u, v).clamp(-1.0, 1.0).acos();
-        if turn < 1e-3 || turn > 3.0 {
-            out.push(p);
-            continue;
+        // A lane change: two right-angled corners back into the direction before them,
+        // closer than two radii, with room for the S-curve on both sides.
+        if i + 2 < n && turn[i + 1] > 0.0 {
+            let r = radii[i].min(radii[i + 1]);
+            let (before, after) = (len(i - 1) - tangent[i - 1], len(i + 1) - tangent[i + 2]);
+            if let Some(s) = s_curve(&points[i - 1..=i + 2], r, before, after, steps) {
+                out.extend(s);
+                i += 2;
+                continue;
+            }
         }
-        let half = (turn / 2.0).tan();
-        let room = (if i == 1 { la } else { la / 2.0 }).min(if i == n - 2 { lb } else { lb / 2.0 });
-        let t = (radius * half).min(room);
-        let r = t / half;
-        let s = sub(p, scale(u, t));
-        let w = norm(sub(v, scale(u, dot(u, v))));
-        let c = add(s, scale(w, r));
-        let k = ((turn / std::f32::consts::FRAC_PI_2 * steps as f32).ceil() as usize).max(2);
-        for j in 0..=k {
-            let phi = turn * j as f32 / k as f32;
-            out.push(add(c, add(scale(w, -r * phi.cos()), scale(u, r * phi.sin()))));
-        }
+        let r = tangent[i] / (turn[i] / 2.0).tan();
+        out.extend(arc(points[i], dir(i - 1), dir(i), r, tangent[i], steps));
+        i += 1;
     }
     out.push(points[n - 1]);
     out.dedup_by(|x, y| length(sub(*x, *y)) < 1e-2);
     out
+}
+
+/// The arc of radius `r` round the corner at `p` from direction `u` into `w`, starting
+/// `t` before the corner (its tangent length), `steps` points per quarter turn.
+fn arc(p: V3, u: V3, w: V3, r: f32, t: f32, steps: usize) -> Vec<V3> {
+    let turn = dot(u, w).clamp(-1.0, 1.0).acos();
+    let s = sub(p, scale(u, t));
+    let across = norm(sub(w, scale(u, dot(u, w))));
+    let c = add(s, scale(across, r));
+    let k = ((turn / std::f32::consts::FRAC_PI_2 * steps as f32).ceil() as usize).max(2);
+    (0..=k).map(|j| turn * j as f32 / k as f32).map(|phi| add(c, add(scale(across, -r * phi.cos()), scale(u, r * phi.sin())))).collect()
+}
+
+/// A lane change (`points`: the corner before the jog, its two corners and the one
+/// after; across for less than two radii between two right-angled turns, then on as
+/// before) as two arcs of radius `r`, where they fit into the room `before` the jog
+/// and `after` it.
+fn s_curve(points: &[V3], r: f32, before: f32, after: f32, steps: usize) -> Option<Vec<V3>> {
+    let [a, p, b, c] = [points[0], points[1], points[2], points[3]];
+    let (u, v, w) = (norm(sub(p, a)), norm(sub(b, p)), norm(sub(c, b)));
+    let lb = length(sub(b, p));
+    if lb >= 2.0 * r || dot(u, v).abs() > 1e-3 || dot(u, w) < 0.999 {
+        return None;
+    }
+    // Arcs of angle θ: across 2 r (1 − cos θ) = lb, along r sin θ on each side.
+    let theta = (1.0 - lb / (2.0 * r)).acos();
+    let h = r * theta.sin();
+    if h > before + 1e-3 || h > after + 1e-3 {
+        return None;
+    }
+    let start = sub(p, scale(u, h));
+    let c1 = add(start, scale(v, r));
+    let middle = add(p, scale(v, lb / 2.0));
+    let k = ((theta / std::f32::consts::FRAC_PI_2 * steps as f32).ceil() as usize).max(2);
+    let arc: Vec<V3> = (0..=k).map(|j| theta * j as f32 / k as f32).map(|phi| add(c1, add(scale(v, -r * phi.cos()), scale(u, r * phi.sin())))).collect();
+    let mut out = arc.clone();
+    // The second arc is the first turned round the middle of the jog.
+    out.extend(arc.iter().rev().skip(1).map(|q| sub(scale(middle, 2.0), *q)));
+    Some(out)
+}
+
+/// The tightest curvature (1 / radius) along a polyline: the turn at each point over
+/// the mean of the segments on both sides of it.
+pub fn curvature(points: &[V3]) -> f32 {
+    points
+        .windows(3)
+        .map(|s| {
+            let (a, b) = (sub(s[1], s[0]), sub(s[2], s[1]));
+            let (la, lb) = (length(a), length(b));
+            if la < 1e-6 || lb < 1e-6 {
+                return 0.0;
+            }
+            (dot(a, b) / (la * lb)).clamp(-1.0, 1.0).acos() / ((la + lb) / 2.0)
+        })
+        .fold(0.0, f32::max)
 }
 
 /// A round tube of radius `r` with `sides` along `path`, its ends closed: triangles
