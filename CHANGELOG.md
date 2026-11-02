@@ -171,8 +171,8 @@ with a command line, an MCP server, a parts server and a project server.
   room a route takes the nearest; cables and pipes ending at the same device (a heat
   pump) may meet there, also when the device is in a cabinet standing in the room:
   the cable comes in through the building entry and on through the cabinet's gland.
-  Cabinets hanging on a wall leave the space below them free for routes and are
-  entered through their bottom too. A new enclosure system for **house connection
+  Cabinets hanging on a wall are entered through the glands in their bottom too: a
+  shaft below each gland, open to the front, stays free for the routes. A new enclosure system for **house connection
   boxes** (glass-fibre reinforced polyester with a hinged cover); in the building
   example the house connection box is such an enclosure above the cable entry, with
   the NH fuse base of the utility (fed from below) and the PEN terminal block inside,

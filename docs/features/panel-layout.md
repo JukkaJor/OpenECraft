@@ -240,7 +240,8 @@ room (or two cabinets of one room) runs in legs: through the cabinet to a cable 
 its roof, sides or rear (one of its own cabinet first, otherwise of the line-up; without
 one through the middle of the roof, which is reported), then through the room. A
 cabinet hanging on a wall (its bottom above the floor) is also left through a gland in
-its bottom, and the space below it stays free for routes. Frozen, such a route keeps its legs.
+its bottom: below each such gland a shaft down to the floor and out to the front of the
+cabinet stays free for the routes. Frozen, such a route keeps its legs.
 Hoses, tubes and pipes end at the nozzles of the generated models of their devices (the
 suction and the pressure nozzle of a pump, the nozzles of a vessel, both ends of a valve
 or a fitting, the outlets of a manifold): the route comes to a point twice as far out of

@@ -19,8 +19,11 @@ use openecraft_i18n::tr;
 use std::collections::{HashMap, VecDeque};
 
 /// Faces of a cabinet through which a route leaves it into the room; one hanging on
-/// the wall also through its bottom ([`room_side`]).
+/// the wall also through its bottom ([`room_side`], [`shafts_below`]).
 const ROOM_SIDES: [Face; 4] = [Face::Roof, Face::Left, Face::Right, Face::Rear];
+/// How far a shaft below a gland in the bottom of a hanging cabinet reaches beyond the
+/// gland on every side, mm.
+const SHAFT_MARGIN: f32 = 50.0;
 
 /// Whether a route leaves cabinet `ci` into the room through `face`: its roof, sides and
 /// rear, and the bottom of a cabinet hanging on the wall above the floor.
@@ -34,11 +37,7 @@ fn hangs(prj: &Project, ci: usize) -> bool {
     panel::lineup_of(l, ci).first().and_then(|&i| l.enclosures[i].elevation).is_some_and(|h| h > 0.0)
 }
 
-/// Cabinet `ci` hangs on the wall with a cable gland in its bottom: routes come from
-/// below, the space below it is free.
-fn entered_from_below(prj: &Project, ci: usize) -> bool {
-    hangs(prj, ci) && accessories(prj, ci, "Cable gland").iter().any(|g| g.face == Face::Bottom)
-}
+
 /// How far outside its cable gland a route through the room starts, mm.
 const OUTSIDE: f32 = 60.0;
 /// Smallest edge of the cells of a room's grid, mm: rooms are large, their routes
@@ -56,14 +55,61 @@ pub fn cabinet_in_room(prj: &Project, poses: &[SitePose], ri: usize, ci: usize, 
 }
 
 /// The box cabinet `ci` takes in room `ri` (room coordinates), from the floor (with its
-/// plinth) to its top; one hanging on the wall and entered from below
-/// ([`entered_from_below`]) from its bottom: the space below it is free.
+/// plinth) to its top.
 pub fn cabinet_box(prj: &Project, poses: &[SitePose], ri: usize, ci: usize) -> (V3, V3) {
     let (r, c) = (&prj.layout.enclosures[ri], &prj.layout.enclosures[ci]);
     let (lo, hi) = panel::bounds(&panel::footprint(prj, ri, ci));
-    let bottom = if entered_from_below(prj, ci) { poses[ci].at[1] - poses[ri].at[1] - c.build.plinth } else { 0.0 };
     let top = poses[ci].at[1] - poses[ri].at[1] + c.height;
-    ([lo[0], r.height - top, lo[1]], [hi[0], r.height - bottom.max(0.0), hi[1]])
+    ([lo[0], r.height - top, lo[1]], [hi[0], r.height, hi[1]])
+}
+
+/// Below a cabinet hanging on the wall, the shafts from the cable glands in its bottom
+/// down to the floor and forward out from under it (room coordinates): routes come up
+/// through them to the glands.
+pub fn shafts_below(prj: &Project, poses: &[SitePose], ri: usize, ci: usize) -> Vec<(V3, V3)> {
+    if !hangs(prj, ci) {
+        return Vec::new();
+    }
+    let (r, e) = (&prj.layout.enclosures[ri], &prj.layout.enclosures[ci]);
+    accessories(prj, ci, "Cable gland")
+        .into_iter()
+        .filter(|g| g.face == Face::Bottom)
+        .map(|g| {
+            let at = panel::face_point(e, Face::Bottom, [g.x + g.w / 2.0, g.y + g.h / 2.0, 0.0]);
+            let half = g.w.max(g.h) / 2.0 + SHAFT_MARGIN;
+            let (a, b) = (cabinet_in_room(prj, poses, ri, ci, at), cabinet_in_room(prj, poses, ri, ci, [at[0], at[1], e.depth + half]));
+            let (lo, hi) = ([0, 1, 2].map(|k| a[k].min(b[k])), [0, 1, 2].map(|k| a[k].max(b[k])));
+            ([lo[0] - half, lo[1], lo[2] - half], [hi[0] + half, r.height, hi[2] + half])
+        })
+        .collect()
+}
+
+/// The boxes cabinet `ci` blocks in room `ri` (room coordinates): its box
+/// ([`cabinet_box`]), below a cabinet hanging on the wall without its shafts
+/// ([`shafts_below`]).
+pub fn cabinet_blocks(prj: &Project, poses: &[SitePose], ri: usize, ci: usize) -> Vec<(V3, V3)> {
+    let (lo, hi) = cabinet_box(prj, poses, ri, ci);
+    let shafts = shafts_below(prj, poses, ri, ci);
+    let Some(bottom) = shafts.iter().map(|s| s.0[1]).reduce(f32::min) else { return vec![(lo, hi)] };
+    // The cabinet itself, and the space below it in the plan cells between the edges of
+    // the footprint and of the shafts that no shaft takes.
+    let mut out = vec![(lo, [hi[0], bottom, hi[2]])];
+    let edges = |k: usize| {
+        let mut v: Vec<f32> = [lo[k], hi[k]].into_iter().chain(shafts.iter().flat_map(|s| [s.0[k], s.1[k]])).map(|c| c.clamp(lo[k], hi[k])).collect();
+        v.sort_by(f32::total_cmp);
+        v.dedup();
+        v
+    };
+    let (xs, zs) = (edges(0), edges(2));
+    for x in xs.windows(2) {
+        for z in zs.windows(2) {
+            let mid = [(x[0] + x[1]) / 2.0, (z[0] + z[1]) / 2.0];
+            if !shafts.iter().any(|s| mid[0] > s.0[0] && mid[0] < s.1[0] && mid[1] > s.0[2] && mid[1] < s.1[2]) {
+                out.push(([x[0], bottom, z[0]], [x[1], hi[1], z[1]]));
+            }
+        }
+    }
+    out
 }
 
 /// The grid of room `ri` (`pos`: [`panel::positions`], `poses`: [`panel::site_poses`]).
@@ -91,7 +137,9 @@ pub fn room_space(prj: &Project, ri: usize, pos: &[V3], poses: &[SitePose], rule
         }
     }
     for ci in panel::cabinets_in(&prj.layout, ri) {
-        s.block_box(shift(cabinet_box(prj, poses, ri, ci)));
+        for b in cabinet_blocks(prj, poses, ri, ci) {
+            s.block_box(shift(b));
+        }
     }
     s.add_enclosure(e, ri, o, rules, prj.layout.duct_fill_limit);
     s.add_room(pts, o, e.height);
