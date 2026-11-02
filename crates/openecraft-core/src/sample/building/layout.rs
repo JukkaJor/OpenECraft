@@ -10,7 +10,6 @@ use crate::panel::{self, Face, ItemKind};
 const CABLES: &[(&str, &str, f32, &str)] = &[
     ("=GRID-W1", "GEN.CBL-NAYY-4X150", 35.0, "Utility supply"),
     ("=GRID-W2", "GEN.CBL-NYY-4X150", 6.0, "Main cable"),
-    ("=GRID-W3", "GEN.CBL-H07VK-1X25-GNYE", 8.0, "Main bonding conductor"),
     ("=MD-W11", "GEN.CBL-NYY-5X25", 14.0, "Automation cabinet"),
     ("=MD-W12", "GEN.CBL-NYY-5X35", 16.0, "Battery storage"),
     ("=MD-W13", "GEN.CBL-NYY-5X35", 14.0, "Pump cabinet"),
@@ -41,6 +40,7 @@ const CABLES: &[(&str, &str, f32, &str)] = &[
     ("=HEAT-W1", "GEN.CBL-5G2.5", 10.0, "Heat pump"),
     ("=HEAT-W2", "GEN.CBL-NYM-3X2.5", 8.0, "Circulating pump heat pump"),
     ("=HEAT-W3", "GEN.CBL-NYM-3X2.5", 10.0, "Circulating pump hot water"),
+    ("=GRID-W3", "GEN.CBL-H07VK-1X25-GNYE", 8.0, "Main bonding conductor"),
 ];
 
 pub(super) fn cables(prj: &mut Project, db: &PartsDb) {
