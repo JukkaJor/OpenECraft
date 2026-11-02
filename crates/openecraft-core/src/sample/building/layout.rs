@@ -278,8 +278,9 @@ fn enclosures(prj: &mut Project, db: &PartsDb) -> [usize; 6] {
     profile(prj, gak, ItemKind::Rail, panel::RAIL_PART, (20.0, 200.0), (340.0, 200.0));
     on_rail(prj, gak, 200.0, 20.0, &["=PV+GAK-F1", "=PV+GAK-F2", "=PV+GAK-F3", "=PV+GAK-F4", "=PV+GAK-X1"]);
     gland_over(prj, gak, "GEN.GLAND-M20", "=PV+GAK-X1");
+    // The PV strings come down from the roof: their glands in the top.
     for x in [60.0, 120.0] {
-        gland(prj, gak, "GEN.GLAND-M20", Face::Bottom, x, 100.0);
+        gland(prj, gak, "GEN.GLAND-M20", Face::Roof, x, 100.0);
     }
 
     // The 19-inch rack: batteries at the bottom, network at the top.
