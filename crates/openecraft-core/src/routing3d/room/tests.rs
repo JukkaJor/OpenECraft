@@ -110,21 +110,21 @@ fn a_hose_from_a_cabinet_to_the_wall_runs_through_its_gland() {
 #[test]
 fn a_cabinet_hanging_on_the_wall_is_left_through_its_bottom() {
     let (mut prj, r, c) = pump_room();
-    prj.layout.enclosures[c].elevation = Some(1200.0);
+    prj.layout.enclosures[c].elevation = Some(1800.0);
     let pos = panel::positions(&prj.layout);
     let poses = panel::site_poses(&prj);
     // It takes the space down to the floor.
-    assert_eq!(cabinet_box(&prj, &poses, r, c), ([500.0, 800.0, 0.0], [1100.0, 2800.0, 250.0]));
+    assert_eq!(cabinet_box(&prj, &poses, r, c), ([500.0, 200.0, 0.0], [1100.0, 2800.0, 250.0]));
     assert!(shafts_below(&prj, &poses, r, c).is_empty());
-    // A gland in its bottom takes the hose out into the room: the shaft below the gland
-    // and out to the front of the cabinet is free, the rest below it and the cabinet
-    // itself blocked.
+    // A gland in its bottom takes the hose down to the valve on the wall below it: the
+    // shaft below the gland and out to the front of the cabinet is free, the rest below
+    // it and the cabinet itself blocked.
     let gland = panel::place_accessory(&mut prj, c, "GEN.GLAND-M25", Face::Bottom, p(282.0, 107.0)).unwrap();
-    assert_eq!(shafts_below(&prj, &poses, r, c), vec![([730.0, 1598.0, 59.0], [866.0, 2800.0, 386.0])]);
+    assert_eq!(shafts_below(&prj, &poses, r, c), vec![([730.0, 998.0, 59.0], [866.0, 2800.0, 386.0])]);
     let s = room_space(&prj, r, &pos, &poses, &prj.layout.routing);
     assert!(!s.blocked(add(pos[r], [800.0, 2500.0, 125.0])), "below the gland");
     assert!(s.blocked(add(pos[r], [600.0, 2500.0, 125.0])), "below the rest of the cabinet");
-    assert!(s.blocked(add(pos[r], [800.0, 1200.0, 125.0])));
+    assert!(s.blocked(add(pos[r], [800.0, 600.0, 125.0])));
     let an = Analysis::checked(&prj);
     assert!(!an.issues.iter().any(|i| i.message().contains("enters through the roof")), "{:?}", an.issues);
     let h = tube(&an, "-QM1");
