@@ -8,6 +8,7 @@
 //! | GET | `/api/v1/parts/{number}` | [`Part`] |
 //! | PUT | `/api/v1/parts/{number}` | create / replace a part (editor) |
 //! | DELETE | `/api/v1/parts/{number}` | delete a part (editor) |
+//! | GET | `/api/v1/parts/{number}/accessories` | [`Accessories`]: its accessories and the parts it fits |
 //! | GET | `/api/v1/parts/{number}/history` | [`HistoryEntry`] list, newest first |
 //! | GET | `/api/v1/parts/{number}/history/{revision}` | the part as of that change |
 //! | POST | `/api/v1/parts/{number}/attachments?name=&kind=` | file body → [`Part`] (editor) |
@@ -101,6 +102,23 @@ pub struct PartList {
     pub total: usize,
     pub offset: usize,
     pub parts: Vec<crate::Part>,
+}
+
+/// The accessories of a part and, if it is an accessory itself, the parts it fits
+/// (both sides of the pairs, see [`crate::accessory`]); parts without their models.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Accessories {
+    pub accessories: Vec<crate::Part>,
+    pub fits: Vec<crate::Part>,
+}
+
+impl Accessories {
+    /// The accessories and the parts `part` fits among `parts`.
+    pub fn of(parts: &[crate::Part], part: &crate::Part) -> Accessories {
+        let brief = |v: Vec<&crate::Part>| v.into_iter().map(crate::portal::brief).collect();
+        Accessories { accessories: brief(crate::accessory::accessories_of(parts, part)), fits: brief(crate::accessory::mains_of(parts, part)) }
+    }
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
@@ -248,6 +266,11 @@ pub fn encode_component(s: &str) -> String {
 /// Path of a single part, e.g. `/api/v1/parts/GEN.CT-9A-24DC`.
 pub fn part_path(number: &str) -> String {
     format!("{API_PREFIX}/parts/{}", encode_component(number))
+}
+
+/// Path of the accessories of a part.
+pub fn accessories_path(number: &str) -> String {
+    format!("{}/accessories", part_path(number))
 }
 
 /// Path of an attachment's file.

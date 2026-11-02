@@ -6362,3 +6362,63 @@ Laying out the wires, cables and tubes…	正在排布导线、电缆和管子�
 {} {} cannot be routed: no way that keeps half its thickness clear of everything and bends with its radius of {} mm. Move its ends or make room for it.	{} {} 无法布线：没有与一切保持半个厚度间距并以 {} mm 半径弯曲的路径。请移动其端点或留出空间。
 Of the outer diameter, as laid fixed	外径的倍数，固定敷设
 Of the outer diameter; pipes are bent with elbows of one and a half diameters	外径的倍数；管道用一倍半直径的弯头弯曲
+Wire colour	导线颜色
+Pin-out	引脚分配
+No pin layout in the technical data of the part: the pins are shown in a row (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).	部件的技术数据中没有引脚布局：引脚显示为一排 (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).
+Seen on the mating faces; the colours are those of the wires and cable cores at the pins.	从插合面看；颜色为引脚上导线和电缆芯线的颜色。
+{}: pin {}	{}：引脚 {}
+Pin layout: {}	引脚布局：{}
+Coding: {}	编码：{}
+Connector pin-outs and flat cables	连接器引脚分配和扁平电缆
+Plug tag, e.g. -X10 (default: all plugs)	插头标识，例如 -X10（默认：所有插头）
+Connector pin-outs: mating faces and pin tables (SVG)	连接器引脚分配：插合面和引脚表 (SVG)
+{}: pin {} is not a pin of the part {}	{}：引脚 {} 不是部件 {} 的引脚
+{}: core {} of flat cable {} lands on pin {}	{}：扁平电缆芯线 {}（{}）接在引脚 {} 上
+Flat cable {} has {} cores, the IDC connector {} has {} pins	扁平电缆 {} 有 {} 芯，IDC 连接器 {} 有 {} 个引脚
+Pin side (male)	插针侧（公）
+Socket side (female)	插孔侧（母）
+Mating faces	插合面
+used: colour of the wire or core	已用：导线或芯线颜色
+coding key	编码键
+No plugs	没有插头
+No wires at the pins of {}	{} 的引脚上没有导线
+12 · Connectors, pin-outs and ribbon cables	12 · 连接器、引脚分配和排线
+Plug connectors with their parts: a sensor on M12 and a valve on M8, a fan and its thermostat on GX16 and GX12 aviation connectors, a buzzer on a D-sub 9 and an operator panel on a ribbon cable between two IDC sockets; the plugs window shows the pin-out of each plug on its mating faces with the wire and core colours.	带部件的插接连接器：M12 上的传感器和 M8 上的阀，GX16 和 GX12 航空插头上的风扇及其温控器，D-sub 9 上的蜂鸣器，以及两个 IDC 插座之间排线上的操作面板；插头窗口在插合面上显示每个插头的引脚分配及导线和芯线颜色。
+Unknown side {} (socket or pin)	未知的侧 {}（socket 或 pin）
+Shows the mating face of a plug: pin layout of its part, the position of each pin on the face (mm, seen on the pin side) with potential, wire colour and cable core of both sides	显示插头的插合面：部件的引脚布局、每个引脚的位置（mm，从插针侧看）以及两侧的电位、导线颜色和电缆芯线
+Makes the wires at the pins of a plug cores of a flat (ribbon) cable: pin n takes core n, as on IDC connectors	将插头引脚上的导线设为扁平电缆（排线）的芯线：引脚 n 对应芯线 n，与 IDC 连接器相同
+Cable tag, e.g. -W20	电缆标识，例如 -W20
+Side of the plug the cable leaves: socket or pin (default: socket)	电缆引出的插头侧：socket 或 pin（默认：socket）
+Fits	适配
+Fits {}	适配 {}
+The accessory fits none of the device's parts	该附件不适配设备的任何部件
+{}: accessory {} fits none of the device's parts	{}：附件 {} 不适配设备的任何部件
+Part accessories	部件附件
+Unknown device: {}	未知设备：{}
+{} fits none of the parts of {}	{} 不适配 {} 的任何部件
+Accessories only work together with the parts they fit. A part lists its accessories, an accessory the parts it fits; either side is enough.	附件只能与其适配的部件配合使用。部件列出其附件，附件列出其适配的部件；任一侧即可。
+Accessories of this part	此部件的附件
+This part is an accessory	此部件是附件
+It only works attached to one of the parts it fits; the project check reports it on a device without such a part	它只有安装在其适配的部件上才能工作；项目检查会在没有此类部件的设备上报告它
+Where the accessory sits on the part it fits, in the panel layout and the 3D view	附件在其适配部件上的位置（在柜体布局和 3D 视图中）
+Fits these parts	适配这些部件
+➕ Add part	➕ 添加部件
+Accessory, mounted: {}	附件，安装：{}
+Give a device tag or a part number	请给出设备标识或部件号
+Lists and renames devices, adds accessories to their parts	列出并重命名设备，为其部件添加附件
+Lists the accessories that fit a part or the parts of a device, and the parts an accessory fits (project parts, built-in and bundled catalogs)	列出适配某部件或某设备部件的附件，以及某附件适配的部件（项目部件、内置和随附目录）
+Device tag: the accessories that can still be added to its parts	设备标识：仍可添加到其部件的附件
+Adds an accessory to a device; it must fit one of the device's parts	向设备添加附件；它必须适配设备的某个部件
+Part number of the accessory	附件的部件号
+On the front	前面
+On the left side	左侧
+On the right side	右侧
+Not mounted	不安装
+Rear	后
+Isometric	等轴测
+Show everything (Home)	显示全部 (Home)
+Drag: orbit · right/middle or Shift+drag: pan · wheel: zoom at the pointer · double-click: look there · W A S D / arrows, Q E: move · click: select	拖动：环绕 · 右键/中键或 Shift 拖动：平移 · 滚轮：在指针处缩放 · 双击：看向该处 · W A S D / 方向键，Q E：移动 · 单击：选择
+W A S D / arrows, Q / E	W A S D / 方向键，Q / E
+Move through the 3D view (Shift: faster)	在 3D 视图中移动（Shift：更快）
+Double-click (3D view)	双击（3D 视图）
+Look at the point clicked, closer	看向单击的点，并靠近

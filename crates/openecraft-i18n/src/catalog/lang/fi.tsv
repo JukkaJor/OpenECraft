@@ -6373,3 +6373,63 @@ Laying out the wires, cables and tubes…	Johtoja, kaapeleita ja putkia asetella
 {} {} cannot be routed: no way that keeps half its thickness clear of everything and bends with its radius of {} mm. Move its ends or make room for it.	{} {} ei voi reitittää: ei reittiä, joka pitää puolet paksuudesta vapaana kaikesta ja taipuu säteellä {} mm. Siirrä päitä tai tee tilaa.
 Of the outer diameter, as laid fixed	Ulkohalkaisijasta, kiinteästi asennettuna
 Of the outer diameter; pipes are bent with elbows of one and a half diameters	Ulkohalkaisijasta; putket taivutetaan puolentoista halkaisijan käyrillä
+Wire colour	Johtimen väri
+Pin-out	Nastajärjestys
+No pin layout in the technical data of the part: the pins are shown in a row (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).	Osan teknisissä tiedoissa ei ole nastajärjestystä: nastat näytetään rivissä (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).
+Seen on the mating faces; the colours are those of the wires and cable cores at the pins.	Nähtynä liitinpinnoilta; värit ovat nastojen johtimien ja kaapelijohtimien värit.
+{}: pin {}	{}: nasta {}
+Pin layout: {}	Nastajärjestys: {}
+Coding: {}	Koodaus: {}
+Connector pin-outs and flat cables	Liittimien nastajärjestykset ja lattakaapelit
+Plug tag, e.g. -X10 (default: all plugs)	Liittimen tunnus, esim. -X10 (oletus: kaikki liittimet)
+Connector pin-outs: mating faces and pin tables (SVG)	Liittimien nastajärjestykset: liitinpinnat ja nastataulukot (SVG)
+{}: pin {} is not a pin of the part {}	{}: nasta {} ei ole osan {} nasta
+{}: core {} of flat cable {} lands on pin {}	{}: johdin {} (lattakaapeli {}) osuu nastaan {}
+Flat cable {} has {} cores, the IDC connector {} has {} pins	Lattakaapelissa {} on {} johdinta, IDC-liittimessä {} on {} nastaa
+Pin side (male)	Nastapuoli (uros)
+Socket side (female)	Holkkipuoli (naaras)
+Mating faces	Liitinpinnat
+used: colour of the wire or core	käytössä: johtimen tai kaapelijohtimen väri
+coding key	koodausavain
+No plugs	Ei liittimiä
+No wires at the pins of {}	Liittimen {} nastoissa ei ole johtimia
+12 · Connectors, pin-outs and ribbon cables	12 · Liittimet, nastajärjestykset ja lattakaapelit
+Plug connectors with their parts: a sensor on M12 and a valve on M8, a fan and its thermostat on GX16 and GX12 aviation connectors, a buzzer on a D-sub 9 and an operator panel on a ribbon cable between two IDC sockets; the plugs window shows the pin-out of each plug on its mating faces with the wire and core colours.	Liittimet osineen: anturi M12-liittimessä ja venttiili M8-liittimessä, tuuletin ja sen termostaatti GX16- ja GX12-liittimissä, summeri D-sub 9 -liittimessä ja ohjauspaneeli lattakaapelissa kahden IDC-liittimen välissä; liitinikkuna näyttää kunkin liittimen nastajärjestyksen liitinpinnoilla johtimien väreineen.
+Unknown side {} (socket or pin)	Tuntematon puoli {} (socket tai pin)
+Shows the mating face of a plug: pin layout of its part, the position of each pin on the face (mm, seen on the pin side) with potential, wire colour and cable core of both sides	Näyttää liittimen liitinpinnan: osan nastajärjestys, kunkin nastan sijainti (mm, nastapuolelta katsottuna) sekä molempien puolten potentiaali, johtimen väri ja kaapelijohdin
+Makes the wires at the pins of a plug cores of a flat (ribbon) cable: pin n takes core n, as on IDC connectors	Tekee liittimen nastojen johtimista lattakaapelin johtimia: nasta n saa johtimen n, kuten IDC-liittimissä
+Cable tag, e.g. -W20	Kaapelin tunnus, esim. -W20
+Side of the plug the cable leaves: socket or pin (default: socket)	Liittimen puoli, josta kaapeli lähtee: socket tai pin (oletus: socket)
+Fits	Sopii
+Fits {}	Sopii osaan {}
+The accessory fits none of the device's parts	Lisävaruste ei sovi mihinkään laitteen osaan
+{}: accessory {} fits none of the device's parts	{}: lisävaruste {} ei sovi mihinkään laitteen osaan
+Part accessories	Osien lisävarusteet
+Unknown device: {}	Tuntematon laite: {}
+{} fits none of the parts of {}	{} ei sovi mihinkään laitteen {} osaan
+Accessories only work together with the parts they fit. A part lists its accessories, an accessory the parts it fits; either side is enough.	Lisävarusteet toimivat vain niiden osien kanssa, joihin ne sopivat. Osa luettelee lisävarusteensa, lisävaruste osat, joihin se sopii; toinen puoli riittää.
+Accessories of this part	Tämän osan lisävarusteet
+This part is an accessory	Tämä osa on lisävaruste
+It only works attached to one of the parts it fits; the project check reports it on a device without such a part	Se toimii vain kiinnitettynä johonkin osaan, johon se sopii; projektin tarkistus ilmoittaa siitä laitteessa, jossa tällaista osaa ei ole
+Where the accessory sits on the part it fits, in the panel layout and the 3D view	Missä lisävaruste on siinä osassa, johon se sopii, kaappiasettelussa ja 3D-näkymässä
+Fits these parts	Sopii näihin osiin
+➕ Add part	➕ Lisää osa
+Accessory, mounted: {}	Lisävaruste, asennus: {}
+Give a device tag or a part number	Anna laitetunnus tai osanumero
+Lists and renames devices, adds accessories to their parts	Luettelee ja nimeää laitteet uudelleen, lisää lisävarusteita niiden osiin
+Lists the accessories that fit a part or the parts of a device, and the parts an accessory fits (project parts, built-in and bundled catalogs)	Luettelee lisävarusteet, jotka sopivat osaan tai laitteen osiin, ja osat, joihin lisävaruste sopii (projektin osat, sisäänrakennetut ja mukana toimitetut luettelot)
+Device tag: the accessories that can still be added to its parts	Laitetunnus: lisävarusteet, jotka voi vielä lisätä sen osiin
+Adds an accessory to a device; it must fit one of the device's parts	Lisää laitteeseen lisävarusteen; sen on sovittava johonkin laitteen osaan
+Part number of the accessory	Lisävarusteen osanumero
+On the front	Edessä
+On the left side	Vasemmalla puolella
+On the right side	Oikealla puolella
+Not mounted	Ei asennettu
+Rear	Takaa
+Isometric	Isometrinen
+Show everything (Home)	Näytä kaikki (Home)
+Drag: orbit · right/middle or Shift+drag: pan · wheel: zoom at the pointer · double-click: look there · W A S D / arrows, Q E: move · click: select	Veto: kierrä · oikean/keskipainikkeen tai Vaihto-näppäimen veto: panoroi · rulla: zoomaa osoittimen kohdalle · kaksoisnapsautus: katso sinne · W A S D / nuolet, Q E: liiku · napsautus: valitse
+W A S D / arrows, Q / E	W A S D / nuolet, Q / E
+Move through the 3D view (Shift: faster)	Liiku 3D-näkymässä (Vaihto: nopeammin)
+Double-click (3D view)	Kaksoisnapsautus (3D-näkymä)
+Look at the point clicked, closer	Katso napsautettua kohtaa läheltä

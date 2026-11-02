@@ -130,6 +130,20 @@ fn the_details_load_the_whole_part_once() {
 }
 
 #[test]
+fn accessories_belong_to_the_selected_part() {
+    let mut b = Browser::new();
+    b.apply(&Reply::Search(Ok(result(2, &["HAG.CDA440D", "HAG.CZ001"]))), &[]);
+    b.selected = Some("HAG.CDA440D".into());
+    let acc = Accessories { accessories: vec![Part { number: "HAG.CZ001".into(), ..Default::default() }], fits: Vec::new() };
+    b.apply(&Reply::Accessories("HAG.CDA440D".into(), Ok(acc)), &[]);
+    assert_eq!(b.selected_accessories().map(|a| a.accessories.len()), Some(1));
+    // Following an accessory searches for it and shows it.
+    b.show_part("HAG.CZ001");
+    assert_eq!((b.text.as_str(), b.selected.as_deref()), ("HAG.CZ001", Some("HAG.CZ001")));
+    assert!(b.selected_accessories().is_none());
+}
+
+#[test]
 fn the_browser_fits_its_window_instead_of_growing_it() {
     // A window of the size the user left it, with the update list under the buttons:
     // the columns take the height left, so the window keeps its size frame by frame.

@@ -6373,3 +6373,63 @@ Laying out the wires, cables and tubes…	Disposizione di conduttori, cavi e tub
 {} {} cannot be routed: no way that keeps half its thickness clear of everything and bends with its radius of {} mm. Move its ends or make room for it.	{} {} non può essere instradato: nessun percorso che tenga metà del suo spessore libero da tutto e curvi con il suo raggio di {} mm. Spostare le estremità o fare spazio.
 Of the outer diameter, as laid fixed	Del diametro esterno, in posa fissa
 Of the outer diameter; pipes are bent with elbows of one and a half diameters	Del diametro esterno; le tubazioni sono curvate con curve di un diametro e mezzo
+Wire colour	Colore del filo
+Pin-out	Piedinatura
+No pin layout in the technical data of the part: the pins are shown in a row (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).	Nessuna disposizione dei pin nei dati tecnici dell'articolo: i pin sono mostrati in una fila (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).
+Seen on the mating faces; the colours are those of the wires and cable cores at the pins.	Vista sulle facce di accoppiamento; i colori sono quelli dei fili e dei conduttori del cavo ai pin.
+{}: pin {}	{}: pin {}
+Pin layout: {}	Disposizione dei pin: {}
+Coding: {}	Codifica: {}
+Connector pin-outs and flat cables	Piedinature dei connettori e cavi piatti
+Plug tag, e.g. -X10 (default: all plugs)	Sigla del connettore, ad es. -X10 (predefinito: tutti i connettori)
+Connector pin-outs: mating faces and pin tables (SVG)	Piedinature dei connettori: facce di accoppiamento e tabelle dei pin (SVG)
+{}: pin {} is not a pin of the part {}	{}: il pin {} non è un pin dell'articolo {}
+{}: core {} of flat cable {} lands on pin {}	{}: il conduttore {} del cavo piatto {} arriva sul pin {}
+Flat cable {} has {} cores, the IDC connector {} has {} pins	Il cavo piatto {} ha {} conduttori, il connettore IDC {} ha {} pin
+Pin side (male)	Lato pin (maschio)
+Socket side (female)	Lato prese (femmina)
+Mating faces	Facce di accoppiamento
+used: colour of the wire or core	usato: colore del filo o conduttore
+coding key	chiave di codifica
+No plugs	Nessun connettore
+No wires at the pins of {}	Nessun filo ai pin di {}
+12 · Connectors, pin-outs and ribbon cables	12 · Connettori, piedinature e cavi piatti
+Plug connectors with their parts: a sensor on M12 and a valve on M8, a fan and its thermostat on GX16 and GX12 aviation connectors, a buzzer on a D-sub 9 and an operator panel on a ribbon cable between two IDC sockets; the plugs window shows the pin-out of each plug on its mating faces with the wire and core colours.	Connettori con i loro articoli: un sensore su M12 e una valvola su M8, un ventilatore e il suo termostato su connettori aviazione GX16 e GX12, un cicalino su un D-sub 9 e un pannello operatore su un cavo piatto tra due connettori IDC; la finestra dei connettori mostra la piedinatura di ogni connettore sulle sue facce di accoppiamento con i colori dei fili e dei conduttori.
+Unknown side {} (socket or pin)	Lato sconosciuto {} (socket o pin)
+Shows the mating face of a plug: pin layout of its part, the position of each pin on the face (mm, seen on the pin side) with potential, wire colour and cable core of both sides	Mostra la faccia di accoppiamento di un connettore: disposizione dei pin del suo articolo, posizione di ogni pin (mm, vista lato pin) con potenziale, colore del filo e conduttore del cavo di entrambi i lati
+Makes the wires at the pins of a plug cores of a flat (ribbon) cable: pin n takes core n, as on IDC connectors	Rende i fili ai pin di un connettore conduttori di un cavo piatto: il pin n riceve il conduttore n, come sui connettori IDC
+Cable tag, e.g. -W20	Sigla del cavo, ad es. -W20
+Side of the plug the cable leaves: socket or pin (default: socket)	Lato del connettore da cui esce il cavo: socket o pin (predefinito: socket)
+Fits	Compatibile con
+Fits {}	Compatibile con {}
+The accessory fits none of the device's parts	L'accessorio non è compatibile con nessun articolo del dispositivo
+{}: accessory {} fits none of the device's parts	{}: l'accessorio {} non è compatibile con nessun articolo del dispositivo
+Part accessories	Accessori degli articoli
+Unknown device: {}	Dispositivo sconosciuto: {}
+{} fits none of the parts of {}	{} non è compatibile con nessun articolo di {}
+Accessories only work together with the parts they fit. A part lists its accessories, an accessory the parts it fits; either side is enough.	Gli accessori funzionano solo insieme agli articoli con cui sono compatibili. Un articolo elenca i suoi accessori, un accessorio gli articoli con cui è compatibile; basta un lato.
+Accessories of this part	Accessori di questo articolo
+This part is an accessory	Questo articolo è un accessorio
+It only works attached to one of the parts it fits; the project check reports it on a device without such a part	Funziona solo montato su uno degli articoli con cui è compatibile; la verifica del progetto lo segnala su un dispositivo senza tale articolo
+Where the accessory sits on the part it fits, in the panel layout and the 3D view	Dove si trova l'accessorio sull'articolo compatibile, nel layout del quadro e nella vista 3D
+Fits these parts	Compatibile con questi articoli
+➕ Add part	➕ Aggiungi articolo
+Accessory, mounted: {}	Accessorio, montato: {}
+Give a device tag or a part number	Indicare una sigla del dispositivo o un codice articolo
+Lists and renames devices, adds accessories to their parts	Elenca e rinomina i dispositivi, aggiunge accessori ai loro articoli
+Lists the accessories that fit a part or the parts of a device, and the parts an accessory fits (project parts, built-in and bundled catalogs)	Elenca gli accessori compatibili con un articolo o con gli articoli di un dispositivo e gli articoli con cui è compatibile un accessorio (articoli del progetto, cataloghi integrati e inclusi)
+Device tag: the accessories that can still be added to its parts	Sigla del dispositivo: gli accessori che si possono ancora aggiungere ai suoi articoli
+Adds an accessory to a device; it must fit one of the device's parts	Aggiunge un accessorio a un dispositivo; deve essere compatibile con uno degli articoli del dispositivo
+Part number of the accessory	Codice articolo dell'accessorio
+On the front	Sul fronte
+On the left side	Sul lato sinistro
+On the right side	Sul lato destro
+Not mounted	Non montato
+Rear	Retro
+Isometric	Isometrica
+Show everything (Home)	Mostra tutto (Home)
+Drag: orbit · right/middle or Shift+drag: pan · wheel: zoom at the pointer · double-click: look there · W A S D / arrows, Q E: move · click: select	Trascina: orbita · trascinamento destro/centrale o Maiusc: sposta vista · rotellina: zoom sul puntatore · doppio clic: guarda lì · W A S D / frecce, Q E: muoviti · clic: seleziona
+W A S D / arrows, Q / E	W A S D / frecce, Q / E
+Move through the 3D view (Shift: faster)	Muoversi nella vista 3D (Maiusc: più veloce)
+Double-click (3D view)	Doppio clic (vista 3D)
+Look at the point clicked, closer	Guarda il punto cliccato, più da vicino

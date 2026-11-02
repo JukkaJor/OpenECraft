@@ -6372,3 +6372,63 @@ Laying out the wires, cables and tubes…	Розкладання проводі�
 {} {} cannot be routed: no way that keeps half its thickness clear of everything and bends with its radius of {} mm. Move its ends or make room for it.	{} {} неможливо прокласти: немає шляху, який тримає половину товщини від усього і згинається з радіусом {} мм. Перемістіть кінці або звільніть місце.
 Of the outer diameter, as laid fixed	Від зовнішнього діаметра, при стаціонарному прокладанні
 Of the outer diameter; pipes are bent with elbows of one and a half diameters	Від зовнішнього діаметра; труби згинаються відводами у півтора діаметра
+Wire colour	Колір проводу
+Pin-out	Розпіновка
+No pin layout in the technical data of the part: the pins are shown in a row (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).	У технічних даних виробу немає розташування контактів: контакти показано в ряд (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).
+Seen on the mating faces; the colours are those of the wires and cable cores at the pins.	Вигляд з боку з'єднання; кольори відповідають проводам і жилам кабелів на контактах.
+{}: pin {}	{}: контакт {}
+Pin layout: {}	Розташування контактів: {}
+Coding: {}	Кодування: {}
+Connector pin-outs and flat cables	Розпіновки роз'ємів і плоскі кабелі
+Plug tag, e.g. -X10 (default: all plugs)	Позначення роз'єму, напр. -X10 (типово: усі роз'єми)
+Connector pin-outs: mating faces and pin tables (SVG)	Розпіновки роз'ємів: боки з'єднання і таблиці контактів (SVG)
+{}: pin {} is not a pin of the part {}	{}: контакт {} не є контактом виробу {}
+{}: core {} of flat cable {} lands on pin {}	{}: жила {} плоского кабелю {} потрапляє на контакт {}
+Flat cable {} has {} cores, the IDC connector {} has {} pins	Плоский кабель {} має {} жил, роз'єм IDC {} має {} контактів
+Pin side (male)	Бік штирів (вилка)
+Socket side (female)	Бік гнізд (розетка)
+Mating faces	Боки з'єднання
+used: colour of the wire or core	зайнятий: колір проводу або жили
+coding key	кодувальний ключ
+No plugs	Немає роз'ємів
+No wires at the pins of {}	Немає проводів на контактах {}
+12 · Connectors, pin-outs and ribbon cables	12 · Роз'єми, розпіновки і плоскі шлейфи
+Plug connectors with their parts: a sensor on M12 and a valve on M8, a fan and its thermostat on GX16 and GX12 aviation connectors, a buzzer on a D-sub 9 and an operator panel on a ribbon cable between two IDC sockets; the plugs window shows the pin-out of each plug on its mating faces with the wire and core colours.	Роз'єми з їхніми виробами: датчик на M12 і клапан на M8, вентилятор і його термостат на авіаційних роз'ємах GX16 і GX12, зумер на D-sub 9 і пульт оператора на плоскому шлейфі між двома роз'ємами IDC; вікно роз'ємів показує розпіновку кожного роз'єму на його боках з'єднання з кольорами проводів і жил.
+Unknown side {} (socket or pin)	Невідомий бік {} (socket або pin)
+Shows the mating face of a plug: pin layout of its part, the position of each pin on the face (mm, seen on the pin side) with potential, wire colour and cable core of both sides	Показує бік з'єднання роз'єму: розташування контактів виробу, положення кожного контакту (мм, вигляд з боку штирів) з потенціалом, кольором проводу і жилою кабелю з обох боків
+Makes the wires at the pins of a plug cores of a flat (ribbon) cable: pin n takes core n, as on IDC connectors	Робить проводи на контактах роз'єму жилами плоского кабелю (шлейфу): контакт n отримує жилу n, як у роз'ємів IDC
+Cable tag, e.g. -W20	Позначення кабелю, напр. -W20
+Side of the plug the cable leaves: socket or pin (default: socket)	Бік роз'єму, з якого виходить кабель: socket або pin (типово: socket)
+Fits	Підходить до
+Fits {}	Підходить до {}
+The accessory fits none of the device's parts	Приладдя не підходить до жодного виробу пристрою
+{}: accessory {} fits none of the device's parts	{}: приладдя {} не підходить до жодного виробу пристрою
+Part accessories	Приладдя виробів
+Unknown device: {}	Невідомий пристрій: {}
+{} fits none of the parts of {}	{} не підходить до жодного виробу {}
+Accessories only work together with the parts they fit. A part lists its accessories, an accessory the parts it fits; either side is enough.	Приладдя працює лише разом із виробами, до яких воно підходить. Виріб перелічує своє приладдя, приладдя — вироби, до яких підходить; достатньо одного боку.
+Accessories of this part	Приладдя цього виробу
+This part is an accessory	Цей виріб — приладдя
+It only works attached to one of the parts it fits; the project check reports it on a device without such a part	Працює лише на одному з виробів, до яких підходить; перевірка проєкту повідомляє про нього в пристрої без такого виробу
+Where the accessory sits on the part it fits, in the panel layout and the 3D view	Де приладдя розташоване на відповідному виробі, у компонуванні шафи та в 3D-вигляді
+Fits these parts	Підходить до цих виробів
+➕ Add part	➕ Додати виріб
+Accessory, mounted: {}	Приладдя, монтаж: {}
+Give a device tag or a part number	Вкажіть позначення пристрою або номер виробу
+Lists and renames devices, adds accessories to their parts	Виводить і перейменовує пристрої, додає приладдя до їхніх виробів
+Lists the accessories that fit a part or the parts of a device, and the parts an accessory fits (project parts, built-in and bundled catalogs)	Виводить приладдя, що підходить до виробу або виробів пристрою, і вироби, до яких підходить приладдя (вироби проєкту, вбудовані та постачені каталоги)
+Device tag: the accessories that can still be added to its parts	Позначення пристрою: приладдя, яке ще можна додати до його виробів
+Adds an accessory to a device; it must fit one of the device's parts	Додає приладдя до пристрою; воно має підходити до одного з виробів пристрою
+Part number of the accessory	Номер виробу приладдя
+On the front	Спереду
+On the left side	Ліворуч
+On the right side	Праворуч
+Not mounted	Не монтується
+Rear	Ззаду
+Isometric	Ізометрія
+Show everything (Home)	Показати все (Home)
+Drag: orbit · right/middle or Shift+drag: pan · wheel: zoom at the pointer · double-click: look there · W A S D / arrows, Q E: move · click: select	Перетягування: обертання · перетягування правою/середньою кнопкою або з Shift: зсув · колесо: масштаб біля вказівника · подвійне клацання: подивитися туди · W A S D / стрілки, Q E: рух · клацання: вибір
+W A S D / arrows, Q / E	W A S D / стрілки, Q / E
+Move through the 3D view (Shift: faster)	Переміщення у 3D-виді (Shift: швидше)
+Double-click (3D view)	Подвійне клацання (3D-вид)
+Look at the point clicked, closer	Подивитися на точку клацання, ближче

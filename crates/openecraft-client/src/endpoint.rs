@@ -47,6 +47,11 @@ impl Endpoint {
         self.json(ehttp::Method::POST, &format!("{API_PREFIX}/search"), query)
     }
 
+    /// GET /api/v1/parts/{number}/accessories: its accessories and the parts it fits.
+    pub fn accessories(&self, number: &str) -> ehttp::Request {
+        self.authorized(ehttp::Request::get(self.url(&api::accessories_path(number))))
+    }
+
     /// GET /api/v1/parts/{number}/history
     pub fn history(&self, number: &str) -> ehttp::Request {
         self.authorized(ehttp::Request::get(self.url(&format!("{}/history", api::part_path(number)))))

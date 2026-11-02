@@ -6373,3 +6373,63 @@ Laying out the wires, cables and tubes…	Rozmísťování vodičů, kabelů a t
 {} {} cannot be routed: no way that keeps half its thickness clear of everything and bends with its radius of {} mm. Move its ends or make room for it.	{} {} nelze vést: žádná cesta, která drží polovinu tloušťky od všeho a ohýbá se s poloměrem {} mm. Přesuňte konce nebo udělejte místo.
 Of the outer diameter, as laid fixed	Vnějšího průměru, pevně uloženo
 Of the outer diameter; pipes are bent with elbows of one and a half diameters	Vnějšího průměru; trubky se ohýbají oblouky o jeden a půl průměru
+Wire colour	Barva vodiče
+Pin-out	Zapojení pinů
+No pin layout in the technical data of the part: the pins are shown in a row (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).	V technických datech dílu chybí rozložení pinů: piny jsou zobrazeny v řadě (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).
+Seen on the mating faces; the colours are those of the wires and cable cores at the pins.	Pohled na čelní strany konektorů; barvy jsou barvy vodičů a žil kabelů na pinech.
+{}: pin {}	{}: pin {}
+Pin layout: {}	Rozložení pinů: {}
+Coding: {}	Kódování: {}
+Connector pin-outs and flat cables	Zapojení konektorů a ploché kabely
+Plug tag, e.g. -X10 (default: all plugs)	Označení konektoru, např. -X10 (výchozí: všechny konektory)
+Connector pin-outs: mating faces and pin tables (SVG)	Zapojení konektorů: čelní strany a tabulky pinů (SVG)
+{}: pin {} is not a pin of the part {}	{}: pin {} není pinem dílu {}
+{}: core {} of flat cable {} lands on pin {}	{}: žíla {} plochého kabelu {} vede na pin {}
+Flat cable {} has {} cores, the IDC connector {} has {} pins	Plochý kabel {} má {} žil, konektor IDC {} má {} pinů
+Pin side (male)	Strana kolíků (samec)
+Socket side (female)	Strana zdířek (samice)
+Mating faces	Čelní strany
+used: colour of the wire or core	obsazeno: barva vodiče nebo žíly
+coding key	kódovací klíč
+No plugs	Žádné konektory
+No wires at the pins of {}	Žádné vodiče na pinech {}
+12 · Connectors, pin-outs and ribbon cables	12 · Konektory, zapojení pinů a plochá kabely
+Plug connectors with their parts: a sensor on M12 and a valve on M8, a fan and its thermostat on GX16 and GX12 aviation connectors, a buzzer on a D-sub 9 and an operator panel on a ribbon cable between two IDC sockets; the plugs window shows the pin-out of each plug on its mating faces with the wire and core colours.	Konektory s jejich díly: senzor na M12 a ventil na M8, ventilátor a jeho termostat na leteckých konektorech GX16 a GX12, bzučák na D-sub 9 a ovládací panel na plochém kabelu mezi dvěma konektory IDC; okno konektorů ukazuje zapojení každého konektoru na jeho čelních stranách s barvami vodičů a žil.
+Unknown side {} (socket or pin)	Neznámá strana {} (socket nebo pin)
+Shows the mating face of a plug: pin layout of its part, the position of each pin on the face (mm, seen on the pin side) with potential, wire colour and cable core of both sides	Zobrazí čelní stranu konektoru: rozložení pinů jeho dílu, polohu každého pinu (mm, pohled na stranu kolíků) s potenciálem, barvou vodiče a žílou kabelu obou stran
+Makes the wires at the pins of a plug cores of a flat (ribbon) cable: pin n takes core n, as on IDC connectors	Udělá z vodičů na pinech konektoru žíly plochého kabelu: pin n dostane žílu n, jako u konektorů IDC
+Cable tag, e.g. -W20	Označení kabelu, např. -W20
+Side of the plug the cable leaves: socket or pin (default: socket)	Strana konektoru, ze které vychází kabel: socket nebo pin (výchozí: socket)
+Fits	Hodí se k
+Fits {}	Hodí se k {}
+The accessory fits none of the device's parts	Příslušenství se nehodí k žádnému dílu přístroje
+{}: accessory {} fits none of the device's parts	{}: příslušenství {} se nehodí k žádnému dílu přístroje
+Part accessories	Příslušenství dílů
+Unknown device: {}	Neznámý přístroj: {}
+{} fits none of the parts of {}	{} se nehodí k žádnému dílu {}
+Accessories only work together with the parts they fit. A part lists its accessories, an accessory the parts it fits; either side is enough.	Příslušenství funguje jen s díly, ke kterým se hodí. Díl uvádí své příslušenství, příslušenství díly, ke kterým se hodí; stačí jedna strana.
+Accessories of this part	Příslušenství tohoto dílu
+This part is an accessory	Tento díl je příslušenství
+It only works attached to one of the parts it fits; the project check reports it on a device without such a part	Funguje jen připevněné k jednomu z dílů, ke kterým se hodí; kontrola projektu je hlásí u přístroje bez takového dílu
+Where the accessory sits on the part it fits, in the panel layout and the 3D view	Kde příslušenství sedí na dílu, ke kterému se hodí, v rozvržení rozváděče a ve 3D zobrazení
+Fits these parts	Hodí se k těmto dílům
+➕ Add part	➕ Přidat díl
+Accessory, mounted: {}	Příslušenství, montáž: {}
+Give a device tag or a part number	Zadejte označení přístroje nebo číslo dílu
+Lists and renames devices, adds accessories to their parts	Vypisuje a přejmenovává přístroje, přidává příslušenství k jejich dílům
+Lists the accessories that fit a part or the parts of a device, and the parts an accessory fits (project parts, built-in and bundled catalogs)	Vypisuje příslušenství hodící se k dílu nebo dílům přístroje a díly, ke kterým se příslušenství hodí (díly projektu, vestavěné a dodané katalogy)
+Device tag: the accessories that can still be added to its parts	Označení přístroje: příslušenství, které lze ještě přidat k jeho dílům
+Adds an accessory to a device; it must fit one of the device's parts	Přidá příslušenství k přístroji; musí se hodit k jednomu z dílů přístroje
+Part number of the accessory	Číslo dílu příslušenství
+On the front	Vpředu
+On the left side	Na levé straně
+On the right side	Na pravé straně
+Not mounted	Nemontováno
+Rear	Zadní
+Isometric	Izometrický
+Show everything (Home)	Zobrazit vše (Home)
+Drag: orbit · right/middle or Shift+drag: pan · wheel: zoom at the pointer · double-click: look there · W A S D / arrows, Q E: move · click: select	Tažení: otáčení · tažení pravým/prostředním tlačítkem nebo se Shift: posun · kolečko: zoom u ukazatele · dvojklik: podívat se tam · W A S D / šipky, Q E: pohyb · klik: výběr
+W A S D / arrows, Q / E	W A S D / šipky, Q / E
+Move through the 3D view (Shift: faster)	Pohyb ve 3D zobrazení (Shift: rychleji)
+Double-click (3D view)	Dvojklik (3D zobrazení)
+Look at the point clicked, closer	Podívat se na kliknutý bod zblízka

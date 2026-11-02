@@ -6373,3 +6373,63 @@ Laying out the wires, cables and tubes…	Teller, kablolar ve tüpler yerleştir
 {} {} cannot be routed: no way that keeps half its thickness clear of everything and bends with its radius of {} mm. Move its ends or make room for it.	{} {} yönlendirilemiyor: her şeyden yarı kalınlığı kadar uzak kalan ve {} mm yarıçapla bükülen yol yok. Uçları taşıyın veya yer açın.
 Of the outer diameter, as laid fixed	Dış çapın katı, sabit döşemede
 Of the outer diameter; pipes are bent with elbows of one and a half diameters	Dış çapın katı; borular bir buçuk çaplık dirseklerle bükülür
+Wire colour	Tel rengi
+Pin-out	Pin dizilimi
+No pin layout in the technical data of the part: the pins are shown in a row (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).	Parçanın teknik verilerinde pin düzeni yok: pinler bir sırada gösterilir (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).
+Seen on the mating faces; the colours are those of the wires and cable cores at the pins.	Eşleşme yüzlerinden görünüm; renkler pinlerdeki tellerin ve kablo damarlarının renkleridir.
+{}: pin {}	{}: pin {}
+Pin layout: {}	Pin düzeni: {}
+Coding: {}	Kodlama: {}
+Connector pin-outs and flat cables	Konnektör pin dizilimleri ve yassı kablolar
+Plug tag, e.g. -X10 (default: all plugs)	Konnektör etiketi, ör. -X10 (varsayılan: tüm konnektörler)
+Connector pin-outs: mating faces and pin tables (SVG)	Konnektör pin dizilimleri: eşleşme yüzleri ve pin tabloları (SVG)
+{}: pin {} is not a pin of the part {}	{}: pin {}, {} parçasının bir pini değil
+{}: core {} of flat cable {} lands on pin {}	{}: {} damarı, {} yassı kablosunun, {} pinine geliyor
+Flat cable {} has {} cores, the IDC connector {} has {} pins	Yassı kablo {}: {} damar, IDC konnektör {}: {} pin
+Pin side (male)	Pin tarafı (erkek)
+Socket side (female)	Soket tarafı (dişi)
+Mating faces	Eşleşme yüzleri
+used: colour of the wire or core	kullanılan: telin veya damarın rengi
+coding key	kodlama anahtarı
+No plugs	Konnektör yok
+No wires at the pins of {}	{} pinlerinde tel yok
+12 · Connectors, pin-outs and ribbon cables	12 · Konnektörler, pin dizilimleri ve şerit kablolar
+Plug connectors with their parts: a sensor on M12 and a valve on M8, a fan and its thermostat on GX16 and GX12 aviation connectors, a buzzer on a D-sub 9 and an operator panel on a ribbon cable between two IDC sockets; the plugs window shows the pin-out of each plug on its mating faces with the wire and core colours.	Parçalarıyla konnektörler: M12 üzerinde bir sensör ve M8 üzerinde bir valf, GX16 ve GX12 havacılık konnektörlerinde bir fan ve termostatı, D-sub 9 üzerinde bir buzzer ve iki IDC soket arasındaki şerit kablo üzerinde bir operatör paneli; konnektör penceresi her konnektörün pin dizilimini eşleşme yüzlerinde tel ve damar renkleriyle gösterir.
+Unknown side {} (socket or pin)	Bilinmeyen taraf {} (socket veya pin)
+Shows the mating face of a plug: pin layout of its part, the position of each pin on the face (mm, seen on the pin side) with potential, wire colour and cable core of both sides	Bir konnektörün eşleşme yüzünü gösterir: parçasının pin düzeni, her pinin konumu (mm, pin tarafından görünüm), iki tarafın potansiyeli, tel rengi ve kablo damarı
+Makes the wires at the pins of a plug cores of a flat (ribbon) cable: pin n takes core n, as on IDC connectors	Bir konnektörün pinlerindeki telleri yassı (şerit) kablonun damarları yapar: IDC konnektörlerdeki gibi pin n, damar n'yi alır
+Cable tag, e.g. -W20	Kablo etiketi, ör. -W20
+Side of the plug the cable leaves: socket or pin (default: socket)	Kablonun çıktığı konnektör tarafı: socket veya pin (varsayılan: socket)
+Fits	Uyumlu
+Fits {}	{} ile uyumlu
+The accessory fits none of the device's parts	Aksesuar cihazın hiçbir parçasına uymuyor
+{}: accessory {} fits none of the device's parts	{}: {} aksesuarı cihazın hiçbir parçasına uymuyor
+Part accessories	Parça aksesuarları
+Unknown device: {}	Bilinmeyen cihaz: {}
+{} fits none of the parts of {}	{0}, {1} cihazının hiçbir parçasına uymuyor
+Accessories only work together with the parts they fit. A part lists its accessories, an accessory the parts it fits; either side is enough.	Aksesuarlar yalnızca uydukları parçalarla birlikte çalışır. Bir parça aksesuarlarını, bir aksesuar uyduğu parçaları listeler; tek taraf yeterlidir.
+Accessories of this part	Bu parçanın aksesuarları
+This part is an accessory	Bu parça bir aksesuardır
+It only works attached to one of the parts it fits; the project check reports it on a device without such a part	Yalnızca uyduğu parçalardan birine takılıyken çalışır; proje kontrolü böyle bir parçası olmayan cihazda bunu bildirir
+Where the accessory sits on the part it fits, in the panel layout and the 3D view	Aksesuarın uyduğu parçada nerede durduğu, pano yerleşiminde ve 3D görünümde
+Fits these parts	Bu parçalarla uyumlu
+➕ Add part	➕ Parça ekle
+Accessory, mounted: {}	Aksesuar, montaj: {}
+Give a device tag or a part number	Bir cihaz etiketi veya parça numarası girin
+Lists and renames devices, adds accessories to their parts	Cihazları listeler ve yeniden adlandırır, parçalarına aksesuar ekler
+Lists the accessories that fit a part or the parts of a device, and the parts an accessory fits (project parts, built-in and bundled catalogs)	Bir parçaya veya bir cihazın parçalarına uyan aksesuarları ve bir aksesuarın uyduğu parçaları listeler (proje parçaları, yerleşik ve birlikte gelen kataloglar)
+Device tag: the accessories that can still be added to its parts	Cihaz etiketi: parçalarına hâlâ eklenebilecek aksesuarlar
+Adds an accessory to a device; it must fit one of the device's parts	Bir cihaza aksesuar ekler; cihazın parçalarından birine uymalıdır
+Part number of the accessory	Aksesuarın parça numarası
+On the front	Önde
+On the left side	Sol tarafta
+On the right side	Sağ tarafta
+Not mounted	Monte edilmez
+Rear	Arka
+Isometric	İzometrik
+Show everything (Home)	Tümünü göster (Home)
+Drag: orbit · right/middle or Shift+drag: pan · wheel: zoom at the pointer · double-click: look there · W A S D / arrows, Q E: move · click: select	Sürükle: yörünge · sağ/orta tuşla veya Shift ile sürükle: kaydır · tekerlek: işaretçide yakınlaştır · çift tıklama: oraya bak · W A S D / oklar, Q E: hareket · tıklama: seç
+W A S D / arrows, Q / E	W A S D / oklar, Q / E
+Move through the 3D view (Shift: faster)	3B görünümde hareket et (Shift: daha hızlı)
+Double-click (3D view)	Çift tıklama (3B görünüm)
+Look at the point clicked, closer	Tıklanan noktaya daha yakından bak

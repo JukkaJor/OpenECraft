@@ -15,6 +15,15 @@ with a command line, an MCP server, a parts server and a project server.
   power (ISO 1219), P&ID, installation plans and single-line; a symbol editor.
 - **Terminals, plugs, PLC:** multi-level terminals with accessories, plugs, PLC tag
   tables for TIA Portal, Studio 5000, TwinCAT, CODESYS and more, marker export.
+- **Connectors:** the plug window shows the pin-out of a plug on the mating faces of
+  both sides, coloured by the wires and cable cores at the pins (also as SVG export);
+  connector parts for M5, M8, M12 (signal, fieldbus, Ethernet and power codings),
+  M16, M23, M40, 7/8", GX aviation connectors, valve connectors, D-sub, DIN 41612,
+  IDC, wire-to-board housings, pluggable terminal blocks, RJ11 / RJ12 / RJ45, BNC,
+  heavy duty inserts, sealed connectors for mobile machines, CEE, appliance couplers,
+  mains, installation, PV and battery connectors; pin layouts with inner rings,
+  column numbering and free pin positions; ribbon and flat cables with a check of the
+  cores on IDC connectors; example project 12 shows them.
 - **Reports and checks:** live report pages, graphical terminal, cable and plug
   diagrams, drawn forms, a project check with message management and a check for
   open wire ends.
@@ -41,7 +50,11 @@ with a command line, an MCP server, a parts server and a project server.
   its walls and ceiling instead of crossing it, and their bends keep the bend radius
   apart. The 3D view is drawn by the graphics card (OpenGL 3 / WebGL 2, with a depth
   buffer and anti-aliasing; Settings › Appearance switches it off), and drawn by the
-  processor it keeps what it shows between frames: large rooms turn smoothly. Devices without a 3D
+  processor it keeps what it shows between frames: large rooms turn smoothly. Moving in the
+  3D view: the wheel zooms at the pointer and walks on into a room, Shift+drag pans as the
+  right button does, a double-click turns the camera to what was clicked and closes in,
+  W A S D / the arrow keys and Q E move through it (Shift: faster), and a bar in the view
+  has the standard views (front, left, right, rear, top, isometric) and *Fit* (`Home`). Devices without a 3D
   model of their own get a detailed, coloured one by what they are (pumps, vessels,
   valves, heat pumps, inverters, rack batteries, …); devices of the bundled catalogs
   (Victron, Pylontech, Hager, DEHN, Beckhoff, Phoenix Contact, Siemens) are drawn after
@@ -74,6 +87,9 @@ with a command line, an MCP server, a parts server and a project server.
   view lays them out on another thread, several times faster, with a progress box while it does (it
   shows them as routed until then). Cables and tubes keep apart from each other in free air already when they are
   routed. A cable duct too small for its wires to lie side by side is an error of the project check.
+  The fill level of a cable duct counts the cables and tubes routed through it as well as its wires,
+  against the cross section inside the duct, also for the ducts on the walls, ceiling and floor of a
+  room; cables and tubes keep out of the stretches of a duct they would fill above the limit.
   A cable ends a little before the device and its cores part from there in smooth curves, each coming
   into its connection point from the side its wires leave it; cables and wires run on through the cable
   glands, wall penetrations and cable passages between cabinets and rooms in one piece, bent round
@@ -174,7 +190,16 @@ with a command line, an MCP server, a parts server and a project server.
   MDT, Phoenix Contact, Pylontech, Siemens, Victron, Weidmüller) also feed the example
   projects. Parts are dragged from parts management or the
   data portal onto a schematic page, imported into the parts database on the way when
-  needed, and placed as a device with the part.
+  needed, and placed as a device with the part. Accessories that only work with other
+  parts (auxiliary and signal contacts, contact blocks) know the parts they fit from
+  either side, so one accessory serves many parts (the Hager CZ001 signal contact fits
+  the residual current devices CDA440D and CCA216D): the data portal and the parts
+  server show both directions, the device's Parts tab, the command line and the MCP
+  server offer the accessories that fit its parts, the project check reports an
+  accessory without such a part, and the panel layout and the 3D view mount them
+  beside or in front of their part with their own terminals. CSV, BMEcat and EPLAN XML
+  carry them; the building services example signals a tripped residual current
+  device through its CZ001.
 - **Data exchange:** PDF, DXF / DWG, SVG; the panel as glTF, STEP, IGES, IFC, JT and
   Parasolid; ERP / PDM / PLM connectors and Autodesk Vault.
 - **Teams and automation:** a project server with page locks, roles and Active

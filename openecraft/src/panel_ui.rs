@@ -18,6 +18,7 @@ use std::sync::Arc;
 use view3d::default_cam;
 
 mod gpu3d;
+mod nav3d;
 mod plan;
 mod routing_ui;
 mod scene3d;
@@ -454,6 +455,8 @@ pub struct PanelUi {
     start: Option<P>,
     drag: Option<MoveDrag>,
     cam: Option<Orbit>,
+    /// View the 3D camera glides to, and the camera as this frame left it.
+    cam_goal: Option<(Orbit, Orbit)>,
     device_filter: String,
     new_enclosure: Option<NewEnclosure>,
     pub status: String,
@@ -534,6 +537,7 @@ impl Default for PanelUi {
             start: None,
             drag: None,
             cam: None,
+            cam_goal: None,
             device_filter: String::new(),
             new_enclosure: None,
             status: String::new(),

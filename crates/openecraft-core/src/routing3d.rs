@@ -12,7 +12,7 @@
 use crate::model::{Cable, Project};
 use crate::netlist::{Connection, Netlist, PinRef};
 use crate::panel::{self, Face, ItemKind, Layout, PanelItem, RoutedWire, DUCT_PROFILE, PLATE_MARGIN, PLATE_Z};
-use crate::parts::vec3::{add, dist, manhattan, norm, scale, sub, V3};
+use crate::parts::vec3::{add, dist, dot, manhattan, norm, scale, sub, V3};
 use openecraft_i18n::{tr, tr_fmt};
 use std::collections::{BTreeMap, HashMap};
 
@@ -1022,9 +1022,19 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, mut glands: G
             let ignore = job.ignore(leg);
             let req = job.request(leg, space, &ignore, rules);
             let (way, costs) = space.route_with(leg.a, leg.b, &req, rules, None);
-            (way, space.paths.iter().map(|p| p.used).collect(), costs)
+            (way, space.loads(), costs)
         })
     };
+    // The wires through the cable ducts fill them before anything is routed: cables and
+    // tubes keep out of the stretches they would fill above the limit.
+    for (job, plan) in jobs.iter().zip(&plans) {
+        let (Some(points), Ok((legs, ..))) = (&job.fixed, plan) else { continue };
+        for leg in legs {
+            let space = spaces.entry(leg.lineup).or_insert_with(|| make_space(leg.lineup));
+            let cells = space.cells_along(points);
+            space.load_ducts(&cells, job.area_radius(rules).0);
+        }
+    }
     for (n, job) in jobs.iter().enumerate() {
         progress(n, total);
         if workers > 1 && (n == 0 || jobs[n - 1].class != job.class) {
@@ -1108,7 +1118,7 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, mut glands: G
                     // no route took its room (the same as searched now); otherwise searched
                     // again, with the costs to the goal worked out then where they still hold.
                     let entry = ahead.remove(&(n, i));
-                    let fresh = entry.as_ref().is_some_and(|e| space.paths_full_as(&e.1, area));
+                    let fresh = entry.as_ref().is_some_and(|e| space.full_as(&e.1, area));
                     match entry {
                         Some((way, ..)) if fresh && way.as_ref().is_none_or(|w| space.still_apart(&w.cells, &req)) => way,
                         entry => space.route_with(leg.a, leg.b, &req, rules, entry.as_ref().and_then(|e| e.2.as_ref())).0,
@@ -1121,6 +1131,9 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, mut glands: G
                 break;
             };
             space.occupy(&cells, job.class, area);
+            if !known {
+                space.load_ducts(&cells, area);
+            }
             // The routes after it keep apart from it (not from the way of a wire along the
             // cable ducts of the plate: it is laid out with the others in the 3D view).
             if job.fixed.is_none() {
@@ -1293,22 +1306,7 @@ fn apply_to_wire(prj: &Project, pos: &[V3], w: &mut RoutedWire, points: &[V3], e
                 plate.push(pq);
             }
         }
-        let mut runs: Vec<panel::DuctRun> = Vec::new();
-        for s in pts.windows(2) {
-            let (a, b) = (sub(s[0], pos[k]), sub(s[1], pos[k]));
-            for d in e.items.iter().filter(|i| i.kind == ItemKind::Duct && i.face == Face::Plate) {
-                let (lo, hi) = panel::item_box(e, d);
-                let inside = |q: V3| (0..3).all(|i| q[i] >= lo[i] - 1.0 && q[i] <= hi[i] + 1.0);
-                if !(inside(a) && inside(b)) {
-                    continue;
-                }
-                let axis = |q: V3| if d.horizontal() { q[0] - PLATE_MARGIN } else { q[1] - PLATE_MARGIN };
-                let (s0, s1) = (axis(a), axis(b));
-                if (s1 - s0).abs() > 0.01 {
-                    runs.push(panel::DuctRun { duct: d.id, from: s0.min(s1), to: s0.max(s1) });
-                }
-            }
-        }
+        let runs = duct_runs(e, &pts.iter().map(|q| sub(*q, pos[k])).collect::<Vec<_>>());
         panel::Route { points: plate, plate_length: grid::length(pts), via_ducts: !runs.is_empty(), runs }
     };
     let mut it = stretches.into_iter();
@@ -1317,6 +1315,65 @@ fn apply_to_wire(prj: &Project, pos: &[V3], w: &mut RoutedWire, points: &[V3], e
     w.route = to_route(k0, &p0);
     w.legs = it.map(|(k, pts, entry)| panel::Leg { enclosure: k, route: to_route(k, &pts), passage: entry.unwrap_or(pts[0]), passage_length: 0.0 }).collect();
     w.length = w.plate_length() + extra;
+}
+
+/// Stretches of the ducts a 3D route (enclosure coordinates) runs through: on the
+/// mounting plate of a cabinet, on every face of a room. Every segment counts with the
+/// part of it inside the duct, also one that runs on beyond the duct (into the crossing
+/// duct at a corner, past its end).
+pub(crate) fn duct_runs(e: &panel::Enclosure, pts: &[V3]) -> Vec<panel::DuctRun> {
+    let mut runs: Vec<panel::DuctRun> = Vec::new();
+    for s in pts.windows(2) {
+        let (a, b) = (s[0], s[1]);
+        let dir = sub(b, a);
+        for d in e.items.iter().filter(|i| i.kind == ItemKind::Duct && (i.face == Face::Plate || e.is_room())) {
+            let (lo, hi) = panel::item_box(e, d);
+            let (mut t0, mut t1) = (0.0f32, 1.0f32);
+            for i in 0..3 {
+                let (l, h) = (lo[i] - 1.0, hi[i] + 1.0);
+                if dir[i].abs() < 1e-6 {
+                    if a[i] < l || a[i] > h {
+                        t1 = -1.0;
+                    }
+                    continue;
+                }
+                let (u, v) = ((l - a[i]) / dir[i], (h - a[i]) / dir[i]);
+                t0 = t0.max(u.min(v));
+                t1 = t1.min(u.max(v));
+            }
+            if t1 < t0 {
+                continue;
+            }
+            // Along the duct in the coordinates of its face.
+            let [o, u, w, _] = panel::face_frame(e, d.face);
+            let along = if d.horizontal() { u } else { w };
+            let at = |t: f32| dot(sub(add(a, scale(dir, t)), o), along) / dot(along, along);
+            let (s0, s1) = (at(t0), at(t1));
+            if (s1 - s0).abs() > 0.01 {
+                runs.push(panel::DuctRun { duct: d.id, from: s0.min(s1), to: s0.max(s1) });
+            }
+        }
+    }
+    runs
+}
+
+/// The cables and tubes of a routing that run through cable ducts, for their fill
+/// levels (the wires are counted with their routes).
+pub fn duct_contents(prj: &Project, routing: &Routing) -> Vec<panel::DuctContent> {
+    let pos = panel::positions(&prj.layout);
+    let mut out = Vec::new();
+    for it in routing.items.iter().filter(|i| i.kind != RouteKind::Wire && i.routed()) {
+        for (leg, pts) in it.stretches() {
+            let Some(start) = leg.or(it.enclosures.first().copied()) else { continue };
+            for k in panel::lineup_of(&prj.layout, start) {
+                let runs = duct_runs(&prj.layout.enclosures[k], &pts.iter().map(|q| sub(*q, pos[k])).collect::<Vec<_>>());
+                if !runs.is_empty() {
+                    out.push(panel::DuctContent { enclosure: k, runs, diameter: it.diameter });
+                }
+            }
+        }
+    }
+    out
 }
 
 /// Freezes the routes of the given keys (all routed items without keys) for

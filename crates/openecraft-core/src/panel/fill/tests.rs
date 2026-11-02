@@ -40,36 +40,38 @@ fn wire(cross_section: &str, runs: &[(f32, f32)]) -> RoutedWire {
 #[test]
 fn fullest_stretch_of_overlapping_wires() {
     let prj = project_with_duct("NONE");
-    let fill = duct_fill(&prj, &[wire("1.5 mm²", &[(0.0, 100.0)]), wire("1.5 mm²", &[(50.0, 150.0)])]);
+    let fill = duct_fill(&prj, &[wire("1.5 mm²", &[(0.0, 100.0)]), wire("1.5 mm²", &[(50.0, 150.0)])], &[]);
     assert_eq!(fill.len(), 1);
     let f = &fill[0];
-    // Default duct profile 40 x 60 mm.
-    assert_eq!(f.capacity, 2400.0);
+    // Default duct profile 40 x 60 mm: inside 36 x 55.5 mm.
+    assert_eq!(f.capacity, 1998.0);
     assert_eq!((f.from, f.to, f.wires, f.total_wires), (50.0, 100.0, 2, 2));
-    let expected = 2.0 * wire_area("1.5 mm²") / 2400.0 * 100.0;
+    let expected = 2.0 * wire_area("1.5 mm²") / 1998.0 * 100.0;
     assert!((f.percent - expected).abs() < 1e-3, "{} vs {expected}", f.percent);
 }
 
 #[test]
 fn wires_that_only_touch_are_not_side_by_side() {
     let prj = project_with_duct("NONE");
-    let fill = duct_fill(&prj, &[wire("1.5", &[(0.0, 50.0)]), wire("1.5", &[(50.0, 100.0)])]);
+    let fill = duct_fill(&prj, &[wire("1.5", &[(0.0, 50.0)]), wire("1.5", &[(50.0, 100.0)])], &[]);
     assert_eq!(fill[0].wires, 1);
     // The fullest stretch reaches over both, they are equally full.
     assert_eq!((fill[0].from, fill[0].to), (0.0, 100.0));
 }
 
 #[test]
-fn capacity_from_the_duct_part_and_wire_sizes() {
-    let mut prj = project_with_duct("OWN.DUCT");
+fn capacity_inside_the_duct_part_and_wire_sizes() {
+    let mut prj = project_with_duct("NONE");
     prj.parts.push(crate::parts::Part { number: "OWN.DUCT".into(), width: 1000.0, height: 60.0, depth: 80.0, ..Default::default() });
-    let fill = duct_fill(&prj, &[wire("2.5", &[(0.0, 10.0)])]);
-    assert_eq!(fill[0].capacity, 4800.0);
+    assert!(crate::panel::change_profile(&mut prj, 0, 7, "OWN.DUCT"));
+    let fill = duct_fill(&prj, &[wire("2.5", &[(0.0, 10.0)])], &[]);
+    // 60 x 80 mm less the walls (2 mm), the base and the cover: 56 x 75.5 mm.
+    assert_eq!(fill[0].capacity, 4228.0);
     assert!(wire_area("2.5") > wire_area("1.5"));
     assert!(wire_area("0.75") < wire_area("1.5"));
     // Unused ducts and zero length stretches are not listed.
-    assert!(duct_fill(&prj, &[wire("1.5", &[(10.0, 10.0)])]).is_empty());
-    assert!(duct_fill(&prj, &[]).is_empty());
+    assert!(duct_fill(&prj, &[wire("1.5", &[(10.0, 10.0)])], &[]).is_empty());
+    assert!(duct_fill(&prj, &[], &[]).is_empty());
 }
 
 #[test]
@@ -94,7 +96,7 @@ fn demo_ducts_in_check_and_report() {
 #[test]
 fn loads_make_full_stretches_expensive() {
     let mut prj = project_with_duct("NONE");
-    prj.layout.duct_fill_limit = 1.0; // 24 mm² of the 2400 mm² duct
+    prj.layout.duct_fill_limit = 1.0; // 20 mm² of the 1998 mm² inside the duct
     let mut loads = DuctLoads::new(&prj);
     let area = wire_area("1.5");
     assert_eq!(loads.cost(7, 0.0, 100.0, area), 1.0);
@@ -102,7 +104,7 @@ fn loads_make_full_stretches_expensive() {
         loads.add(&wire("1.5", &[(0.0, 50.0)]).route, area);
     }
     assert!((loads.load(7, 0.0, 100.0) - 3.0 * area).abs() < 1e-3);
-    assert_eq!(loads.cost(7, 0.0, 100.0, area), OVERFILL_COST, "a fourth wire would exceed 1 %");
+    assert_eq!(loads.cost(7, 0.0, 100.0, area), OVERFILL_COST, "another wire would exceed 1 %");
     // Beyond the loaded stretch the duct is still empty.
     assert_eq!(loads.load(7, 50.0, 100.0), 0.0);
     assert_eq!(loads.cost(7, 60.0, 100.0, area), 1.0);
@@ -160,8 +162,29 @@ fn wires_lie_in_rows_from_the_base_of_the_duct() {
 #[test]
 fn the_fill_knows_the_thickness_of_every_wire() {
     let prj = project_with_duct("NONE");
-    let fill = duct_fill(&prj, &[wire("300 mm²", &[(0.0, 100.0)]), wire("1.5 mm²", &[(200.0, 300.0)])]);
+    let fill = duct_fill(&prj, &[wire("300 mm²", &[(0.0, 100.0)]), wire("1.5 mm²", &[(200.0, 300.0)])], &[]);
     let mut d = fill[0].diameters.clone();
     d.sort_by(f32::total_cmp);
     assert_eq!(d, vec![crate::harness::outer_diameter("1.5 mm²"), crate::harness::outer_diameter("300 mm²")]);
+}
+
+#[test]
+fn cables_and_tubes_fill_the_ducts_like_wires() {
+    let prj = project_with_duct("NONE");
+    let cable = DuctContent { enclosure: 0, runs: vec![DuctRun { duct: 7, from: 40.0, to: 300.0 }], diameter: 12.0 };
+    let fill = duct_fill(&prj, &[wire("1.5", &[(0.0, 100.0)])], std::slice::from_ref(&cable));
+    let f = &fill[0];
+    assert_eq!((f.from, f.to, f.wires, f.total_wires), (40.0, 100.0, 2, 2));
+    let expected = (wire_area("1.5") + std::f32::consts::PI / 4.0 * 144.0) / 1998.0 * 100.0;
+    assert!((f.percent - expected).abs() < 1e-3, "{} vs {expected}", f.percent);
+    assert!(f.diameters.contains(&12.0));
+    // A duct with only cables in it has a fill level too.
+    assert_eq!(duct_fill(&prj, &[], &[cable])[0].total_wires, 1);
+}
+
+#[test]
+fn a_wire_counts_once_however_often_it_enters_a_duct() {
+    let prj = project_with_duct("NONE");
+    let fill = duct_fill(&prj, &[wire("1.5", &[(0.0, 50.0), (200.0, 250.0)]), wire("1.5", &[(0.0, 100.0)])], &[]);
+    assert_eq!((fill[0].wires, fill[0].total_wires, fill[0].diameters.len()), (2, 2, 2));
 }

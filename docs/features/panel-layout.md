@@ -15,7 +15,11 @@ line-ups, rooms of the building with their floor-standing equipment and pipe run
   place" list with their real dimensions from the parts data (contactor + auxiliary
   block add up in depth, terminal strips are as long as their terminals and spares) and
   snapped onto rails; move (devices travel with their rail), rotate, delete.
-- 2D front view and a 3D view (orbit, pan, zoom, click to select). Walls, ceilings and
+- 2D front view and a 3D view: drag to orbit, right / middle or Shift+drag to pan, the
+  wheel zooms at the pointer and walks on into a room, a double-click turns to what was
+  clicked and closes in, `W` `A` `S` `D` / arrow keys and `Q` `E` move through the view
+  (Shift: faster), the bar in the view has the standard views and *Fit* (`Home`); click
+  to select. Walls, ceilings and
   doors seen from the outside are see-through (*Wall opacity* in the settings, under
   Appearance); *Hide walls in front* leaves out the walls between the eye and the inside,
   *Hide ceiling* the ceilings of the rooms. Wires are drawn in their colour (two-colour
@@ -65,13 +69,16 @@ Every schematic connection between placed devices is routed from its connection 
 through the cable duct network (shortest path) → wire list with lengths, wires shown in
 2D / 3D.
 
-**Duct fill levels**: cross sections of the routed wires (with insulation) against the
-duct cross section at its fullest stretch; ducts coloured green / orange / red in the
+**Duct fill levels**: cross sections of the routed wires (with insulation), cables and
+tubes against the cross section inside the duct (between its walls, base and cover) at
+its fullest stretch, on the mounting plate as on the walls, ceiling and floor of a room;
+ducts coloured green / orange / red in the
 front view, fill level in the duct properties, limit in the enclosure properties (70 %
 by default); report *Duct fill levels*, the check warns above the limit and hints above
 80 % of it; when a duct is overfull, the wiring is routed again, thickest wires first,
 and wires take a detour (up to 10 × longer) around stretches they would fill above the
-limit; the selected device shows its connection points.
+limit; cables and tubes routed in 3D do the same around the stretches the wires and the
+cables before them already fill; the selected device shows its connection points.
 
 ## Climate
 

@@ -337,7 +337,7 @@ fn unordered<T: Hash>(items: impl Iterator<Item = T>) -> u64 {
 /// A wire's way along the plate lifted over the boxes it would pass through: just
 /// before one it rises in front of it (half its thickness and a little more), just
 /// after it it goes down again.
-fn over(points: &[V3], blockers: &[(V3, V3)], ducts: &[(V3, V3)], half: f32) -> Vec<V3> {
+fn over(points: &[V3], blockers: &[(V3, V3)], ducts: &[(V3, V3)], half: f32, bend: f32) -> Vec<V3> {
     let margin = half + 2.0;
     let mut out: Vec<V3> = points.first().copied().into_iter().collect();
     for s in points.windows(2) {
@@ -348,9 +348,12 @@ fn over(points: &[V3], blockers: &[(V3, V3)], ducts: &[(V3, V3)], half: f32) -> 
         let in_ducts: Vec<(f32, f32)> = ducts.iter().filter_map(|(lo, hi)| vec3::segment_in_box(a, b, (*lo, *hi))).collect();
         // The stretches inside the boxes (grown by the wire) and how far in front of the
         // plate their fronts are, joined where they overlap.
+        // It rises and comes down a bend radius before and behind them, so that its
+        // bends stay clear of their corners.
+        let reach = bend / vec3::dist(a, b).max(1e-3);
         let mut hits: Vec<(f32, f32, f32)> = blockers
             .iter()
-            .filter_map(|(lo, hi)| vec3::segment_in_box(a, b, (lo.map(|v| v - margin), hi.map(|v| v + margin))).map(|(t0, t1)| (t0, t1, hi[2] + margin)))
+            .filter_map(|(lo, hi)| vec3::segment_in_box(a, b, (lo.map(|v| v - margin), hi.map(|v| v + margin))).map(|(t0, t1)| ((t0 - reach).max(0.0), (t1 + reach).min(1.0), hi[2] + margin)))
             .filter(|h| h.2 > a[2].max(b[2]))
             .collect();
         hits.sort_by(|x, y| x.0.total_cmp(&y.0));
@@ -934,7 +937,7 @@ impl PanelUi {
                             };
                             v.extend(entry.into_iter().flat_map(|q| through(q, 1.0)));
                             let around: Vec<(V3, V3)> = blockers.iter().filter(|(id, _)| *id != wire.items.0 && *id != wire.items.1).map(|(_, b)| *b).collect();
-                            v.extend(over(&along, &around, &duct_boxes, diameter / 2.0));
+                            v.extend(over(&along, &around, &duct_boxes, diameter / 2.0, prj.layout.routing.bend_radius(RouteKind::Wire, diameter)));
                             v.extend(exit.into_iter().flat_map(|q| through(q, -1.0).into_iter().rev()));
                             match (exit, b) {
                                 (None, Some(b)) => v.extend(door_end(b, &wire.door_routes.1, route.points.last(), z).into_iter().rev()),

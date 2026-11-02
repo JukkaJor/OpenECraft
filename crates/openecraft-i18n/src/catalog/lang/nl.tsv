@@ -6373,3 +6373,63 @@ Laying out the wires, cables and tubes…	Draden, kabels en slangen worden geleg
 {} {} cannot be routed: no way that keeps half its thickness clear of everything and bends with its radius of {} mm. Move its ends or make room for it.	{} {} kan niet worden gerouteerd: geen weg die de halve dikte vrij houdt van alles en buigt met zijn radius van {} mm. Verplaats de uiteinden of maak ruimte.
 Of the outer diameter, as laid fixed	Van de buitendiameter, vast gelegd
 Of the outer diameter; pipes are bent with elbows of one and a half diameters	Van de buitendiameter; buizen worden gebogen met bochten van anderhalve diameter
+Wire colour	Draadkleur
+Pin-out	Pinbezetting
+No pin layout in the technical data of the part: the pins are shown in a row (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).	Geen pinindeling in de technische gegevens van het artikel: de pinnen worden in een rij getoond (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).
+Seen on the mating faces; the colours are those of the wires and cable cores at the pins.	Gezien op de steekzijden; de kleuren zijn die van de draden en kabeladers aan de pinnen.
+{}: pin {}	{}: pin {}
+Pin layout: {}	Pinindeling: {}
+Coding: {}	Codering: {}
+Connector pin-outs and flat cables	Pinbezettingen van connectoren en platte kabels
+Plug tag, e.g. -X10 (default: all plugs)	Connectorcode, bijv. -X10 (standaard: alle connectoren)
+Connector pin-outs: mating faces and pin tables (SVG)	Pinbezettingen: steekzijden en pintabellen (SVG)
+{}: pin {} is not a pin of the part {}	{}: pin {} is geen pin van artikel {}
+{}: core {} of flat cable {} lands on pin {}	{}: ader {} van platte kabel {} komt op pin {}
+Flat cable {} has {} cores, the IDC connector {} has {} pins	Platte kabel {} heeft {} aders, de IDC-connector {} heeft {} pinnen
+Pin side (male)	Pinzijde (mannelijk)
+Socket side (female)	Buszijde (vrouwelijk)
+Mating faces	Steekzijden
+used: colour of the wire or core	bezet: kleur van de draad of ader
+coding key	codeernok
+No plugs	Geen connectoren
+No wires at the pins of {}	Geen draden aan de pinnen van {}
+12 · Connectors, pin-outs and ribbon cables	12 · Connectoren, pinbezettingen en lintkabels
+Plug connectors with their parts: a sensor on M12 and a valve on M8, a fan and its thermostat on GX16 and GX12 aviation connectors, a buzzer on a D-sub 9 and an operator panel on a ribbon cable between two IDC sockets; the plugs window shows the pin-out of each plug on its mating faces with the wire and core colours.	Connectoren met hun artikelen: een sensor op M12 en een ventiel op M8, een ventilator en zijn thermostaat op GX16- en GX12-luchtvaartconnectoren, een zoemer op een D-sub 9 en een bedienpaneel op een lintkabel tussen twee IDC-connectoren; het connectorvenster toont de pinbezetting van elke connector op de steekzijden met de kleuren van draden en aders.
+Unknown side {} (socket or pin)	Onbekende zijde {} (socket of pin)
+Shows the mating face of a plug: pin layout of its part, the position of each pin on the face (mm, seen on the pin side) with potential, wire colour and cable core of both sides	Toont de steekzijde van een connector: pinindeling van het artikel, positie van elke pin (mm, gezien op de pinzijde) met potentiaal, draadkleur en kabelader van beide zijden
+Makes the wires at the pins of a plug cores of a flat (ribbon) cable: pin n takes core n, as on IDC connectors	Maakt de draden aan de pinnen van een connector aders van een platte (lint)kabel: pin n krijgt ader n, zoals bij IDC-connectoren
+Cable tag, e.g. -W20	Kabelcode, bijv. -W20
+Side of the plug the cable leaves: socket or pin (default: socket)	Zijde van de connector waar de kabel vertrekt: socket of pin (standaard: socket)
+Fits	Past op
+Fits {}	Past op {}
+The accessory fits none of the device's parts	Het toebehoren past op geen enkel artikel van het apparaat
+{}: accessory {} fits none of the device's parts	{}: toebehoren {} past op geen enkel artikel van het apparaat
+Part accessories	Artikeltoebehoren
+Unknown device: {}	Onbekend apparaat: {}
+{} fits none of the parts of {}	{} past op geen enkel artikel van {}
+Accessories only work together with the parts they fit. A part lists its accessories, an accessory the parts it fits; either side is enough.	Toebehoren werkt alleen samen met de artikelen waarop het past. Een artikel noemt zijn toebehoren, een toebehoren de artikelen waarop het past; één kant is genoeg.
+Accessories of this part	Toebehoren van dit artikel
+This part is an accessory	Dit artikel is toebehoren
+It only works attached to one of the parts it fits; the project check reports it on a device without such a part	Het werkt alleen bevestigd aan een van de artikelen waarop het past; de projectcontrole meldt het bij een apparaat zonder zo'n artikel
+Where the accessory sits on the part it fits, in the panel layout and the 3D view	Waar het toebehoren op het passende artikel zit, in de kastopbouw en de 3D-weergave
+Fits these parts	Past op deze artikelen
+➕ Add part	➕ Artikel toevoegen
+Accessory, mounted: {}	Toebehoren, gemonteerd: {}
+Give a device tag or a part number	Geef een apparaataanduiding of een artikelnummer op
+Lists and renames devices, adds accessories to their parts	Toont en hernoemt apparaten, voegt toebehoren toe aan hun artikelen
+Lists the accessories that fit a part or the parts of a device, and the parts an accessory fits (project parts, built-in and bundled catalogs)	Toont het toebehoren dat past op een artikel of de artikelen van een apparaat, en de artikelen waarop een toebehoren past (projectartikelen, ingebouwde en meegeleverde catalogi)
+Device tag: the accessories that can still be added to its parts	Apparaataanduiding: het toebehoren dat nog aan zijn artikelen kan worden toegevoegd
+Adds an accessory to a device; it must fit one of the device's parts	Voegt toebehoren toe aan een apparaat; het moet op een van de artikelen van het apparaat passen
+Part number of the accessory	Artikelnummer van het toebehoren
+On the front	Aan de voorkant
+On the left side	Aan de linkerkant
+On the right side	Aan de rechterkant
+Not mounted	Niet gemonteerd
+Rear	Achterkant
+Isometric	Isometrisch
+Show everything (Home)	Alles tonen (Home)
+Drag: orbit · right/middle or Shift+drag: pan · wheel: zoom at the pointer · double-click: look there · W A S D / arrows, Q E: move · click: select	Slepen: draaien · slepen met rechter-/middelste muisknop of Shift: verschuiven · wiel: zoomen bij de aanwijzer · dubbelklik: daarheen kijken · W A S D / pijltjes, Q E: bewegen · klik: selecteren
+W A S D / arrows, Q / E	W A S D / pijltjes, Q / E
+Move through the 3D view (Shift: faster)	Door de 3D-weergave bewegen (Shift: sneller)
+Double-click (3D view)	Dubbelklik (3D-weergave)
+Look at the point clicked, closer	Naar het aangeklikte punt kijken, dichterbij

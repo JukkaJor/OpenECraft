@@ -24,10 +24,12 @@ fn entry(name: &'static str, title: &'static str, run: impl Fn(&Project, &Analys
 pub fn builtin() -> Vec<Check> {
     vec![
         entry("devices", tr_const!("Devices and connection points"), |prj, an| check(prj, &an.index, &an.netlist)),
+        entry("accessories", tr_const!("Part accessories"), |prj, an| check_accessories(prj, &an.index)),
         entry("mounting_pages", tr_const!("Mounting layout pages"), |prj, _| check_layout(prj)),
         entry("wires", tr_const!("Cables and wire numbers"), |prj, an| check_wires(prj, &an.netlist, &an.open)),
         entry("potentials", tr_const!("Potential definitions"), |prj, an| check_potentials(prj, &an.netlist, &an.open)),
         entry("plugs", tr_const!("Plugs"), |prj, _| crate::plugs::problems(prj).into_iter().map(|(message, target)| Issue::plain(Severity::Warning, message, target)).collect()),
+        entry("connectors", tr_const!("Connector pin-outs and flat cables"), |prj, _| crate::pinout::problems(prj)),
         entry("terminal_strips_and_plc", tr_const!("Terminal strips and PLC addresses"), |prj, an| check_strips_and_plc(prj, &an.netlist)),
         entry("plc_hardware", tr_const!("PLC hardware"), |prj, _| crate::plc_hw::problems(prj)),
         entry("duct_fill", tr_const!("Duct fill levels"), |prj, an| check_duct_fill(prj, &an.duct_fill)),
@@ -281,6 +283,18 @@ pub fn check(prj: &Project, idx: &Index, nl: &Netlist) -> Vec<Issue> {
     }
     v.sort_by_key(|i| i.severity);
     v
+}
+
+/// Accessories (auxiliary and signal contacts, …) only work attached to a part they
+/// fit: one on a device without such a part is a mistake.
+fn check_accessories(prj: &Project, idx: &Index) -> Vec<Issue> {
+    crate::parts::loose_accessories(prj)
+        .into_iter()
+        .map(|(tag, number)| {
+            let target = idx.devices.get(&tag).and_then(|d| d.mains.first().or(d.auxs.first()).or(d.others.first())).map(|l| (l.page, l.sym_id));
+            crate::issue!(Severity::Warning, target, "{}: accessory {} fits none of the device's parts", tag, number)
+        })
+        .collect()
 }
 
 /// Several main functions of one device are its poles or channels drawn one by one

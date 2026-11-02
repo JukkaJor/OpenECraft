@@ -86,7 +86,8 @@ cargo run --release -p openecraft-parts-server -- --config parts-server.toml
   address keeps the search and the open part (bookmarks, the browser's back button);
   `?lang=de` chooses the language.
 - REST API (`/api/v1`, see `openecraft_parts::api`): `GET /info`, `GET /parts`,
-  `POST /search`, `GET|PUT|DELETE /parts/{number}`, `GET /parts/{number}/history[/{revision}]`,
+  `POST /search`, `GET|PUT|DELETE /parts/{number}`, `GET /parts/{number}/accessories` (its accessories
+  and, for an accessory, the parts it fits), `GET /parts/{number}/history[/{revision}]`,
   `POST|DELETE /parts/{number}/attachments`, `GET /files/{id}`, `POST /import` (CSV,
   JSON or BMEcat), `GET /export.csv` (all parts, or those of the query in the address:
   `q`, groups, manufacturer, catalog, lifecycle, sort), `GET|PUT|DELETE /catalogs/{id}`, `POST /login`,

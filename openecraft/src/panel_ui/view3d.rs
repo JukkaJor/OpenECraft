@@ -1,10 +1,12 @@
 //! 3D view of the panel layout: the current enclosure or its whole line-up with walls,
-//! door, mounting plate, rails, ducts, busbars, devices and the routed wiring; orbit,
-//! pan, zoom and picking. What it shows comes from the [`Scene3d`]; it is drawn by the
-//! graphics card ([`super::gpu3d`]) or projected here and painted far to near.
+//! door, mounting plate, rails, ducts, busbars, devices and the routed wiring; moving
+//! the camera ([`super::nav3d`]) and picking. What it shows comes from the [`Scene3d`];
+//! it is drawn by the graphics card ([`super::gpu3d`]) or projected here and painted far
+//! to near.
 
 use openecraft_i18n::{tr, tr_fmt};
 use super::gpu3d::{Camera, Frame};
+use super::nav3d::{self, Side};
 use super::routing_ui::RouteRef;
 use super::scene3d::{Scene3d, EQUIPMENT, ON_TOP};
 use super::{wheel_delta, PanelUi, DOOR_OPEN_ANGLE, OUTER_WALLS};
@@ -13,7 +15,8 @@ use openecraft_core::model::Project;
 use openecraft_core::panel::{self, ItemKind, SitePose};
 use openecraft_core::parts::vec3::{self, dot, sub, Orbit, V3};
 use openecraft_core::analysis::Analysis;
-use egui::{vec2, Color32, PointerButton, Pos2, Rect, Sense, Stroke, Vec2};
+use openecraft_ui::icons::{self, Icon};
+use egui::{vec2, Color32, Key, PointerButton, Pos2, Rect, Sense, Stroke, Vec2};
 
 impl PanelUi {
     /// Opens or closes the door in the 3D view.
@@ -63,34 +66,64 @@ impl PanelUi {
         let dark = ui.visuals().dark_mode;
         let (resp, painter) = ui.allocate_painter(ui.available_size(), Sense::click_and_drag());
         let rect = resp.rect;
+        let dt = ui.input(|i| i.stable_dt).min(0.1);
         let target = if self.door_open { DOOR_OPEN_ANGLE } else { 0.0 };
         if (self.door_angle - target).abs() > 1e-3 {
-            let step = ui.input(|i| i.stable_dt).min(0.1) * 2.5;
+            let step = dt * 2.5;
             self.door_angle += (target - self.door_angle).clamp(-step, step);
             ui.ctx().request_repaint();
         }
-        let cam = self.cam.get_or_insert_with(|| default_cam(prj, &shown));
-        // Orbit / pan / zoom
-        if resp.dragged_by(PointerButton::Primary) {
-            let dl = resp.drag_delta();
-            cam.yaw -= dl.x * 0.008;
-            cam.pitch = (cam.pitch + dl.y * 0.008).clamp(-1.4, 1.4);
+        // A camera set elsewhere (fit, focus) ends the glide to a view.
+        if self.cam_goal.is_some_and(|(_, left)| self.cam != Some(left)) {
+            self.cam_goal = None;
         }
-        if resp.dragged_by(PointerButton::Middle) || resp.dragged_by(PointerButton::Secondary) {
-            let dl = resp.drag_delta();
-            let (_, right, up, _) = cam.basis();
-            let s = cam.dist * 0.0015;
-            for k in 0..3 {
-                cam.target[k] += -right[k] * dl.x * s + up[k] * dl.y * s;
-            }
+        let fitted = default_cam(prj, &shown);
+        let cam = self.cam.get_or_insert(fitted);
+        let f = rect.height() * 1.3;
+        let mut moved = false;
+        // Orbit; pan with the right or middle button or Shift; zoom at the pointer
+        let shift = ui.input(|i| i.modifiers.shift);
+        if resp.dragged_by(PointerButton::Middle) || resp.dragged_by(PointerButton::Secondary) || (shift && resp.dragged_by(PointerButton::Primary)) {
+            nav3d::pan(cam, resp.drag_delta(), f);
+            moved = true;
+        } else if resp.dragged_by(PointerButton::Primary) {
+            nav3d::orbit(cam, resp.drag_delta());
+            moved = true;
         }
         if resp.hovered() {
-            let (wheel, zoom_delta) = ui.input(|i| (wheel_delta(i), i.zoom_delta()));
+            let (wheel, zoom_delta, ptr) = ui.input(|i| (wheel_delta(i), i.zoom_delta(), i.pointer.hover_pos()));
             let factor = zoom_delta * (wheel * 0.0025).exp();
-            cam.dist = (cam.dist / factor).clamp(100.0, 200000.0);
+            if factor != 1.0 {
+                nav3d::zoom_at(cam, factor, ptr.map_or(Vec2::ZERO, |q| q - rect.center()), f);
+                moved = true;
+            }
         }
+        // Keyboard: moving through the view, Home fits it.
+        let mut fit = false;
+        if (self.keys_active || resp.hovered()) && !ui.ctx().egui_wants_keyboard_input() {
+            let ((dir, fast), home) = ui.input(|i| (nav3d::held(i), i.key_pressed(Key::Home)));
+            if dir.iter().any(|d| *d != 0.0) {
+                nav3d::keys(cam, dir, fast, dt);
+                moved = true;
+                ui.ctx().request_repaint();
+            }
+            fit = home;
+        }
+        let mut goal = self.cam_goal.filter(|_| !moved).map(|g| g.0);
+        if fit {
+            goal = Some(Orbit { yaw: cam.yaw, pitch: cam.pitch, ..fitted });
+        }
+        if let Some(g) = goal {
+            if nav3d::glide(cam, &g, dt) {
+                goal = None;
+            } else {
+                ui.ctx().request_repaint();
+            }
+        }
+        let cam = *cam;
+        self.cam_goal = goal.map(|g| (g, cam));
         let (eye, right, up, fwd) = cam.basis();
-        let camera = Camera { eye, right, up, fwd, f: rect.height() * 1.3 };
+        let camera = Camera { eye, right, up, fwd, f };
         let project_view = |q: V3| camera.project(rect.center(), q);
         let background = if dark { Color32::from_rgb(24, 26, 30) } else { Color32::from_rgb(214, 218, 224) };
         painter.rect_filled(rect, 0.0, background);
@@ -99,10 +132,11 @@ impl PanelUi {
         let opacity = self.wall_opacity.clamp(0.0, 1.0);
         let hide_front = self.hide_front_walls;
         let picking = resp.clicked_by(PointerButton::Primary);
+        let focusing = resp.double_clicked_by(PointerButton::Primary);
         let prims = if self.gpu_3d && !self.gpu.failed() {
             painter.add(self.gpu.shape(ui.ctx(), rect, scene.clone(), Frame { camera, opacity, hide_front, background }));
             // The faces under the pointer are only needed for a click.
-            if picking { project(&scene, &camera, rect, opacity, hide_front) } else { Vec::new() }
+            if picking || focusing { project(&scene, &camera, rect, opacity, hide_front) } else { Vec::new() }
         } else {
             let prims = project(&scene, &camera, rect, opacity, hide_front);
             paint(&painter, &prims);
@@ -136,6 +170,31 @@ impl PanelUi {
             });
             ui.ctx().request_repaint_after(std::time::Duration::from_millis(100));
         }
+        // Standard views and fitting, from the direction looked in.
+        let mut view = None;
+        let mut bar = ui.new_child(egui::UiBuilder::new().max_rect(rect.shrink(8.0)).layout(egui::Layout::right_to_left(egui::Align::Min)));
+        egui::Frame::popup(bar.style()).inner_margin(4.0).show(&mut bar, |ui| {
+            ui.spacing_mut().item_spacing.x = 2.0;
+            if icons::button(ui, Icon::Fit, tr("Show everything (Home)")).clicked() {
+                view = Some(Orbit { yaw: cam.yaw, pitch: cam.pitch, ..fitted });
+            }
+            for side in Side::ALL.into_iter().rev() {
+                if ui.small_button(tr(side.title())).clicked() {
+                    let (yaw, pitch) = side.angles();
+                    view = Some(Orbit { yaw, pitch, ..fitted });
+                }
+            }
+        });
+        // Double-click: the camera turns to what is under the pointer and closes in.
+        if let Some(ptr) = resp.interact_pointer_pos().filter(|_| focusing) {
+            if let Some(z) = depth_under(&prims, ptr, opacity < 0.99) {
+                view = Some(nav3d::look_at(&cam, camera.unproject(ptr - rect.center(), z)));
+            }
+        }
+        if let Some(view) = view {
+            self.cam_goal = Some((view, cam));
+            ui.ctx().request_repaint();
+        }
         // Picking: items of a neighbour in the line-up make it the current enclosure.
         if let Some(ptr) = resp.interact_pointer_pos().filter(|_| picking) {
             if self.pick_3d(prj, an, &scene, &prims, &project_view, ptr) {
@@ -145,7 +204,7 @@ impl PanelUi {
         painter.text(
             rect.left_bottom() + vec2(10.0, -10.0),
             egui::Align2::LEFT_BOTTOM,
-            tr("Drag: orbit · right/middle drag: pan · wheel: zoom · click: select device or wire"),
+            tr("Drag: orbit · right/middle or Shift+drag: pan · wheel: zoom at the pointer · double-click: look there · W A S D / arrows, Q E: move · click: select"),
             egui::FontId::proportional(12.0),
             if dark { Color32::GRAY } else { Color32::DARK_GRAY },
         );
@@ -442,7 +501,20 @@ pub(super) fn default_cam(prj: &Project, shown: &[(usize, SitePose)]) -> Orbit {
     }
     let target = [0, 1, 2].map(|i| (min[i] + max[i]) / 2.0);
     let size = (max[0] - min[0]).max(max[1] - min[1]).max(max[2] - min[2]);
-    Orbit { yaw: 0.55, pitch: 0.3, dist: size * 1.9, target }
+    let (yaw, pitch) = Side::Iso.angles();
+    Orbit { yaw, pitch, dist: size * 1.9, target }
+}
+
+/// Depth of what is seen at `q`: the nearest face, or with `items_first` (walls seen
+/// through) the nearest face of an item if there is one.
+fn depth_under(prims: &[Prim], q: Pos2, items_first: bool) -> Option<f32> {
+    let faces = || {
+        prims.iter().rev().filter_map(|prim| match prim {
+            Prim::Face { pts, z, n, item, .. } if point_in_convex(q, &pts[..*n as usize]) => Some((item.is_some(), depth_at(q, &pts[..*n as usize], z))),
+            _ => None,
+        })
+    };
+    faces().find(|f| f.0 && items_first).or_else(|| faces().next()).map(|f| f.1)
 }
 
 /// Depth at `q` of a convex face with the corners `pts` at the depths `z`.

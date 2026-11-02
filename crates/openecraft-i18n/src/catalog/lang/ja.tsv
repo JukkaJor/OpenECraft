@@ -6366,3 +6366,63 @@ Laying out the wires, cables and tubes…	電線、ケーブル、チューブ�
 {} {} cannot be routed: no way that keeps half its thickness clear of everything and bends with its radius of {} mm. Move its ends or make room for it.	{} {} を配線できません: すべてから厚さの半分の間隔を保ち、半径 {} mm で曲がる経路がありません。端を移動するか、空間を確保してください。
 Of the outer diameter, as laid fixed	外径の倍数、固定敷設時
 Of the outer diameter; pipes are bent with elbows of one and a half diameters	外径の倍数。配管は直径の1.5倍のエルボで曲げられます
+Wire colour	電線の色
+Pin-out	ピン配置
+No pin layout in the technical data of the part: the pins are shown in a row (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).	部品の技術データにピン配置がありません：ピンは一列に表示されます (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).
+Seen on the mating faces; the colours are those of the wires and cable cores at the pins.	嵌合面から見た図。色はピンの電線とケーブル心線の色です。
+{}: pin {}	{}: ピン {}
+Pin layout: {}	ピン配置: {}
+Coding: {}	コーディング: {}
+Connector pin-outs and flat cables	コネクタのピン配置とフラットケーブル
+Plug tag, e.g. -X10 (default: all plugs)	プラグのタグ、例: -X10 (既定: すべてのプラグ)
+Connector pin-outs: mating faces and pin tables (SVG)	コネクタのピン配置: 嵌合面とピン表 (SVG)
+{}: pin {} is not a pin of the part {}	{}: ピン {} は部品 {} のピンではありません
+{}: core {} of flat cable {} lands on pin {}	{}: 心線 {} (フラットケーブル {}) がピン {} に接続されています
+Flat cable {} has {} cores, the IDC connector {} has {} pins	フラットケーブル {} は {} 心、IDC コネクタ {} は {} ピンです
+Pin side (male)	ピン側 (オス)
+Socket side (female)	ソケット側 (メス)
+Mating faces	嵌合面
+used: colour of the wire or core	使用中: 電線または心線の色
+coding key	コーディングキー
+No plugs	プラグがありません
+No wires at the pins of {}	{} のピンに電線がありません
+12 · Connectors, pin-outs and ribbon cables	12 · コネクタ、ピン配置、フラットケーブル
+Plug connectors with their parts: a sensor on M12 and a valve on M8, a fan and its thermostat on GX16 and GX12 aviation connectors, a buzzer on a D-sub 9 and an operator panel on a ribbon cable between two IDC sockets; the plugs window shows the pin-out of each plug on its mating faces with the wire and core colours.	部品付きのコネクタ: M12 のセンサと M8 のバルブ、GX16 と GX12 の航空コネクタのファンとサーモスタット、D-sub 9 のブザー、2 つの IDC ソケット間のフラットケーブルの操作パネル。プラグウィンドウは各プラグのピン配置を嵌合面に電線と心線の色で示します。
+Unknown side {} (socket or pin)	不明な側 {} (socket または pin)
+Shows the mating face of a plug: pin layout of its part, the position of each pin on the face (mm, seen on the pin side) with potential, wire colour and cable core of both sides	プラグの嵌合面を表示します: 部品のピン配置、各ピンの位置 (mm、ピン側から見た図)、両側の電位、電線の色、ケーブル心線
+Makes the wires at the pins of a plug cores of a flat (ribbon) cable: pin n takes core n, as on IDC connectors	プラグのピンの電線をフラットケーブルの心線にします: IDC コネクタと同様にピン n に心線 n
+Cable tag, e.g. -W20	ケーブルのタグ、例: -W20
+Side of the plug the cable leaves: socket or pin (default: socket)	ケーブルが出るプラグの側: socket または pin (既定: socket)
+Fits	適合先
+Fits {}	{} に適合
+The accessory fits none of the device's parts	このアクセサリは機器のどの部品にも適合しません
+{}: accessory {} fits none of the device's parts	{}: アクセサリ {} は機器のどの部品にも適合しません
+Part accessories	部品アクセサリ
+Unknown device: {}	不明な機器: {}
+{} fits none of the parts of {}	{0} は {1} のどの部品にも適合しません
+Accessories only work together with the parts they fit. A part lists its accessories, an accessory the parts it fits; either side is enough.	アクセサリは適合する部品と組み合わせた場合にのみ機能します。部品はそのアクセサリを、アクセサリは適合する部品を示します。どちらか一方だけで足ります。
+Accessories of this part	この部品のアクセサリ
+This part is an accessory	この部品はアクセサリです
+It only works attached to one of the parts it fits; the project check reports it on a device without such a part	適合する部品のいずれかに取り付けた場合にのみ機能します。そのような部品のない機器ではプロジェクトチェックが報告します
+Where the accessory sits on the part it fits, in the panel layout and the 3D view	適合する部品上でのアクセサリの位置（盤レイアウトと 3D ビュー）
+Fits these parts	これらの部品に適合
+➕ Add part	➕ 部品を追加
+Accessory, mounted: {}	アクセサリ、取付: {}
+Give a device tag or a part number	機器記号または部品番号を指定してください
+Lists and renames devices, adds accessories to their parts	機器の一覧表示と名前変更、部品へのアクセサリ追加
+Lists the accessories that fit a part or the parts of a device, and the parts an accessory fits (project parts, built-in and bundled catalogs)	部品または機器の部品に適合するアクセサリと、アクセサリが適合する部品を一覧表示します（プロジェクト部品、内蔵および同梱カタログ）
+Device tag: the accessories that can still be added to its parts	機器記号: その部品にまだ追加できるアクセサリ
+Adds an accessory to a device; it must fit one of the device's parts	機器にアクセサリを追加します。機器のいずれかの部品に適合する必要があります
+Part number of the accessory	アクセサリの部品番号
+On the front	前面
+On the left side	左側
+On the right side	右側
+Not mounted	取り付けなし
+Rear	背面
+Isometric	等角
+Show everything (Home)	すべて表示 (Home)
+Drag: orbit · right/middle or Shift+drag: pan · wheel: zoom at the pointer · double-click: look there · W A S D / arrows, Q E: move · click: select	ドラッグ: 回転 · 右/中ボタンまたは Shift でドラッグ: パン · ホイール: ポインター位置でズーム · ダブルクリック: そこを見る · W A S D / 矢印キー、Q E: 移動 · クリック: 選択
+W A S D / arrows, Q / E	W A S D / 矢印キー、Q / E
+Move through the 3D view (Shift: faster)	3D ビューの中を移動 (Shift: 高速)
+Double-click (3D view)	ダブルクリック (3D ビュー)
+Look at the point clicked, closer	クリックした点を近くから見る

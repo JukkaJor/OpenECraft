@@ -215,6 +215,15 @@ fn building_services_route_from_room_to_room() {
     for part in ["HAG.LT0057", "HAG.LT056", "HAG.LT253", "HAG.ECR300C", "VIC.PMP482505010", "VIC.PIN482601000", "VIC.BPP900450100", "PYL.US5000", "DEH.952515"] {
         assert!(prj.parts.iter().any(|p| p.number == part), "{part}");
     }
+    // The residual current device carries its signal contact beside it on the rail;
+    // its NC contact switches the trip lamp.
+    let f10 = "=ESS+ACD-F10";
+    assert_eq!(crate::parts::attached_to(&prj, None, f10, "HAG.CZ001").map(|p| p.number.as_str()), Some("HAG.CDA440D"));
+    let (ei, it) = crate::panel::locate(&prj, f10).expect("-F10 placed");
+    assert_eq!((l.enclosures[ei].name.as_str(), it.w), ("+ACD", 79.0));
+    assert!(crate::panel::device_points(&prj, it).iter().any(|p| p.pin == "21" && p.pos[0] < it.x + 9.0));
+    let f10s: Vec<_> = prj.pages.iter().flat_map(|p| &p.symbols).filter(|s| s.tag.ends_with("-F10")).map(|s| (s.tag.clone(), s.sym.clone(), s.pins.clone())).collect();
+    assert!(f10s.iter().any(|(_, sym, pins)| sym == "nc" && pins == &["21", "22"]), "{f10s:?}");
     // Sections in two levels, the pages numbered after them.
     assert!(prj.sections.iter().any(|s| s.parent != 0));
     assert!(prj.pages.iter().any(|p| p.name == "2.1.1") && prj.pages.iter().any(|p| p.name == "7.2.4"), "{:?}", prj.pages.iter().map(|p| &p.name).collect::<Vec<_>>());
@@ -356,4 +365,38 @@ fn pumps_and_the_compressor_are_driven_by_their_motors() {
     let building = kinds(&example("building_services").unwrap());
     let count = |k: DriveKind| building.iter().filter(|b| **b == k).count();
     assert_eq!((count(DriveKind::Coupling), count(DriveKind::Belt)), (2, 1), "{building:?}");
+}
+
+#[test]
+fn connectors_show_their_pin_outs_and_the_ribbon_cable() {
+    let (prj, an) = checked("connector_handling");
+    assert_eq!(crate::plugs::plug_tags(&prj), ["-X11", "-X12", "-X13", "-X14", "-X15", "-X20", "-X21"]);
+    let po = |plug: &str| crate::pinout::pinout(&prj, plug, &an.netlist, &an.open);
+    // M12: the field cable's core colours on the socket side, pins 2 and 3 spare.
+    let m12 = po("-X11");
+    assert_eq!(m12.layout.as_ref().map(|l| l.text()), Some("circle 4".to_string()));
+    let v: Vec<(&str, bool, &str)> = m12.pins.iter().map(|p| (p.label.as_str(), p.used(), p.socket.color.as_str())).collect();
+    assert_eq!(v, [("1", true, "BN"), ("2", false, ""), ("3", false, ""), ("4", true, "BK")]);
+    assert_eq!(m12.pins[0].socket.core, "-W11:BN");
+    // M8 3-pin: designations 1, 3, 4 on a face of four places.
+    assert_eq!(po("-X12").pins.iter().map(|p| p.slot).collect::<Vec<_>>(), [Some(0), Some(2), Some(3)]);
+    for (plug, layout) in [("-X13", "circle 4"), ("-X14", "circle 3"), ("-X15", "dsub 9"), ("-X20", "zigzag 10")] {
+        assert_eq!(po(plug).layout.as_ref().map(|l| l.text()).as_deref(), Some(layout), "{plug}");
+    }
+    // The ribbon cable: core n on pin n at both IDC sockets, core 1 red, the others grey.
+    for plug in ["-X20", "-X21"] {
+        let idc = po(plug);
+        assert_eq!(idc.pins.len(), 10);
+        for p in idc.pins.iter().take(5) {
+            assert_eq!(p.socket.core, format!("-W20:{}", p.label), "{plug}");
+            assert_eq!(p.socket.color, if p.label == "1" { "RD" } else { "GY" }, "{plug}");
+        }
+        assert!(idc.pins.iter().skip(5).all(|p| !p.used()));
+    }
+    let bom = an.report(&prj, ReportKind::BillOfMaterials).unwrap();
+    for part in ["GEN.CBL-FLAT-10", "GEN.CON-IDC-10F", "GEN.CON-BOX-10M", "GEN.CON-GX16-4F", "GEN.CON-DSUB-9M", "GEN.CON-M8-3F"] {
+        assert!(bom.rows.iter().any(|r| r[3] == part), "{part}");
+    }
+    let svg = crate::pinout::svg(&prj, &an.netlist, &an.open, &[]);
+    assert!(svg.contains("-X21") && svg.contains("zigzag 10"));
 }

@@ -567,11 +567,36 @@ fn room_frame(ui: &mut PanelUi, prj: &mut Project, an: &openecraft_core::analysi
     out.textures_delta.clear();
     let mut alpha = 255;
     for s in &out.shapes {
+        // Unfilled paths are outlines (the icons of the view bar), not faces.
         if let egui::Shape::Path(p) = &s.shape {
-            alpha = alpha.min(p.fill.a());
+            if p.fill.a() > 0 {
+                alpha = alpha.min(p.fill.a());
+            }
         }
     }
     (out.shapes.len(), alpha)
+}
+
+#[test]
+fn the_camera_glides_to_a_standard_view_over_the_frames() {
+    let mut prj = openecraft_core::sample::example("pump_room").unwrap();
+    let an = openecraft_core::analysis::Analysis::build(&prj);
+    let mut ui = PanelUi::default();
+    room_frame(&mut ui, &mut prj, &an);
+    let start = ui.cam.unwrap();
+    let (yaw, pitch) = nav3d::Side::Top.angles();
+    let goal = Orbit { yaw, pitch, ..start };
+    ui.cam_goal = Some((goal, start));
+    let room = prj.layout.enclosures.iter().position(|e| e.is_room()).unwrap();
+    let ctx = egui::Context::default();
+    for _ in 0..200 {
+        let input = egui::RawInput { screen_rect: Some(egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(1200.0, 800.0))), predicted_dt: 1.0 / 60.0, ..Default::default() };
+        ctx.run_ui(input, |ui_| ui.view_3d(ui_, &mut prj, room, &an)).textures_delta.clear();
+        if ui.cam_goal.is_none() {
+            break;
+        }
+    }
+    assert_eq!(ui.cam, Some(goal), "arrived at the view from above");
 }
 
 #[test]

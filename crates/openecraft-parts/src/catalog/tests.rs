@@ -5,8 +5,15 @@ fn catalog_numbers_unique_and_accessories_exist() {
     let parts = default_catalog();
     for (i, p) in parts.iter().enumerate() {
         assert!(parts[i + 1..].iter().all(|q| q.number != p.number), "duplicate {}", p.number);
-        for a in &p.accessories {
+        for a in p.accessories.iter().chain(&p.fits) {
             assert!(parts.iter().any(|q| &q.number == a), "{} accessory {a} missing", p.number);
+        }
+        // Accessories are flagged and mounted on their main parts.
+        if p.accessory {
+            assert!(!crate::accessory::mains_of(&parts, p).is_empty(), "{} fits nothing", p.number);
+        }
+        for a in crate::accessory::accessories_of(&parts, p).iter().filter(|a| a.subgroup.starts_with("Auxiliary")) {
+            assert!(a.accessory, "{} is no accessory", a.number);
         }
     }
 }
@@ -151,5 +158,35 @@ fn terminals_show_their_openings_and_marker() {
     // height above the rail.
     for (n, size) in [("GEN.TB-2.5", [5.2, 48.6, 29.3]), ("GEN.TB-END", [2.2, 48.6, 29.1]), ("GEN.EB-35", [9.5, 54.6, 26.0]), ("PXC.3209510", [5.2, 48.6, 29.3])] {
         assert_eq!(part(n).size(), Some(size), "{n}");
+    }
+}
+
+#[test]
+fn connectors_have_a_pin_layout_for_every_pin() {
+    use crate::connector::PinLayout;
+    let parts = default_catalog();
+    let connectors: Vec<&Part> = parts.iter().filter(|p| p.group == "Connectors").collect();
+    assert!(connectors.len() > 400, "{}", connectors.len());
+    for p in &connectors {
+        let layout = PinLayout::of_part(p).unwrap_or_else(|| panic!("{} has no pin layout", p.number));
+        let pins = p.functions.iter().filter(|f| f.kind == FnKind::PlugPin).count();
+        assert!(pins <= layout.slots() && pins > 0, "{}: {pins} pins, {} positions", p.number, layout.slots());
+        assert!(matches!(p.tech_value("Gender"), Some("male" | "female" | "hermaphroditic")), "{}", p.number);
+        assert!(p.functions.iter().map(|f| &f.pins).enumerate().all(|(i, a)| p.functions[i + 1..].iter().all(|f| &f.pins != a)), "{}: pins named twice", p.number);
+    }
+    let series = [
+        "GX12", "GX16", "GX20", "M5", "M8", "M12", "M16", "M23", "M23 power", "M40 power", "7/8\"", "DIN EN 175301-803", "D-sub", "IDC 2.54", "RJ11", "RJ12", "RJ45",
+        "Heavy duty", "DT", "Sealed 1.5", "DIN 41612", "PLC front connector", "Single row 2.5", "Dual row 3.0", "Dual row 4.2", "Pluggable 3.5", "Pluggable 5.08",
+        "Pluggable 7.62", "IEC 60309", "IEC 60320", "Mains plug", "Installation plug connector", "PV", "Battery connector", "Banana 4 mm", "Thermocouple", "BNC",
+    ];
+    for series in series {
+        assert!(connectors.iter().any(|p| p.tech_value("Series") == Some(series)), "{series}");
+    }
+    // A ribbon cable for every IDC socket.
+    for p in connectors.iter().filter(|p| p.tech_value("Termination") == Some("IDC")) {
+        let n = p.functions.len();
+        let cable = parts.iter().find(|c| c.number == format!("GEN.CBL-FLAT-{n}")).unwrap_or_else(|| panic!("ribbon cable for {}", p.number));
+        assert_eq!(cable.tech_value("Cable form"), Some("Flat"));
+        assert_eq!(cable.tech_value("Cores").map(|c| c.split(' ').count()), Some(n));
     }
 }

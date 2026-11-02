@@ -6373,3 +6373,63 @@ Laying out the wires, cables and tubes…	Ledningar, kablar och slangar läggs u
 {} {} cannot be routed: no way that keeps half its thickness clear of everything and bends with its radius of {} mm. Move its ends or make room for it.	{} {} kan inte dras: ingen väg som håller halva tjockleken fri från allt och böjer med radien {} mm. Flytta ändarna eller gör plats.
 Of the outer diameter, as laid fixed	Av ytterdiametern, fast förlagd
 Of the outer diameter; pipes are bent with elbows of one and a half diameters	Av ytterdiametern; rör böjs med böjar på en och en halv diameter
+Wire colour	Ledarfärg
+Pin-out	Stiftbeläggning
+No pin layout in the technical data of the part: the pins are shown in a row (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).	Ingen stiftlayout i artikelns tekniska data: stiften visas på en rad (Pin layout: circle 4, circle 7+1, row 8, zigzag 10, grid 2x8+PE, dsub 9).
+Seen on the mating faces; the colours are those of the wires and cable cores at the pins.	Sett mot anslutningssidorna; färgerna är ledarnas och kabelledarnas vid stiften.
+{}: pin {}	{}: stift {}
+Pin layout: {}	Stiftlayout: {}
+Coding: {}	Kodning: {}
+Connector pin-outs and flat cables	Kontakters stiftbeläggning och flatkablar
+Plug tag, e.g. -X10 (default: all plugs)	Kontaktbeteckning, t.ex. -X10 (standard: alla kontakter)
+Connector pin-outs: mating faces and pin tables (SVG)	Kontakters stiftbeläggning: anslutningssidor och stifttabeller (SVG)
+{}: pin {} is not a pin of the part {}	{}: stift {} är inte ett stift i artikeln {}
+{}: core {} of flat cable {} lands on pin {}	{}: ledare {} i flatkabeln {} hamnar på stift {}
+Flat cable {} has {} cores, the IDC connector {} has {} pins	Flatkabeln {} har {} ledare, IDC-kontakten {} har {} stift
+Pin side (male)	Stiftsida (hane)
+Socket side (female)	Hylssida (hona)
+Mating faces	Anslutningssidor
+used: colour of the wire or core	använd: ledarens eller kabelledarens färg
+coding key	kodningsnyckel
+No plugs	Inga kontakter
+No wires at the pins of {}	Inga ledare vid stiften på {}
+12 · Connectors, pin-outs and ribbon cables	12 · Kontaktdon, stiftbeläggning och flatkablar
+Plug connectors with their parts: a sensor on M12 and a valve on M8, a fan and its thermostat on GX16 and GX12 aviation connectors, a buzzer on a D-sub 9 and an operator panel on a ribbon cable between two IDC sockets; the plugs window shows the pin-out of each plug on its mating faces with the wire and core colours.	Kontaktdon med sina artiklar: en givare på M12 och en ventil på M8, en fläkt och dess termostat på GX16- och GX12-kontakter, en summer på en D-sub 9 och en manöverpanel på en flatkabel mellan två IDC-hylsor; kontaktfönstret visar stiftbeläggningen för varje kontakt på dess anslutningssidor med ledarnas färger.
+Unknown side {} (socket or pin)	Okänd sida {} (socket eller pin)
+Shows the mating face of a plug: pin layout of its part, the position of each pin on the face (mm, seen on the pin side) with potential, wire colour and cable core of both sides	Visar en kontakts anslutningssida: artikelns stiftlayout, varje stifts läge (mm, sett mot stiftsidan) med potential, ledarfärg och kabelledare på båda sidor
+Makes the wires at the pins of a plug cores of a flat (ribbon) cable: pin n takes core n, as on IDC connectors	Gör ledarna vid en kontakts stift till ledare i en flatkabel: stift n får ledare n, som på IDC-kontakter
+Cable tag, e.g. -W20	Kabelbeteckning, t.ex. -W20
+Side of the plug the cable leaves: socket or pin (default: socket)	Kontaktens sida där kabeln går ut: socket eller pin (standard: socket)
+Fits	Passar till
+Fits {}	Passar till {}
+The accessory fits none of the device's parts	Tillbehöret passar inte till någon av enhetens artiklar
+{}: accessory {} fits none of the device's parts	{}: tillbehöret {} passar inte till någon av enhetens artiklar
+Part accessories	Artikeltillbehör
+Unknown device: {}	Okänd enhet: {}
+{} fits none of the parts of {}	{} passar inte till någon artikel i {}
+Accessories only work together with the parts they fit. A part lists its accessories, an accessory the parts it fits; either side is enough.	Tillbehör fungerar bara tillsammans med de artiklar de passar till. En artikel listar sina tillbehör, ett tillbehör de artiklar det passar till; en sida räcker.
+Accessories of this part	Tillbehör till den här artikeln
+This part is an accessory	Den här artikeln är ett tillbehör
+It only works attached to one of the parts it fits; the project check reports it on a device without such a part	Det fungerar bara monterat på en av de artiklar det passar till; projektkontrollen rapporterar det på en enhet utan en sådan artikel
+Where the accessory sits on the part it fits, in the panel layout and the 3D view	Var tillbehöret sitter på artikeln det passar till, i kapslingslayouten och 3D-vyn
+Fits these parts	Passar till dessa artiklar
+➕ Add part	➕ Lägg till artikel
+Accessory, mounted: {}	Tillbehör, monterat: {}
+Give a device tag or a part number	Ange en enhetsbeteckning eller ett artikelnummer
+Lists and renames devices, adds accessories to their parts	Listar och byter namn på enheter, lägger till tillbehör till deras artiklar
+Lists the accessories that fit a part or the parts of a device, and the parts an accessory fits (project parts, built-in and bundled catalogs)	Listar tillbehör som passar till en artikel eller en enhets artiklar, och de artiklar ett tillbehör passar till (projektartiklar, inbyggda och medföljande kataloger)
+Device tag: the accessories that can still be added to its parts	Enhetsbeteckning: tillbehör som fortfarande kan läggas till dess artiklar
+Adds an accessory to a device; it must fit one of the device's parts	Lägger till ett tillbehör till en enhet; det måste passa till en av enhetens artiklar
+Part number of the accessory	Tillbehörets artikelnummer
+On the front	På framsidan
+On the left side	På vänster sida
+On the right side	På höger sida
+Not mounted	Inte monterat
+Rear	Bak
+Isometric	Isometrisk
+Show everything (Home)	Visa allt (Home)
+Drag: orbit · right/middle or Shift+drag: pan · wheel: zoom at the pointer · double-click: look there · W A S D / arrows, Q E: move · click: select	Dra: rotera · dra med höger-/mittknappen eller Skift: panorera · hjul: zooma vid pekaren · dubbelklick: titta dit · W A S D / pilar, Q E: förflytta · klick: markera
+W A S D / arrows, Q / E	W A S D / pilar, Q / E
+Move through the 3D view (Shift: faster)	Förflytta sig i 3D-vyn (Skift: snabbare)
+Double-click (3D view)	Dubbelklick (3D-vy)
+Look at the point clicked, closer	Titta på den klickade punkten, närmare

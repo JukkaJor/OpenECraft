@@ -567,10 +567,18 @@ impl App {
             egui::Grid::new("devparts").num_columns(2).striped(true).show(ui, |ui| {
                 for (i, r) in data.parts.iter_mut().enumerate() {
                     let known = self.session.prj.parts.iter().find(|p| p.number == r.number);
-                    let link = ui.link(RichText::new(&r.number).monospace());
-                    let link = match known {
-                        Some(p) => link.on_hover_text(format!("{}\n{}", p.description, p.template_summary())),
-                        None => link.on_hover_text(tr("Not in the project parts – synchronize in parts management")),
+                    // Accessories show the part they are attached to.
+                    let on = known.filter(|p| p.accessory).map(|_| parts::attached_to(&self.session.prj, Some(&self.parts_db), &edited.tag, &r.number).map(|m| m.number.clone()));
+                    let link = match &on {
+                        Some(Some(main)) => ui.link(RichText::new(format!("{}  ({})", r.number, main)).monospace()),
+                        Some(None) => ui.link(RichText::new(&r.number).monospace().color(crate::style::warning())),
+                        None => ui.link(RichText::new(&r.number).monospace()),
+                    };
+                    let link = match (known, &on) {
+                        (Some(p), Some(None)) => link.on_hover_text(format!("{}\n{}", p.description, tr("The accessory fits none of the device's parts"))),
+                        (Some(p), Some(Some(main))) => link.on_hover_text(format!("{}\n{}", p.description, tr_fmt!("Fits {}", main))),
+                        (Some(p), None) => link.on_hover_text(format!("{}\n{}", p.description, p.template_summary())),
+                        (None, _) => link.on_hover_text(tr("Not in the project parts – synchronize in parts management")),
                     };
                     if link.clicked() {
                         show_part = Some(r.number.clone());
@@ -587,12 +595,24 @@ impl App {
             if let Some(i) = remove {
                 data.parts.remove(i);
             }
+            let mut add_accessory: Option<String> = None;
             if let Some(n) = show_part {
                 self.parts_ui.show_part(&n, true);
             }
             ui.horizontal(|ui| {
                 if icons::text_button(ui, Icon::Plus, tr("Add part…")).on_hover_text(tr("Part selection from the parts database")).clicked() {
                     self.parts_ui.select_for(&edited.tag);
+                }
+                let choices = parts::accessory_choices(&self.session.prj, Some(&self.parts_db), &edited.tag);
+                if !choices.is_empty() {
+                    egui::ComboBox::from_id_salt("devacc").selected_text(tr("➕ Add accessory")).width(200.0).show_ui(ui, |ui| {
+                        for (acc, main) in &choices {
+                            let text = format!("{}  ({})", acc.number, acc.description);
+                            if ui.selectable_label(false, text).on_hover_text(tr_fmt!("Fits {}", main)).clicked() {
+                                add_accessory = Some(acc.number.clone());
+                            }
+                        }
+                    });
                 }
                 if !data.parts.is_empty()
                     && ui
@@ -603,6 +623,13 @@ impl App {
                     parts::apply_designations(&mut self.session.prj, Some(&self.parts_db), &edited.tag);
                 }
             });
+            if let Some(n) = add_accessory {
+                // Added to the edited copy, which is stored below.
+                self.session.prj.devices.insert(edited.tag.clone(), data.clone());
+                if parts::add_accessory(&mut self.session.prj, &self.parts_db, &edited.tag, &n, 1).is_ok() {
+                    data = self.session.prj.devices.get(&edited.tag).cloned().unwrap_or_default();
+                }
+            }
             }
             if data != before {
                 self.session.prj.devices.insert(edited.tag.clone(), data.clone());

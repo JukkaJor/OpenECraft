@@ -59,3 +59,17 @@ fn exports_say_what_they_lack_and_name_their_language() {
     // The wire list opens in spreadsheets with its units intact.
     assert!(run("wire_list").unwrap().text().unwrap().starts_with('\u{feff}'));
 }
+
+#[test]
+fn the_pinouts_of_one_or_all_plugs_are_exported() {
+    let prj = crate::sample::example("connector_handling").unwrap();
+    let an = Analysis::build(&prj);
+    let all = builtin();
+    let e = all.iter().find(|e| e.name == "pinouts").unwrap();
+    let run = |args: serde_json::Value| (e.run)(&prj, &an, &Args(args.as_object().unwrap()));
+    let every = run(serde_json::json!({})).unwrap().text().unwrap();
+    assert!(every.contains("-X11") && every.contains("-X21"));
+    let one = run(serde_json::json!({ "plug": "-X15" })).unwrap().text().unwrap();
+    assert!(one.contains("dsub 9") && !one.contains("-X11"));
+    assert_eq!(run(serde_json::json!({ "plug": "-X99" })).err().as_deref(), Some("No plug -X99"));
+}

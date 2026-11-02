@@ -4,7 +4,7 @@
     "name": "Hager",
     "manufacturer": "Hager",
     "version": "2026.1",
-    "description": "Miniature circuit breakers MBN / MCN, residual current circuit breakers CDA, installation contactors ESC, switch disconnectors SBN, NH fuse switch disconnectors LT for 60 mm busbar systems and energy meters ECR. Curated from public data sheets; check against the manufacturer data before ordering."
+    "description": "Miniature circuit breakers MBN / MCN, residual current circuit breakers CDA / CCA with the auxiliary contact CZ001, installation contactors ESC, switch disconnectors SBN, NH fuse switch disconnectors LT for 60 mm busbar systems and energy meters ECR. Curated from public data sheets; check against the manufacturer data before ordering."
   },
   "parts": [
     {
@@ -269,7 +269,10 @@
       "width": 70.0,
       "height": 83,
       "depth": 69,
-      "weight": 0.48
+      "weight": 0.48,
+      "accessories": [
+        "HAG.CZ001"
+      ]
     },
     {
       "number": "HAG.CDA463D",
@@ -293,7 +296,34 @@
       "width": 70.0,
       "height": 83,
       "depth": 69,
-      "weight": 0.48
+      "weight": 0.48,
+      "accessories": [
+        "HAG.CZ001"
+      ]
+    },
+    {
+      "number": "HAG.CCA216D",
+      "type_number": "CCA216D",
+      "order_number": "CCA216D",
+      "manufacturer": "Hager",
+      "description": "Residual current circuit breaker 2P 16 A, 10 mA, type A, 2 modules",
+      "group": "Safety devices",
+      "subgroup": "Residual current device",
+      "identifier": "F",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "ResidualCurrent",
+          "pins": "1 N 2 N'"
+        }
+      ],
+      "current": "16 A",
+      "voltage": "230 V AC",
+      "tech_data": "Rated residual current: 10 mA\nType: A\nPoles: 2\nModules: 2\nBreaking capacity: 6 kA",
+      "width": 35.0,
+      "height": 83,
+      "depth": 70,
+      "weight": 0.24
     },
     {
       "number": "HAG.ESC225",
@@ -382,6 +412,39 @@
       "height": 83,
       "depth": 69,
       "weight": 0.36
+    },
+    {
+      "number": "HAG.CZ001",
+      "type_number": "CZ001",
+      "order_number": "CZ001",
+      "manufacturer": "Hager",
+      "description": "Auxiliary contact 1 NO + 1 NC, 6 A 230 V AC, for residual current circuit breakers, side mounting, 1/2 module",
+      "group": "Safety devices",
+      "subgroup": "Auxiliary switch",
+      "identifier": "F",
+      "mounting": "Mounting rail 35 mm",
+      "functions": [
+        {
+          "kind": "No",
+          "pins": "13 14"
+        },
+        {
+          "kind": "Nc",
+          "pins": "21 22"
+        }
+      ],
+      "current": "6 A",
+      "voltage": "230 V AC",
+      "tech_data": "Modules: 0.5",
+      "width": 9.0,
+      "height": 83,
+      "depth": 69,
+      "weight": 0.04,
+      "accessory": true,
+      "accessory_mount": "left",
+      "fits": [
+        "HAG.CCA216D"
+      ]
     },
     {
       "number": "HAG.SBN340",

@@ -12,7 +12,7 @@ use axum::{Json, Router};
 use openecraft_auth::{AccessFile, SignInError, Throttle};
 use openecraft_parts::access::{Access, Policy, Right, Settings, SERVER};
 use openecraft_parts::api::{
-    bearer_token, token_matches, ApiError, ImportResult, Login, PartList, PartQuery, ServerInfo, Session, UserUpdate, API_PREFIX,
+    bearer_token, token_matches, Accessories, ApiError, ImportResult, Login, PartList, PartQuery, ServerInfo, Session, UserUpdate, API_PREFIX,
 };
 use openecraft_parts::portal::{content_type, AttachmentKind, Catalog, HistoryEntry, PartsRight, Role, SearchResult, User};
 use openecraft_parts::{import, to_csv, Part};
@@ -85,6 +85,7 @@ pub fn router(state: AppState) -> Router {
         .route(&api("/parts"), get(list))
         .route(&api("/search"), post(search))
         .route(&api("/parts/{number}"), get(get_part).put(put_part).delete(delete_part))
+        .route(&api("/parts/{number}/accessories"), get(accessories))
         .route(&api("/parts/{number}/history"), get(history))
         .route(&api("/parts/{number}/history/{revision}"), get(history_part))
         .route(&api("/parts/{number}/attachments"), post(attach))
@@ -365,6 +366,14 @@ async fn delete_part(State(state): State<AppState>, headers: HeaderMap, Path(num
     store.delete(&user.name, &number)?;
     log::info!("deleted part {number} ({})", user.name);
     Ok(StatusCode::NO_CONTENT)
+}
+
+async fn accessories(State(state): State<AppState>, headers: HeaderMap, Path(number): Path<String>) -> Result<Json<Accessories>> {
+    reader(&state, &headers)?;
+    let store = store(&state);
+    let part = part_of(&store, &number)?;
+    let (_, parts) = store.list(&PartQuery { brief: true, ..Default::default() })?;
+    Ok(Json(Accessories::of(&parts, &part)))
 }
 
 async fn history(State(state): State<AppState>, headers: HeaderMap, Path(number): Path<String>) -> Result<Json<Vec<HistoryEntry>>> {

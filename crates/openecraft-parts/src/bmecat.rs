@@ -188,6 +188,24 @@ fn product(p: &Element, supplier: &str, currency: &str) -> Option<Part> {
     Some(part)
 }
 
+/// Supplier ids of the products a product refers to as its accessories
+/// (`accessories`) and as the products it is an accessory of (`base_product`).
+type References = (Vec<String>, Vec<String>);
+
+fn references(p: &Element) -> References {
+    let (mut accessories, mut bases) = (Vec::new(), Vec::new());
+    for r in p.all("PRODUCT_REFERENCE").chain(p.all("ARTICLE_REFERENCE")) {
+        let to = text_either(r, &["PROD_ID_TO", "ART_ID_TO"]).trim().to_string();
+        match r.attribute("type").unwrap_or_default() {
+            _ if to.is_empty() => {}
+            "accessories" => accessories.push(to),
+            "base_product" => bases.push(to),
+            _ => {}
+        }
+    }
+    (accessories, bases)
+}
+
 /// Whether a text looks like a BMEcat document.
 pub fn is_bmecat(text: &str) -> bool {
     let head: String = text.trim_start_matches('\u{feff}').trim_start().chars().take(2000).collect();
@@ -206,11 +224,29 @@ pub fn from_bmecat(text: &str) -> Result<Vec<Part>, String> {
     let mut products = Vec::new();
     root.descendants("PRODUCT", &mut products);
     root.descendants("ARTICLE", &mut products);
-    let parts: Vec<Part> = products.into_iter().filter_map(|p| product(p, &supplier, &currency)).collect();
-    if parts.is_empty() {
+    let found: Vec<(Part, References)> = products.into_iter().filter_map(|p| Some((product(p, &supplier, &currency)?, references(p)))).collect();
+    if found.is_empty() {
         return Err("the catalog has no products".into());
     }
-    Ok(parts)
+    // References name supplier ids: the part number of a product of the catalog, else
+    // the number such a product would get.
+    let number_of = |id: &str| {
+        found.iter().find(|(p, _)| p.order_number == id).map(|(p, _)| p.number.clone()).unwrap_or_else(|| {
+            let pre = prefix(&supplier);
+            if pre.is_empty() { id.to_string() } else { format!("{pre}.{id}") }
+        })
+    };
+    let resolved: Vec<References> = found.iter().map(|(_, (acc, bases))| (acc.iter().map(|id| number_of(id)).collect(), bases.iter().map(|id| number_of(id)).collect())).collect();
+    Ok(found
+        .into_iter()
+        .zip(resolved)
+        .map(|((mut part, _), (accessories, fits))| {
+            part.accessories = accessories;
+            part.accessory = !fits.is_empty();
+            part.fits = fits;
+            part
+        })
+        .collect())
 }
 
 #[cfg(test)]

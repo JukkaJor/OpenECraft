@@ -72,12 +72,27 @@ pub fn nozzles(prj: &Project, it: &PanelItem) -> Vec<(String, V3, V3)> {
         .collect()
 }
 
-/// The connection points of a device item, in the coordinates of its face. Terminal
-/// strips get the points of their terminal part once per terminal, in strip order.
-/// Accessories that are wider than the main part (side mounted) are not placed.
+/// The connection points of a device item, in the coordinates of its face: those of
+/// each part of its [`super::assembly`] in that part's box. Terminal strips get the
+/// points of their terminal part once per terminal, in strip order.
 pub fn device_points(prj: &Project, it: &PanelItem) -> Vec<PlacedPoint> {
     if it.kind != ItemKind::Device {
         return Vec::new();
+    }
+    if let Some(a) = super::assembly(prj, &it.tag) {
+        let rotated = super::item_rotated(it, a.main.size[1]);
+        let mut out = Vec::new();
+        for piece in a.pieces() {
+            piece_points(&mut out, piece.part, piece.size, &a.piece_item(it, piece), rotated);
+        }
+        // A device standing on the floor without connection points of its own (a
+        // motor) is connected on top, where its terminal box is.
+        if it.face == Face::Bottom {
+            for p in out.iter_mut().filter(|p| !p.exact) {
+                (p.pos, p.exit) = ([p.pos[0], it.y + it.h / 2.0, it.z + it.d], Exit::Front);
+            }
+        }
+        return out;
     }
     let Some(data) = prj.devices.get(&it.tag) else { return Vec::new() };
     let parts: Vec<(&Part, u32)> =
@@ -144,6 +159,20 @@ pub fn device_points(prj: &Project, it: &PanelItem) -> Vec<PlacedPoint> {
         }
     }
     out
+}
+
+/// The connection points of a part placed into the box `b` of its piece of a device.
+fn piece_points(out: &mut Vec<PlacedPoint>, part: &Part, [pw, ph, pd]: [f32; 3], b: &PanelItem, rotated: bool) {
+    let (points, exact) = part.connection_points_or_default();
+    for c in points {
+        let z = b.z + c.pos[2] * (b.d / pd.max(1e-3));
+        let (pos, exit) = if rotated {
+            ([b.x + (ph - c.pos[1]) * (b.w / ph), b.y + c.pos[0] * (b.h / pw), z], turned(c.exit))
+        } else {
+            ([b.x + c.pos[0] * (b.w / pw), b.y + c.pos[1] * (b.h / ph), z], c.exit)
+        };
+        out.push(PlacedPoint { pin: c.pin, terminal: String::new(), pos, exit, exact });
+    }
 }
 
 /// The placed point of connection point `pin` (index) of schematic symbol `s`:

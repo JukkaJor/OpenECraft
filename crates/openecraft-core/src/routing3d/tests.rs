@@ -318,3 +318,53 @@ fn cables_take_the_glands_that_fit_them() {
     assert_eq!(glands.pick(&prj, vec![(&m32, 10.0), (&m25, 50.0)], 30.0).map(|g| g.id), Some(4));
     assert_eq!(glands.pick(&prj, vec![], 30.0), None);
 }
+
+#[test]
+fn duct_runs_take_the_part_of_a_segment_inside_the_duct() {
+    let mut e = crate::panel::Enclosure::default();
+    e.items.push(PanelItem { id: 3, kind: ItemKind::Duct, x: 100.0, y: 100.0, w: 40.0, h: 400.0, d: 60.0, ..Default::default() });
+    let (lo, hi) = panel::item_box(&e, &e.items[0]);
+    let mid = |y: f32| [(lo[0] + hi[0]) / 2.0, y, (lo[2] + hi[2]) / 2.0];
+    // Down the duct and on past its end (into a crossing duct, to a terminal).
+    let runs = duct_runs(&e, &[mid(lo[1] + 50.0), mid(hi[1] + 200.0)]);
+    assert_eq!(runs.len(), 1);
+    assert_eq!(runs[0].duct, 3);
+    assert!((runs[0].from - 150.0).abs() < 1e-3 && (runs[0].to - 501.0).abs() < 1e-3, "{runs:?}");
+    // Into the duct from the side and along it.
+    let side = [lo[0] - 100.0, lo[1] + 50.0, (lo[2] + hi[2]) / 2.0];
+    let runs = duct_runs(&e, &[side, mid(lo[1] + 50.0), mid(lo[1] + 150.0)]);
+    assert_eq!(runs.iter().map(|r| (r.from, r.to)).collect::<Vec<_>>(), vec![(150.0, 250.0)]);
+    // Beside the duct: nothing.
+    assert!(duct_runs(&e, &[[lo[0] - 10.0, lo[1], lo[2]], [lo[0] - 10.0, hi[1], lo[2]]]).is_empty());
+}
+
+#[test]
+fn cables_in_the_ducts_count_in_their_fill() {
+    // The cabinets of the line-up: cables enter their ducts through the slots and run
+    // along them (the demo's motor cable goes over the bottom duct to its gland).
+    let prj = (crate::sample::EXAMPLES.iter().find(|x| x.key == "cabinet_lineup").unwrap().build)();
+    let an = Analysis::checked(&prj);
+    let contents = duct_contents(&prj, &an.routing);
+    assert!(!contents.is_empty(), "the cables run through the ducts");
+    for c in &contents {
+        for r in &c.runs {
+            let f = an.duct_fill.iter().find(|f| f.enclosure == c.enclosure && f.duct == r.duct).expect("fill of the duct");
+            assert!(f.diameters.contains(&c.diameter), "{f:?}");
+        }
+    }
+}
+
+#[test]
+fn cables_in_the_ducts_of_a_room_count_in_their_fill() {
+    let prj = (crate::sample::EXAMPLES.iter().find(|x| x.key == "pump_room").unwrap().build)();
+    let an = Analysis::checked(&prj);
+    let in_room: Vec<&crate::panel::DuctFill> = an.duct_fill.iter().filter(|f| prj.layout.enclosures[f.enclosure].is_room()).collect();
+    assert!(!in_room.is_empty(), "the cables along the ceiling of the room");
+    for f in in_room {
+        let d = prj.layout.enclosures[f.enclosure].item(f.duct).unwrap();
+        assert!(f.total_wires > 0 && f.percent > 0.0, "{f:?}");
+        // The fullest stretch along the duct, in the coordinates of its face.
+        let (lo, hi) = if d.horizontal() { (d.x, d.x + d.w) } else { (d.y, d.y + d.h) };
+        assert!(f.from >= lo - 1.0 && f.to <= hi + 1.0 && f.to > f.from, "{f:?} on {lo}..{hi}");
+    }
+}
