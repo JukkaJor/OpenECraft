@@ -150,13 +150,16 @@ pub fn room_space(prj: &Project, ri: usize, pos: &[V3], poses: &[SitePose], rule
 
 /// Where a route of `diameter` leaves the cabinet `ci` standing in room `ri` towards
 /// `near` (room coordinates): a cable gland on the roof, a side or the rear of the
-/// cabinet (or the bottom of one hanging on the wall), otherwise of its line-up ([`Glands::pick`]), otherwise the middle of its
+/// cabinet (or the bottom of one hanging on the wall, towards a place below it), otherwise of its line-up ([`Glands::pick`]), otherwise the middle of its
 /// roof (`true`). Gives the end in the cabinet (leaving it into the cabinet), where the
 /// way through the room starts (layout coordinates) and the direction it leaves there,
 /// away from the cabinet.
 #[allow(clippy::too_many_arguments)]
 pub(super) fn room_entry(prj: &Project, pos: &[V3], poses: &[SitePose], ri: usize, ci: usize, near: V3, glands: &mut Glands, diameter: f32) -> (End, V3, V3, bool) {
-    let has_gland = |k: usize| accessories(prj, k, "Cable gland").iter().any(|g| room_side(prj, k, g.face));
+    // Through the bottom of a cabinet hanging on the wall only to a place below it.
+    let below = |k: usize| near[1] > prj.layout.enclosures[ri].height - (poses[k].at[1] - poses[ri].at[1]);
+    let way_out = |k: usize, face: Face| room_side(prj, k, face) && (face != Face::Bottom || below(k));
+    let has_gland = |k: usize| accessories(prj, k, "Cable gland").iter().any(|g| way_out(k, g.face));
     let lineup = panel::lineup_of(&prj.layout, ci);
     let cabinets = if has_gland(ci) { vec![ci] } else { lineup };
     // The end inside cabinet `k` at a point of its face, the way through the room
@@ -174,7 +177,7 @@ pub(super) fn room_entry(prj: &Project, pos: &[V3], poses: &[SitePose], ri: usiz
     let mut cabinet_of: HashMap<u64, usize> = HashMap::new();
     for k in cabinets {
         let e = &prj.layout.enclosures[k];
-        for g in accessories(prj, k, "Cable gland").into_iter().filter(|g| room_side(prj, k, g.face)) {
+        for g in accessories(prj, k, "Cable gland").into_iter().filter(|g| way_out(k, g.face)) {
             let c = [g.x + g.w / 2.0, g.y + g.h / 2.0];
             let outside = cabinet_in_room(prj, poses, ri, k, panel::face_point(e, g.face, [c[0], c[1], -OUTSIDE]));
             candidates.push((g, manhattan(outside, near)));
