@@ -33,6 +33,12 @@ fn hangs(prj: &Project, ci: usize) -> bool {
     let l = &prj.layout;
     panel::lineup_of(l, ci).first().and_then(|&i| l.enclosures[i].elevation).is_some_and(|h| h > 0.0)
 }
+
+/// Cabinet `ci` hangs on the wall with a cable gland in its bottom: routes come from
+/// below, the space below it is free.
+fn entered_from_below(prj: &Project, ci: usize) -> bool {
+    hangs(prj, ci) && accessories(prj, ci, "Cable gland").iter().any(|g| g.face == Face::Bottom)
+}
 /// How far outside its cable gland a route through the room starts, mm.
 const OUTSIDE: f32 = 60.0;
 /// Smallest edge of the cells of a room's grid, mm: rooms are large, their routes
@@ -49,14 +55,14 @@ pub fn cabinet_in_room(prj: &Project, poses: &[SitePose], ri: usize, ci: usize, 
     [l[0], r.height - l[1], l[2]]
 }
 
-/// The box cabinet `ci` takes in room `ri` (room coordinates), from its bottom (with its
-/// plinth; the floor for a cabinet standing on it) to its top: the space below a
-/// cabinet hanging on the wall is free.
+/// The box cabinet `ci` takes in room `ri` (room coordinates), from the floor (with its
+/// plinth) to its top; one hanging on the wall and entered from below
+/// ([`entered_from_below`]) from its bottom: the space below it is free.
 pub fn cabinet_box(prj: &Project, poses: &[SitePose], ri: usize, ci: usize) -> (V3, V3) {
     let (r, c) = (&prj.layout.enclosures[ri], &prj.layout.enclosures[ci]);
     let (lo, hi) = panel::bounds(&panel::footprint(prj, ri, ci));
-    let bottom = poses[ci].at[1] - poses[ri].at[1] - c.build.plinth;
-    let top = bottom + c.build.plinth + c.height;
+    let bottom = if entered_from_below(prj, ci) { poses[ci].at[1] - poses[ri].at[1] - c.build.plinth } else { 0.0 };
+    let top = poses[ci].at[1] - poses[ri].at[1] + c.height;
     ([lo[0], r.height - top, lo[1]], [hi[0], r.height - bottom.max(0.0), hi[1]])
 }
 

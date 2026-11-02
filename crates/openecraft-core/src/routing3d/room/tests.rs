@@ -113,13 +113,15 @@ fn a_cabinet_hanging_on_the_wall_is_left_through_its_bottom() {
     prj.layout.enclosures[c].elevation = Some(1200.0);
     let pos = panel::positions(&prj.layout);
     let poses = panel::site_poses(&prj);
-    // The space below it is free, the cabinet itself blocked.
+    // Without a gland in its bottom it takes the space down to the floor.
+    assert_eq!(cabinet_box(&prj, &poses, r, c), ([500.0, 800.0, 0.0], [1100.0, 2800.0, 250.0]));
+    // A gland in its bottom takes the hose out into the room: the space below it is
+    // free, the cabinet itself blocked.
+    let gland = panel::place_accessory(&mut prj, c, "GEN.GLAND-M25", Face::Bottom, p(282.0, 107.0)).unwrap();
     assert_eq!(cabinet_box(&prj, &poses, r, c), ([500.0, 800.0, 0.0], [1100.0, 1600.0, 250.0]));
     let s = room_space(&prj, r, &pos, &poses, &prj.layout.routing);
     assert!(!s.blocked(add(pos[r], [800.0, 2500.0, 125.0])), "below the cabinet");
     assert!(s.blocked(add(pos[r], [800.0, 1200.0, 125.0])));
-    // A gland in its bottom takes the hose out into the room.
-    let gland = panel::place_accessory(&mut prj, c, "GEN.GLAND-M25", Face::Bottom, p(282.0, 107.0)).unwrap();
     let an = Analysis::checked(&prj);
     assert!(!an.issues.iter().any(|i| i.message().contains("enters through the roof")), "{:?}", an.issues);
     let h = tube(&an, "-QM1");
