@@ -91,7 +91,7 @@ pub(super) fn project() -> Project {
     for (tag, part, count) in COUNTED {
         crate::parts::add_to_device(&mut prj, &db, tag, part, *count);
     }
-    cables(&mut prj, &db);
+    cables(&mut prj, &db, CABLES);
     enclosures(&mut prj, &db);
     let ids: Vec<(u64, String)> = prj.layout.enclosures.iter().map(|e| (e.id, e.name.clone())).collect();
     for (n, (id, name)) in ids.iter().enumerate() {
@@ -148,25 +148,18 @@ const DEVICES: &[(&str, &[&str])] = &[
     ("=PV+INV-TB2", &["GEN.INV-PV-40KW"]),
 ];
 
-/// Parts used more than once by a device: fuse links and terminals.
+/// Parts used more than once by a device: fuse links (terminal strips take theirs
+/// from their layout).
 const COUNTED: &[(&str, &str, u32)] = &[
     ("=GRID+HAK-F1", "GEN.NH2-GG-250A", 3),
-    ("=GRID+HV-X0", "GEN.BB-FEED-185", 2),
     ("=MS1+HV-F10", "GEN.NH1-GG-125A", 3),
     ("=MS1+HV-F11", "GEN.D01-GG-10A", 3),
-    ("=MS1+ZS1-X1", "GEN.TB-DISC-4", 9),
     ("=DIST+HV-Q21", "GEN.NH00-GG-50A", 3),
     ("=DIST+HV-Q22", "GEN.NH00-GG-80A", 3),
-    ("=DIST+HV-X21", "GEN.TB-35", 2),
-    ("=DIST+HV-X22", "GEN.TB-35", 2),
-    ("=NA+HV-X30", "PXC.3209510", 1),
     ("=MS2+HV-F40", "GEN.NH1-GG-125A", 3),
     ("=MS2+HV-F41", "GEN.D01-GG-10A", 3),
-    ("=MS2+ZS2-X1", "GEN.TB-DISC-4", 9),
     ("=PV+HV-Q41", "GEN.NH00-GG-80A", 3),
     ("=PV+HV-Q42", "GEN.NH00-GG-80A", 3),
-    ("=PV+HV-X41", "GEN.TB-35", 2),
-    ("=PV+HV-X42", "GEN.TB-35", 2),
 ];
 
 /// Cables: tag, part, length in m, what it connects.
@@ -185,7 +178,7 @@ const CABLES: &[(&str, &str, f32, &str)] = &[
 const BUSBAR: &str = "300 mm²";
 
 /// A page of a section with its structure; the name starts with the section number.
-fn page(prj: &mut Project, section: u64, n: &str, desc: &str, kind: PageKind, function: &str, location: &str) -> usize {
+pub(super) fn page(prj: &mut Project, section: u64, n: &str, desc: &str, kind: PageKind, function: &str, location: &str) -> usize {
     let name = format!("{}.{n}", crate::sections::full_number(prj, section));
     let i = add_page(prj, &name, desc, kind);
     let page = &mut prj.pages[i];
@@ -195,31 +188,31 @@ fn page(prj: &mut Project, section: u64, n: &str, desc: &str, kind: PageKind, fu
     i
 }
 
-/// Wire carrying core `core` of cable `cable`.
-fn core(g: &mut Pg, (x1, y1): (f32, f32), (x2, y2): (f32, f32), cable: &str, core: &str) {
+/// Wire carrying core `core` of cable `cable`; a plain wire without a cable.
+pub(super) fn core(g: &mut Pg, (x1, y1): (f32, f32), (x2, y2): (f32, f32), cable: &str, core: &str) {
     g.w(x1, y1, x2, y2);
-    if let Some(w) = g.prj.pages[g.page].wires.last_mut() {
+    if let Some(w) = g.prj.pages[g.page].wires.last_mut().filter(|_| !cable.is_empty()) {
         w.cable = cable.into();
         w.core = core.into();
     }
 }
 
 /// The wire drawn last has the cross-section `cs`.
-fn cross_section(g: &mut Pg, cs: &str) {
+pub(super) fn cross_section(g: &mut Pg, cs: &str) {
     if let Some(w) = g.prj.pages[g.page].wires.last_mut() {
         w.cross_section = cs.into();
     }
 }
 
 /// Interruption point (page connector) at a wire end.
-fn link(g: &mut Pg, x: f32, y: f32, name: &str) {
+pub(super) fn link(g: &mut Pg, x: f32, y: f32, name: &str) {
     g.sym("intr", x, y, 0, "", name, "");
 }
 
 /// Conductors at the top of a page (L1 24 … PE 56), coming from the interruption
 /// points `from` on the left; each rail runs to the x of its last tap, N and PE on to
 /// the interruption points `to` on the right if given.
-fn rails(g: &mut Pg, from: &str, ends: [f32; 5], to: Option<&str>) {
+pub(super) fn rails(g: &mut Pg, from: &str, ends: [f32; 5], to: Option<&str>) {
     for (i, (name, end)) in ["L1", "L2", "L3", "N", "PE"].into_iter().zip(ends).enumerate() {
         let y = 24.0 + 8.0 * i as f32;
         link(g, 20.0, y, &format!("{from}-{name}"));
@@ -323,29 +316,41 @@ fn supply_page(prj: &mut Project, section: u64) {
 
 /// A transformer-rated metering: the devices in the cabinet and the meter with its test
 /// terminal block in the meter cabinet.
-struct Metering {
-    function: &'static str,
-    n: &'static str,
-    desc: &'static str,
+pub(super) struct Metering {
+    pub function: &'static str,
+    /// Location of the page (the cabinet).
+    pub location: &'static str,
+    pub n: &'static str,
+    pub desc: &'static str,
     /// Interruption points of the conductors coming in on the left.
-    input: &'static str,
+    pub input: &'static str,
     /// Interruption points of N and PE on the right and of L1 … L3 at the bottom.
-    output: &'static str,
-    fuse: &'static str,
-    fuse_text: &'static str,
-    ct: &'static str,
-    taps: &'static str,
-    meter: &'static str,
-    meter_text: &'static str,
-    strip: &'static str,
-    cable: &'static str,
-    cable_text: &'static str,
+    pub output: &'static str,
+    pub fuse: &'static str,
+    pub fuse_text: &'static str,
+    pub ct: &'static str,
+    /// Ratio of the transformers.
+    pub ratio: &'static str,
+    /// Cross-section of the primary conductors through the transformers; empty: sized.
+    pub primary: &'static str,
+    pub taps: &'static str,
+    pub meter: &'static str,
+    pub meter_text: &'static str,
+    pub strip: &'static str,
+    pub cable: &'static str,
+    pub cable_text: &'static str,
     /// Load break switch after the transformers (system side isolation).
-    switch: Option<&'static str>,
+    pub switch: Option<&'static str>,
+    /// Symbol of the switch: a load break switch, or a fuse switch disconnector with
+    /// solid links.
+    pub switch_symbol: &'static str,
+    /// Text of the switch.
+    pub switch_text: &'static str,
 }
 
 const CONSUMPTION: Metering = Metering {
     function: "MS1",
+    location: "HV",
     n: "2",
     desc: "Consumption metering",
     input: "HV",
@@ -353,6 +358,8 @@ const CONSUMPTION: Metering = Metering {
     fuse: "-F10",
     fuse_text: "Isolation before the meter\nNH1 3 x 125 A gG",
     ct: "-T1",
+    ratio: "250/5 A",
+    primary: "",
     taps: "-F11",
     meter: "+ZS1-P1",
     meter_text: "Meter of the DSO, two directions",
@@ -360,10 +367,13 @@ const CONSUMPTION: Metering = Metering {
     cable: "=MS1-W2",
     cable_text: "-W2 NYY-J 12 x 2.5 to the meter cabinet +ZS1",
     switch: Some("-Q10"),
+    switch_symbol: "disc3",
+    switch_text: "Isolation after the meter\n3 x 250 A",
 };
 
 const GENERATION: Metering = Metering {
     function: "MS2",
+    location: "HV",
     n: "1",
     desc: "Generation metering",
     input: "PV",
@@ -371,6 +381,8 @@ const GENERATION: Metering = Metering {
     fuse: "-F40",
     fuse_text: "Isolation before the meter\nNH1 3 x 125 A gG",
     ct: "-T2",
+    ratio: "250/5 A",
+    primary: "",
     taps: "-F41",
     meter: "+ZS2-P2",
     meter_text: "Generation meter of the DSO",
@@ -378,10 +390,12 @@ const GENERATION: Metering = Metering {
     cable: "=MS2-W3",
     cable_text: "-W3 NYY-J 12 x 2.5 to the meter cabinet +ZS2",
     switch: None,
+    switch_symbol: "disc3",
+    switch_text: "",
 };
 
-fn metering(prj: &mut Project, section: u64, m: &Metering) {
-    let i = page(prj, section, m.n, m.desc, PageKind::Schematic, m.function, "HV");
+pub(super) fn metering(prj: &mut Project, section: u64, m: &Metering) {
+    let i = page(prj, section, m.n, m.desc, PageKind::Schematic, m.function, m.location);
     let mut g = Pg { prj, page: i };
     rails(&mut g, m.input, [120.0, 128.0, 136.0, 0.0, 0.0], Some(m.output));
     g.sym("fuse_swdisc3", 120.0, 72.0, 0, m.fuse, "", m.fuse_text);
@@ -393,7 +407,7 @@ fn metering(prj: &mut Project, section: u64, m: &Metering) {
     for (i, (x, y)) in [(120.0, 120.0), (152.0, 144.0), (184.0, 168.0)].into_iter().enumerate() {
         let n = i + 1;
         let pins = [format!("{n}P1"), format!("{n}P2"), format!("{n}S1"), format!("{n}S2")];
-        g.sym("ct", x, y, 0, m.ct, "", if i == 0 { "250/5 A" } else { "" }).pins(&pins.each_ref().map(String::as_str));
+        g.sym("ct", x, y, 0, m.ct, "", if i == 0 { m.ratio } else { "" }).pins(&pins.each_ref().map(String::as_str));
     }
     // Voltage paths through the NEOZED fuses, before the transformers.
     g.path(&[(120.0, 96.0), (300.0, 96.0), (300.0, 116.0)]);
@@ -417,7 +431,9 @@ fn metering(prj: &mut Project, section: u64, m: &Metering) {
         core(&mut g, (x, 124.0), (x, 180.0), m.cable, &next());
     }
     core(&mut g, (324.0, 48.0), (324.0, 180.0), m.cable, &next());
-    g.text(332.0, 150.0, m.cable_text, 2.5);
+    if !m.cable_text.is_empty() {
+        g.text(332.0, 150.0, m.cable_text, 2.5);
+    }
     for i in 0..10 {
         let x = 252.0 + 8.0 * i as f32;
         g.sym("term_disc", x, 184.0, 0, m.strip, &(i + 1).to_string(), if i == 0 { "Test terminal block" } else { "" });
@@ -431,7 +447,7 @@ fn metering(prj: &mut Project, section: u64, m: &Metering) {
             g.w(120.0, 128.0, 120.0, 196.0);
             g.path(&[(152.0, 152.0), (152.0, 188.0), (128.0, 188.0), (128.0, 196.0)]);
             g.path(&[(184.0, 176.0), (184.0, 192.0), (136.0, 192.0), (136.0, 196.0)]);
-            g.sym("disc3", 120.0, 200.0, 0, q, "", "Isolation after the meter\n3 x 250 A");
+            g.sym(m.switch_symbol, 120.0, 200.0, 0, q, "", m.switch_text);
             // Spread apart so that the names of the interruption points stay readable.
             g.w(120.0, 204.0, 120.0, 236.0);
             g.path(&[(128.0, 204.0), (128.0, 212.0), (160.0, 212.0), (160.0, 236.0)]);
@@ -447,12 +463,21 @@ fn metering(prj: &mut Project, section: u64, m: &Metering) {
             }
         }
     }
+    // The primary conductors from the isolation through the transformers.
+    if !m.primary.is_empty() {
+        let inside = |v: f32, lo: f32, hi: f32| v >= lo && v <= hi;
+        for w in g.prj.pages[g.page].wires.iter_mut() {
+            if [w.a, w.b].iter().all(|q| inside(q.x, 120.0, 184.0) && inside(q.y, 76.0, 196.0)) {
+                w.cross_section = m.primary.into();
+            }
+        }
+    }
 }
 
 /// A feeder of a busbar: NH00 fuse switch disconnector, the terminals and the cable
 /// the installer connects the consumer `target` with on site.
 #[allow(clippy::too_many_arguments)]
-fn feeder(g: &mut Pg, x: f32, q: &str, text: &str, strip: &str, cable: &str, target: &str, note: &str) {
+pub(super) fn feeder(g: &mut Pg, x: f32, q: &str, text: &str, strip: &str, cable: &str, target: &str, note: &str) {
     g.sym("fuse_swdisc3", x, 100.0, 0, q, "", text);
     for i in 0..3 {
         let xi = x + 8.0 * i as f32;
@@ -597,8 +622,9 @@ fn inverter_feeders(prj: &mut Project, section: u64) {
     g.text(140.0, 80.0, "Room for a smart meter of a later battery storage", 2.5);
 }
 
-fn cables(prj: &mut Project, db: &PartsDb) {
-    for (tag, number, length, desc) in CABLES {
+/// Cables: tag, part, length in m, what it connects.
+pub(super) fn cables(prj: &mut Project, db: &PartsDb, list: &[(&str, &str, f32, &str)]) {
+    for (tag, number, length, desc) in list {
         let part = db.get(number).unwrap_or_else(|| panic!("cable part {number}")).clone();
         crate::parts::ensure_in_project(prj, db, number);
         let id = prj.new_id();
@@ -616,13 +642,13 @@ fn cables(prj: &mut Project, db: &PartsDb) {
     }
 }
 
-fn profile(prj: &mut Project, enc: usize, kind: ItemKind, part: &str, a: (f32, f32), b: (f32, f32)) {
+pub(super) fn profile(prj: &mut Project, enc: usize, kind: ItemKind, part: &str, a: (f32, f32), b: (f32, f32)) {
     let item = panel::new_profile(prj, kind, part, p(a.0, a.1), p(b.0, b.1));
     prj.layout.enclosures[enc].items.push(item);
 }
 
 /// Devices side by side from `x` on the rail at height `rail_y`.
-fn on_rail(prj: &mut Project, enc: usize, rail_y: f32, x: f32, tags: &[&str]) {
+pub(super) fn on_rail(prj: &mut Project, enc: usize, rail_y: f32, x: f32, tags: &[&str]) {
     let mut x = x;
     for tag in tags {
         let (w, h) = panel::device_size(prj, tag).map(|d| (d.w, d.h)).unwrap_or((40.0, 40.0));
@@ -633,7 +659,7 @@ fn on_rail(prj: &mut Project, enc: usize, rail_y: f32, x: f32, tags: &[&str]) {
 
 /// A cable gland in the roof or the bottom (`face`) in line with a device, its middle
 /// in the routing cell of the device's front: the cables go straight up or down.
-fn gland_at(prj: &mut Project, enc: usize, part: &str, tag: &str, face: Face) {
+pub(super) fn gland_at(prj: &mut Project, enc: usize, part: &str, tag: &str, face: Face) {
     let e = &prj.layout.enclosures[enc];
     let Some(it) = e.items.iter().find(|i| i.tag == tag) else { return };
     let c = panel::face_point(e, it.face, [it.x + it.w / 2.0, it.y + it.h / 2.0, it.z + it.d]);
@@ -643,7 +669,7 @@ fn gland_at(prj: &mut Project, enc: usize, part: &str, tag: &str, face: Face) {
     panel::place_accessory(prj, enc, part, face, p(mid(c[0]), mid(c[2])));
 }
 
-fn push(prj: &mut Project, e: Enclosure) -> usize {
+pub(super) fn push(prj: &mut Project, e: Enclosure) -> usize {
     prj.layout.enclosures.push(e);
     prj.layout.enclosures.len() - 1
 }

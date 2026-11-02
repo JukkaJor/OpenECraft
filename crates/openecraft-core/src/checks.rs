@@ -306,8 +306,12 @@ fn check_accessories(prj: &Project, idx: &Index) -> Vec<Issue> {
 /// on their own, not a second circuit breaker.
 fn mains_of_main_parts(prj: &Project, tag: &str, mains: &[crate::index::Loc]) -> Vec<crate::index::Loc> {
     let mut spare: HashMap<crate::parts::FnKind, usize> = HashMap::new();
-    for f in crate::sizing::device_parts(prj, tag).into_iter().filter(|p| p.accessory).flat_map(|p| &p.functions) {
-        *spare.entry(f.kind).or_default() += 1;
+    let refs = prj.devices.get(tag).map(|d| d.parts.as_slice()).unwrap_or_default();
+    for r in refs {
+        let Some(p) = crate::sizing::part(prj, &r.number).filter(|p| p.accessory) else { continue };
+        for f in &p.functions {
+            *spare.entry(f.kind).or_default() += r.count.max(1) as usize;
+        }
     }
     let kind = |l: &crate::index::Loc| prj.pages[l.page].symbols.iter().find(|s| s.id == l.sym_id).and_then(|s| crate::parts::kind_of_symbol(&s.sym));
     mains

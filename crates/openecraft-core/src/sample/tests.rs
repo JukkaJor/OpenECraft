@@ -459,3 +459,29 @@ fn transformer_metering_builds_the_univers_cabinet() {
         assert!(!qty(part).is_empty(), "{part} in the bill of materials");
     }
 }
+
+#[test]
+fn industrial_main_distribution_measures_every_feeder() {
+    let (prj, an) = checked("industrial_main_distribution");
+    let (hv1, hv2) = (&prj.layout.enclosures[0], &prj.layout.enclosures[1]);
+    assert_eq!((hv1.part.as_str(), hv2.part.as_str()), ("HAG.FR24H2", "HAG.FR24H2"));
+    assert_eq!(hv2.bayed_to, hv1.id, "+HV2 stands right of +HV1");
+    // Behind each measured strip a current transformer per pole, along the strip.
+    for tag in ["=DIST+HV2-Q21", "=DIST+HV2-Q22", "=DIST+HV2-Q23", "=DIST+HV2-Q24"] {
+        let a = crate::panel::assembly(&prj, tag).unwrap_or_else(|| panic!("{tag}"));
+        assert_eq!(a.behind.iter().map(|b| b.part.number.as_str()).collect::<Vec<_>>(), ["HAG.LVZW150"; 3], "{tag}");
+        assert!(a.behind.windows(2).all(|w| w[1].across > w[0].across), "{tag}");
+    }
+    // The isolation of the metering protects nothing: solid links instead of fuses.
+    for tag in ["=MS+HV1-F10", "=MS+HV1-Q10"] {
+        assert!(crate::sizing::isolates_only(&prj, tag), "{tag}");
+    }
+    // The large cables come in through the membrane of a cable entry flange.
+    assert!(hv1.items.iter().any(|i| i.part == "HAG.FZ402" && i.face == crate::panel::Face::Bottom));
+    let bom = an.report(&prj, ReportKind::BillOfMaterials).unwrap();
+    let qty = |part: &str| bom.rows.iter().find(|r| r[3] == part).map(|r| r[1].clone()).unwrap_or_default();
+    assert_eq!((qty("HAG.LVZW150").as_str(), qty("LOX.100652").as_str(), qty("HAG.KS30C").as_str()), ("12", "4", "10"));
+    for part in ["HAG.LVSG1CPX", "HAG.LVSG3CPX", "HAG.LVSG00RPX", "HAG.HNW401DR", "HAG.HXW042H", "HAG.CDB640E", "JAN.52.16.202", "HAG.LVZVA-V"] {
+        assert!(!qty(part).is_empty(), "{part} in the bill of materials");
+    }
+}

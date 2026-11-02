@@ -11,7 +11,12 @@ table 6, method B2); cables get their voltage drop to the load with the highest 
 current at their ends (√3 for three cores, copper at operating temperature), report
 *Cable sizing*; the check reports too thin wires and cables (errors) and voltage
 drops above 5 %. The capacity is corrected for ambient temperature, bunched
-circuits (IEC 60364-5-52, B.52.17), aluminium and XLPE insulation.
+circuits (IEC 60364-5-52, B.52.17), aluminium and XLPE insulation. A fuse switch
+disconnector fitted with solid links (part subgroup `Solid link`, the isolation before
+and after the transformers of a metering) isolates only: it protects nothing, has no
+selectivity of its own and the current passes it; the load of a cable is the rated
+current of the part providing the function at its end (the motor operator on a
+circuit breaker, not the breaker).
 
 ## Electrical calculations and verification
 

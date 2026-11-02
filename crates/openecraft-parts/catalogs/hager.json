@@ -3,8 +3,8 @@
     "id": "hager",
     "name": "Hager",
     "manufacturer": "Hager",
-    "version": "2026.2",
-    "description": "Miniature circuit breakers MBN / MCN / NBN, residual current circuit breakers CDA / CCA with the auxiliary contact CZ001, installation contactors ESC, switch disconnectors SBN and HA, NH fuse switch disconnectors LT for 60 mm busbar systems, NEOZED fuse switch disconnectors, surge arresters SPA, circuit breakers h3+ with motor operator, undervoltage release and auxiliary switch, the NA protection relay EU400, power supply HTG911H, timer relay EZM100, energy meters ECR, univers floor-standing and meter cabinets with univers N component modules. Curated from public data sheets; check against the manufacturer data before ordering."
+    "version": "2026.3",
+    "description": "Miniature circuit breakers MBN / MCN / NBN, residual current circuit breakers CDA / CCA with the auxiliary contact CZ001, installation contactors ESC, switch disconnectors SBN and HA, NH fuse switch disconnectors LT for 60 mm busbar systems and fuse switch disconnector strips LVSG for 185 mm with clip-in current transformers and aluminium terminals, busbar terminals KS for Al cables, residual current circuit breakers type B, NEOZED fuse switch disconnectors, surge arresters SPA, circuit breakers h3+ P250 / P630 with motor operators, undervoltage release and auxiliary switch, the NA protection relay EU400, power supply HTG911H, timer relay EZM100, energy meters ECR, univers floor-standing and meter cabinets with univers N component modules. Curated from public data sheets; check against the manufacturer data before ordering."
   },
   "parts": [
     {
@@ -679,7 +679,8 @@
       "price": 4063.13,
       "tech_data": "Plinth: 200\nProtection: IP55\nImpact resistance: IK10\nProtection class: II\nFields: 5\nRows: 12\nRated current: 800 A\nRated voltage: 690 V\nMaterial: sheet steel, powder-coated, RAL 7035",
       "accessories": [
-        "HAG.FZ831"
+        "HAG.FZ831",
+        "HAG.FZ402"
       ],
       "width": 1300,
       "height": 1850,
@@ -1003,7 +1004,8 @@
       "accessory": true,
       "accessory_mount": "inside",
       "fits": [
-        "HAG.HNT161GR"
+        "HAG.HNT161GR",
+        "HAG.HNW401DR"
       ]
     },
     {
@@ -1116,6 +1118,338 @@
       "height": 950,
       "depth": 205,
       "weight": 18.0
+    },
+    {
+      "number": "HAG.LVSG00RPX",
+      "type_number": "LVSG00RPX",
+      "order_number": "LVSG00RPX",
+      "manufacturer": "Hager",
+      "description": "NH fuse switch disconnector strip size NH00, 3P, 160 A, for 185 mm busbar systems, frame clamp 95 mm²",
+      "group": "Safety devices",
+      "subgroup": "Fuse switch disconnector",
+      "identifier": "Q",
+      "functions": [
+        {
+          "kind": "Fuse3",
+          "pins": "1 3 5 2 4 6"
+        }
+      ],
+      "voltage": "690 V AC",
+      "current": "160 A",
+      "mounting": "Busbar 185 mm",
+      "tech_data": "Fuse size: NH00\nBusbar system: 185 mm\nMounting: vertical, on the busbars (hooks or perforated bars)\nOperation: handle with two release levers, lockable in OFF\nStandard: IEC 60947-3\nConnection: frame clamp 95 mm²",
+      "mounting_data": {
+        "power_loss": 12.0
+      },
+      "width": 50,
+      "height": 745,
+      "depth": 135,
+      "weight": 2.1
+    },
+    {
+      "number": "HAG.LVSG1CPX",
+      "type_number": "LVSG1CPX",
+      "order_number": "LVSG1CPX",
+      "manufacturer": "Hager",
+      "description": "NH fuse switch disconnector strip size NH1, 3P, 250 A, for 185 mm busbar systems, M12 bolt",
+      "group": "Safety devices",
+      "subgroup": "Fuse switch disconnector",
+      "identifier": "Q",
+      "functions": [
+        {
+          "kind": "Fuse3",
+          "pins": "1 3 5 2 4 6"
+        }
+      ],
+      "voltage": "690 V AC",
+      "current": "250 A",
+      "mounting": "Busbar 185 mm",
+      "tech_data": "Fuse size: NH1\nBusbar system: 185 mm\nMounting: vertical, on the busbars (hooks or perforated bars)\nOperation: handle with two release levers, lockable in OFF\nStandard: IEC 60947-3\nConnection: M12 bolt",
+      "mounting_data": {
+        "power_loss": 27.0
+      },
+      "accessories": [
+        "HAG.LVZW150",
+        "HAG.LVZVA-V"
+      ],
+      "width": 100,
+      "height": 745,
+      "depth": 150,
+      "weight": 4.6
+    },
+    {
+      "number": "HAG.LVSG2CPX",
+      "type_number": "LVSG2CPX",
+      "order_number": "LVSG2CPX",
+      "manufacturer": "Hager",
+      "description": "NH fuse switch disconnector strip size NH2, 3P, 400 A, for 185 mm busbar systems, M12 bolt",
+      "group": "Safety devices",
+      "subgroup": "Fuse switch disconnector",
+      "identifier": "Q",
+      "functions": [
+        {
+          "kind": "Fuse3",
+          "pins": "1 3 5 2 4 6"
+        }
+      ],
+      "voltage": "690 V AC",
+      "current": "400 A",
+      "mounting": "Busbar 185 mm",
+      "tech_data": "Fuse size: NH2\nBusbar system: 185 mm\nMounting: vertical, on the busbars (hooks or perforated bars)\nOperation: handle with two release levers, lockable in OFF\nStandard: IEC 60947-3\nConnection: M12 bolt",
+      "mounting_data": {
+        "power_loss": 38.0
+      },
+      "accessories": [
+        "HAG.LVZW150",
+        "HAG.LVZVA-V"
+      ],
+      "width": 100,
+      "height": 745,
+      "depth": 150,
+      "weight": 5.0
+    },
+    {
+      "number": "HAG.LVSG3CPX",
+      "type_number": "LVSG3CPX",
+      "order_number": "LVSG3CPX",
+      "manufacturer": "Hager",
+      "description": "NH fuse switch disconnector strip size NH3, 3P, 630 A, for 185 mm busbar systems, M12 bolt",
+      "group": "Safety devices",
+      "subgroup": "Fuse switch disconnector",
+      "identifier": "Q",
+      "functions": [
+        {
+          "kind": "Fuse3",
+          "pins": "1 3 5 2 4 6"
+        }
+      ],
+      "voltage": "690 V AC",
+      "current": "630 A",
+      "mounting": "Busbar 185 mm",
+      "tech_data": "Fuse size: NH3\nBusbar system: 185 mm\nMounting: vertical, on the busbars (hooks or perforated bars)\nOperation: handle with two release levers, lockable in OFF\nStandard: IEC 60947-3\nConnection: M12 bolt",
+      "mounting_data": {
+        "power_loss": 60.0
+      },
+      "accessories": [
+        "HAG.LVZVA-V"
+      ],
+      "width": 100,
+      "height": 745,
+      "depth": 150,
+      "weight": 5.6
+    },
+    {
+      "number": "HAG.LVZW150",
+      "type_number": "LVZW150",
+      "order_number": "LVZW150",
+      "manufacturer": "Hager",
+      "description": "Current transformer 150/5 A, class 1, clipped in behind a pole of an NH1 - NH3 fuse switch disconnector strip (185 mm)",
+      "group": "Measuring instruments",
+      "subgroup": "Current transformer",
+      "identifier": "T",
+      "functions": [
+        {
+          "kind": "CurrentTransformer",
+          "pins": "P1 P2 S1 S2"
+        }
+      ],
+      "current": "150 / 5 A",
+      "tech_data": "Accuracy class: 1\nPower loss: 1 W",
+      "accessory": true,
+      "accessory_mount": "behind",
+      "fits": [
+        "HAG.LVSG1CPX",
+        "HAG.LVSG2CPX",
+        "HAG.LVSG3CPX"
+      ],
+      "width": 90,
+      "height": 80,
+      "depth": 60,
+      "weight": 0.4
+    },
+    {
+      "number": "HAG.LVZVA-V",
+      "type_number": "LVZVA-V",
+      "order_number": "LVZVA-V",
+      "manufacturer": "Hager",
+      "description": "Aluminium terminal set for NH1 - NH3 fuse switch disconnector strips, sector and round conductors up to 240 mm²",
+      "group": "Terminals",
+      "subgroup": "Accessories",
+      "identifier": "X",
+      "tech_data": "Conductor: Al / Cu, sm / rm, up to 240 mm²\nTightening torque: see the strip",
+      "accessory": true,
+      "accessory_mount": "inside",
+      "fits": [
+        "HAG.LVSG1CPX",
+        "HAG.LVSG2CPX",
+        "HAG.LVSG3CPX"
+      ]
+    },
+    {
+      "number": "HAG.KS30C",
+      "type_number": "KS30C",
+      "order_number": "KS30C",
+      "manufacturer": "Hager",
+      "description": "Busbar terminal for Al / Cu cables 120 - 300 mm² on busbars 20 - 30 x 5 - 10 mm, 600 A",
+      "group": "Terminals",
+      "subgroup": "Feed-through terminal",
+      "identifier": "X",
+      "functions": [
+        {
+          "kind": "Terminal",
+          "pins": ""
+        }
+      ],
+      "current": "600 A",
+      "mounting": "Busbar 30 x 10",
+      "tech_data": "Conductor: Al / Cu, 120 - 300 mm²\nBusbar: 20 - 30 x 5 - 10 mm\nTightening torque: 30 Nm",
+      "width": 40,
+      "height": 60,
+      "depth": 55,
+      "weight": 0.3
+    },
+    {
+      "number": "HAG.HNW401DR",
+      "type_number": "HNW401DR",
+      "order_number": "HNW401DR",
+      "manufacturer": "Hager",
+      "description": "Circuit breaker h3+ P630, thermal-magnetic trip unit, 4P, 400 A, 40 kA",
+      "group": "Safety devices",
+      "subgroup": "Circuit breaker",
+      "identifier": "Q",
+      "functions": [
+        {
+          "kind": "Breaker4",
+          "pins": "1 3 5 N 2 4 6 N'"
+        }
+      ],
+      "voltage": "690 V AC",
+      "current": "400 A",
+      "mounting": "Mounting plate",
+      "tech_data": "Frame: h3+ P630\nTrip unit: TM\nBreaking capacity: 40 kA\nPoles: 4",
+      "mounting_data": {
+        "power_loss": 60.0
+      },
+      "accessories": [
+        "HAG.HXW042H",
+        "HAG.HXA014H",
+        "HAG.HXA021H"
+      ],
+      "width": 185,
+      "height": 275,
+      "depth": 110,
+      "weight": 6.2
+    },
+    {
+      "number": "HAG.HXW042H",
+      "type_number": "HXW042H",
+      "order_number": "HXW042H",
+      "manufacturer": "Hager",
+      "description": "Motor operator for x630 / P630, 100 - 240 V AC, with automatic reset",
+      "group": "Safety devices",
+      "subgroup": "Motor operator",
+      "identifier": "Q",
+      "functions": [
+        {
+          "kind": "Coil",
+          "pins": "A1 A2"
+        }
+      ],
+      "voltage": "100 - 240 V AC",
+      "mounting": "Mounting plate",
+      "tech_data": "Frame: x630 / P630\nReset: automatic",
+      "accessory": true,
+      "accessory_mount": "front",
+      "fits": [
+        "HAG.HNW401DR"
+      ],
+      "width": 185,
+      "height": 275,
+      "depth": 120,
+      "weight": 3.0
+    },
+    {
+      "number": "HAG.HXA014H",
+      "type_number": "HXA014H",
+      "order_number": "HXA014H",
+      "manufacturer": "Hager",
+      "description": "Undervoltage release 200 - 240 V AC for x160 / P160 / x250 / P250 / x630 / P630",
+      "group": "Safety devices",
+      "subgroup": "Undervoltage release",
+      "identifier": "Q",
+      "functions": [
+        {
+          "kind": "Coil",
+          "pins": "D1 D2"
+        }
+      ],
+      "voltage": "200 - 240 V AC",
+      "tech_data": "Only one undervoltage release per circuit breaker",
+      "accessory": true,
+      "accessory_mount": "inside",
+      "fits": [
+        "HAG.HNT161GR",
+        "HAG.HNW401DR"
+      ]
+    },
+    {
+      "number": "HAG.CDB640E",
+      "type_number": "CDB640E",
+      "order_number": "CDB640E",
+      "manufacturer": "Hager",
+      "description": "Residual current circuit breaker 4P 40 A, 30 mA, type B, 10 kA, 4 modules",
+      "group": "Safety devices",
+      "subgroup": "Residual current device",
+      "identifier": "F",
+      "functions": [
+        {
+          "kind": "ResidualCurrent",
+          "pins": "1 3 5 N 2 4 6 N'"
+        }
+      ],
+      "current": "40 A",
+      "voltage": "230/400 V AC",
+      "mounting": "Mounting rail 35 mm",
+      "tech_data": "Rated residual current: 30 mA\nType: B (AC, pulsating and smooth DC residual currents)\nPoles: 4\nModules: 4",
+      "width": 70,
+      "height": 90,
+      "depth": 75,
+      "weight": 0.6
+    },
+    {
+      "number": "HAG.FR24H2",
+      "type_number": "FR24H2",
+      "order_number": "FR24H2",
+      "manufacturer": "Hager",
+      "description": "Floor-standing cabinet univers IP55, protection class II, 1850 x 1050 x 400 mm with 200 mm plinth, 4 fields, for distribution systems",
+      "group": "Mounting",
+      "subgroup": "Enclosure",
+      "identifier": "",
+      "mounting": "Floor",
+      "tech_data": "Plinth: 200\nProtection: IP55\nProtection class: II\nFields: 4\nRated voltage: 690 V\nMaterial: sheet steel, powder-coated, RAL 7035",
+      "accessories": [
+        "HAG.FZ831",
+        "HAG.FZ402"
+      ],
+      "width": 1050,
+      "height": 1850,
+      "depth": 400,
+      "weight": 92.0
+    },
+    {
+      "number": "HAG.FZ402",
+      "type_number": "FZ402",
+      "order_number": "FZ402",
+      "manufacturer": "Hager",
+      "description": "Cable entry flange for univers cabinets, flexible membrane, IP55",
+      "group": "Mounting",
+      "subgroup": "Cable entry",
+      "identifier": "",
+      "tech_data": "Cutout: 220 x 90\nOutside: 15\nFaces: Roof, Bottom\nProtection: IP55",
+      "width": 240,
+      "height": 110,
+      "depth": 20,
+      "weight": 0.4
     }
   ]
 }

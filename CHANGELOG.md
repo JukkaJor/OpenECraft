@@ -191,7 +191,9 @@ with a command line, an MCP server, a parts server and a project server.
   provide. Symbols for the motor operator of a circuit breaker and the voltage and
   frequency relay of a grid and system protection (VDE-AR-N 4105). The voltage drop of
   a cable takes the rated current of the part providing the function it feeds (the
-  motor operator, not the breaker it sits on).
+  motor operator, not the breaker it sits on). A fuse switch disconnector with solid
+  links isolates only: no protection, no selectivity. Cable entry flanges are ways in
+  for the 3D routing like cable glands.
 - **Revisions and review:** released pages, approval workflow, baselines with compare
   and merge, comments and redlining.
 - **Parts:** a parts database with mounting data and 3D models (STEP, IGES, Parasolid,
@@ -223,7 +225,15 @@ with a command line, an MCP server, a parts server and a project server.
   NBN116, MCN306, the h3+ breaker HNT161GR with motor operator, undervoltage release
   and auxiliary switch, the NA protection relay EU400, HTG911H, EZM100 and the meter
   cabinet FP62ZG2; example project 13 builds the distribution cabinet of an apartment
-  building with them.
+  building with them. Several of one base part lie side by side along the part (the
+  current transformers clipped in behind the poles of an NH fuse switch disconnector
+  strip). The Hager catalog adds the LVSG strips NH00 - NH3 for 185 mm busbar systems
+  with the LVZW150 transformers and LVZVA-V aluminium terminals, the busbar terminal
+  KS30C for Al cables, h3+ P630 HNW401DR with motor operator HXW042H, the residual
+  current circuit breaker CDB640E (type B), the cabinet FR24H2 and the cable entry
+  flange FZ402; new catalogs `janitza` (UMG 604-PRO) and `loxone` (energy meter for
+  1 / 5 A transformers, Tree); example project 14 builds the main distribution of an
+  industrial plant with them.
 - **Data exchange:** PDF, DXF / DWG, SVG; the panel as glTF, STEP, IGES, IFC, JT and
   Parasolid; ERP / PDM / PLM connectors and Autodesk Vault.
 - **Teams and automation:** a project server with page locks, roles and Active

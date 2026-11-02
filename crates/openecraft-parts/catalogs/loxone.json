@@ -1,0 +1,42 @@
+{
+  "catalog": {
+    "id": "loxone",
+    "name": "Loxone",
+    "manufacturer": "Loxone",
+    "version": "2026.1",
+    "description": "Energy meters for 1 A / 5 A current transformers on the Tree bus of the Miniserver. Curated from public data sheets; check against the manufacturer data before ordering."
+  },
+  "parts": [
+    {
+      "number": "LOX.100652",
+      "type_number": "Energy Meter 1/5A CT Tree",
+      "order_number": "100652",
+      "manufacturer": "Loxone",
+      "description": "Energy meter 3-phase for 1 A / 5 A current transformers, Tree, MID, both directions, DIN rail",
+      "group": "Measuring instruments",
+      "subgroup": "Energy meter",
+      "identifier": "P",
+      "functions": [
+        {
+          "kind": "Meter",
+          "pins": "1S1 1S2 2S1 2S2 3S1 3S2 V1 V2 V3 N"
+        },
+        {
+          "kind": "Generic",
+          "pins": "24V GND T+ T-"
+        }
+      ],
+      "voltage": "3 x 230/400 V AC",
+      "current": "1 A / 5 A (transformer)",
+      "mounting": "Mounting rail 35 mm",
+      "tech_data": "Accuracy class: C (MID)\nInterface: Loxone Tree\nModules: 4",
+      "mounting_data": {
+        "power_loss": 1.0
+      },
+      "width": 70,
+      "height": 90,
+      "depth": 62,
+      "weight": 0.25
+    }
+  ]
+}

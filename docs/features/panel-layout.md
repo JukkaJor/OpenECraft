@@ -203,7 +203,14 @@ isolation, transformer module, voltage paths and load break switch, the NA
 protection, the generation metering below the coupling switch and the busbars of the
 feeders; lifting eyes in the roof, the cables of the consumers through the roof, the
 supply from below; the two meter cabinets of the distribution system operator with
-their test terminal blocks beside it.
+their test terminal blocks beside it. Cable entry flanges (part subgroup `Cable
+entry`, a membrane taking several large cables, such as the univers FZ402) are ways in
+for the 3D routing like cable glands. The example `industrial_main_distribution`
+bays two univers cabinets into the main distribution of an industrial plant: the
+aluminium supply cables on busbar terminals and through an entry flange in the
+bottom, a 185 mm busbar system through both cabinets with vertical NH fuse switch
+disconnector strips, the current transformers clipped in behind the measured ones,
+the coupling switches of the NA protection below.
 
 ## 19-inch racks
 

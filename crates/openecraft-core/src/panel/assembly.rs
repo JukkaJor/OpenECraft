@@ -10,12 +10,14 @@ use crate::model::Project;
 use crate::parts::{AccessoryMount, Part};
 
 /// One part of an assembly and its box in the device, unscaled (mm): `at` along the
-/// rail from the left end, `z` above the plate.
+/// rail from the left end, `across` its middle off the middle of the device across the
+/// rail, `z` above the plate.
 #[derive(Clone, Copy, Debug)]
 pub struct Piece<'a> {
     pub part: &'a Part,
     pub size: [f32; 3],
     pub at: f32,
+    pub across: f32,
     pub z: f32,
 }
 
@@ -58,10 +60,10 @@ impl<'a> Assembly<'a> {
         let sa = along / self.w.max(1e-3);
         let sc = across / self.h.max(1e-3);
         let sz = it.d / self.d.max(1e-3);
-        // Centred across the rail.
+        // Centred across the rail, unless it lies off the middle.
         let (a0, len) = (piece.at * sa, piece.size[0] * sa);
         let cross = piece.size[1] * sc;
-        let c0 = (across - cross) / 2.0;
+        let c0 = (across - cross) / 2.0 + piece.across * sc;
         let mut sub = it.clone();
         if rotated {
             (sub.x, sub.w, sub.y, sub.h) = (it.x + c0, cross, it.y + a0, len);
@@ -80,7 +82,7 @@ impl<'a> Assembly<'a> {
 /// are not wider than the main part) are stacked in front of it as often as the device
 /// uses them, accessories mounted left or right stand beside it. Bases
 /// ([`AccessoryMount::Behind`]) are stacked under the main part, centred on each
-/// other; accessories built into it ([`AccessoryMount::Inside`]) need no dimensions.
+/// other, several of one part side by side; accessories built into it ([`AccessoryMount::Inside`]) need no dimensions.
 /// Terminal strips and devices without parts with dimensions have none.
 pub fn assembly<'a>(prj: &'a Project, tag: &str) -> Option<Assembly<'a>> {
     let data = prj.devices.get(tag)?;
@@ -91,7 +93,7 @@ pub fn assembly<'a>(prj: &'a Project, tag: &str) -> Option<Assembly<'a>> {
         return None;
     }
     let mut a = Assembly {
-        main: Piece { part: main, size, at: 0.0, z: 0.0 },
+        main: Piece { part: main, size, at: 0.0, across: 0.0, z: 0.0 },
         front: Vec::new(),
         sides: Vec::new(),
         behind: Vec::new(),
@@ -103,13 +105,26 @@ pub fn assembly<'a>(prj: &'a Project, tag: &str) -> Option<Assembly<'a>> {
     for (p, count) in all.iter().filter(|(p, _)| p.number != main.number && p.accessory_mount == AccessoryMount::Inside) {
         a.inside.extend(std::iter::repeat_n(*p, *count as usize));
     }
-    // The bases first: the main part stands on them.
+    // The bases first: the main part stands on them. Several of one part lie side by
+    // side along the longer side of the main part (a current transformer behind each
+    // pole of a vertical fuse switch strip), different parts on each other.
     let mut base = 0.0;
+    let mut layer_w = Vec::new();
+    let lengthwise = size[1] > size[0];
     for (p, s, count) in parts.iter().filter(|(p, _, _)| p.number != main.number && p.accessory_mount == AccessoryMount::Behind) {
-        for _ in 0..*count {
-            a.behind.push(Piece { part: p, size: *s, at: 0.0, z: base });
-            base += s[2];
+        let n = *count as f32;
+        for k in 0..*count {
+            let k = k as f32;
+            let piece = if lengthwise {
+                a.h = a.h.max(n * s[1]);
+                Piece { part: p, size: *s, at: 0.0, across: (k - (n - 1.0) / 2.0) * s[1], z: base }
+            } else {
+                Piece { part: p, size: *s, at: k * s[0], across: 0.0, z: base }
+            };
+            a.behind.push(piece);
+            layer_w.push(if lengthwise { s[0] } else { n * s[0] });
         }
+        base += s[2];
     }
     a.main.z = base;
     a.d = base + size[2];
@@ -123,7 +138,7 @@ pub fn assembly<'a>(prj: &'a Project, tag: &str) -> Option<Assembly<'a>> {
         for _ in 0..*count {
             match mount {
                 AccessoryMount::Front => {
-                    a.front.push(Piece { part: p, size: *s, at: 0.0, z: a.d });
+                    a.front.push(Piece { part: p, size: *s, at: 0.0, across: 0.0, z: a.d });
                     a.d += s[2];
                 }
                 AccessoryMount::Left => left.push((*p, *s)),
@@ -135,7 +150,7 @@ pub fn assembly<'a>(prj: &'a Project, tag: &str) -> Option<Assembly<'a>> {
     // Left accessories in their order outwards from the main part.
     let mut at = 0.0;
     for (p, s) in left.iter().rev() {
-        a.sides.push(Piece { part: p, size: *s, at, z: base });
+        a.sides.push(Piece { part: p, size: *s, at, across: 0.0, z: base });
         at += s[0];
     }
     a.main.at = at;
@@ -144,21 +159,21 @@ pub fn assembly<'a>(prj: &'a Project, tag: &str) -> Option<Assembly<'a>> {
     }
     at += size[0];
     for (p, s) in right {
-        a.sides.push(Piece { part: p, size: s, at, z: base });
+        a.sides.push(Piece { part: p, size: s, at, across: 0.0, z: base });
         at += s[0];
     }
     // The row of main part and side accessories centred on a wider base, the bases
     // centred under a wider row.
-    let wide = a.behind.iter().map(|b| b.size[0]).fold(at, f32::max);
+    let wide = layer_w.iter().copied().fold(at, f32::max);
     let shift = (wide - at) / 2.0;
     for piece in std::iter::once(&mut a.main).chain(&mut a.front).chain(&mut a.sides) {
         piece.at += shift;
     }
-    for b in &mut a.behind {
-        b.at = (wide - b.size[0]) / 2.0;
+    for (b, w) in a.behind.iter_mut().zip(&layer_w) {
+        b.at += (wide - w) / 2.0;
     }
     a.w = wide;
-    a.h = a.behind.iter().map(|b| b.size[1]).fold(size[1], f32::max);
+    a.h = a.behind.iter().map(|b| b.size[1]).fold(a.h, f32::max);
     let deepest = a.sides.iter().map(|s| s.z + s.size[2]).fold(a.d, f32::max);
     a.d = deepest;
     Some(a)

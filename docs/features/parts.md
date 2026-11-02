@@ -25,7 +25,10 @@ in the app storage (desktop) / local storage (browser).
   the part sits centred in front of it), built into the part (the undervoltage release
   and the auxiliary switch in the slots of the h3+ circuit breaker HNT161GR: no room of
   their own, their terminals are on the breaker, and their coils drawn beside the
-  breaker are functions of the accessory, not a second main function) or not at all. In a project the device's *Parts* tab offers the accessories that fit
+  breaker are functions of the accessory, not a second main function) or not at all.
+  Several of one base part lie side by side along the longer side of the part (the
+  Hager LVZW150 current transformers clipped in behind the three poles of an LVSG NH
+  fuse switch disconnector strip), different base parts on each other. In a project the device's *Parts* tab offers the accessories that fit
   its parts (*Add accessory*) and shows the part each one sits on; its functions add to
   the device's contacts; the check `accessories` reports an accessory on a device
   without a part it fits; the panel layout and the 3D view draw it at its place with

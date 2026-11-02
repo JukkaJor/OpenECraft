@@ -200,12 +200,17 @@ Breaking capacity: 10 kA".into();
     p.mounting_data.wall_mount = true;
     p.connection_points = vec![crate::ConnectionPoint { pin: "1".into(), pos: [30.0, 0.0, 45.0], exit: crate::Exit::Up }];
     p.tech_data = "Material: stainless steel 1.4571 (V4A)\nDiameter: 10 mm".into();
-    for (number, size, amps, price) in [("GEN.NH000-GG-63A", "NH000", 63, 6.8), ("GEN.NH00-GG-50A", "NH00", 50, 6.9), ("GEN.NH00-GG-80A", "NH00", 80, 7.4), ("GEN.NH1-GG-125A", "NH1", 125, 11.9), ("GEN.NH2-GG-80A", "NH2", 80, 17.5), ("GEN.NH2-GG-250A", "NH2", 250, 24.0)] {
+    for (number, size, amps, price) in [("GEN.NH000-GG-63A", "NH000", 63, 6.8), ("GEN.NH00-GG-50A", "NH00", 50, 6.9), ("GEN.NH00-GG-80A", "NH00", 80, 7.4), ("GEN.NH1-GG-63A", "NH1", 63, 10.9), ("GEN.NH1-GG-100A", "NH1", 100, 11.4), ("GEN.NH1-GG-125A", "NH1", 125, 11.9), ("GEN.NH1-GG-160A", "NH1", 160, 12.9), ("GEN.NH2-GG-80A", "NH2", 80, 17.5), ("GEN.NH2-GG-250A", "NH2", 250, 24.0), ("GEN.NH2-GG-315A", "NH2", 315, 27.0)] {
         let p = c.add(number, &format!("NH fuse link size {size}, gG, {amps} A, 500 V AC"), sd, "Fuse link", "F", price, (0.0, 0.0, 0.0, 0.2), &[]);
         p.current = format!("{amps} A");
         p.mounting.clear();
         p.tech_data = format!("Fuse size: {size}\nUtilisation category: gG\nBreaking capacity: 120 kA");
     }
+    // Solid links in place of fuse links: the fuse switch disconnector only isolates (the
+    // isolation before and after the transformers of a metering).
+    let p = c.add("GEN.NH3-SOLID-LINK", "NH solid link size NH3, 630 A, isolating link with insulated grip lugs", sd, "Solid link", "F", 19.0, (0.0, 0.0, 0.0, 0.4), &[]);
+    p.mounting.clear();
+    p.tech_data = "Fuse size: NH3\nRated current: 630 A".into();
     let p = c.add("GEN.D01-GG-10A", "NEOZED fuse link D01, gG, 10 A, 400 V AC", sd, "Fuse link", "F", 1.6, (0.0, 0.0, 0.0, 0.01), &[]);
     p.current = "10 A".into();
     p.mounting.clear();
@@ -336,6 +341,19 @@ Breaking capacity: 100 kA".into();
     p.mounting = "Busbar".into();
     p.tech_data = "Accuracy class: 0.5S\nRated burden: 5 VA\nPower loss: 3 W".into();
     let p = c.add(
+        "GEN.CT-SET-400-5A",
+        "Current transformer set 3 x 400/5 A, class 0.5S, 5 VA, for busbars up to 40 x 10 mm",
+        "Measuring instruments",
+        "Current transformer",
+        "T",
+        210.0,
+        (240.0, 110.0, 80.0, 3.0),
+        &[(CurrentTransformer, "1P1 1P2 1S1 1S2"), (CurrentTransformer, "2P1 2P2 2S1 2S2"), (CurrentTransformer, "3P1 3P2 3S1 3S2")],
+    );
+    p.current = "400 / 5 A".into();
+    p.mounting = "Busbar".into();
+    p.tech_data = "Accuracy class: 0.5S\nRated burden: 5 VA\nPower loss: 3 W".into();
+    let p = c.add(
         "GEN.METER-3PT-CT",
         "Energy meter 3-phase, transformer-operated x/5 A, two directions, for 3-point mounting (provided by the distribution system operator)",
         "Measuring instruments",
@@ -355,10 +373,25 @@ Breaking capacity: 100 kA".into();
     p.current = "58 A".into();
     p.power = "40 kW".into();
     p.mounting = "Wall".into();
+    let p = c.add("GEN.INV-BAT-50KW", "Battery inverter 3-phase 50 kW, 400 V AC, for commercial battery storage, wall-mounted", "Power supplies, transformers", "Inverter", "TB", 9800.0, (0.0, 0.0, 0.0, 85.0), &[(PowerSupply, "L1 L2 L3 N PE")]);
+    p.voltage = "3 x 230/400 V AC".into();
+    p.current = "73 A".into();
+    p.power = "50 kW".into();
+    p.mounting = "Wall".into();
     let p = c.add("GEN.SUBDIST-48M", "Sub-distribution board 4 rows x 12 modules, wall-mounted, main terminals 5 x 35 mm²", "Installation devices", "Distribution board", "E", 240.0, (0.0, 0.0, 0.0, 9.0), &[(Generic, "L1 L2 L3 N"), (Generic, "PE")]);
     p.voltage = "3 x 230/400 V AC".into();
     p.current = "63 A".into();
     p.mounting = "Wall".into();
+    let p = c.add("GEN.EVSE-DC-100KW", "DC fast charging station 100 kW, CCS, 400 V AC input, for public charging", "Installation devices", "Charging station", "E", 28500.0, (0.0, 0.0, 0.0, 280.0), &[(Generic, "L1 L2 L3 N"), (Generic, "PE")]);
+    p.voltage = "3 x 230/400 V AC".into();
+    p.current = "145 A".into();
+    p.power = "100 kW".into();
+    p.mounting = "Floor".into();
+    let p = c.add("GEN.AC-OUT-25KW", "Air conditioning outdoor unit 25 kW cooling, VRF, 400 V AC", "Heating", "Air conditioning", "EQ", 9600.0, (0.0, 0.0, 0.0, 190.0), &[(Generic, "L1 L2 L3 N"), (Generic, "PE")]);
+    p.voltage = "3 x 230/400 V AC".into();
+    p.current = "32 A".into();
+    p.power = "9 kW".into();
+    p.mounting = "Floor".into();
     let p = c.add("GEN.FIRE-SW-1NC1NO", "Fire brigade switch in a red surface-mounted box, key-operated, 1 NC + 1 NO, IP65", sw, "Key switch", "S", 145.0, (0.0, 0.0, 0.0, 0.6), &[(SwitchNc, "11 12"), (SwitchNo, "23 24")]);
     p.mounting = "Wall".into();
     let p = c.add("GEN.PV-430W", "PV module 430 Wp, monocrystalline, glass-glass, 1722 x 1134 mm", "Power supplies, transformers", "PV module", "G", 118.0, (1134.0, 1722.0, 30.0, 21.5), &[(PvGenerator, "+ -")]);
@@ -613,6 +646,7 @@ Breaking capacity: 100 kA".into();
         ("GEN.BB-3X20X5", "Busbar system 3-pole, Cu 20 x 5 mm, 60 mm centre distance", 52.0, (1000.0, 75.0, 40.0, 2.7), "Bars: 3\nBar: Cu 20 x 5 mm\nRated current: 320 A"),
         ("GEN.BB-3X30X10", "Busbar system 3-pole, Cu 30 x 10 mm, 60 mm centre distance", 118.0, (1000.0, 90.0, 50.0, 8.1), "Bars: 3\nBar: Cu 30 x 10 mm\nRated current: 800 A"),
         ("GEN.BB-4X12X5", "Busbar system 4-pole, Cu 12 x 5 mm, 40 mm centre distance", 49.0, (1000.0, 135.0, 40.0, 2.1), "Bars: 4\nBar: Cu 12 x 5 mm\nRated current: 200 A"),
+        ("GEN.BB-3X30X10-185", "Busbar system 3-pole, Cu 30 x 10 mm, 185 mm centre distance, for NH fuse switch disconnector strips", 168.0, (1000.0, 400.0, 50.0, 8.1), "Bars: 3\nBar: Cu 30 x 10 mm\nRated current: 800 A"),
     ] {
         let p = c.add(number, desc, "Mounting", "Busbar system", "", price, dims, &[]);
         p.quantity_unit = "m".into();
@@ -655,6 +689,9 @@ Breaking capacity: 100 kA".into();
         ("GEN.CBL-7G1.0", "Control cable 7G1.0, numbered cores", "Control cable", 2.9, 0.11, "1 2 3 4 5 6 GNYE", "1 mm²"),
         ("GEN.CBL-SENS-3X0.34", "Sensor cable M12 3 x 0.34, PUR", "Control cable", 1.6, 0.04, "BN BU BK", "0.34 mm²"),
         ("GEN.CBL-NAYY-4X150", "Power cable NAYY-J 4 x 150 SE 0.6/1 kV, aluminium, for laying in the ground", "Power cable", 14.5, 2.2, "BN BK GY GNYE", "150 mm²"),
+        ("GEN.CBL-NAYY-4X240", "Power cable NAYY-J 4 x 240 SE 0.6/1 kV, aluminium, for laying in the ground", "Power cable", 21.5, 3.3, "BN BK GY GNYE", "240 mm²"),
+        ("GEN.CBL-NYY-5X95", "Power cable NYY-J 5 x 95 SM 0.6/1 kV", "Power cable", 46.0, 5.0, "BN BK GY BU GNYE", "95 mm²"),
+        ("GEN.CBL-NYY-5X185", "Power cable NYY-J 5 x 185 SM 0.6/1 kV", "Power cable", 88.0, 9.6, "BN BK GY BU GNYE", "185 mm²"),
         ("GEN.CBL-NYY-4X150", "Power cable NYY-J 4 x 150 SM 0.6/1 kV", "Power cable", 52.0, 6.3, "BN BK GY GNYE", "150 mm²"),
         ("GEN.CBL-NYY-4X120", "Power cable NYY-J 4 x 120 SM 0.6/1 kV", "Power cable", 42.0, 5.1, "BN BK GY GNYE", "120 mm²"),
         ("GEN.CBL-NYY-12X2.5", "Control cable NYY-J 12 x 2.5 RE 0.6/1 kV, numbered cores", "Control cable", 6.8, 0.6, "1 2 3 4 5 6 7 8 9 10 11 GNYE", "2.5 mm²"),

@@ -485,6 +485,14 @@ pub fn accessories<'a>(prj: &'a Project, ei: usize, subgroup: &str) -> Vec<&'a P
     prj.layout.enclosures[ei].items.iter().filter(|i| i.kind == ItemKind::Accessory && part_subgroup(prj, &i.part) == Some(subgroup)).collect()
 }
 
+/// The ways for cables into an enclosure: cable glands and cable entry flanges (a
+/// membrane taking several large cables).
+pub fn entries(prj: &Project, ei: usize) -> Vec<&PanelItem> {
+    let mut v = accessories(prj, ei, "Cable gland");
+    v.extend(accessories(prj, ei, "Cable entry"));
+    v
+}
+
 /// The cable glands the cables routed so far go through (by item id).
 #[derive(Default)]
 struct Glands {
@@ -599,7 +607,7 @@ fn pins_at(prj: &Project, cores: &[&Connection], tag: &str) -> Vec<PinRef> {
 fn entry_end(prj: &Project, pos: &[V3], ei: usize, near: V3, glands: &mut Glands, diameter: f32) -> End {
     let e = &prj.layout.enclosures[ei];
     let at = |it: &PanelItem, depth: f32| add(panel::face_point(e, it.face, [it.x + it.w / 2.0, it.y + it.h / 2.0, depth]), pos[ei]);
-    let candidates: Vec<(&PanelItem, f32)> = accessories(prj, ei, "Cable gland").into_iter().map(|g| (g, manhattan(at(g, 5.0), near))).collect();
+    let candidates: Vec<(&PanelItem, f32)> = entries(prj, ei).into_iter().map(|g| (g, manhattan(at(g, 5.0), near))).collect();
     match glands.pick(prj, candidates, diameter) {
         Some(g) => End { tag: g.part.clone(), enclosure: Some(ei), point: Some(at(g, 5.0)), item: Some(g.id), leave: Some(norm(sub(at(g, 6.0), at(g, 5.0)))), ..Default::default() },
         None => {

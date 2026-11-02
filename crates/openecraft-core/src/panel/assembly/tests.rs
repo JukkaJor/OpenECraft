@@ -129,3 +129,23 @@ fn the_main_part_stands_on_its_base_and_takes_the_accessories_built_into_it() {
     let front = tris.iter().flatten().map(|v| v[2]).fold(f32::MIN, f32::max);
     assert!((back - it.z).abs() < 0.01 && (front - (it.z + 130.0)).abs() < 0.01, "{back} {front}");
 }
+
+#[test]
+fn transformers_behind_a_vertical_strip_lie_along_it() {
+    let mut prj = project(&[]);
+    let strip = Part { number: "OWN.STRIP".into(), width: 100.0, height: 740.0, depth: 140.0, ..Default::default() };
+    let ct = Part { number: "OWN.CT".into(), width: 90.0, height: 80.0, depth: 60.0, accessory: true, accessory_mount: AccessoryMount::Behind, ..Default::default() };
+    prj.parts.extend([strip, ct]);
+    crate::parts::add_to_device(&mut prj, &PartsDb::default(), "-Q1", "OWN.STRIP", 1);
+    crate::parts::add_to_device(&mut prj, &PartsDb::default(), "-Q1", "OWN.CT", 3);
+    let a = assembly(&prj, "-Q1").unwrap();
+    // One layer of three transformers along the strip's height, centred under it.
+    assert_eq!((a.w, a.h, a.d, a.main.z), (100.0, 740.0, 200.0, 60.0));
+    let across: Vec<f32> = a.behind.iter().map(|b| b.across).collect();
+    assert_eq!(across, [-80.0, 0.0, 80.0]);
+    assert!(a.behind.iter().all(|b| b.at == 5.0 && b.z == 0.0));
+    let it = placed(&mut prj, "-Q1");
+    let a = assembly(&prj, "-Q1").unwrap();
+    let ys: Vec<f32> = a.behind.iter().map(|b| a.piece_item(&it, b).y - it.y).collect();
+    assert_eq!(ys, [250.0, 330.0, 410.0]);
+}

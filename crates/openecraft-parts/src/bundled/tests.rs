@@ -81,11 +81,17 @@ fn hager_breaker_and_fuse_switch_take_their_accessories() {
     let mounts: Vec<(&str, crate::AccessoryMount)> =
         crate::accessory::accessories_of(&hager.parts, breaker).iter().map(|p| (p.number.as_str(), p.accessory_mount)).collect();
     use crate::AccessoryMount::*;
-    assert_eq!(mounts, [("HAG.HXT041H", Front), ("HAG.HXA011H", Inside), ("HAG.HXA021H", Inside)]);
+    // The 230 V release of the P630 fits the P250 too (it names both).
+    assert_eq!(mounts, [("HAG.HXT041H", Front), ("HAG.HXA011H", Inside), ("HAG.HXA021H", Inside), ("HAG.HXA014H", Inside)]);
     // The NH1 fuse switch disconnector stands on its univers N module.
     let module = get("HAG.UE31E1B");
     assert_eq!(module.accessory_mount, Behind);
     assert!(crate::accessory::fits(module, get("HAG.LT153")));
     // The cabinet comes with its plinth.
     assert_eq!(get("HAG.FR25S2").tech_value("Plinth"), Some("200"));
+    // The current transformers clip in behind the poles of the NH1 - NH3 strips.
+    let ct = get("HAG.LVZW150");
+    assert_eq!(ct.accessory_mount, Behind);
+    let strips: Vec<&str> = crate::accessory::mains_of(&hager.parts, ct).iter().map(|p| p.number.as_str()).collect();
+    assert_eq!(strips, ["HAG.LVSG1CPX", "HAG.LVSG2CPX", "HAG.LVSG3CPX"]);
 }

@@ -306,8 +306,12 @@ impl Protection {
     }
 }
 
-/// Protection data of a device: its part with a protective function.
+/// Protection data of a device: its part with a protective function; none for a fuse
+/// switch disconnector fitted with solid links (an isolator).
 pub fn of_device(prj: &Project, tag: &str) -> Option<Protection> {
+    if crate::sizing::isolates_only(prj, tag) {
+        return None;
+    }
     crate::sizing::device_parts(prj, tag).into_iter().find_map(|p| {
         let f = p.functions.iter().find(|f| crate::sizing::PROTECTIVE.contains(&f.kind))?;
         // A fuse base or fuse switch disconnector protects with its fuse links.

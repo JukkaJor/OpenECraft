@@ -11,7 +11,7 @@
 //! ([`crate::panel::positions`]) like the coordinates of an enclosure.
 
 use super::grid::Space;
-use super::{accessories, End, Glands, RoutingRules};
+use super::{entries, End, Glands, RoutingRules};
 use crate::model::Project;
 use crate::panel::{self, Face, PanelItem, SitePose};
 use crate::parts::vec3::{add, manhattan, norm, sub, V3};
@@ -71,7 +71,7 @@ pub fn shafts_below(prj: &Project, poses: &[SitePose], ri: usize, ci: usize) -> 
         return Vec::new();
     }
     let (r, e) = (&prj.layout.enclosures[ri], &prj.layout.enclosures[ci]);
-    accessories(prj, ci, "Cable gland")
+    entries(prj, ci)
         .into_iter()
         .filter(|g| g.face == Face::Bottom)
         .map(|g| {
@@ -159,7 +159,7 @@ pub(super) fn room_entry(prj: &Project, pos: &[V3], poses: &[SitePose], ri: usiz
     // Through the bottom of a cabinet hanging on the wall only to a place below it.
     let below = |k: usize| near[1] > prj.layout.enclosures[ri].height - (poses[k].at[1] - poses[ri].at[1]);
     let way_out = |k: usize, face: Face| room_side(prj, k, face) && (face != Face::Bottom || below(k));
-    let has_gland = |k: usize| accessories(prj, k, "Cable gland").iter().any(|g| way_out(k, g.face));
+    let has_gland = |k: usize| entries(prj, k).iter().any(|g| way_out(k, g.face));
     let lineup = panel::lineup_of(&prj.layout, ci);
     let cabinets = if has_gland(ci) { vec![ci] } else { lineup };
     // The end inside cabinet `k` at a point of its face, the way through the room
@@ -177,7 +177,7 @@ pub(super) fn room_entry(prj: &Project, pos: &[V3], poses: &[SitePose], ri: usiz
     let mut cabinet_of: HashMap<u64, usize> = HashMap::new();
     for k in cabinets {
         let e = &prj.layout.enclosures[k];
-        for g in accessories(prj, k, "Cable gland").into_iter().filter(|g| way_out(k, g.face)) {
+        for g in entries(prj, k).into_iter().filter(|g| way_out(k, g.face)) {
             let c = [g.x + g.w / 2.0, g.y + g.h / 2.0];
             let outside = cabinet_in_room(prj, poses, ri, k, panel::face_point(e, g.face, [c[0], c[1], -OUTSIDE]));
             candidates.push((g, manhattan(outside, near)));
