@@ -1076,6 +1076,12 @@ fn build_library() -> Vec<SymbolDef> {
     b.pin(0.0, -4.0, "");
     v.push(def("ground", "Protective earth", C::Potentials, "", Func::Potential).label(tr("PE")).build(&mut b));
 
+    // Earth electrode (IEC 60617-02-15-01): a device such as the foundation earth
+    // electrode, unlike the potential above.
+    b.l(0.0, -4.0, 0.0, 0.0).l(-3.0, 0.0, 3.0, 0.0).l(-2.0, 1.2, 2.0, 1.2).l(-1.0, 2.4, 1.0, 2.4);
+    b.pin(0.0, -4.0, "1");
+    v.push(def("earth_electrode", "Earth electrode", C::Protection, "E", MAIN).build(&mut b));
+
     b.l(0.0, 0.0, 0.0, 2.6).poly(&[(-1.5, 1.2), (0.0, 2.7), (1.5, 1.2)], false, false);
     b.field(FieldKind::Label, 2.2, 1.6, 2.5, Left);
     b.pin(0.0, 0.0, "");

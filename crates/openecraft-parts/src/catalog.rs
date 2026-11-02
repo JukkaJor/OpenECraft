@@ -163,14 +163,43 @@ Breaking capacity: 10 kA".into();
     p.tech_data = "Power loss: 7 W
 Characteristic: C
 Breaking capacity: 10 kA".into();
-    // House connection box and NH fuse links (fitted into fuse bases and fuse switch
-    // disconnectors: added to their devices, three per device).
-    let p = c.add("GEN.HAK-NH2-315A", "House connection box NH2, 3 fuse bases 400 A, PEN terminal, for wall mounting", sd, "House connection box", "F", 165.0, (300.0, 450.0, 160.0, 7.5), &[(Fuse3, main3)]);
-    p.voltage = "400 V AC".into();
+    // The inside of a house connection box (its enclosure: system house_connection): the
+    // NH fuse base of the utility and the PEN terminal block. NH fuse links are fitted
+    // into fuse bases and fuse switch disconnectors: added to their devices, three per
+    // device.
+    // Fed from below like in a house connection box: the line side (1 3 5) at the
+    // bottom, the load side at the top.
+    let p = c.add("GEN.NH2-BASE-3P-400A", "NH fuse base size 2, 3-pole, 400 A, 690 V AC, DIN 43620, V-clamps 35 - 240 mm² Al / Cu, with phase barriers, fed from below", sd, "Fuse base", "F", 98.0, (270.0, 270.0, 150.0, 4.2), &[(Fuse3, main3)]);
+    p.voltage = "690 V AC".into();
     p.current = "400 A".into();
-    p.mounting = "Wall mounting".into();
+    p.mounting = "Screw mounting".into();
+    p.connection_points = ["1", "3", "5", "2", "4", "6"]
+        .iter()
+        .enumerate()
+        .map(|(i, pin)| {
+            let (x, bottom) = (45.0 + 90.0 * (i % 3) as f32, i < 3);
+            crate::ConnectionPoint { pin: (*pin).into(), pos: [x, if bottom { 256.0 } else { 14.0 }, 60.0], exit: if bottom { crate::Exit::Down } else { crate::Exit::Up } }
+        })
+        .collect();
+    p.tech_data = "Mounting holes: M8: 20,20; 250,20; 20,250; 250,250\nFuse size: NH2\nConnection: V-clamps 35 - 240 mm² Al / Cu\nPower loss: 25 W".into();
+    let p = c.add("GEN.TB-PEN-240-V", "PEN terminal block for house connection boxes, 3 V-clamps 35 - 240 mm² Al / Cu and a bridge clamp 10 - 50 mm², on insulating supports", "Terminals", "PEN terminal block", "X", 26.0, (140.0, 60.0, 70.0, 0.6), &[(Terminal, "")]);
+    p.mounting = "Screw mounting".into();
+    p.tech_data = "Terminal type: PE\nMounting holes: M6: 10,30; 130,30".into();
+    // Earthing and equipotential bonding at the building entry: the main earthing busbar
+    // on the wall and the connection lug of the foundation earth electrode coming out of
+    // the wall below it.
+    let p = c.add("GEN.MET-BAR-10", "Main earthing busbar, brass nickel-plated, 7 terminals 2.5 - 95 mm², clamp for flat strip 30 x 3.5 / 40 x 4 mm or round wire Ø 8 - 10 mm, on insulating feet, with cover", "Terminals", "Main earthing busbar", "X", 34.0, (300.0, 80.0, 70.0, 0.9), &[]);
+    p.mounting = "Wall".into();
     p.mounting_data.wall_mount = true;
-    p.tech_data = "Fuse size: NH2\nProtection: IP54\nConnection: up to 240 mm² Al / Cu\nPower loss: 25 W".into();
+    // Its terminal 1 is the clamp of the earth electrode at the left: the main bonding
+    // conductor and the lug of the foundation earth electrode land there.
+    p.connection_points = vec![crate::ConnectionPoint { pin: "1".into(), pos: [42.0, 40.0, 49.0], exit: crate::Exit::Front }];
+    p.tech_data = "Mounting holes: M6: 15,40; 285,40\nTerminals: 7 x 2.5 - 95 mm², 1 x flat strip / round wire".into();
+    let p = c.add("GEN.FE-LUG-V4A-10", "Connection lug of a foundation earth electrode, stainless steel V4A round wire Ø 10 mm, out of the wall with sealing collar, marked", "Terminals", "Earth electrode", "E", 18.0, (60.0, 480.0, 70.0, 0.8), &[(Generic, "1")]);
+    p.mounting = "Wall".into();
+    p.mounting_data.wall_mount = true;
+    p.connection_points = vec![crate::ConnectionPoint { pin: "1".into(), pos: [30.0, 0.0, 45.0], exit: crate::Exit::Up }];
+    p.tech_data = "Material: stainless steel 1.4571 (V4A)\nDiameter: 10 mm".into();
     for (number, size, amps, price) in [("GEN.NH000-GG-63A", "NH000", 63, 6.8), ("GEN.NH00-GG-50A", "NH00", 50, 6.9), ("GEN.NH00-GG-80A", "NH00", 80, 7.4), ("GEN.NH2-GG-80A", "NH2", 80, 17.5), ("GEN.NH2-GG-250A", "NH2", 250, 24.0)] {
         let p = c.add(number, &format!("NH fuse link size {size}, gG, {amps} A, 500 V AC"), sd, "Fuse link", "F", price, (0.0, 0.0, 0.0, 0.2), &[]);
         p.current = format!("{amps} A");
@@ -583,6 +612,7 @@ Breaking capacity: 100 kA".into();
         ("GEN.CBL-NYY-5X16", "Power cable NYY-J 5 x 16 RM 0.6/1 kV", "Power cable", 9.6, 1.1, "BN BK GY BU GNYE", "16 mm²"),
         ("GEN.CBL-NYM-3X10", "Installation cable NYM-J 3 x 10", "Power cable", 5.8, 0.5, "BN BU GNYE", "10 mm²"),
         ("GEN.CBL-NYM-3X2.5", "Installation cable NYM-J 3 x 2.5", "Power cable", 1.4, 0.15, "BN BU GNYE", "2.5 mm²"),
+        ("GEN.CBL-H07VK-1X25-GNYE", "Single core H07V-K 1 x 25 mm², green-yellow, for protective and bonding conductors", "Single core", 3.9, 0.26, "GNYE", "25 mm²"),
         ("GEN.CBL-PV-2X6", "Solar cable H1Z2Z2-K 2 x 1 x 6 mm², 1500 V DC, red / black", "Power cable", 2.6, 0.14, "RD BK", "6 mm²"),
         ("GEN.CBL-BAT-2X35", "Battery cable H07V-K 2 x 1 x 35 mm², red / black", "Power cable", 9.8, 0.75, "RD BK", "35 mm²"),
         ("GEN.CBL-BAT-2X70", "Battery cable H07V-K 2 x 1 x 70 mm², red / black", "Power cable", 18.9, 1.45, "RD BK", "70 mm²"),

@@ -8,7 +8,7 @@ pub(super) fn single_line(prj: &mut Project, section: u64) {
     let page = sec_page(prj, section, "3", "Single-line diagram", PageKind::Overview, "", "");
     let mut g = Pg { prj, page };
     g.text(48.0, 30.0, "3/PEN AC 400 V 50 Hz, TN-C-S", 2.5).text(48.0, 36.0, "-W1 NAYY-J 4 x 150 from the utility", 2.5);
-    g.sym("sl_fuse", 40.0, 52.0, 0, "=GRID+HR-F1", "", "House connection box");
+    g.sym("sl_fuse", 40.0, 52.0, 0, "=GRID+HAK-F1", "", "House connection box");
     g.path(&[(40.0, 60.0), (40.0, 80.0), (240.0, 80.0)]);
     g.text(250.0, 81.0, "Busbar =MD+MD", 2.5);
     for (x, q, p, to) in [(80.0, "=MD+MD-Q1", "=MD+MD-P1", "=CTL+CC1 automation"), (160.0, "=MD+MD-Q2", "=MD+MD-P2", ""), (240.0, "=MD+MD-Q3", "=MD+MD-P3", "=WAT+CC2 pumps")] {
@@ -52,8 +52,8 @@ pub(super) fn house_connection(prj: &mut Project, section: u64) {
         g.core(x, 36.0, x, 68.0, "=GRID-W1", core);
     }
     g.text(96.0, 34.0, "Cable distribution cabinet of the utility", 2.5).text(96.0, 50.0, "-W1 NAYY-J 4 x 150 SE, through the building entry", 2.5);
-    g.sym("fuse3", 60.0, 72.0, 0, "-F1", "", "House connection box\nNH2 3 x 250 A gG");
-    g.sym("term_pe", 84.0, 72.0, 0, "-X0", "PEN", "");
+    g.sym("fuse3", 60.0, 72.0, 0, "+HAK-F1", "", "House connection box\nNH2 3 x 250 A gG");
+    g.sym("term_pe", 84.0, 72.0, 0, "+HAK-X0", "PEN", "");
     for (x, core) in [(60.0, "BN"), (68.0, "BK"), (76.0, "GY"), (84.0, "GNYE")] {
         g.core(x, 76.0, x, 108.0, "=GRID-W2", core);
     }
@@ -70,6 +70,26 @@ pub(super) fn house_connection(prj: &mut Project, section: u64) {
     for (y, name) in RAILS {
         g.link(380.0, y, &format!("MD-{name}"));
     }
+}
+
+/// Earthing and main equipotential bonding: the main earthing busbar in the house
+/// connection room, joined to the PE busbar of the main distribution by the main bonding
+/// conductor and to the foundation earth electrode by its connection lug.
+pub(super) fn earthing(prj: &mut Project, section: u64) {
+    let page = sec_page(prj, section, "2", "Earthing and equipotential bonding", PageKind::Schematic, "GRID", "HR");
+    let mut g = Pg { prj, page };
+    g.link(60.0, 40.0, "MD-PE").w(60.0, 40.0, 60.0, 56.0);
+    g.text(72.0, 41.0, "PE busbar of the main distribution", 2.5);
+    g.sym("term_pe", 60.0, 60.0, 0, "=MD+MD-X2", "PA", "");
+    g.core(60.0, 64.0, 60.0, 116.0, "=GRID-W3", "GNYE");
+    g.text(72.0, 90.0, "-W3 H07V-K 1 x 25 mm², main bonding conductor", 2.5);
+    g.sym("term_pe", 60.0, 120.0, 0, "-X1", "1", "Main earthing busbar");
+    g.text(72.0, 121.0, "Main earthing busbar in the house connection room", 2.5);
+    g.w(60.0, 124.0, 60.0, 148.0);
+    g.sym("earth_electrode", 60.0, 152.0, 0, "-E1", "", "Foundation earth electrode");
+    g.text(72.0, 140.0, "Connection lug V4A Ø 10 mm out of the wall below the busbar", 2.5);
+    g.text(72.0, 158.0, "Foundation earth electrode: steel strip 30 x 3.5 mm in the foundation slab", 2.5);
+    g.text(220.0, 41.0, "TN-C-S: the PEN is split into N and PE in the main distribution", 2.5);
 }
 
 /// Rails of the busbar (L1 136 … PE 168), from the feed-in terminals at y `from`.

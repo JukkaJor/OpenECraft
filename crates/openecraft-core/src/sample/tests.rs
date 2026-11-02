@@ -231,10 +231,41 @@ fn building_services_route_from_room_to_room() {
     let entries = l.enclosures[hr].items.iter().filter(|i| i.opening == Opening::Entry).count();
     assert_eq!(entries, 2);
     assert!(crate::panel::wall_links(&prj).iter().filter(|w| (w.from, w.to) == (hr, tr)).count() >= 2);
-    // The supply cable runs from its building entry to the house connection box.
+    // The house connection box is an enclosure with a hinged cover on the left wall of
+    // the room, above the cable entry, the NH fuse base and the PEN terminal block in it.
+    let hak = l.enclosures.iter().position(|e| e.name == "+HAK").expect("+HAK");
+    assert_eq!(crate::panel::room_of(l, hak), Some(hr));
+    assert_eq!(l.enclosures[hak].build.system, crate::parts::mechanics::HOUSE_CONNECTION_SYSTEM);
+    assert!(crate::panel::components(&l.enclosures[hak]).iter().any(|c| c.role == crate::panel::Role::Door));
+    for tag in ["=GRID+HAK-F1", "=GRID+HAK-X0"] {
+        assert_eq!(crate::panel::locate(&prj, tag).map(|(k, _)| k), Some(hak), "{tag}");
+    }
+    // The supply cable comes in through its building entry, through the room and up
+    // through the bottom of the box; the main cable leaves it through its top.
     let w1 = an.routing.item("=GRID-W1").expect("W1 routed");
-    assert!(w1.routed() && w1.enclosures == [hr], "{:?}", w1.status);
+    assert!(w1.routed() && w1.enclosures.contains(&hr) && w1.enclosures.contains(&hak), "{:?} {:?}", w1.status, w1.enclosures);
     assert!(w1.ends.iter().any(|e| e.item.is_some_and(|id| l.enclosures[hr].item(id).is_some_and(|i| i.opening == Opening::Entry))));
+    let w2 = an.routing.item("=GRID-W2").expect("W2 routed");
+    assert!(w2.routed() && w2.enclosures.contains(&hak), "{:?}", w2.status);
+    let leaves = |c: &crate::routing3d::RoutedItem| c.legs.iter().find(|leg| leg.enclosure == hak).map(|leg| (leg.points[0][1], leg.points[leg.points.len() - 1][1]));
+    let (bottom, top) = (l.enclosures[hak].height, 0.0);
+    let pos = crate::panel::positions(l);
+    let (a, b) = leaves(w1).expect("W1 in the box");
+    assert!((a - pos[hak][1] - bottom).abs() < 20.0 || (b - pos[hak][1] - bottom).abs() < 20.0, "W1 through the bottom: {a} {b}");
+    let (a, b) = leaves(w2).expect("W2 in the box");
+    assert!((a - pos[hak][1] - top).abs() < 20.0 || (b - pos[hak][1] - top).abs() < 20.0, "W2 through the top: {a} {b}");
+    // The main earthing busbar beside it: joined to the PE busbar of the main
+    // distribution by the main bonding conductor, and to the lug of the foundation earth
+    // electrode coming out of the wall right below it.
+    let md = l.enclosures.iter().position(|e| e.name == "+MD").expect("+MD");
+    let w3 = an.routing.item("=GRID-W3").expect("W3 routed");
+    assert!(w3.routed() && w3.enclosures.contains(&md) && w3.enclosures.contains(&hr), "{:?} {:?}", w3.status, w3.enclosures);
+    let (bar, lug) = (crate::panel::locate(&prj, "=GRID+HR-X1").expect("busbar"), crate::panel::locate(&prj, "=GRID+HR-E1").expect("lug"));
+    assert!(bar.0 == hr && lug.0 == hr);
+    let (bar, lug) = (bar.1, lug.1);
+    assert!(lug.x >= bar.x && lug.x + lug.w <= bar.x + bar.w && lug.y >= bar.y + bar.h, "{lug:?} {bar:?}");
+    assert_eq!(lug.y + lug.h, l.enclosures[hr].height, "out of the wall at the floor");
+    assert!(an.routing.items.iter().any(|i| i.key == "=GRID+HR-X1:1|=GRID+HR-E1:1" && i.routed()));
     // The feeders of the main distribution and the water pipe pass into the technical room.
     for tag in ["=MD-W11", "=MD-W12", "=MD-W13"] {
         let c = an.routing.item(tag).expect(tag);

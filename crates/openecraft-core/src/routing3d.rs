@@ -699,6 +699,17 @@ fn building_entry(prj: &Project, pos: &[V3], ri: usize, near: V3) -> Option<End>
     Some(End { tag: tr("Building entry").to_string(), enclosure: Some(ri), point: at(it), item: Some(it.id), leave: panel::entry_direction(e, it), ..Default::default() })
 }
 
+/// A point `p` of enclosure `k` (layout coordinates) where it is in room `ri` (layout
+/// coordinates of the room), by where the enclosure stands in the room.
+fn room_point(prj: &Project, pos: &[V3], k: usize, ri: usize, p: V3) -> V3 {
+    let poses = panel::site_poses(prj);
+    let (e, r) = (&prj.layout.enclosures[k], &prj.layout.enclosures[ri]);
+    // Layout coordinates have y down from the top, the site y up from the floor.
+    let q = sub(p, pos[k]);
+    let w = poses[ri].local(poses[k].apply([q[0], e.height - q[1], q[2]]));
+    add([w[0], r.height - w[1], w[2]], pos[ri])
+}
+
 /// The location of a device tag (`=F1+LOC-K1` → `LOC`), empty without one.
 fn location_of(tag: &str) -> &str {
     let structure = tag.split('-').next().unwrap_or_default();
@@ -714,17 +725,25 @@ fn outside(prj: &Project, tag: &str) -> bool {
 
 /// The ends of a cable or tube between two devices: placed devices, or the cable
 /// entry of the enclosure the other end is in (the building entry of a room for a
-/// device outside the building). `None` if neither end is placed, or if the placed
-/// one is in a room and the other one is not outside or the room has no building
-/// entry.
+/// device outside the building, also when that device's enclosure stands in the room:
+/// the route then comes in through the building entry and on into the enclosure).
+/// `None` if neither end is placed, or if the placed one is in a room and the other
+/// one is not outside or the room has no building entry.
 /// `pins`: the schematic connection points of the cores at `a` and `b`.
 fn ends_between(prj: &Project, pos: &[V3], a: &str, b: &str, pins: [&[PinRef]; 2], glands: &mut Glands, diameter: f32) -> Option<[End; 2]> {
     let (ea, eb) = (device_end(prj, pos, a, pins[0]), device_end(prj, pos, b, pins[1]));
     let in_room = |e: &End| e.enclosure.is_some_and(|k| prj.layout.enclosures[k].is_room());
+    let entry = |e: &End, p: V3, other: &str| -> Option<End> {
+        let k = e.enclosure?;
+        let ri = panel::room_of(&prj.layout, k).filter(|_| outside(prj, other))?;
+        building_entry(prj, pos, ri, room_point(prj, pos, k, ri, p))
+    };
     match (ea.point, eb.point) {
         (None, None) => None,
         (Some(p), None) if in_room(&ea) => outside(prj, b).then(|| building_entry(prj, pos, ea.enclosure?, p).map(|e| [ea.clone(), End { tag: b.into(), ..e }])).flatten(),
         (None, Some(p)) if in_room(&eb) => outside(prj, a).then(|| building_entry(prj, pos, eb.enclosure?, p).map(|e| [End { tag: a.into(), ..e }, eb.clone()])).flatten(),
+        (Some(p), None) if entry(&ea, p, b).is_some() => entry(&ea, p, b).map(|e| [ea.clone(), End { tag: b.into(), ..e }]),
+        (None, Some(p)) if entry(&eb, p, a).is_some() => entry(&eb, p, a).map(|e| [End { tag: a.into(), ..e }, eb.clone()]),
         // Both in one device group: part of its base.
         _ if ea.item.is_some() && ea.item == eb.item => None,
         (Some(p), None) => Some([ea.clone(), End { tag: b.into(), ..entry_end(prj, pos, ea.enclosure?, p, glands, diameter) }]),
