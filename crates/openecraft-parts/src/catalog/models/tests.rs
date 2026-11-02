@@ -30,7 +30,10 @@ fn models_are_painted_and_fill_the_part() {
     pump.functions = vec![FunctionTemplate { kind: FnKind::Pump, ..Default::default() }];
     let mut valve = part("Fluid power components", "Shut-off valve", (180.0, 130.0, 150.0));
     valve.description = "Motorised ball valve with actuator".into();
-    for p in [pump, valve, part("Safety devices", "Fuse switch disconnector", (106.0, 210.0, 115.0)), part("Fluid power components", "Service unit", (80.0, 220.0, 90.0))] {
+    let mut fuse_base = part("Safety devices", "Fuse base", (270.0, 270.0, 150.0));
+    fuse_base.functions = vec![FunctionTemplate::new(FnKind::Fuse3, "1 3 5 2 4 6")];
+    let earthing = [part("Terminals", "PEN terminal block", (140.0, 60.0, 70.0)), part("Terminals", "Main earthing busbar", (300.0, 80.0, 70.0)), part("Terminals", "Earth electrode", (60.0, 480.0, 70.0))];
+    for p in [pump, valve, part("Safety devices", "Fuse switch disconnector", (106.0, 210.0, 115.0)), part("Fluid power components", "Service unit", (80.0, 220.0, 90.0)), fuse_base].into_iter().chain(earthing) {
         let (_, mesh) = model(&p).unwrap_or_else(|| panic!("{}", p.subgroup));
         assert_eq!(mesh.colors.len(), mesh.triangles.len(), "{}", p.subgroup);
         assert!(mesh.colors.iter().any(|c| *c != mesh.colors[0]), "{} has details in other colours", p.subgroup);
@@ -57,12 +60,15 @@ fn round_bodies_face_outwards() {
 fn catalog_devices_get_their_models() {
     let parts = default_catalog();
     let get = |n: &str| parts.iter().find(|p| p.number == n).unwrap_or_else(|| panic!("{n}"));
-    for n in ["GEN.PUMP-BOOST-DN32", "GEN.TANK-1000L", "GEN.HP-AW-12KW", "GEN.COMP-PISTON-450", "GEN.VLV-BALL-DN32", "GEN.FR-G38-WALL", "GEN.MANIFOLD-DN32-4"] {
+    for n in ["GEN.PUMP-BOOST-DN32", "GEN.TANK-1000L", "GEN.HP-AW-12KW", "GEN.COMP-PISTON-450", "GEN.VLV-BALL-DN32", "GEN.FR-G38-WALL", "GEN.MANIFOLD-DN32-4", "GEN.NH2-BASE-3P-400A", "GEN.TB-PEN-240-V", "GEN.MET-BAR-10", "GEN.FE-LUG-V4A-10"] {
         let p = get(n);
         assert!(kind_of(p).is_some(), "{n}");
         assert!(p.model_3d.as_ref().is_some_and(|m| !m.colors.is_empty()), "{n}");
     }
     // DIN rail devices keep their shape, painted.
+    // The fuse base: a fuse link between the jaws of each of its three poles.
+    let base = model(get("GEN.NH2-BASE-3P-400A")).unwrap().1;
+    assert_eq!(base.colors.iter().filter(|c| **c == CERAMIC).count(), 3 * 12, "three fuse links");
     let din = parts.iter().find(|p| p.subgroup == "Circuit breaker").unwrap();
     assert!(kind_of(din).is_none() && din.model_3d.as_ref().is_some_and(|m| m.colors.len() == m.triangles.len()));
 }

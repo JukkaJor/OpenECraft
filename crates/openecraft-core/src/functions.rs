@@ -147,6 +147,7 @@ const ROWS: &[Row] = {
         ("fn.motor_protection", tr_const!("Motor protection switch"), C::Protection, K::MotorProtection, "Q", &["mps3"]),
         ("fn.overload", tr_const!("Overload relay"), C::Protection, K::Overload, "F", &["ol3", "nfpa_ol"]),
         ("fn.spd", tr_const!("Surge protective device"), C::Protection, K::SurgeProtection, "F", &["spd"]),
+        ("fn.earth_electrode", tr_const!("Earth electrode"), C::Protection, K::Generic, "E", &["earth_electrode"]),
         ("fn.motor3", tr_const!("Motor 3-phase"), C::Motors, K::Motor3, "M", &["motor3", "nfpa_motor", "sl_motor"]),
         ("fn.motor1", tr_const!("Motor 1-phase"), C::Motors, K::Motor1, "M", &["motor1"]),
         ("fn.motor_dc", tr_const!("Motor DC"), C::Motors, K::MotorDc, "M", &["motor_dc"]),

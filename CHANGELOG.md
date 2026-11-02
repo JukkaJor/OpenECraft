@@ -169,7 +169,16 @@ with a command line, an MCP server, a parts server and a project server.
   supply cable and the water main into the building: cables and pipes to devices
   outside the building are routed to them. Of several wall penetrations into the same
   room a route takes the nearest; cables and pipes ending at the same device (a heat
-  pump) may meet there.
+  pump) may meet there, also when the device is in a cabinet standing in the room:
+  the cable comes in through the building entry and on through the cabinet's gland.
+  Cabinets hanging on a wall are entered through the glands in their bottom too: a
+  shaft below each gland, open to the front, stays free for the routes. A new enclosure system for **house connection
+  boxes** (glass-fibre reinforced polyester with a hinged cover); in the building
+  example the house connection box is such an enclosure above the cable entry, with
+  the NH fuse base of the utility (fed from below) and the PEN terminal block inside,
+  and a main earthing busbar beside it joins the PE busbar of the main distribution
+  (main bonding conductor) and the foundation earth electrode, whose stainless steel
+  lug comes out of the wall below it; the earth electrode is a new symbol.
 - **Engineering:** conductor sizing (`size_wires` gives the wires behind protective
   devices the cross-section they need; fuse switch disconnectors protect at the rating
   of their fuse links), short circuit and selectivity, load calculation,

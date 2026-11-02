@@ -173,6 +173,20 @@ room and cabinet at its place in 3D, with the routes between them.
 
 ![Floor plan of the electrical_room example: L-shaped room, inner wall, door, window and the two cabinets](../images/room.png)
 
+## House connection boxes
+
+The enclosure system *House connection box* (`house_connection`, command
+`add_enclosure` with `system` `house_connection`) is the utility's box at the building
+entry: glass-fibre reinforced polyester (RAL 7035, IP54) with a hinged, sealable cover
+and a mounting plate, in two standard sizes (`GEN.HAK-255X415X144` for NH00,
+`GEN.HAK-410X720X185` for NH2). Its cover opens in the 3D view like the door of any
+enclosure. Inside go the NH fuse base (`GEN.NH2-BASE-3P-400A`, fed from below: the
+supply cable comes straight up to its line side through a gland in the bottom, the main
+cable leaves straight up through the top) and the PEN terminal block
+(`GEN.TB-PEN-240-V`). The example `building_services` hangs one on the wall above the
+cable entry, with the main earthing busbar (`GEN.MET-BAR-10`) and the lug of the
+foundation earth electrode (`GEN.FE-LUG-V4A-10`, symbol *Earth electrode*) beside it.
+
 ## 19-inch racks
 
 The enclosure system *19-inch rack* (`rack19`, *Layout space › New enclosure*, command
@@ -209,7 +223,8 @@ walls as possible: through the first room to a penetration, through the rooms be
 through the last room to its end (its legs per room and cabinet in the routing list);
 its length includes the ways through the walls. Without such a penetration the route
 stays unrouted (*no wall penetration leads from room to room*). A route from a device
-of a room to the outside of the building ends at its nearest building entry; of several
+of a room to the outside of the building ends at its nearest building entry, also from a
+device in a cabinet standing in the room (through the cabinet's gland and the room); of several
 wall penetrations joining the same two rooms the route takes the one with the shortest
 way.
 
@@ -223,7 +238,10 @@ such a way); of the ways that cost about the same, a route takes one whose bends
 their distance (a short stretch first or last). A route between a cabinet and a device in its
 room (or two cabinets of one room) runs in legs: through the cabinet to a cable gland on
 its roof, sides or rear (one of its own cabinet first, otherwise of the line-up; without
-one through the middle of the roof, which is reported), then through the room. Frozen, such a route keeps its legs.
+one through the middle of the roof, which is reported), then through the room. A
+cabinet hanging on a wall (its bottom above the floor) is also left through a gland in
+its bottom: below each such gland a shaft down to the floor and out to the front of the
+cabinet stays free for the routes. Frozen, such a route keeps its legs.
 Hoses, tubes and pipes end at the nozzles of the generated models of their devices (the
 suction and the pressure nozzle of a pump, the nozzles of a vessel, both ends of a valve
 or a fitting, the outlets of a manifold): the route comes to a point twice as far out of

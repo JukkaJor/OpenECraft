@@ -1,5 +1,5 @@
-//! Enclosure systems (compact, floor-standing baying, terminal box, plastic, 19-inch
-//! rack) and the
+//! Enclosure systems (compact, floor-standing baying, terminal box, plastic, house
+//! connection box, 19-inch rack) and the
 //! components an enclosure is assembled from: body or frame, door, walls, side panels,
 //! rear wall, gland plate, plinth and baying kits, each with its part and its
 //! geometry for the 3D view and the export.
@@ -17,12 +17,13 @@ pub struct System {
     pub data: &'static SystemData,
 }
 
-pub static SYSTEMS: [System; 5] = [
+pub static SYSTEMS: [System; 6] = [
     System { data: &mechanics::SYSTEMS[0] },
     System { data: &mechanics::SYSTEMS[1] },
     System { data: &mechanics::SYSTEMS[2] },
     System { data: &mechanics::SYSTEMS[3] },
     System { data: &mechanics::SYSTEMS[4] },
+    System { data: &mechanics::SYSTEMS[5] },
 ];
 
 impl System {
@@ -36,6 +37,7 @@ impl System {
             "baying" => tr("Floor-standing baying system"),
             "terminal_box" => tr("Terminal box"),
             "plastic" => tr("Plastic enclosure"),
+            mechanics::HOUSE_CONNECTION_SYSTEM => tr("House connection box"),
             mechanics::RACK_SYSTEM => tr("19-inch rack"),
             other => other,
         }

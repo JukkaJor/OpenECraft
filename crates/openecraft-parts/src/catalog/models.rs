@@ -1,7 +1,7 @@
 //! Generated 3D models of devices by what they are: pumps, motors, vessels, heat pumps,
 //! compressors, valves and pipe fittings, air treatment, wall-mounted electronics,
-//! 19-inch devices and batteries, PV modules, boxes and NH fuse switch disconnectors,
-//! painted in their colours, with x to the right, y up and z towards the front; each
+//! 19-inch devices and batteries, PV modules, boxes, NH fuse switch disconnectors and
+//! fuse bases, earthing busbars and earth electrode lugs, painted in their colours, with x to the right, y up and z towards the front; each
 //! model fills the part's box. Floor-standing ones are drawn standing on the floor
 //! (x width, y depth from the front, z height) and turned upright at the end.
 
@@ -21,6 +21,11 @@ const LED: [u8; 3] = [72, 196, 92];
 const BOWL: [u8; 3] = [184, 210, 228];
 const CELL: [u8; 3] = [28, 42, 94];
 const VICTRON: [u8; 3] = [26, 94, 172];
+/// Ceramic body of an NH fuse link.
+const CERAMIC: [u8; 3] = [228, 222, 206];
+const COPPER: [u8; 3] = [196, 120, 78];
+const GREEN_YELLOW: [u8; 3] = [150, 196, 60];
+const STAINLESS: [u8; 3] = [196, 200, 204];
 /// Segments of round bodies.
 const ROUND: usize = 16;
 
@@ -67,6 +72,14 @@ enum Kind {
     Pv,
     Housing,
     FuseSwitch,
+    /// NH fuse bases side by side, each with its fuse link.
+    FuseBase(usize),
+    /// PEN terminal block: V-clamps on a bar between two insulating supports.
+    PenBlock,
+    /// Main earthing busbar on its insulating feet.
+    EarthBar,
+    /// Connection lug of a foundation earth electrode: out of the wall and upwards.
+    EarthLug,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -110,6 +123,10 @@ fn kind_of(p: &Part) -> Option<Kind> {
         "PV module" => Kind::Pv,
         "House connection box" | "Junction box" | "Generator junction box" => Kind::Housing,
         "Fuse switch disconnector" => Kind::FuseSwitch,
+        "Fuse base" => Kind::FuseBase(p.functions.iter().map(|f| f.pin_list().len() / 2).sum::<usize>().max(1)),
+        "PEN terminal block" => Kind::PenBlock,
+        "Main earthing busbar" => Kind::EarthBar,
+        "Earth electrode" => Kind::EarthLug,
         "Battery" if rack => Kind::Rack(RackKind::Battery),
         "19-inch device" if has("switch") || has("patch") => Kind::Rack(RackKind::Ports),
         "19-inch device" if has("socket") || has("power distribution") => Kind::Rack(RackKind::Sockets),
@@ -538,6 +555,88 @@ fn build(p: &Part) -> Option<(Model2d, Mesh3d, Option<Shaft>, Vec<Nozzle>)> {
                 prims.push(Prim2d::Rect { min: [x - 0.08 * w, 0.4 * h], max: [x + 0.08 * w, 0.7 * h], fill: false });
             }
             prims.push(Prim2d::Rect { min: [0.04 * w, 0.12 * h], max: [0.96 * w, 0.88 * h], fill: false });
+        }
+        Kind::FuseBase(poles) => {
+            // Insulating base, per pole the V-clamps at both ends, the contact jaws and
+            // the fuse link between them with its grip lugs and indicator; phase
+            // barriers between the poles stand out to the front.
+            m.add_painted_box([0.0, 0.0, 0.0], [w, h, 0.12 * d], BLACK);
+            let pitch = w / poles as f32;
+            for k in 0..poles {
+                let cx = pitch * (k as f32 + 0.5);
+                let half = 0.3 * pitch;
+                for (y0, y1) in [(0.0, 0.1), (0.9, 1.0)] {
+                    m.add_painted_box([cx - half, y0 * h, 0.12 * d], [cx + half, y1 * h, 0.4 * d], STEEL);
+                    m.add_cylinder([cx, (y0 + y1) / 2.0 * h, 0.4 * d], 2, 0.12 * pitch, 0.08 * d, 6, DARK);
+                }
+                for (y0, y1) in [(0.12, 0.3), (0.7, 0.88)] {
+                    m.add_painted_box([cx - 0.7 * half, y0 * h, 0.12 * d], [cx + 0.7 * half, y1 * h, 0.5 * d], COPPER);
+                }
+                m.add_painted_box([cx - 0.85 * half, 0.28 * h, 0.2 * d], [cx + 0.85 * half, 0.72 * h, 0.78 * d], CERAMIC);
+                for (y0, y1) in [(0.22, 0.32), (0.68, 0.78)] {
+                    m.add_painted_box([cx - 0.35 * half, y0 * h, 0.5 * d], [cx + 0.35 * half, y1 * h, 0.86 * d], STEEL);
+                }
+                m.add_painted_box([cx - 0.15 * half, 0.48 * h, 0.78 * d], [cx + 0.15 * half, 0.52 * h, 0.8 * d], RED);
+                prims.push(Prim2d::Rect { min: [cx - 0.85 * half, 0.28 * h], max: [cx + 0.85 * half, 0.72 * h], fill: false });
+                for y in [0.05 * h, 0.95 * h] {
+                    circle(&mut prims, [cx, y], 0.12 * pitch);
+                }
+            }
+            for k in 1..poles {
+                let x = pitch * k as f32;
+                m.add_painted_box([x - 0.01 * w, 0.04 * h, 0.12 * d], [x + 0.01 * w, 0.96 * h, d], DARK);
+                prims.push(Prim2d::Line { a: [x, 0.04 * h], b: [x, 0.96 * h] });
+            }
+            for x in [0.0, w - 0.01 * w] {
+                m.add_painted_box([x, 0.04 * h, 0.12 * d], [x + 0.01 * w, 0.96 * h, d], DARK);
+            }
+        }
+        Kind::PenBlock => {
+            // Green-yellow insulating supports at both ends, the tinned bar, three
+            // V-clamps and the smaller bridge clamp, the blue marking of the PEN.
+            for x in [0.0, 0.88 * w] {
+                m.add_painted_box([x, 0.0, 0.0], [x + 0.12 * w, h, 0.45 * d], GREEN_YELLOW);
+            }
+            m.add_painted_box([0.0, 0.3 * h, 0.45 * d], [w, 0.7 * h, 0.6 * d], STEEL);
+            for k in 0..3 {
+                let x = 0.16 * w + k as f32 * 0.2 * w;
+                m.add_painted_box([x, 0.15 * h, 0.6 * d], [x + 0.16 * w, 0.85 * h, 0.85 * d], STEEL);
+                m.add_cylinder([x + 0.08 * w, 0.5 * h, 0.85 * d], 2, 0.05 * w.min(h), 0.15 * d, 6, DARK);
+                prims.push(Prim2d::Rect { min: [x, 0.15 * h], max: [x + 0.16 * w, 0.85 * h], fill: false });
+            }
+            m.add_painted_box([0.77 * w, 0.3 * h, 0.6 * d], [0.86 * w, 0.7 * h, 0.75 * d], STEEL);
+            m.add_painted_box([0.89 * w, 0.4 * h, 0.45 * d], [0.99 * w, 0.6 * h, 0.5 * d], [44, 100, 190]);
+        }
+        Kind::EarthBar => {
+            // Insulating feet, the brass bar with its clamping screws, the clamp for
+            // the flat strip or round wire of the earth electrode at the left, the
+            // marking plate at the right.
+            for x in [0.0, 0.92 * w] {
+                m.add_painted_box([x, 0.1 * h, 0.0], [x + 0.08 * w, 0.9 * h, 0.4 * d], BLACK);
+            }
+            m.add_painted_box([0.02 * w, 0.3 * h, 0.4 * d], [0.98 * w, 0.7 * h, 0.58 * d], BRASS);
+            m.add_painted_box([0.08 * w, 0.0, 0.4 * d], [0.2 * w, h, 0.7 * d], BRASS);
+            m.add_cylinder([0.14 * w, 0.5 * h, 0.7 * d], 2, 0.12 * h, 0.3 * d, 6, STEEL);
+            for k in 0..7 {
+                let x = 0.27 * w + k as f32 * 0.085 * w;
+                m.add_cylinder([x, 0.5 * h, 0.58 * d], 2, 0.1 * h, 0.32 * d, 6, STEEL);
+                circle(&mut prims, [x, 0.5 * h], 0.1 * h);
+            }
+            m.add_painted_box([0.86 * w, 0.72 * h, 0.4 * d], [0.98 * w, 0.95 * h, 0.45 * d], GREEN_YELLOW);
+            prims.push(Prim2d::Rect { min: [0.02 * w, 0.3 * h], max: [0.98 * w, 0.7 * h], fill: false });
+            prims.push(Prim2d::Rect { min: [0.08 * w, 0.0], max: [0.2 * w, h], fill: false });
+        }
+        Kind::EarthLug => {
+            // Sealing collar on the wall at the bottom, the round wire straight out of
+            // the wall and bent upwards, its green-yellow marking tag.
+            let r = 0.08 * w.min(d);
+            let (zc, yb) = (0.65 * d, 0.5 * w);
+            m.add_cylinder([w / 2.0, yb, 0.0], 2, 0.5 * w, 0.08 * d, ROUND, DARK);
+            m.add_cylinder([w / 2.0, yb, 0.08 * d], 2, r, zc - 0.08 * d, ROUND, STAINLESS);
+            m.add_cylinder([w / 2.0, yb, zc], 1, r, h - yb, ROUND, STAINLESS);
+            m.add_painted_box([w / 2.0 - 2.0 * r, 0.6 * h, zc - r], [w / 2.0 + 2.0 * r, 0.7 * h, d], GREEN_YELLOW);
+            circle(&mut prims, [w / 2.0, h - yb], 0.5 * w);
+            prims.push(Prim2d::Line { a: [w / 2.0, 0.0], b: [w / 2.0, h - yb] });
         }
     }
     // The shaft and the nozzles: their ends and a point one millimetre further out.

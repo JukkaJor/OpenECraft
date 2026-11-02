@@ -1,6 +1,7 @@
 //! Level 11: building services. The supply cable comes into the house connection room
-//! +HR through a building entry to the house connection box (HAK), on to the main
-//! distribution +MD with its busbar system, Hager NH fuse switch disconnectors of three
+//! +HR through a building entry to the house connection box +HAK (an enclosure with a
+//! hinged cover: the NH fuse base of the utility and the PEN terminal block inside),
+//! on to the main distribution +MD with its busbar system, Hager NH fuse switch disconnectors of three
 //! sizes and energy meters; the water main comes in through a second building entry
 //! and passes the remote controlled valve. Cables and the water pipe lead through wall
 //! penetrations into the technical room +TR: control cabinets with the PLC and the
@@ -8,7 +9,10 @@
 //! box of the PV system, Victron MultiPlus-II inverter / chargers and Inverter RS on
 //! the wall, a Cerbo GX and Pylontech batteries in a 19-inch rack. The residual
 //! current device of the backup outputs carries a Hager CZ001 signal contact (an
-//! accessory beside it on the rail) that lights a lamp when it trips.
+//! accessory beside it on the rail) that lights a lamp when it trips. The main
+//! earthing busbar beside the house connection box joins the PE of the main
+//! distribution (main bonding conductor) and the foundation earth electrode, whose
+//! connection lug comes out of the wall below it.
 //!
 //! The manufacturer parts come from the catalogs a new parts server starts with
 //! ([`crate::parts::bundled`]).
@@ -53,6 +57,7 @@ pub(super) fn project() -> Project {
         (Aspect::Function, "ESS", "Battery storage and inverters"),
         (Aspect::Location, "KVS", "Cable distribution cabinet of the utility (street)"),
         (Aspect::Location, "HR", "House connection room"),
+        (Aspect::Location, "HAK", "House connection box"),
         (Aspect::Location, "TR", "Technical room"),
         (Aspect::Location, "MD", "Main distribution"),
         (Aspect::Location, "CC1", "Control cabinet, automation"),
@@ -83,6 +88,7 @@ pub(super) fn project() -> Project {
     sec_page(&mut prj, general, "2", "Table of contents", PageKind::Report(ReportKind::TableOfContents.into()), "", "");
     power::single_line(&mut prj, general);
     power::house_connection(&mut prj, house);
+    power::earthing(&mut prj, house);
     power::feeder_q3(&mut prj, main);
     power::control_supply(&mut prj, control);
     power::plc(&mut prj, control);
@@ -147,8 +153,10 @@ fn server_parts() -> PartsDb {
 /// Device tags and their parts.
 const DEVICES: &[(&str, &[&str])] = &[
     ("=GRID+KVS-X1", &["GEN.TB-240"]),
-    ("=GRID+HR-F1", &["GEN.HAK-NH2-315A"]),
-    ("=GRID+HR-X0", &["GEN.TB-PEN-150"]),
+    ("=GRID+HAK-F1", &["GEN.NH2-BASE-3P-400A"]),
+    ("=GRID+HAK-X0", &["GEN.TB-PEN-240-V"]),
+    ("=GRID+HR-X1", &["GEN.MET-BAR-10"]),
+    ("=GRID+HR-E1", &["GEN.FE-LUG-V4A-10"]),
     ("=MD+MD-X0", &["GEN.BB-FEED-185"]),
     ("=MD+MD-X1", &["GEN.TB-PEN-150"]),
     ("=MD+MD-X2", &["GEN.TB-PE-35"]),
@@ -300,9 +308,9 @@ const DEVICES: &[(&str, &[&str])] = &[
 /// Parts used more than once by a device: fuse links, modules, terminals.
 const COUNTED: &[(&str, &str, u32)] = &[
     ("=GRID+KVS-X1", "GEN.TB-240", 3),
-    ("=GRID+HR-F1", "GEN.NH2-GG-250A", 3),
+    ("=GRID+HAK-F1", "GEN.NH2-GG-250A", 3),
     ("=MD+MD-X0", "GEN.BB-FEED-185", 2),
-    ("=MD+MD-X2", "GEN.TB-PE-35", 2),
+    ("=MD+MD-X2", "GEN.TB-PE-35", 3),
     ("=MD+MD-X2", "GEN.TB-N-35", 1),
     ("=MD+MD-T11", "GEN.CT-150-5A", 2),
     ("=MD+MD-Q1", "GEN.NH000-GG-63A", 3),

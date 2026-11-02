@@ -40,6 +40,7 @@ const CABLES: &[(&str, &str, f32, &str)] = &[
     ("=HEAT-W1", "GEN.CBL-5G2.5", 10.0, "Heat pump"),
     ("=HEAT-W2", "GEN.CBL-NYM-3X2.5", 8.0, "Circulating pump heat pump"),
     ("=HEAT-W3", "GEN.CBL-NYM-3X2.5", 10.0, "Circulating pump hot water"),
+    ("=GRID-W3", "GEN.CBL-H07VK-1X25-GNYE", 8.0, "Main bonding conductor"),
 ];
 
 pub(super) fn cables(prj: &mut Project, db: &PartsDb) {
@@ -145,8 +146,8 @@ fn fittings(prj: &mut Project, room: usize, face: Face, y: f32, at: &[(&str, f32
 }
 
 pub(super) fn rooms(prj: &mut Project, db: &PartsDb, section: u64) {
-    let [md, cc1, rack, acd, gak] = enclosures(prj, db);
-    house_connection_room(prj, md);
+    let [md, cc1, rack, acd, gak, hak] = enclosures(prj, db);
+    house_connection_room(prj, md, hak);
     technical_room(prj, [cc1, rack, acd, gak]);
 
     // Mounting layout pages of the enclosures and rooms.
@@ -157,9 +158,10 @@ pub(super) fn rooms(prj: &mut Project, db: &PartsDb, section: u64) {
 }
 
 /// The enclosures with their devices: main distribution, automation and pump cabinets,
-/// AC distribution, generator junction box, 19-inch rack.
-fn enclosures(prj: &mut Project, db: &PartsDb) -> [usize; 5] {
+/// AC distribution, generator junction box, 19-inch rack, house connection box.
+fn enclosures(prj: &mut Project, db: &PartsDb) -> [usize; 6] {
     for part in [
+        "GEN.HAK-410X720X185",
         "GEN.TS-1000X2000X600",
         "GEN.TS-800X2000X500",
         "GEN.CE-760X760X300",
@@ -212,6 +214,13 @@ fn enclosures(prj: &mut Project, db: &PartsDb) -> [usize; 5] {
     // The main cable comes in above its terminals, the feeders leave through glands
     // of their own above the top duct, up to the duct on the right.
     gland_over(prj, md, "GEN.GLAND-M63", "=MD+MD-X0");
+    // The main bonding conductor from the PE terminals down to the main earthing busbar:
+    // its gland above them, behind the row of the feeder glands.
+    let e = &prj.layout.enclosures[md];
+    if let Some(it) = e.items.iter().find(|i| i.tag == "=MD+MD-X2") {
+        let x = panel::face_point(e, it.face, [it.x + it.w / 2.0, it.y, 0.0])[0];
+        gland_at(prj, md, "GEN.GLAND-M20", x, 200.0);
+    }
     let duct_x = panel::PLATE_MARGIN + prj.layout.enclosures[md].plate_size().0 - panel::profile(prj, ItemKind::Duct, "GEN.DUCT-100X80").0 / 2.0;
     for k in 0..3 {
         gland_at(prj, md, "GEN.GLAND-M40", duct_x - 40.0 - 75.0 * k as f32, 87.5);
@@ -296,12 +305,29 @@ fn enclosures(prj: &mut Project, db: &PartsDb) -> [usize; 5] {
     for i in 0..6 {
         gland(prj, rack, "GEN.GLAND-M16", Face::Roof, 100.0 + 60.0 * i as f32, 520.0);
     }
-    [md, cc1, rack, acd, gak]
+    // The house connection box: the NH fuse base of the utility, fed from below: the
+    // supply cable comes straight up from its gland in the bottom, the main cable
+    // leaves straight up through the top; the PEN terminal block beside the supply
+    // cable.
+    let mut hak = panel::new_enclosure(prj, "GEN.HAK-410X720X185", "+HAK");
+    hak.elevation = Some(1100.0);
+    prj.layout.enclosures.push(hak);
+    let hak = prj.layout.enclosures.len() - 1;
+    panel::place_device(prj, hak, "=GRID+HAK-F1", p(10.0, 150.0));
+    panel::place_device(prj, hak, "=GRID+HAK-X0", p(215.0, 530.0));
+    // Both glands in line with the middle terminals of the fuse base.
+    let (x, z) = (panel::PLATE_MARGIN + 10.0 + 135.0 - 40.0, panel::PLATE_Z + 60.0 - 40.0);
+    for face in [Face::Roof, Face::Bottom] {
+        gland(prj, hak, "GEN.GLAND-M63", face, x, z);
+    }
+    [md, cc1, rack, acd, gak, hak]
 }
 
 /// House connection room +HR: 4 x 3 m, building entries for the supply cable and the
-/// water main in its left wall, the main distribution at the rear wall.
-fn house_connection_room(prj: &mut Project, md: usize) {
+/// water main in its left wall, the house connection box above the cable entry with the
+/// main earthing busbar and the lug of the foundation earth electrode beside it, the
+/// main distribution at the rear wall.
+fn house_connection_room(prj: &mut Project, md: usize, hak: usize) {
     let mut hr = panel::new_room(prj, "+HR", 4000.0, 3000.0, 2800.0);
     hr.site = Some(SitePlace { x: 0.0, z: 0.0, angle: 0.0 });
     prj.layout.enclosures.push(hr);
@@ -313,7 +339,11 @@ fn house_connection_room(prj: &mut Project, md: usize) {
     panel::add_opening(prj, hr, Opening::Penetration, Face::Wall(1), Some(1000.0), None, None).expect("cable penetration");
     panel::add_opening(prj, hr, Opening::Penetration, Face::Wall(1), Some(2400.0), Some((200.0, 200.0)), Some(1140.0)).expect("pipe penetration");
     panel::set_room(prj, md, Some(hr), Some(SitePlace { x: 1700.0, z: 100.0, angle: 0.0 })).expect("main distribution");
-    panel::mount_on_wall(prj, hr, "=GRID+HR-F1", Face::Wall(3), p(500.0, 1100.0)).expect("house connection box");
+    // The left wall runs from the front (z 3000) to the rear seen from inside: the box
+    // hangs 500 - 910 mm along it, its front facing into the room.
+    panel::set_room(prj, hak, Some(hr), Some(SitePlace { x: 0.0, z: 2500.0, angle: 90.0 })).expect("house connection box");
+    panel::mount_on_wall(prj, hr, "=GRID+HR-X1", Face::Wall(3), p(950.0, 2220.0)).expect("main earthing busbar");
+    panel::mount_on_wall(prj, hr, "=GRID+HR-E1", Face::Wall(3), p(960.0, 2320.0)).expect("foundation earth electrode");
     // The water main along a pipe run on the left wall to the motor valve beside the
     // wall penetration.
     fittings(prj, hr, Face::Wall(3), 1560.0, &[("=WAT+HR-UM1", 2300.0), ("=WAT+HR-QM1", 2000.0), ("=WAT+HR-BF1", 1600.0), ("=WAT+HR-RM1", 1250.0)]);

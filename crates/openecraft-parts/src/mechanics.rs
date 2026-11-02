@@ -90,6 +90,20 @@ pub const SYSTEMS: &[SystemData] = &[
         price: (45.0, 380.0),
     },
     SystemData {
+        id: HOUSE_CONNECTION_SYSTEM,
+        prefix: "GEN.HAK",
+        body: "House connection box, glass-fibre reinforced polyester, RAL 7035, hinged sealable cover, with mounting plate",
+        sizes: &[(255.0, 415.0, 144.0), (410.0, 720.0, 185.0)],
+        wall: 4.0,
+        flange: 15.0,
+        frame: 0.0,
+        plinth: 0.0,
+        bayable: false,
+        material: "plastic",
+        ip: "IP54",
+        price: (68.0, 290.0),
+    },
+    SystemData {
         id: RACK_SYSTEM,
         prefix: "GEN.RK",
         body: "19-inch rack, frame with perforated door and two pairs of 19-inch mounting rails",
@@ -107,6 +121,8 @@ pub const SYSTEMS: &[SystemData] = &[
 
 /// The system of the 19-inch racks.
 pub const RACK_SYSTEM: &str = "rack19";
+/// The system of the house connection boxes (the utility's fuses at the building entry).
+pub const HOUSE_CONNECTION_SYSTEM: &str = "house_connection";
 /// Height of a rack unit (1 U), mm.
 pub const RACK_UNIT: f32 = 44.45;
 /// Width of a 19-inch front panel with its mounting ears, mm.
