@@ -85,3 +85,20 @@ fn resizing_follows_the_part_number() {
     apply_system(&mut e, "", None);
     assert!(e.system().is_none());
 }
+
+#[test]
+fn a_plinth_delivered_with_the_enclosure_is_no_part_of_its_own() {
+    let mut prj = crate::model::Project::default();
+    let db = crate::parts::PartsDb { parts: crate::parts::bundled::default_parts() };
+    crate::parts::ensure_in_project(&mut prj, &db, "HAG.FR25S2");
+    let e = new_enclosure(&mut prj, "HAG.FR25S2", "+HV");
+    assert_eq!((e.part.as_str(), e.width, e.height, e.depth), ("HAG.FR25S2", 1300.0, 1850.0, 275.0));
+    assert!(e.build.plinth_included && e.build.plinth == 200.0);
+    let cs = components(&e);
+    let plinth = cs.iter().find(|c| c.role == Role::Plinth).unwrap();
+    assert!(plinth.part.is_empty() && !plinth.boxes.is_empty());
+    // A plinth set by hand stays a part of its own.
+    let mut plain = new_enclosure(&mut prj, "GEN.ENC-600X800", "+CAB1");
+    plain.build.plinth = 100.0;
+    assert_eq!(components(&plain).iter().find(|c| c.role == Role::Plinth).unwrap().part, "GEN.PL-600X250-100");
+}

@@ -200,12 +200,17 @@ Breaking capacity: 10 kA".into();
     p.mounting_data.wall_mount = true;
     p.connection_points = vec![crate::ConnectionPoint { pin: "1".into(), pos: [30.0, 0.0, 45.0], exit: crate::Exit::Up }];
     p.tech_data = "Material: stainless steel 1.4571 (V4A)\nDiameter: 10 mm".into();
-    for (number, size, amps, price) in [("GEN.NH000-GG-63A", "NH000", 63, 6.8), ("GEN.NH00-GG-50A", "NH00", 50, 6.9), ("GEN.NH00-GG-80A", "NH00", 80, 7.4), ("GEN.NH2-GG-80A", "NH2", 80, 17.5), ("GEN.NH2-GG-250A", "NH2", 250, 24.0)] {
+    for (number, size, amps, price) in [("GEN.NH000-GG-63A", "NH000", 63, 6.8), ("GEN.NH00-GG-50A", "NH00", 50, 6.9), ("GEN.NH00-GG-80A", "NH00", 80, 7.4), ("GEN.NH1-GG-125A", "NH1", 125, 11.9), ("GEN.NH2-GG-80A", "NH2", 80, 17.5), ("GEN.NH2-GG-250A", "NH2", 250, 24.0)] {
         let p = c.add(number, &format!("NH fuse link size {size}, gG, {amps} A, 500 V AC"), sd, "Fuse link", "F", price, (0.0, 0.0, 0.0, 0.2), &[]);
         p.current = format!("{amps} A");
         p.mounting.clear();
         p.tech_data = format!("Fuse size: {size}\nUtilisation category: gG\nBreaking capacity: 120 kA");
     }
+    let p = c.add("GEN.D01-GG-10A", "NEOZED fuse link D01, gG, 10 A, 400 V AC", sd, "Fuse link", "F", 1.6, (0.0, 0.0, 0.0, 0.01), &[]);
+    p.current = "10 A".into();
+    p.mounting.clear();
+    // Current-limiting: the total clearing energy stays small up to the breaking capacity.
+    p.tech_data = "Fuse size: D01\nUtilisation category: gG\nBreaking capacity: 50 kA\nLet-through energy: 0.1 kA: 450; 50 kA: 600\nPre-arcing energy: 160 A²s".into();
     let p = c.add("GEN.FUSE-10X38-3P-2A", "Fuse holder 3-pole 10 x 38 mm with fuse links 2 A gG, for voltage taps", sd, "Fuse", "F", 24.0, (54.0, 90.0, 60.0, 0.2), &[(Fuse3, main3)]);
     p.current = "2 A".into();
     p.tech_data = "Power loss: 1 W\nUtilisation category: gG".into();
@@ -275,6 +280,9 @@ Breaking capacity: 100 kA".into();
     let p = c.add("GEN.LMP-DIN-RD-230", "Modular indicator lamp red, LED 230 V AC, 1 module", "Signal devices", "Indicator lamp", "P", 14.5, (18.0, 90.0, 70.0, 0.06), &[(Signal, "X1 X2")]);
     p.voltage = "230 V AC".into();
     p.tech_data = "Power loss: 0.3 W".into();
+    let p = c.add("GEN.LMP-DIN-GN-230", "Modular indicator lamp green, LED 230 V AC, 1 module", "Signal devices", "Indicator lamp", "P", 14.5, (18.0, 90.0, 70.0, 0.06), &[(Signal, "X1 X2")]);
+    p.voltage = "230 V AC".into();
+    p.tech_data = "Power loss: 0.3 W".into();
     let p = c.add("GEN.LMP-RD-24", "Indicator lamp red, LED 24 V", "Signal devices", "Indicator lamp", "P", 9.1, (30.0, 30.0, 45.0, 0.02), &[(Signal, "X1 X2")]);
     p.voltage = "24 V AC/DC".into();
     p.tech_data = "Current consumption: 20 mA".into();
@@ -312,6 +320,47 @@ Breaking capacity: 100 kA".into();
 
     let p = c.add("GEN.CT-150-5A", "Current transformer 150/5 A, class 1, 2.5 VA, for cables up to Ø 28 mm", "Measuring instruments", "Current transformer", "T", 34.0, (70.0, 80.0, 65.0, 0.4), &[(CurrentTransformer, "P1 P2 S1 S2")]);
     p.current = "150 / 5 A".into();
+    // The transformers and the meter of a transformer-rated metering come from the
+    // distribution system operator; the panel builder prepares their places.
+    let p = c.add(
+        "GEN.CT-SET-250-5A",
+        "Current transformer set 3 x 250/5 A, class 0.5S, 5 VA, for busbars up to 30 x 10 mm (provided by the distribution system operator)",
+        "Measuring instruments",
+        "Current transformer",
+        "T",
+        165.0,
+        (210.0, 100.0, 80.0, 2.4),
+        &[(CurrentTransformer, "1P1 1P2 1S1 1S2"), (CurrentTransformer, "2P1 2P2 2S1 2S2"), (CurrentTransformer, "3P1 3P2 3S1 3S2")],
+    );
+    p.current = "250 / 5 A".into();
+    p.mounting = "Busbar".into();
+    p.tech_data = "Accuracy class: 0.5S\nRated burden: 5 VA\nPower loss: 3 W".into();
+    let p = c.add(
+        "GEN.METER-3PT-CT",
+        "Energy meter 3-phase, transformer-operated x/5 A, two directions, for 3-point mounting (provided by the distribution system operator)",
+        "Measuring instruments",
+        "Energy meter",
+        "P",
+        0.0,
+        (0.0, 0.0, 0.0, 1.2),
+        &[(Meter, "1S1 1S2 2S1 2S2 3S1 3S2 V1 V2 V3 N")],
+    );
+    p.voltage = "3 x 230/400 V AC".into();
+    p.current = "5 A (transformer)".into();
+    p.mounting.clear();
+    p.tech_data = "Accuracy class: B (MID)\nMounting: 3-point mounting (DIN VDE 0603)".into();
+    // Consumers at the feeders of a distribution, connected by the installer on site.
+    let p = c.add("GEN.INV-PV-40KW", "PV inverter 3-phase 40 kW, 4 MPP trackers, 400 V AC, wall-mounted", "Power supplies, transformers", "Inverter", "TB", 4200.0, (0.0, 0.0, 0.0, 61.0), &[(PowerSupply, "L1 L2 L3 N PE")]);
+    p.voltage = "3 x 230/400 V AC".into();
+    p.current = "58 A".into();
+    p.power = "40 kW".into();
+    p.mounting = "Wall".into();
+    let p = c.add("GEN.SUBDIST-48M", "Sub-distribution board 4 rows x 12 modules, wall-mounted, main terminals 5 x 35 mm²", "Installation devices", "Distribution board", "E", 240.0, (0.0, 0.0, 0.0, 9.0), &[(Generic, "L1 L2 L3 N"), (Generic, "PE")]);
+    p.voltage = "3 x 230/400 V AC".into();
+    p.current = "63 A".into();
+    p.mounting = "Wall".into();
+    let p = c.add("GEN.FIRE-SW-1NC1NO", "Fire brigade switch in a red surface-mounted box, key-operated, 1 NC + 1 NO, IP65", sw, "Key switch", "S", 145.0, (0.0, 0.0, 0.0, 0.6), &[(SwitchNc, "11 12"), (SwitchNo, "23 24")]);
+    p.mounting = "Wall".into();
     let p = c.add("GEN.PV-430W", "PV module 430 Wp, monocrystalline, glass-glass, 1722 x 1134 mm", "Power supplies, transformers", "PV module", "G", 118.0, (1134.0, 1722.0, 30.0, 21.5), &[(PvGenerator, "+ -")]);
     p.current = "13.9 A (Isc)".into();
     p.power = "430 Wp".into();
@@ -607,6 +656,8 @@ Breaking capacity: 100 kA".into();
         ("GEN.CBL-SENS-3X0.34", "Sensor cable M12 3 x 0.34, PUR", "Control cable", 1.6, 0.04, "BN BU BK", "0.34 mm²"),
         ("GEN.CBL-NAYY-4X150", "Power cable NAYY-J 4 x 150 SE 0.6/1 kV, aluminium, for laying in the ground", "Power cable", 14.5, 2.2, "BN BK GY GNYE", "150 mm²"),
         ("GEN.CBL-NYY-4X150", "Power cable NYY-J 4 x 150 SM 0.6/1 kV", "Power cable", 52.0, 6.3, "BN BK GY GNYE", "150 mm²"),
+        ("GEN.CBL-NYY-4X120", "Power cable NYY-J 4 x 120 SM 0.6/1 kV", "Power cable", 42.0, 5.1, "BN BK GY GNYE", "120 mm²"),
+        ("GEN.CBL-NYY-12X2.5", "Control cable NYY-J 12 x 2.5 RE 0.6/1 kV, numbered cores", "Control cable", 6.8, 0.6, "1 2 3 4 5 6 7 8 9 10 11 GNYE", "2.5 mm²"),
         ("GEN.CBL-NYY-5X35", "Power cable NYY-J 5 x 35 RM 0.6/1 kV", "Power cable", 19.5, 2.2, "BN BK GY BU GNYE", "35 mm²"),
         ("GEN.CBL-NYY-5X25", "Power cable NYY-J 5 x 25 RM 0.6/1 kV", "Power cable", 14.2, 1.6, "BN BK GY BU GNYE", "25 mm²"),
         ("GEN.CBL-NYY-5X16", "Power cable NYY-J 5 x 16 RM 0.6/1 kV", "Power cable", 9.6, 1.1, "BN BK GY BU GNYE", "16 mm²"),

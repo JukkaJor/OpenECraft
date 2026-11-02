@@ -211,7 +211,8 @@ pub fn components(e: &Enclosure) -> Vec<Component> {
             ([0.0, h, s], [s, h + p, d - s]),
             ([w - s, h, s], [w, h + p, d - s]),
         ];
-        v.push(one(Role::Plinth, mechanics::plinth_number(w, d, p), boxes));
+        let part = if e.build.plinth_included { String::new() } else { mechanics::plinth_number(w, d, p) };
+        v.push(one(Role::Plinth, part, boxes));
     }
     let bayed = e.build.left_open as u32 + e.build.right_open as u32;
     if bayed > 0 {

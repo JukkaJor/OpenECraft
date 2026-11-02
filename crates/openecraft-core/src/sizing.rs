@@ -286,7 +286,12 @@ pub fn cable_drops(prj: &Project, conns: &[Connection]) -> Vec<CableDrop> {
                     continue;
                 }
                 tags.push(&s.tag);
-                for part in device_parts(prj, &s.tag) {
+                // The parts providing the function at the cable (the motor operator on a
+                // circuit breaker, not the breaker), all parts if none does.
+                let parts = device_parts(prj, &s.tag);
+                let kind = kind_of_symbol(&s.sym);
+                let providing: Vec<&Part> = parts.iter().copied().filter(|p| kind.is_some_and(|k| p.functions.iter().any(|f| f.kind == k))).collect();
+                for part in if providing.is_empty() { parts } else { providing } {
                     if let Some(i) = parse_current(&part.current) {
                         if load.as_ref().is_none_or(|l| i > l.1) {
                             load = Some((s.tag.clone(), i, parse_voltage(&part.voltage)));

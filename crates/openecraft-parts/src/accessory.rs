@@ -27,10 +27,26 @@ pub enum AccessoryMount {
     /// Not mounted on the main part (keys, markers, covers in the box).
     #[serde(alias = "loose")]
     Loose,
+    /// Under the main part, which sits on it: mounting bases and modules (the
+    /// component modules of a distribution system), busbar adapters, relay sockets.
+    #[serde(alias = "behind")]
+    Behind,
+    /// Built into the main part, in one of its accessory slots: releases and
+    /// auxiliary switches of circuit breakers; its terminals are on the main part.
+    #[serde(alias = "inside")]
+    Inside,
 }
 
 impl AccessoryMount {
-    pub const ALL: [AccessoryMount; 5] = [AccessoryMount::Auto, AccessoryMount::Front, AccessoryMount::Left, AccessoryMount::Right, AccessoryMount::Loose];
+    pub const ALL: [AccessoryMount; 7] = [
+        AccessoryMount::Auto,
+        AccessoryMount::Front,
+        AccessoryMount::Left,
+        AccessoryMount::Right,
+        AccessoryMount::Loose,
+        AccessoryMount::Behind,
+        AccessoryMount::Inside,
+    ];
 
     pub fn title(self) -> &'static str {
         match self {
@@ -39,6 +55,8 @@ impl AccessoryMount {
             AccessoryMount::Left => "On the left side",
             AccessoryMount::Right => "On the right side",
             AccessoryMount::Loose => "Not mounted",
+            AccessoryMount::Behind => "Under the part (base)",
+            AccessoryMount::Inside => "Built into the part",
         }
     }
 
@@ -49,6 +67,8 @@ impl AccessoryMount {
             AccessoryMount::Left => "left",
             AccessoryMount::Right => "right",
             AccessoryMount::Loose => "loose",
+            AccessoryMount::Behind => "behind",
+            AccessoryMount::Inside => "inside",
         }
     }
 

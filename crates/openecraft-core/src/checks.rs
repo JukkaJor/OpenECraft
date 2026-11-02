@@ -197,8 +197,9 @@ pub fn check(prj: &Project, idx: &Index, nl: &Netlist) -> Vec<Issue> {
         if dev.mains.is_empty() && !dev.auxs.is_empty() {
             v.push(crate::issue!(Severity::Error, t(&dev.auxs[0]), "{}: auxiliary function(s) without main function", tag));
         }
-        if dev.mains.len() > 1 && !poles_of_one_device(prj, tag, &dev.mains) {
-            v.push(crate::issue!(Severity::Error, t(&dev.mains[1]), "{}: main function placed {} times", tag, dev.mains.len()));
+        let mains = mains_of_main_parts(prj, tag, &dev.mains);
+        if mains.len() > 1 && !poles_of_one_device(prj, tag, &mains) {
+            v.push(crate::issue!(Severity::Error, t(&mains[1]), "{}: main function placed {} times", tag, mains.len()));
         }
         if !dev.others.is_empty() {
             // Duplicate terminal numbers / PLC addresses (plug pins: see `plugs::problems`)
@@ -300,6 +301,28 @@ fn check_accessories(prj: &Project, idx: &Index) -> Vec<Issue> {
 /// Several main functions of one device are its poles or channels drawn one by one
 /// (a fuse holder per pole, a surge arrester per conductor, the fuses of a fuse
 /// block): all of one kind, which its parts provide as often as they are placed.
+/// The main functions of a device without those its accessories provide: the
+/// undervoltage release and the motor operator of a circuit breaker are coils drawn
+/// on their own, not a second circuit breaker.
+fn mains_of_main_parts(prj: &Project, tag: &str, mains: &[crate::index::Loc]) -> Vec<crate::index::Loc> {
+    let mut spare: HashMap<crate::parts::FnKind, usize> = HashMap::new();
+    for f in crate::sizing::device_parts(prj, tag).into_iter().filter(|p| p.accessory).flat_map(|p| &p.functions) {
+        *spare.entry(f.kind).or_default() += 1;
+    }
+    let kind = |l: &crate::index::Loc| prj.pages[l.page].symbols.iter().find(|s| s.id == l.sym_id).and_then(|s| crate::parts::kind_of_symbol(&s.sym));
+    mains
+        .iter()
+        .filter(|l| match kind(l).and_then(|k| spare.get_mut(&k)).filter(|n| **n > 0) {
+            Some(n) => {
+                *n -= 1;
+                false
+            }
+            None => true,
+        })
+        .cloned()
+        .collect()
+}
+
 fn poles_of_one_device(prj: &Project, tag: &str, mains: &[crate::index::Loc]) -> bool {
     let kind = |l: &crate::index::Loc| prj.pages[l.page].symbols.iter().find(|s| s.id == l.sym_id).and_then(|s| crate::parts::kind_of_symbol(&s.sym));
     let Some(first) = mains.first().and_then(kind) else { return false };

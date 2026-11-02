@@ -10,6 +10,7 @@ mod building;
 mod cabinets;
 mod connectors;
 mod lamp;
+mod metering;
 mod plant;
 mod press;
 mod pump_room;
@@ -31,7 +32,7 @@ pub struct Example {
 }
 
 /// The example projects, simple ones first.
-pub const EXAMPLES: [Example; 12] = [
+pub const EXAMPLES: [Example; 13] = [
     Example {
         key: "lamp_circuit",
         level: 1,
@@ -115,6 +116,13 @@ pub const EXAMPLES: [Example; 12] = [
         title: tr_const!("12 · Connectors, pin-outs and ribbon cables"),
         description: tr_const!("Plug connectors with their parts: a sensor on M12 and a valve on M8, a fan and its thermostat on GX16 and GX12 aviation connectors, a buzzer on a D-sub 9 and an operator panel on a ribbon cable between two IDC sockets; the plugs window shows the pin-out of each plug on its mating faces with the wire and core colours."),
         build: connectors::project,
+    },
+    Example {
+        key: "pv_transformer_metering",
+        level: 13,
+        title: tr_const!("13 · Transformer-rated metering with PV and grid protection"),
+        description: tr_const!("The distribution cabinet of an apartment building with an 88 kWp PV system, built from Hager univers parts: busbars with surge arrester and connection point zone, consumption and generation metering with NH1 fuse switch disconnectors on component modules, current transformers, voltage paths and meter cabinets with test terminal blocks, heat pump and inverter feeders, grid and system protection with voltage and frequency relay, buffered 24 V supply, fire brigade switch and a coupling switch with motor operator, undervoltage release and auxiliary switch built in; the cabinet comes with its plinth and lifting eyes."),
+        build: metering::project,
     },
 ];
 

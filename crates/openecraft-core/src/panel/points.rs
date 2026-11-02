@@ -80,10 +80,23 @@ pub fn device_points(prj: &Project, it: &PanelItem) -> Vec<PlacedPoint> {
         return Vec::new();
     }
     if let Some(a) = super::assembly(prj, &it.tag) {
-        let rotated = super::item_rotated(it, a.main.size[1]);
+        let rotated = super::item_rotated(it, a.h);
         let mut out = Vec::new();
         for piece in a.pieces() {
             piece_points(&mut out, piece.part, piece.size, &a.piece_item(it, piece), rotated);
+        }
+        // Accessories built into the main part: their terminals on its box (generated
+        // ones laid out over it as if the accessory were as large).
+        let main = a.piece_item(it, &a.main);
+        for part in &a.inside {
+            match part.size() {
+                Some(size) if !part.connection_points.is_empty() => piece_points(&mut out, part, size, &main, rotated),
+                _ => {
+                    let [w, h, d] = a.main.size;
+                    let sized = Part { width: w, height: h, depth: d, ..(*part).clone() };
+                    piece_points(&mut out, &sized, a.main.size, &main, rotated);
+                }
+            }
         }
         // A device standing on the floor without connection points of its own (a
         // motor) is connected on top, where its terminal box is.

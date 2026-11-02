@@ -43,7 +43,7 @@ step.
 
 ## Example projects
 
-The start page and *File › New* list twelve example projects; each builds on the one
+The start page and *File › New* list thirteen example projects; each builds on the one
 before and shows more of the features (command line: `list_examples`,
 `new_project --example <name>`). All of them pass the project check without errors or
 warnings.
@@ -62,6 +62,7 @@ warnings.
 | 10 | `pump_room` | The room of the line-up with its pumps: motors, pump and vessel standing on the floor (parts marked for floor mounting), ball valves and a gauge on the wall, a P&ID with DN25 water pipes routed in 3D along a pipe run, motor cables from the cabinets through glands in their roofs |
 | 11 | `building_services` | A building in two rooms joined by wall penetrations: supply cable and water main through building entries to the house connection box (an enclosure with a hinged cover: NH fuse base and PEN terminal block inside) and the remote controlled valve; main earthing busbar with main bonding conductor and the lug of the foundation earth electrode; main distribution with busbars, Hager NH fuse switch disconnectors NH000 / NH00 / NH2 and energy meters (direct and with current transformers); PLC and pump cabinets with EtherCAT I/O, tanks, booster pumps and pressure vessel; compressor with air receiver, refrigeration and membrane dryers, filter regulators and oilers at four outlets; heat pump with buffer tank, hot water distribution and circulation; temperature, pressure and level transmitters; PV strings with generator junction box, Victron Inverter RS and three MultiPlus-II on the wall, Cerbo GX, Pylontech US5000 in a 19-inch rack; sections in two levels, single-line diagram, sized wires, manufacturer parts of the parts server's catalogs |
 | 12 | `connector_handling` | Plug connectors with their parts: a proximity switch on M12 and a valve on M8 with the core colours of their field cables, a fan and its thermostat on GX16 / GX12 aviation connectors, a buzzer on a D-sub 9, an operator panel on a 10-core ribbon cable between two IDC sockets on box headers (core n on pin n); the plugs window shows each pin-out on the mating faces, plug diagram, cable reports |
+| 13 | `pv_transformer_metering` | The distribution cabinet of an apartment building with an 88 kWp PV system, after a Hager univers cabinet: supply on the busbars, surge arrester type 1 + 2 + 3, connection point zone; consumption and generation metering with NH1 fuse switch disconnectors and current transformers on univers N component modules (parts under their part), voltage paths, load break switch, meter cabinets with test terminal blocks; heat pump, sub-distribution and inverter feeders; grid and system protection: voltage and frequency relay EU400, buffered 24 V supply, response delay, fire brigade switch, coupling switch h3+ with motor operator, undervoltage release and auxiliary switch built in; the cabinet with its plinth and lifting eyes |
 
 The projects are built in code (`crates/openecraft-core/src/sample/`), so they always
 match the current file format; *Save as…* writes one as an `.oec` file.

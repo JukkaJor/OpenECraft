@@ -188,7 +188,10 @@ with a command line, an MCP server, a parts server and a project server.
   heating water; symbols for energy meters, PV generators, hybrid inverters, inverter /
   chargers, valve actuators and motor-operated valves. A device drawn pole by pole (fuse
   holders, surge arresters, fuse blocks) may have as many main functions as its parts
-  provide.
+  provide. Symbols for the motor operator of a circuit breaker and the voltage and
+  frequency relay of a grid and system protection (VDE-AR-N 4105). The voltage drop of
+  a cable takes the rated current of the part providing the function it feeds (the
+  motor operator, not the breaker it sits on).
 - **Revisions and review:** released pages, approval workflow, baselines with compare
   and merge, comments and redlining.
 - **Parts:** a parts database with mounting data and 3D models (STEP, IGES, Parasolid,
@@ -208,7 +211,19 @@ with a command line, an MCP server, a parts server and a project server.
   accessory without such a part, and the panel layout and the 3D view mount them
   beside or in front of their part with their own terminals. CSV, BMEcat and EPLAN XML
   carry them; the building services example signals a tripped residual current
-  device through its CZ001.
+  device through its CZ001. An accessory can also be a base the part stands on (the
+  univers N component module under an NH fuse switch disconnector: the device gets
+  its footprint and depth) or be built into the part (the undervoltage release and
+  the auxiliary switch of a circuit breaker: their terminals are on the breaker, and
+  their coils count as functions of the accessory, not as a second breaker). An
+  enclosure part delivered with its plinth (`Plinth: 200`) gets it without a plinth
+  part of its own. The Hager catalog adds the parts of a transformer-rated metering
+  with PV: the univers cabinet FR25S2 with lifting eyes, component modules for the
+  connection point zone, NH1 switches and transformers, LT153, HA354, SPA811Z, L73M,
+  NBN116, MCN306, the h3+ breaker HNT161GR with motor operator, undervoltage release
+  and auxiliary switch, the NA protection relay EU400, HTG911H, EZM100 and the meter
+  cabinet FP62ZG2; example project 13 builds the distribution cabinet of an apartment
+  building with them.
 - **Data exchange:** PDF, DXF / DWG, SVG; the panel as glTF, STEP, IGES, IFC, JT and
   Parasolid; ERP / PDM / PLM connectors and Autodesk Vault.
 - **Teams and automation:** a project server with page locks, roles and Active

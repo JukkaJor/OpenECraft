@@ -187,6 +187,24 @@ cable leaves straight up through the top) and the PEN terminal block
 cable entry, with the main earthing busbar (`GEN.MET-BAR-10`) and the lug of the
 foundation earth electrode (`GEN.FE-LUG-V4A-10`, symbol *Earth electrode*) beside it.
 
+## Distribution cabinets with component modules
+
+A manufacturer's enclosure part that comes with its plinth says so in its data
+(`Plinth: 200`): a new enclosure of it stands on the plinth, which is drawn and
+exported but is no part of its own in the bill of materials (the Hager univers
+cabinet `HAG.FR25S2`, 1850 mm + 200 mm plinth, five fields, protection class II).
+Distribution systems build the cabinet from component modules: a module the device
+stands on is an accessory mounted *under the part* (`HAG.UE31E1B` under the NH1 fuse
+switch disconnector `HAG.LT153`, `HAG.UE31SS400` under the current transformers), so
+the device takes the module's footprint and depth and the part sits in front of it.
+The example `pv_transformer_metering` builds such a cabinet field by field after a
+real one: connection point zone and surge arrester, consumption metering with NH1
+isolation, transformer module, voltage paths and load break switch, the NA
+protection, the generation metering below the coupling switch and the busbars of the
+feeders; lifting eyes in the roof, the cables of the consumers through the roof, the
+supply from below; the two meter cabinets of the distribution system operator with
+their test terminal blocks beside it.
+
 ## 19-inch racks
 
 The enclosure system *19-inch rack* (`rack19`, *Layout space › New enclosure*, command

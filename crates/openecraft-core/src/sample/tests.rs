@@ -431,3 +431,31 @@ fn connectors_show_their_pin_outs_and_the_ribbon_cable() {
     let svg = crate::pinout::svg(&prj, &an.netlist, &an.open, &[]);
     assert!(svg.contains("-X21") && svg.contains("zigzag 10"));
 }
+
+#[test]
+fn transformer_metering_builds_the_univers_cabinet() {
+    let (prj, an) = checked("pv_transformer_metering");
+    let hv = &prj.layout.enclosures[0];
+    assert_eq!((hv.name.as_str(), hv.part.as_str()), ("+HV", "HAG.FR25S2"));
+    assert!(hv.build.plinth_included && hv.build.plinth == 200.0, "the cabinet comes with its plinth");
+    let eyes = hv.items.iter().filter(|i| i.part == "HAG.FZ831" && i.face == crate::panel::Face::Roof).count();
+    assert_eq!(eyes, 2);
+    // The NH1 fuse switch disconnectors and the transformers stand on their modules.
+    for (tag, module) in [("=MS1+HV-F10", "HAG.UE31E1B"), ("=MS2+HV-F40", "HAG.UE31E1B"), ("=MS1+HV-T1", "HAG.UE31SS400")] {
+        let a = crate::panel::assembly(&prj, tag).unwrap_or_else(|| panic!("{tag}"));
+        assert_eq!(a.behind.iter().map(|b| b.part.number.as_str()).collect::<Vec<_>>(), [module], "{tag}");
+        assert_eq!((a.w, a.h), (250.0, 450.0), "{tag}");
+    }
+    // The coupling switch: motor operator in front, release and auxiliary switch built in.
+    let q = crate::panel::assembly(&prj, "=NA+HV-Q30").unwrap();
+    assert_eq!(q.front.iter().map(|f| f.part.number.as_str()).collect::<Vec<_>>(), ["HAG.HXT041H"]);
+    assert_eq!(q.inside.iter().map(|p| p.number.as_str()).collect::<Vec<_>>(), ["HAG.HXA011H", "HAG.HXA021H"]);
+    let idx = Index::build(&prj);
+    assert_eq!(idx.devices["=NA+HV-Q30"].mains.len(), 3, "breaker, release and motor operator");
+    let bom = an.report(&prj, ReportKind::BillOfMaterials).unwrap();
+    let qty = |part: &str| bom.rows.iter().find(|r| r[3] == part).map(|r| r[1].clone()).unwrap_or_default();
+    assert_eq!((qty("HAG.LT153").as_str(), qty("GEN.NH1-GG-125A").as_str(), qty("HAG.UE31E1B").as_str()), ("2", "6", "2"));
+    for part in ["HAG.FR25S2", "HAG.SPA811Z", "HAG.HA354", "HAG.EU400", "HAG.HTG911H", "HAG.EZM100", "HAG.L73M", "HAG.UD21APZ", "HAG.FP62ZG2"] {
+        assert!(!qty(part).is_empty(), "{part} in the bill of materials");
+    }
+}

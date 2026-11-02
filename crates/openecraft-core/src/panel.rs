@@ -542,6 +542,11 @@ pub fn new_enclosure(prj: &mut Project, part: &str, name: &str) -> Enclosure {
         if let Some(s) = system_of_part(pd) {
             apply_system(&mut e, s.id(), None);
         }
+        // An enclosure delivered with its plinth (part data `Plinth: 200`).
+        if let Some(h) = pd.tech_value("Plinth").and_then(|v| v.trim().trim_end_matches("mm").trim().parse::<f32>().ok()).filter(|h| *h > 0.0) {
+            e.build.plinth = h;
+            e.build.plinth_included = true;
+        }
     }
     e
 }
@@ -904,7 +909,7 @@ pub fn device_mesh_painted(prj: &Project, it: &PanelItem) -> Option<Vec<(Tri, Op
 pub fn device_size(prj: &Project, tag: &str) -> Option<DeviceSize> {
     let Some(data) = prj.devices.get(tag) else { return group_size(prj, tag) };
     if let Some(a) = assembly(prj, tag) {
-        return Some(DeviceSize { tag: tag.into(), part: a.main.part.number.clone(), w: a.w, h: a.main.size[1], d: a.d, from_part: true });
+        return Some(DeviceSize { tag: tag.into(), part: a.main.part.number.clone(), w: a.w, h: a.h, d: a.d, from_part: true });
     }
     let parts: Vec<_> = data
         .parts
