@@ -166,6 +166,18 @@ fn side_by_side(lines: &mut [RouteLine], through: &[(usize, usize)]) {
     }
 }
 
+/// The corner `c` between the run from `p` and a short step to the gland `g` moved so
+/// that the step runs on in the direction of the run (`c` where it is further than
+/// [`JOIN_STEP`] from `g`).
+fn in_line(p: [f32; 3], c: [f32; 3], g: [f32; 3]) -> [f32; 3] {
+    use openecraft_core::parts::vec3::{dot, scale};
+    if dist(c, g) >= JOIN_STEP || dist(p, c) < 1e-3 {
+        return c;
+    }
+    let u = norm(sub(c, p));
+    add(g, scale(u, dot(sub(c, g), u)))
+}
+
 /// A direction across `dir`.
 fn any_across(dir: [f32; 3]) -> [f32; 3] {
     let other = if dir[1].abs() < 0.9 { [0.0, 1.0, 0.0] } else { [1.0, 0.0, 0.0] };
@@ -177,7 +189,8 @@ const CORE_STEPS: usize = 10;
 /// How far at least from their connection points the cores of a cable part, mm.
 const FAN_LEAST: f32 = 30.0;
 /// Steps of a route shorter than this (mm) next to where two of its legs are joined are
-/// left out (to the cells of the routing grid beside a cable gland).
+/// put in line with the run before them (to the cells of the routing grid beside a
+/// cable gland).
 const JOIN_STEP: f32 = 30.0;
 
 fn mode_choice(ui: &mut egui::Ui, salt: impl egui::AsIdSalt, mode: &mut ReserveMode) {
@@ -364,7 +377,6 @@ impl PanelUi {
                 }
             }
         }
-        let wires_3d = prj.layout.routing.wires_3d;
         // Where lines pass a cable gland or wall penetration: line and point (the one
         // before it, the next one behind it).
         let mut through: Vec<(usize, usize)> = Vec::new();
@@ -372,7 +384,7 @@ impl PanelUi {
             // Wires routed in 3D as wires; cables and tubes in the colour of their class,
             // as thick as they are.
             let (color, stripe, width, diameter, selected, target) = match (it.kind, it.wire) {
-                (RouteKind::Wire, Some(wi)) if wires_3d => {
+                (RouteKind::Wire, Some(wi)) if openecraft_core::routing3d::wire_in_3d(&prj.layout, &an.wiring[wi]) => {
                     let selected = selected_wire == Some(wi);
                     let done = self.done_wires.contains(&an.wiring[wi].key());
                     if !self.show_wires && !selected && !done {
@@ -453,15 +465,15 @@ impl PanelUi {
                 let index = match joined {
                     Some((prev, index)) if prev + 1 == s => {
                         let line = &mut out[index];
-                        // Straight through, without the short steps to the cells of the
-                        // routing grid beside it.
-                        while line.points.len() > 2 && points.len() > 1 && dist(line.points[line.points.len() - 2], line.points[line.points.len() - 1]) < JOIN_STEP {
-                            line.points.remove(line.points.len() - 2);
-                            line.bends.remove(line.bends.len() - 2);
+                        // Straight through: the short steps from the cells of the routing
+                        // grid beside it are taken out by moving the corner before each
+                        // in line with it (the run before leans over a little).
+                        let n = line.points.len();
+                        if n > 2 && points.len() > 1 {
+                            line.points[n - 2] = in_line(line.points[n - 3], line.points[n - 2], line.points[n - 1]);
                         }
-                        while points.len() > 2 && dist(points[0], points[1]) < JOIN_STEP {
-                            points.remove(1);
-                            bends.remove(1);
+                        if points.len() > 2 {
+                            points[1] = in_line(points[2], points[1], points[0]);
                         }
                         if let Some(b) = line.bends.last_mut() {
                             *b = radius;
@@ -848,9 +860,9 @@ fn rules(ui: &mut egui::Ui, prj: &mut Project) {
             row(ui, tr("Free air factor"), &mut r.free_factor, 1.0..=20.0, "", tr("A way through free air costs this many times the way in a duct or routing path"));
             row(ui, tr("Segregation"), &mut r.segregation, 0.0..=1000.0, " mm", tr("Distance of signals and fluids from power"));
             row(ui, tr("Segregation factor"), &mut r.segregation_factor, 1.0..=50.0, "", tr("Cost of running closer than the segregation distance"));
-            row(ui, tr("Bend radius wires"), &mut r.bend_wire, 0.0..=30.0, " × d", "");
-            row(ui, tr("Bend radius cables"), &mut r.bend_cable, 0.0..=30.0, " × d", "");
-            row(ui, tr("Bend radius tubes"), &mut r.bend_tube, 0.0..=30.0, " × d", "");
+            row(ui, tr("Bend radius wires"), &mut r.bend_wire, 0.0..=30.0, " × d", tr("Of the outer diameter, as laid fixed"));
+            row(ui, tr("Bend radius cables"), &mut r.bend_cable, 0.0..=30.0, " × d", tr("Of the outer diameter, as laid fixed"));
+            row(ui, tr("Bend radius tubes"), &mut r.bend_tube, 0.0..=30.0, " × d", tr("Of the outer diameter; pipes are bent with elbows of one and a half diameters"));
             row(ui, tr("Cut length step wires"), &mut r.cut_wire, 1.0..=1000.0, " mm", "");
             row(ui, tr("Cut length step cables"), &mut r.cut_cable, 1.0..=1000.0, " mm", "");
             row(ui, tr("Cut length step tubes"), &mut r.cut_tube, 1.0..=1000.0, " mm", "");

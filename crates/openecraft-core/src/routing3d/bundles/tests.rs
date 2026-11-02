@@ -86,7 +86,7 @@ fn items_of_a_bundle_lie_side_by_side_and_do_not_cross() {
         item("B", Class::Power, 10.0, route.clone()),
         item("C", Class::Power, 10.0, vec![[0.0, 2000.0, 0.0], [500.0, 2000.0, 0.0], [500.0, 2500.0, 0.0]]),
     ];
-    let ways: Vec<Way> = items.iter().map(|it| Way { points: &it.points, radii: &it.radii, diameter: it.diameter, rest: [0.0; 3], below: f32::INFINITY, steps: 2 }).collect();
+    let ways: Vec<Way> = items.iter().map(|it| Way { points: &it.points, radii: &it.radii, diameter: it.diameter, rest: [0.0; 3], below: f32::INFINITY, steps: 2, held: false }).collect();
     let laid = spread_ways(&ways, 25.0, &[], &[], &[]);
     let (a, b) = (&laid[0].0, &laid[1].0);
     assert_eq!(laid[2].0, items[2].points, "alone it stays as it is");
@@ -112,7 +112,7 @@ fn lanes_keep_off_the_surface_the_ways_run_along() {
     // Five wires lying 5 mm in front of a plate (z 0) that may come 3 mm nearer to it:
     // two rows away from it, side by side along it.
     let line = vec![[0.0, 0.0, 5.0], [500.0, 0.0, 5.0], [500.0, 300.0, 5.0], [800.0, 300.0, 5.0]];
-    let ways: Vec<Way> = (0..5).map(|_| Way { points: &line, radii: &[], diameter: 3.0, rest: [0.0, 0.0, 1.0], below: 3.0, steps: 2 }).collect();
+    let ways: Vec<Way> = (0..5).map(|_| Way { points: &line, radii: &[], diameter: 3.0, rest: [0.0, 0.0, 1.0], below: 3.0, steps: 2, held: false }).collect();
     let laid = spread_ways(&ways, 8.0, &[], &[], &[]);
     for (points, _) in &laid {
         assert!(points.iter().all(|q| q[2] >= 2.0 - 0.01), "{points:?}");
@@ -137,7 +137,7 @@ fn lanes_keep_out_of_devices_beside_them() {
     // Three cables run together along x; a device lies right beside them on one side
     // (y below -6): centred, a lane would run through it, so they go to the other side.
     let line = vec![[0.0, -300.0, 0.0], [0.0, 0.0, 0.0], [500.0, 0.0, 0.0], [500.0, 300.0, 0.0]];
-    let ways: Vec<Way> = (0..3).map(|_| Way { points: &line, radii: &[], diameter: 10.0, rest: [0.0; 3], below: f32::INFINITY, steps: 2 }).collect();
+    let ways: Vec<Way> = (0..3).map(|_| Way { points: &line, radii: &[], diameter: 10.0, rest: [0.0; 3], below: f32::INFINITY, steps: 2, held: false }).collect();
     let device = ([100.0, -100.0, -50.0], [400.0, -6.0, 50.0]);
     let middle = |p: &[V3]| p.windows(2).find(|s| (s[1][0] - s[0][0]).abs() > 400.0).map(|s| [0, 1, 2].map(|k| (s[0][k] + s[1][k]) / 2.0)).unwrap();
     let free = spread_ways(&ways, 25.0, &[], &[], &[]);
@@ -163,8 +163,8 @@ fn ways_along_a_duct_lie_inside_it() {
     // Six wires along a duct (x 0 .. 500), inside 40 wide (y) and 30 deep (z) on a
     // plate at z 0; all on the duct's middle line.
     let line = vec![[-50.0, 20.0, -100.0], [-50.0, 20.0, 15.0], [550.0, 20.0, 15.0], [550.0, 200.0, 15.0]];
-    let ways: Vec<Way> = (0..6).map(|_| Way { points: &line, radii: &[], diameter: 8.0, rest: [0.0; 3], below: f32::INFINITY, steps: 2 }).collect();
-    let duct = Channel { inside: ([0.0, 0.0, 0.0], [500.0, 40.0, 30.0]), floor: [0.0, 0.0, 1.0], rim: 0.0 };
+    let ways: Vec<Way> = (0..6).map(|_| Way { points: &line, radii: &[], diameter: 8.0, rest: [0.0; 3], below: f32::INFINITY, steps: 2, held: false }).collect();
+    let duct = Channel { inside: ([0.0, 0.0, 0.0], [500.0, 40.0, 30.0]), floor: [0.0, 0.0, 1.0], rim: 0.0, wall: 0.0 };
     let laid = spread_ways(&ways, 8.0, &[], &[duct], &[]);
     let middles: Vec<V3> = laid.iter().map(|(p, _)| p.windows(2).find(|s| (s[1][0] - s[0][0]).abs() > 500.0).map(|s| [0, 1, 2].map(|k| (s[0][k] + s[1][k]) / 2.0)).unwrap()).collect();
     for q in &middles {
@@ -208,7 +208,7 @@ fn strands_through_each_other_are_pushed_apart() {
     // Two wires 6 mm thick lying on a plate (z 0, may not come nearer): one along x,
     // one across it, both at z 3.
     fn strand(points: &[V3], rest: V3, below: f32) -> Strand<'_> {
-        Strand { points, diameter: 6.0, rest, below, tails: [0.0; 2] }
+        Strand { points, diameter: 6.0, rest, below, tails: [0.0; 2], held: false }
     }
     let along = [[0.0, 0.0, 3.0], [400.0, 0.0, 3.0]];
     let across = [[200.0, -200.0, 3.0], [200.0, 200.0, 3.0]];
@@ -223,7 +223,7 @@ fn strands_through_each_other_are_pushed_apart() {
 
     // Two lying on each other in a channel (60 wide, 20 deep) move apart inside it.
     let same = [[0.0, 30.0, 10.0], [400.0, 30.0, 10.0]];
-    let channel = || Channel { inside: ([-10.0, 0.0, 0.0], [410.0, 60.0, 20.0]), floor: [0.0, 0.0, 1.0], rim: 0.0 };
+    let channel = || Channel { inside: ([-10.0, 0.0, 0.0], [410.0, 60.0, 20.0]), floor: [0.0, 0.0, 1.0], rim: 0.0, wall: 0.0 };
     let free = [strand(&same, [0.0; 3], f32::INFINITY), strand(&same, [0.0; 3], f32::INFINITY)];
     let apart = separate(&free, &[], &[channel()], &[]);
     assert!(gap(&apart[0], &apart[1]) >= 6.0 - 0.1, "{apart:?}");
@@ -248,7 +248,7 @@ fn wires_on_terminals_closer_than_they_are_thick_leave_them_straight() {
         })
         .collect();
     let radii = [0.0, 20.0, 20.0, 0.0];
-    let ways: Vec<Way> = lines.iter().map(|l| Way { points: l, radii: &radii, diameter: 10.0, rest: [0.0; 3], below: f32::INFINITY, steps: 4 }).collect();
+    let ways: Vec<Way> = lines.iter().map(|l| Way { points: l, radii: &radii, diameter: 10.0, rest: [0.0; 3], below: f32::INFINITY, steps: 4, held: false }).collect();
     let rounds = std::cell::Cell::new(0);
     let laid = lay_out(&ways, 8.0, &[], &[], &[], &|n, total| {
         assert_eq!(total, ROUNDS);
@@ -281,7 +281,7 @@ fn strands_are_pushed_no_further_than_a_few_times_their_thickness() {
     // Three strands 30 mm thick lying on each other in free air, with an obstacle round
     // them they started in (so nothing holds them): none goes far from where it was.
     let same = [[0.0, 0.0, 0.0], [1000.0, 0.0, 0.0]];
-    let strand = || Strand { points: &same, diameter: 30.0, rest: [0.0; 3], below: f32::INFINITY, tails: [0.0; 2] };
+    let strand = || Strand { points: &same, diameter: 30.0, rest: [0.0; 3], below: f32::INFINITY, tails: [0.0; 2], held: false };
     let apart = separate(&[strand(), strand(), strand()], &[], &[], &[]);
     let most = MOST_MOVE * 30.0 + MOST_MOVE_EXTRA + 0.01;
     for q in apart.iter().flatten() {
@@ -295,8 +295,8 @@ fn ways_cross_the_walls_of_a_duct_above_their_rim() {
     // up to 20 above its floor; a wire 10 mm thick lying in it at z 5 leaves it across
     // the wall at y 40.
     let line = vec![[100.0, 20.0, 5.0], [300.0, 20.0, 5.0], [300.0, 200.0, 5.0]];
-    let way = Way { points: &line, radii: &[0.0, 30.0, 0.0], diameter: 10.0, rest: [0.0; 3], below: f32::INFINITY, steps: 2 };
-    let duct = Channel { inside: ([0.0, 0.0, 0.0], [500.0, 40.0, 70.0]), floor: [0.0, 0.0, 1.0], rim: 20.0 };
+    let way = Way { points: &line, radii: &[0.0, 30.0, 0.0], diameter: 10.0, rest: [0.0; 3], below: f32::INFINITY, steps: 2, held: false };
+    let duct = Channel { inside: ([0.0, 0.0, 0.0], [500.0, 40.0, 70.0]), floor: [0.0, 0.0, 1.0], rim: 20.0, wall: 0.0 };
     let (points, _) = spread_ways(&[way], 8.0, &[], &[duct], &[]).remove(0);
     // Where it crosses y 40 it lies 25 above the floor at least; its ends stay.
     let crossing = points.windows(2).find(|s| s[0][1] != s[1][1] && (s[0][1] - 40.0) * (s[1][1] - 40.0) <= 0.0).expect("crosses the wall");
@@ -306,7 +306,7 @@ fn ways_cross_the_walls_of_a_duct_above_their_rim() {
     assert_eq!((points[0], *points.last().unwrap()), (line[0], line[2]));
     // Without a rim it stays as it is.
     let open = Channel { rim: 0.0, ..duct };
-    let way = Way { points: &line, radii: &[0.0, 30.0, 0.0], diameter: 10.0, rest: [0.0; 3], below: f32::INFINITY, steps: 2 };
+    let way = Way { points: &line, radii: &[0.0, 30.0, 0.0], diameter: 10.0, rest: [0.0; 3], below: f32::INFINITY, steps: 2, held: false };
     assert_eq!(spread_ways(&[way], 8.0, &[], &[open], &[]).remove(0).0, line);
 }
 
@@ -315,10 +315,10 @@ fn strands_over_the_rim_of_a_duct_stay_over_it() {
     // Two wires 10 mm thick lying on each other in a duct (floor z 0, walls closed up to
     // 20), both up over the rim and out across the wall at y 40: pushed apart, the parts
     // inside the duct before the wall stay 25 above the floor at least.
-    let duct = Channel { inside: ([0.0, 0.0, 0.0], [500.0, 40.0, 70.0]), floor: [0.0, 0.0, 1.0], rim: 20.0 };
+    let duct = Channel { inside: ([0.0, 0.0, 0.0], [500.0, 40.0, 70.0]), floor: [0.0, 0.0, 1.0], rim: 20.0, wall: 0.0 };
     let line = vec![[100.0, 20.0, 5.0], [300.0, 20.0, 5.0], [300.0, 20.0, 25.0], [300.0, 46.0, 25.0], [300.0, 200.0, 25.0]];
     fn strand(points: &[V3]) -> Strand<'_> {
-        Strand { points, diameter: 10.0, rest: [0.0; 3], below: f32::INFINITY, tails: [0.0; 2] }
+        Strand { points, diameter: 10.0, rest: [0.0; 3], below: f32::INFINITY, tails: [0.0; 2], held: false }
     }
     let apart = separate(&[strand(&line), strand(&line)], &[], &[duct], &[]);
     for s in &apart {
@@ -328,11 +328,33 @@ fn strands_over_the_rim_of_a_duct_stay_over_it() {
     }
     // A way through a duct from wall to wall (across y) low in it rises over both rims.
     let through = vec![[200.0, -100.0, 5.0], [200.0, 150.0, 5.0]];
-    let way = Way { points: &through, radii: &[0.0, 0.0], diameter: 10.0, rest: [0.0; 3], below: f32::INFINITY, steps: 2 };
+    let way = Way { points: &through, radii: &[0.0, 0.0], diameter: 10.0, rest: [0.0; 3], below: f32::INFINITY, steps: 2, held: false };
     let (points, _) = spread_ways(&[way], 8.0, &[], &[duct], &[]).remove(0);
     for wall in [0.0, 40.0] {
         let crossing = points.windows(2).find(|s| s[0][1] != s[1][1] && (s[0][1] - wall) * (s[1][1] - wall) <= 0.0).expect("crosses the wall");
         let t = (wall - crossing[0][1]) / (crossing[1][1] - crossing[0][1]);
         assert!(crossing[0][2] + (crossing[1][2] - crossing[0][2]) * t >= 25.0 - 0.01, "{points:?}");
     }
+}
+
+#[test]
+fn strands_crossing_in_an_open_tray_pass_one_over_the_other() {
+    // A tray under the ceiling (inside y 2910 .. 2990, open downwards: its floor is the
+    // ceiling, away from it is -y), two cables 8 mm thick in it at y 2925: one along x,
+    // one coming across (along z) and turning into x beside the first.
+    let tray = Channel { inside: ([0.0, 2910.0, 875.0], [5000.0, 2990.0, 975.0]), floor: [0.0, -1.0, 0.0], rim: 0.0, wall: 0.0 };
+    let along = vec![[1000.0, 2925.0, 896.0], [4000.0, 2925.0, 896.0]];
+    let across = vec![[1725.0, 2925.0, 375.0], [1725.0, 2925.0, 904.0], [3500.0, 2925.0, 904.0]];
+    fn strand(points: &[V3]) -> Strand<'_> {
+        Strand { points, diameter: 8.2, rest: [0.0; 3], below: f32::INFINITY, tails: [0.0; 2], held: false }
+    }
+    let insides = [([10.0, 10.0, 10.0], [6990.0, 2990.0, 4990.0])];
+    let apart = separate(&[strand(&along), strand(&across)], &[], &[tray], &insides);
+    let mut least = f32::INFINITY;
+    for s in apart[0].windows(2) {
+        for t in apart[1].windows(2) {
+            least = least.min(super::segment_gap_for_test(s[0], s[1], t[0], t[1]));
+        }
+    }
+    assert!(least >= 8.2 - 0.5, "{least}: {apart:?}");
 }

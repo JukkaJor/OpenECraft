@@ -647,11 +647,12 @@ fn devices_on_a_busbar_are_connected_by_its_bars() {
     snap_to_rail(&e, &mut x);
     assert_eq!((x.z, busbar_of(&e, &x)), (0.0, None));
 
-    // The main distribution of the building: the fuse switch disconnectors on the
-    // busbar are not wired to each other, the incoming terminals to the first of them.
+    // The main distribution of the building: the incoming terminals and the fuse
+    // switch disconnectors on the busbar are not wired to each other (the bars connect
+    // them), the meters are wired to the disconnectors.
     let prj = crate::sample::example("building_services").unwrap();
     let (md, _) = prj.layout.find_device("=MD+MD-Q1").unwrap();
-    let on_bars: Vec<&str> = ["=MD+MD-Q1", "=MD+MD-Q2", "=MD+MD-Q3"].into();
+    let on_bars: Vec<&str> = ["=MD+MD-X0", "=MD+MD-Q1", "=MD+MD-Q2", "=MD+MD-Q3"].into();
     for tag in &on_bars {
         let (_, it) = prj.layout.find_device(tag).unwrap();
         assert!(busbar_of(&prj.layout.enclosures[md], it).is_some(), "{tag}");
@@ -661,8 +662,8 @@ fn devices_on_a_busbar_are_connected_by_its_bars() {
     let (wiring, _) = virtual_wiring(&prj, &conns);
     let device = |end: &str| end.rsplit_once(':').map_or(end, |(d, _)| d).to_string();
     assert!(!wiring.iter().any(|w| on_bars.contains(&device(&w.from).as_str()) && on_bars.contains(&device(&w.to).as_str())));
-    let feeds = wiring.iter().filter(|w| [device(&w.from), device(&w.to)] == ["=MD+MD-X0", "=MD+MD-Q1"] || [device(&w.from), device(&w.to)] == ["=MD+MD-Q1", "=MD+MD-X0"]).count();
-    assert_eq!(feeds, 3);
+    let meters = wiring.iter().filter(|w| [device(&w.from), device(&w.to)] == ["=MD+MD-Q1", "=MD+MD-P1"] || [device(&w.from), device(&w.to)] == ["=MD+MD-P1", "=MD+MD-Q1"]).count();
+    assert_eq!(meters, 3);
 }
 
 #[test]

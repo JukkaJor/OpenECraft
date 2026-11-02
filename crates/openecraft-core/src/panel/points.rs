@@ -2,7 +2,7 @@
 //! device's parts (their own or generated ones) placed into the device box the same
 //! way as its 3D model, and matched to the connection points of the schematic.
 
-use super::{ItemKind, PanelItem};
+use super::{Face, ItemKind, PanelItem};
 use crate::model::{Project, SymbolInst};
 use crate::parts::vec3::{add, norm, sub, V3};
 use crate::parts::{Exit, Part};
@@ -136,6 +136,9 @@ pub fn device_points(prj: &Project, it: &PanelItem) -> Vec<PlacedPoint> {
                 } else {
                     ([it.x + start + fx * (cell / cw), it.y + fy * (it.h / ch), z], c.exit)
                 };
+                // A device standing on the floor without connection points of its own
+                // (a motor) is connected on top, where its terminal box is.
+                let (pos, exit) = if it.face == Face::Bottom && !exact { ([pos[0], it.y + it.h / 2.0, it.z + it.d], Exit::Front) } else { (pos, exit) };
                 out.push(PlacedPoint { pin: c.pin, terminal: terminal.clone(), pos, exit, exact });
             }
         }

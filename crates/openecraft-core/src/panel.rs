@@ -777,7 +777,8 @@ pub fn duct_walls(it: &PanelItem) -> (f32, f32, f32) {
 
 /// The parts of a slotted cable duct (enclosure coordinates, colour, whether it is a
 /// finger): the base, the side walls slotted into fingers above a closed rim, and the
-/// `cover` on top.
+/// `cover` on top. Where another duct of the face joins it, its wall there is cut out
+/// (the ducts open into each other).
 pub fn duct_boxes(e: &Enclosure, it: &PanelItem, cover: bool) -> Vec<((V3, V3), [u8; 3], bool)> {
     let (wall, cover_color) = DUCT_COLORS;
     let frame = face_frame(e, it.face);
@@ -792,15 +793,38 @@ pub fn duct_boxes(e: &Enclosure, it: &PanelItem, cover: bool) -> Vec<((V3, V3), 
         let q = in_frame(&frame, [it.x + x.1, it.y + y.1, it.z + z.1]);
         out.push((([0, 1, 2].map(|k| p[k].min(q[k])), [0, 1, 2].map(|k| p[k].max(q[k]))), color, finger));
     };
+    // Where other ducts join: the stretch along the duct and which of its walls (the
+    // one at across 0, the one at `width`) they open.
+    let (a0, c0) = if along_x { (it.x, it.y) } else { (it.y, it.x) };
+    let mut joins: Vec<(f32, f32, [bool; 2])> = Vec::new();
+    for o in e.items.iter().filter(|o| o.id != it.id && o.kind == ItemKind::Duct && o.face == it.face) {
+        let (lo, hi) = ([it.x.max(o.x - 1.0), it.y.max(o.y - 1.0)], [(it.x + it.w).min(o.x + o.w + 1.0), (it.y + it.h).min(o.y + o.h + 1.0)]);
+        if lo[0] >= hi[0] || lo[1] >= hi[1] {
+            continue;
+        }
+        let (along, across) = if along_x { ((lo[0], hi[0]), (lo[1], hi[1])) } else { ((lo[1], hi[1]), (lo[0], hi[0])) };
+        joins.push((along.0 - a0, along.1 - a0, [across.0 - c0 <= t + 0.5, across.1 - c0 >= width - t - 0.5]));
+    }
     add((0.0, len), (0.0, width), (0.0, t), wall, false);
     // Fingers about every 12.5 mm with the slots between them, one at each end.
     let finger = 6.0f32.min(len);
     let n = ((len - finger) / 12.5).floor().max(0.0) as usize + 1;
     let step = if n > 1 { (len - finger) / (n - 1) as f32 } else { 0.0 };
-    for c in [(0.0, t), (width - t, width)] {
-        add((0.0, len), c, (t, rim), wall, false);
+    for (side, c) in [(0.0, t), (width - t, width)].into_iter().enumerate() {
+        let cuts: Vec<(f32, f32)> = joins.iter().filter(|j| j.2[side]).map(|j| (j.0, j.1)).collect();
+        // The closed rim, in pieces between the joins.
+        let mut pieces: Vec<(f32, f32)> = vec![(0.0, len)];
+        for &(s0, s1) in &cuts {
+            pieces = pieces.into_iter().flat_map(|(a, b)| [(a, b.min(s0)), (a.max(s1), b)]).filter(|(a, b)| b - a > 0.01).collect();
+        }
+        for (a, b) in pieces {
+            add((a, b), c, (t, rim), wall, false);
+        }
         for i in 0..n {
             let a = i as f32 * step;
+            if cuts.iter().any(|&(s0, s1)| a + finger > s0 && a < s1) {
+                continue;
+            }
             add((a, a + finger), c, (rim, top), wall, true);
         }
     }
@@ -1794,7 +1818,10 @@ pub fn door_path(e: &Enclosure, at: V3, route: &Route, plate: V3) -> (Vec<V3>, u
     pts.extend(route.points.iter().map(|q| [q.x, q.y, bundle]));
     let hinge = pts.last().copied().unwrap_or(at);
     let n = pts.len();
+    // Down beside the hinge, clear of the cable duct along the plate's edge, then
+    // straight into the duct through its wall.
     pts.push([hinge[0], plate[1], e.depth - 3.0 * DOOR_BUNDLE]);
+    pts.push([hinge[0], plate[1], plate[2]]);
     pts.push(plate);
     (pts, n)
 }

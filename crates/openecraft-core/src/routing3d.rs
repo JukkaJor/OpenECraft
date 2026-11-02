@@ -180,7 +180,7 @@ impl Default for RoutingRules {
             segregation_factor: 4.0,
             wires_3d: false,
             bend_wire: 4.0,
-            bend_cable: 7.5,
+            bend_cable: 4.0,
             bend_tube: 5.0,
             cut_wire: 10.0,
             cut_cable: 100.0,
@@ -428,6 +428,14 @@ pub fn wire_key(w: &RoutedWire) -> String {
     format!("{}|{}", w.from, w.to)
 }
 
+/// The wire is routed in 3D (instead of along the cable ducts of the mounting plate):
+/// every wire with [`RoutingRules::wires_3d`], the wires of a room always (a room has
+/// no mounting plate; they run between the devices on its walls like cables), never
+/// a wire to the door.
+pub fn wire_in_3d(layout: &Layout, w: &RoutedWire) -> bool {
+    (layout.routing.wires_3d || layout.enclosures.get(w.enclosure).is_some_and(|e| e.is_room())) && w.door == (None, None)
+}
+
 /// Class of a connection from its potential (kind and voltage).
 pub fn class_of_net(prj: &Project, net: &str) -> Class {
     use crate::potentials::PotentialKind;
@@ -652,6 +660,8 @@ const ROUTING_THREADS: usize = 4;
 /// How far at least the route of a tube comes to the nozzle of its device straight out
 /// of it, mm.
 const NOZZLE_OUT: f32 = 30.0;
+/// Bend radius of a pipe in diameters: a long-radius elbow.
+const PIPE_ELBOW: f32 = 1.5;
 
 /// The two end tags of a cable: the device most of its cores start at, and the one
 /// most of them end at.
@@ -844,8 +854,19 @@ fn jobs(prj: &Project, wiring: &[RoutedWire], conns: &[Connection], open: &Netli
     let turned = turned_fittings(prj, &pos, &hoses);
     for (h, mut ends) in hoses {
         let diameter = tube_diameter(&h.size);
+        let out = (2.0 * diameter).max(NOZZLE_OUT);
         for (end, pin) in ends.iter_mut().zip([h.a, h.b]) {
-            at_nozzle(prj, &pos, end, pin, (2.0 * diameter).max(NOZZLE_OUT), &turned);
+            at_nozzle(prj, &pos, end, pin, out, &turned);
+        }
+        // Nozzles facing each other closer than that: straight from one to the other,
+        // the route from between them.
+        if let (Some(ta), Some(tb), Some(da), Some(db)) = (ends[0].nozzle, ends[1].nozzle, ends[0].leave, ends[1].leave) {
+            let gap = dist(ta, tb);
+            if crate::parts::vec3::dot(da, db) < -0.99 && gap < 2.0 * out + 1.0 {
+                let out = (gap / 2.0 - 1.0).max(0.0);
+                ends[0].point = Some(add(ta, scale(da, out)));
+                ends[1].point = Some(add(tb, scale(db, out)));
+            }
         }
         let label = if h.number.is_empty() { format!("{} – {}", h.from, h.to) } else { h.number.clone() };
         jobs.push(Job {
@@ -859,7 +880,8 @@ fn jobs(prj: &Project, wiring: &[RoutedWire], conns: &[Connection], open: &Netli
             wire: None,
             fixed: None,
             extra: 2.0 * prj.fluid.allowance,
-            bend: h.config.bend_radius,
+            // Pipes are bent with elbows, the others with the bend radius of the rules.
+            bend: if h.config.bend_radius > 0.0 { h.config.bend_radius } else if h.config.line == crate::model::fluid::LineType::Pipe { PIPE_ELBOW * diameter } else { 0.0 },
             set_length: h.length * 1000.0,
         });
     }
@@ -882,8 +904,14 @@ fn jobs(prj: &Project, wiring: &[RoutedWire], conns: &[Connection], open: &Netli
             ..Default::default()
         };
         let last = w.stretches().last().map(|s| s.1).unwrap_or(&w.route);
-        let ends = [end(&w.from, w.enclosure, w.items.0, w.route.points.first()), end(&w.to, w.last_enclosure(), w.items.1, last.points.last())];
-        let free = rules.wires_3d && w.door == (None, None) && !w.route.points.is_empty();
+        let free = wire_in_3d(&prj.layout, w) && !w.route.points.is_empty();
+        // In a room from connection point to connection point (there is no plate to
+        // come down to).
+        let in_room = prj.layout.enclosures.get(w.enclosure).is_some_and(|e| e.is_room());
+        let ends = match (free && in_room, conn) {
+            (true, Some(c)) => [c.a, c.b].map(|p| device_end(prj, &pos, &prj.pages[p.page].symbols[p.sym].tag, std::slice::from_ref(&p))),
+            _ => [end(&w.from, w.enclosure, w.items.0, w.route.points.first()), end(&w.to, w.last_enclosure(), w.items.1, last.points.last())],
+        };
         let fixed = (!free).then(|| wire_points(&pos, w));
         jobs.push(Job {
             kind: RouteKind::Wire,
@@ -900,9 +928,14 @@ fn jobs(prj: &Project, wiring: &[RoutedWire], conns: &[Connection], open: &Netli
             set_length: 0.0,
         });
     }
-    // The thickest first within a class and kind: they take the straightest ways, the
-    // thinner ones go round them more easily.
-    jobs.sort_by(|a, b| a.class.cmp(&b.class).then(a.kind.cmp(&b.kind)).then(b.diameter.total_cmp(&a.diameter)).then(a.key.cmp(&b.key)));
+    // The cables and tubes before the wires within a class, the thickest first within a
+    // kind: they take the straightest ways, the thinner ones go round them more easily.
+    let order = |k: RouteKind| match k {
+        RouteKind::Cable => 0,
+        RouteKind::Tube => 1,
+        RouteKind::Wire => 2,
+    };
+    jobs.sort_by(|a, b| a.class.cmp(&b.class).then(order(a.kind).cmp(&order(b.kind))).then(b.diameter.total_cmp(&a.diameter)).then(a.key.cmp(&b.key)));
     jobs
 }
 
@@ -1057,7 +1090,6 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, mut glands: G
         let thawed = thawed(job, legs);
         let mut ways: Vec<(usize, Vec<V3>, f32, Vec<f32>)> = Vec::new();
         let mut rerouted = false;
-        let mut squeezed = false;
         for (i, leg) in legs.iter().enumerate() {
             let space = spaces.entry(leg.lineup).or_insert_with(|| make_space(leg.lineup));
             // Classes that come later keep apart from those routed before them.
@@ -1081,10 +1113,7 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, mut glands: G
                         Some((way, ..)) if fresh && way.as_ref().is_none_or(|w| space.still_apart(&w.cells, &req)) => way,
                         entry => space.route_with(leg.a, leg.b, &req, rules, entry.as_ref().and_then(|e| e.2.as_ref())).0,
                     }
-                    .map(|w| {
-                        squeezed |= w.squeezed;
-                        (w.points, w.cells, w.free)
-                    })
+                    .map(|w| (w.points, w.cells, w.free))
                 }
             };
             let Some((points, cells, free)) = way else {
@@ -1092,8 +1121,11 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, mut glands: G
                 break;
             };
             space.occupy(&cells, job.class, area);
-            if job.kind != RouteKind::Wire {
-                space.take(&points, job.diameter / 2.0, reach);
+            // The routes after it keep apart from it (not from the way of a wire along the
+            // cable ducts of the plate: it is laid out with the others in the 3D view).
+            if job.fixed.is_none() {
+                let zone = space.end_zone(&req);
+                space.take(&points, job.diameter / 2.0, reach, &[(leg.a, zone), (leg.b, zone)]);
             }
             let radii = grid::corner_radii(&points, radius);
             ways.push((leg.lineup, points, free, radii));
@@ -1106,7 +1138,7 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, mut glands: G
         }
         if ways.is_empty() {
             item.status = Status::Unrouted(tr("no way through the enclosure").to_string());
-            problems.push(Problem { level: Level::Warning, message: tr_fmt!("{} {} cannot be routed: no way around the obstacles", job.kind.title(), job.label) });
+            problems.push(Problem { level: Level::Error, message: tr_fmt!("{} {} cannot be routed: no way that keeps half its thickness clear of everything and bends with its radius of {} mm. Move its ends or make room for it.", job.kind.title(), job.label, format!("{radius:.0}")) });
             items.push(item);
             continue;
         }
@@ -1139,14 +1171,11 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, mut glands: G
             (true, Some(wi)) => wiring[wi].length,
             _ => length + job.extra,
         };
-        // Stretches between bends need room for the bend radius (half of it on each);
+        // Stretches between bends need room for the arcs of both (the bend radius each);
         // the ways out of the nozzles count, the lane changes are left out.
-        let close_bends = ways.iter().any(|(_, points, ..)| grid::close_bends(points, radius * 0.5) > 0);
+        let close_bends = ways.iter().any(|(_, points, ..)| grid::close_bends(points, 2.0 * radius) > 0);
         if close_bends && job.kind != RouteKind::Wire {
             problems.push(Problem { level: Level::Warning, message: tr_fmt!("{} {}: bends closer than the bend radius ({} mm)", job.kind.title(), job.label, format!("{radius:.0}")) });
-        }
-        if squeezed {
-            problems.push(Problem { level: Level::Warning, message: tr_fmt!("{} {}: no room to keep half its thickness from what is around it", job.kind.title(), job.label) });
         }
         // A hose with its length set in the schematic must reach along its route.
         if job.set_length > 0.0 && job.set_length + 0.5 < item.length {

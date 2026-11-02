@@ -2767,7 +2767,6 @@ no way through the enclosure	немає шляху через корпус
 Only {}	Лише {}
 not routed: {}	не прокладено: {}
 Frozen route of {} is no longer possible and was routed again	Зафіксована траса {} більше неможлива, її прокладено заново
-{} {} cannot be routed: no way around the obstacles	{} {} неможливо прокласти: немає шляху в обхід перешкод
 {} {}: bends closer than the bend radius ({} mm)	{} {}: згини менші за радіус згину ({} мм)
 Segregation: {} run together with power conductors over {} mm	Розділення: {} проходять разом із силовими провідниками на відрізку {} мм
 {}: routing path {} is full ({} % of its usable cross-section)	{}: трасу прокладання {} заповнено ({} % її корисного перерізу)
@@ -6370,4 +6369,6 @@ Open cable ducts	Відкрити кабельні канали
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	У 3D-вигляді не показувати кришки всіх кабельних каналів: дроти в них стає видно
 {}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: кабельний канал на {} мм замалий: його {} проводів не можна прокласти поруч
 Laying out the wires, cables and tubes…	Розкладання проводів, кабелів і шлангів…
-{} {}: no room to keep half its thickness from what is around it	{} {}: немає місця, щоб тримати половину товщини від оточення
+{} {} cannot be routed: no way that keeps half its thickness clear of everything and bends with its radius of {} mm. Move its ends or make room for it.	{} {} неможливо прокласти: немає шляху, який тримає половину товщини від усього і згинається з радіусом {} мм. Перемістіть кінці або звільніть місце.
+Of the outer diameter, as laid fixed	Від зовнішнього діаметра, при стаціонарному прокладанні
+Of the outer diameter; pipes are bent with elbows of one and a half diameters	Від зовнішнього діаметра; труби згинаються відводами у півтора діаметра

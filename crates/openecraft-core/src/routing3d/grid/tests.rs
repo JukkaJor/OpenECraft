@@ -176,20 +176,24 @@ fn simplify_and_bends() {
 }
 
 #[test]
-fn stretches_between_bends_are_at_least_half_the_bend_radius() {
+fn stretches_between_bends_are_at_least_two_bend_radii() {
     let prj = project(with_block());
     let s = space(&prj);
     let rules = RoutingRules::default();
-    // Round the device and up to a point just beside its far corner: a thick cable with a
-    // large bend radius bends only where it can run on for half of it.
+    // Round the device and up to a point just beside its far corner: a cable bends only
+    // where it can run on for two bend radii (the arcs of both bends fit between).
     let (a, b) = ([60.0, 375.0, 60.0], [550.0, 375.0, 60.0]);
-    for turn in [12.5, 150.0, 300.0] {
+    for turn in [12.5, 25.0] {
         let r = Request { at: [a, b], leave: [[1.0, 0.0, 0.0], [-1.0, 0.0, 0.0]], turn, half: 5.0, ..req(&[]) };
         let w = s.route(a, b, &r, &rules).expect("a way");
         let (n, shortest) = bends(&w.points[1..w.points.len() - 1]);
         assert!(n >= 2, "{:?}", w.points);
-        assert!(shortest >= turn * 0.5 - 1e-3, "turn {turn}: stretch of {shortest} between bends: {:?}", w.points);
+        assert!(shortest >= turn * 2.0 - 1e-3, "turn {turn}: stretch of {shortest} between bends: {:?}", w.points);
     }
+    // With a bend radius the way out of the start has no room for (the device is 65 mm
+    // ahead of it), there is no route.
+    let r = Request { at: [a, b], leave: [[1.0, 0.0, 0.0], [-1.0, 0.0, 0.0]], turn: 150.0, half: 5.0, ..req(&[]) };
+    assert!(s.route(a, b, &r, &rules).is_none());
 }
 
 #[test]
@@ -199,22 +203,22 @@ fn routes_leave_their_ends_straight_on() {
     let prj = project(e);
     let s = space(&prj);
     let rules = RoutingRules::default();
-    // From the front of the device straight out (+z) for half the bend radius before the
+    // From the front of the device straight out (+z) for the bend radius before the
     // first bend, and into the end point from above (it leaves it upwards, -y).
     let (a, b) = ([250.0, 375.0, 105.0], [550.0, 600.0, 100.0]);
-    let r = Request { at: [a, b], leave: [[0.0, 0.0, 1.0], [0.0, -1.0, 0.0]], turn: 150.0, half: 5.0, ..req(&[7]) };
+    let r = Request { at: [a, b], leave: [[0.0, 0.0, 1.0], [0.0, -1.0, 0.0]], turn: 100.0, half: 5.0, ..req(&[7]) };
     let w = s.route(a, b, &r, &rules).expect("a way");
     let p = &w.points;
     // The short way to the first cell, then the straight run.
     let (jog, first) = (sub(p[1], p[0]), sub(p[2], p[1]));
     assert!(jog[2] >= 0.0 && jog.iter().all(|v| v.abs() <= 12.5), "{p:?}");
     assert_eq!((first[0], first[1]), (0.0, 0.0), "{p:?}");
-    assert!(first[2] >= 75.0 - 1e-3, "{p:?}");
+    assert!(first[2] >= 100.0 - 12.5 - 1e-3, "{p:?}");
     let n = p.len();
     let (last, jog) = (sub(p[n - 2], p[n - 3]), sub(p[n - 1], p[n - 2]));
     assert!(jog[1] >= 0.0 && jog.iter().all(|v| v.abs() <= 12.5), "{p:?}");
     assert_eq!((last[0], last[2]), (0.0, 0.0), "{p:?}");
-    assert!(last[1] >= 75.0 - 1e-3, "{p:?}");
+    assert!(last[1] >= 100.0 - 12.5 - 1e-3, "{p:?}");
     // Without directions the first stretch is the short way to the nearest cell.
     let any = s.route(a, b, &Request { leave: [[0.0; 3]; 2], ..r }, &rules).expect("a way");
     assert!(length(&any.points) <= length(&w.points) + 1e-3);
@@ -298,7 +302,6 @@ fn routes_keep_half_their_thickness_from_the_walls_and_the_plate() {
     let (a, b) = ([30.0, e.height - 30.0, 40.0], [e.width - 30.0, e.height - 30.0, 40.0]);
     for half in [4.0_f32, 15.0] {
         let w = s.route(a, b, &Request { at: [a, b], half, ..req(&[]) }, &RoutingRules::default()).expect("a way");
-        assert!(!w.squeezed);
         for q in &w.points[1..w.points.len() - 1] {
             assert!(q[1] <= e.height - e.wall() - half + 0.01 && q[1] >= e.wall() + half - 0.01, "half {half}: {q:?}");
             assert!(q[0] >= e.wall() + half - 0.01 && q[0] <= e.width - e.wall() - half + 0.01, "half {half}: {q:?}");
@@ -308,9 +311,9 @@ fn routes_keep_half_their_thickness_from_the_walls_and_the_plate() {
 }
 
 #[test]
-fn a_route_without_room_is_squeezed_through_and_says_so() {
+fn a_route_without_room_is_not_routed() {
     // Two shelves 50 mm apart across the whole width: a 44 mm cable (half 22) cannot
-    // keep 22 from both, but gets through between them, squeezed.
+    // keep 22 from both and has no route; a thinner one gets through between them.
     let mut e = single();
     for (id, y) in [(7, 300.0), (8, 350.0)] {
         e.items.push(PanelItem { id, kind: ItemKind::Device, tag: format!("-K{id}"), x: 0.0, y, w: 550.0, h: 1.0, d: 200.0, ..Default::default() });
@@ -318,10 +321,8 @@ fn a_route_without_room_is_squeezed_through_and_says_so() {
     let prj = project(e);
     let s = space(&prj);
     let (a, b) = ([60.0, 100.0, 100.0], [60.0, 700.0, 100.0]);
-    let w = s.route(a, b, &Request { at: [a, b], half: 22.0, ..req(&[]) }, &RoutingRules::default()).expect("squeezed through");
-    assert!(w.squeezed, "{:?}", w.points);
-    let thin = s.route(a, b, &Request { at: [a, b], half: 10.0, ..req(&[]) }, &RoutingRules::default()).unwrap();
-    assert!(!thin.squeezed);
+    assert!(s.route(a, b, &Request { at: [a, b], half: 22.0, ..req(&[]) }, &RoutingRules::default()).is_none());
+    s.route(a, b, &Request { at: [a, b], half: 10.0, ..req(&[]) }, &RoutingRules::default()).expect("a thin cable gets through");
 }
 
 #[test]
@@ -331,15 +332,22 @@ fn cables_keep_apart_in_free_air() {
     let rules = RoutingRules::default();
     let (a, b) = ([300.0, 60.0, 250.0], [300.0, 740.0, 250.0]);
     let first = s.route(a, b, &req(&[]), &rules).unwrap();
-    s.take(&first.points, 3.0, 30.0);
+    s.take(&first.points, 3.0, 30.0, &[]);
     // The same way again: beside the first, not inside it, but for the ends.
     let second = s.route(a, b, &req(&[]), &rules).unwrap();
     assert!(!s.still_apart(&first.cells, &req(&[])));
     assert!(s.still_apart(&second.cells, &req(&[])));
     let far = second.points.iter().filter(|q| q[1] > 150.0 && q[1] < 650.0).all(|q| first.points.iter().all(|p| (p[0] - q[0]).hypot(p[2] - q[2]) >= 6.0 - 1e-3 || (p[1] - q[1]).abs() > 1.0));
     assert!(far, "{:?} / {:?}", first.points, second.points);
-    // Wires are not kept apart.
-    assert!(s.still_apart(&first.cells, &Request { kind: RouteKind::Wire, ..req(&[]) }));
+    // Wires keep apart too (in a duct they lie side by side).
+    assert!(!s.still_apart(&first.cells, &Request { kind: RouteKind::Wire, ..req(&[]) }));
+    // Near the ends both go to, the second converges with the first.
+    let mut s = space(&prj);
+    let zone = s.end_zone(&req(&[]));
+    s.take(&first.points, 3.0, 30.0, &[(a, zone), (b, zone)]);
+    let near_a: Vec<usize> = first.cells.iter().copied().filter(|&i| crate::parts::vec3::dist(s.centre(i), a) <= zone / 2.0).collect();
+    assert!(!near_a.is_empty() && s.still_apart(&near_a, &Request { at: [a, b], ..req(&[]) }));
+    assert!(!s.still_apart(&first.cells, &Request { at: [a, b], ..req(&[]) }));
 }
 
 #[test]
@@ -369,12 +377,11 @@ fn ducts_are_entered_through_their_walls_and_kept_off_outside() {
     let (a, b) = ([325.0, 475.0, hi[2] + 60.0], [325.0, 625.0, lo[2] + 40.0]);
     let w = s.route(a, b, &Request { at: [a, b], ..cable }, &rules).expect("round the duct");
     assert!(w.cells.windows(2).all(|c| in_duct(c[0]) == in_duct(c[1]) || s.centre(c[0])[2] == s.centre(c[1])[2]), "{:?}", w.points);
-    // A cable too thick for the duct running along it keeps half its thickness off it
-    // (but near its ends).
-    let (a, b) = ([125.0, 545.0, lo[2] + 40.0], [525.0, 545.0, lo[2] + 40.0]);
+    // A cable too thick for the duct running along it keeps half its thickness off it.
+    let (a, b) = ([125.0, 545.0, hi[2] + 60.0], [525.0, 545.0, hi[2] + 60.0]);
     let thick = Request { at: [a, b], half: 40.0, ..cable };
     let w = s.route(a, b, &thick, &rules).expect("along the duct");
-    for &c in w.cells.iter().filter(|&&c| s.centre(c)[0] > 200.0 && s.centre(c)[0] < 450.0) {
+    for &c in &w.cells {
         assert!(from_box(s.centre(c), lo, hi) >= 40.0 - 0.5, "{:?}", w.points);
     }
 }

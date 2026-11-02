@@ -2768,7 +2768,6 @@ no way through the enclosure	nincs út a szekrényen át
 Only {}	Csak {}
 not routed: {}	nincs fektetve: {}
 Frozen route of {} is no longer possible and was routed again	{} rögzített nyomvonala már nem lehetséges, ezért újra lett fektetve
-{} {} cannot be routed: no way around the obstacles	{} {} nem fektethető: nincs út az akadályok körül
 {} {}: bends closer than the bend radius ({} mm)	{} {}: a hajlítások szűkebbek a hajlítási sugárnál ({} mm)
 Segregation: {} run together with power conductors over {} mm	Elkülönítés: {} {} mm hosszon erősáramú vezetőkkel együtt halad
 {}: routing path {} is full ({} % of its usable cross-section)	{}: a(z) {} fektetési út megtelt (hasznos keresztmetszetének {} %-a)
@@ -6371,4 +6370,6 @@ Open cable ducts	Kábelcsatornák megnyitása
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	A 3D nézetben elhagyja az összes kábelcsatorna fedelét: a bennük lévő vezetékek láthatók
 {}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: a kábelcsatorna {} mm-nél túl kicsi: {} vezetéke nem fektethető egymás mellé
 Laying out the wires, cables and tubes…	Vezetékek, kábelek és csövek elrendezése…
-{} {}: no room to keep half its thickness from what is around it	{} {}: nincs hely a fél vastagságnyi távolság tartására a környezettől
+{} {} cannot be routed: no way that keeps half its thickness clear of everything and bends with its radius of {} mm. Move its ends or make room for it.	{} {} nem fektethető: nincs út, amely fél vastagságnyira marad mindentől és {} mm sugárral hajlik. Helyezze át a végeket vagy csináljon helyet.
+Of the outer diameter, as laid fixed	A külső átmérő többszöröse, fix fektetésnél
+Of the outer diameter; pipes are bent with elbows of one and a half diameters	A külső átmérő többszöröse; a csöveket másfél átmérőjű ívekkel hajlítják

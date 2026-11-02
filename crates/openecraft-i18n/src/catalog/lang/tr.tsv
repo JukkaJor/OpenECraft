@@ -2768,7 +2768,6 @@ no way through the enclosure	pano içinden yol yok
 Only {}	Yalnızca {}
 not routed: {}	yönlendirilmedi: {}
 Frozen route of {} is no longer possible and was routed again	{} için dondurulmuş güzergâh artık mümkün değil ve yeniden yönlendirildi
-{} {} cannot be routed: no way around the obstacles	{} {} yönlendirilemiyor: engellerin etrafından yol yok
 {} {}: bends closer than the bend radius ({} mm)	{} {}: bükümler bükme yarıçapından ({} mm) daha dar
 Segregation: {} run together with power conductors over {} mm	Ayırma: {}, {} mm boyunca güç iletkenleriyle birlikte geçiyor
 {}: routing path {} is full ({} % of its usable cross-section)	{}: {} yönlendirme yolu dolu (kullanılabilir kesitinin %{} kadarı)
@@ -6371,4 +6370,6 @@ Open cable ducts	Kablo kanallarını aç
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	3B görünümde tüm kablo kanallarının kapaklarını gösterme: içlerindeki teller görünür
 {}: cable duct at {} mm too small: its {} wires cannot be routed side by side	{}: {} mm'deki kablo kanalı çok küçük: {} tel yan yana döşenemez
 Laying out the wires, cables and tubes…	Teller, kablolar ve tüpler yerleştiriliyor…
-{} {}: no room to keep half its thickness from what is around it	{} {}: çevresinden yarı kalınlığı kadar uzak durmak için yer yok
+{} {} cannot be routed: no way that keeps half its thickness clear of everything and bends with its radius of {} mm. Move its ends or make room for it.	{} {} yönlendirilemiyor: her şeyden yarı kalınlığı kadar uzak kalan ve {} mm yarıçapla bükülen yol yok. Uçları taşıyın veya yer açın.
+Of the outer diameter, as laid fixed	Dış çapın katı, sabit döşemede
+Of the outer diameter; pipes are bent with elbows of one and a half diameters	Dış çapın katı; borular bir buçuk çaplık dirseklerle bükülür
