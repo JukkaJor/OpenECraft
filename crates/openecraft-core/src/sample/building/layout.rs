@@ -214,8 +214,13 @@ fn enclosures(prj: &mut Project, db: &PartsDb) -> [usize; 6] {
     // The main cable comes in above its terminals, the feeders leave through glands
     // of their own above the top duct, up to the duct on the right.
     gland_over(prj, md, "GEN.GLAND-M63", "=MD+MD-X0");
-    // The main bonding conductor from the PE terminals down to the main earthing busbar.
-    gland_over(prj, md, "GEN.GLAND-M20", "=MD+MD-X2");
+    // The main bonding conductor from the PE terminals down to the main earthing busbar:
+    // its gland above them, behind the row of the feeder glands.
+    let e = &prj.layout.enclosures[md];
+    if let Some(it) = e.items.iter().find(|i| i.tag == "=MD+MD-X2") {
+        let x = panel::face_point(e, it.face, [it.x + it.w / 2.0, it.y, 0.0])[0];
+        gland_at(prj, md, "GEN.GLAND-M20", x, 200.0);
+    }
     let duct_x = panel::PLATE_MARGIN + prj.layout.enclosures[md].plate_size().0 - panel::profile(prj, ItemKind::Duct, "GEN.DUCT-100X80").0 / 2.0;
     for k in 0..3 {
         gland_at(prj, md, "GEN.GLAND-M40", duct_x - 40.0 - 75.0 * k as f32, 87.5);
