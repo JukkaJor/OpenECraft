@@ -8,7 +8,7 @@
 #
 # Needs the Xcode command line tools, both Rust targets
 # (rustup target add aarch64-apple-darwin x86_64-apple-darwin) and cargo-about for the
-# third-party licenses (cargo install cargo-about --locked).
+# third-party licenses (cargo install cargo-about@0.9.3 --locked --features cli).
 #
 # MACOS_TARGETS="aarch64-apple-darwin" builds for one architecture only.
 # MACOS_SIGN_IDENTITY="Developer ID Application: …" signs with that certificate
@@ -26,14 +26,14 @@ work="$out/macos"
 id=io.github.nilres.OpenECraft
 version="$(sed -n '/^\[workspace\.package\]/,/^\[/s/^version *= *"\([^"]*\)".*/\1/p' "$root/Cargo.toml" | head -n 1)"
 [ -n "$version" ] || { echo "error: no version in [workspace.package] of Cargo.toml" >&2; exit 1; }
-command -v cargo-about >/dev/null || { echo "error: cargo-about not found (cargo install cargo-about --locked)" >&2; exit 1; }
+command -v cargo-about >/dev/null || { echo "error: cargo-about not found (cargo install cargo-about@0.9.3 --locked --features cli)" >&2; exit 1; }
 # shellcheck disable=SC2206
 targets=(${MACOS_TARGETS:-aarch64-apple-darwin x86_64-apple-darwin})
 identity="${MACOS_SIGN_IDENTITY:--}"
 
 export MACOSX_DEPLOYMENT_TARGET=11.0
 for target in "${targets[@]}"; do
-    cargo build --release --target "$target" --manifest-path "$root/Cargo.toml" \
+    cargo build --release --locked --target "$target" --manifest-path "$root/Cargo.toml" \
         -p openecraft -p openecraft-parts-manager -p openecraft-cli -p openecraft-parts-server -p openecraft-project-server
 done
 

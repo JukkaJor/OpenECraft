@@ -5,11 +5,13 @@ Packages for Windows, Linux and macOS, the web version, and building from source
 Released versions are on the [releases page](https://github.com/nilres/OpenECraft/releases)
 with a `SHA256SUMS` file; how they are made is in [releasing](releasing.md).
 
-Building from source requires a recent stable Rust toolchain (`rustup update stable`).
-The installer scripts below also need
+Building from source requires a recent stable Rust toolchain (`rustup update stable`);
+releases are built with the version pinned in `.github/workflows/ci.yml`. The installer
+scripts below and `trunk build --release` also need
 [cargo-about](https://github.com/EmbarkStudios/cargo-about)
-(`cargo install cargo-about --locked`) for `THIRD-PARTY-LICENSES.html`, which every
-package contains next to `LICENSE-MIT` and `LICENSE-APACHE`.
+(`cargo install cargo-about@0.9.3 --locked --features cli`) for
+`THIRD-PARTY-LICENSES.html`, which every package contains next to `LICENSE-MIT` and
+`LICENSE-APACHE`.
 
 ## Desktop (Windows / Linux / macOS)
 
@@ -67,7 +69,7 @@ bash installer/linux/build.sh flatpak snap           # sandboxed packages
 | --- | --- | --- | --- |
 | Debian, Ubuntu | `openecraft_<version>_amd64.deb` | `sudo apt install ./openecraft_*.deb` | `dpkg-dev` |
 | Fedora, RHEL, openSUSE | `openecraft-<version>-1.x86_64.rpm` | `sudo dnf install ./openecraft-*.rpm` | `rpmbuild` |
-| Any distribution | `OpenECraft-<version>-x86_64.AppImage` | `chmod +x`, start it | `appimagetool` (downloaded) |
+| Any distribution | `OpenECraft-<version>-x86_64.AppImage` | `chmod +x`, start it | `appimagetool` and its runtime (downloaded, checksums verified) |
 | Any distribution | `OpenECraft-<version>-x86_64.flatpak` | `flatpak install --user OpenECraft-*.flatpak` | `flatpak-builder` |
 | Any distribution | `openecraft_<version>_amd64.snap` | `sudo snap install --dangerous openecraft_*.snap` | `snapcraft` |
 | Any distribution | `OpenECraft-<version>-linux-x86_64.tar.gz` | `./install.sh` (to `~/.local`) | `tar` |
@@ -107,10 +109,15 @@ supported yet. CI builds the image on every push (artifact `openecraft-macos-dmg
 
 ```bash
 rustup target add wasm32-unknown-unknown
-cargo install trunk --locked
+cargo install trunk@0.22.1 --locked
 cd openecraft && trunk serve            # development server on http://127.0.0.1:8080
 cd openecraft && trunk build --release  # static files in openecraft/dist/ – host them on any web server
 ```
+
+Both web builds put `LICENSE-MIT`, `LICENSE-APACHE` and `OFL-NotoSans.txt` next to the
+page, the release build also `THIRD-PARTY-LICENSES.html` (`installer/web/licenses.sh`,
+on Windows `licenses.ps1`, run by trunk after the build); keep these files when hosting
+the page.
 
 In the browser "Save" downloads the project file and "Open" uses the file picker.
 

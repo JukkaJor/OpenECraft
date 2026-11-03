@@ -9,11 +9,13 @@
 #
 #   deb       dpkg-deb, dpkg-shlibdeps (apt install dpkg-dev)
 #   rpm       rpmbuild (dnf install rpm-build, apt install rpm)
-#   appimage  appimagetool (APPIMAGETOOL=<path>, otherwise release 1.9.1 is downloaded)
+#   appimage  appimagetool (APPIMAGETOOL=<path>, otherwise release 1.9.1 is downloaded) and
+#             the AppImage runtime (release 20251108, downloaded; both checksums verified)
 #   flatpak   flatpak, flatpak-builder (the runtime is installed from Flathub)
 #   snap      snapcraft (SNAPCRAFT="sudo snapcraft" SNAPCRAFT_ARGS=--destructive-mode in CI)
 #
-# All formats need cargo-about for the third-party licenses (cargo install cargo-about --locked).
+# All formats need cargo-about for the third-party licenses
+# (cargo install cargo-about@0.9.3 --locked --features cli).
 # OPENECRAFT_BIN_DIR=<dir> packages binaries built before instead of running cargo.
 
 set -euo pipefail
@@ -37,14 +39,14 @@ die() { echo "error: $*" >&2; exit 1; }
 need() { command -v "$1" >/dev/null || die "$1 not found, needed for $2"; }
 
 [ -n "$version" ] || die "no version in [workspace.package] of Cargo.toml"
-need cargo-about "the third-party licenses (cargo install cargo-about --locked)"
+need cargo-about "the third-party licenses (cargo install cargo-about@0.9.3 --locked --features cli)"
 grep -q "<release version=\"$version\"" "$here/$id.metainfo.xml" \
     || die "add <release version=\"$version\" date=\"…\"/> to installer/linux/$id.metainfo.xml"
 
 if [ -n "${OPENECRAFT_BIN_DIR:-}" ]; then
     bin_dir="$OPENECRAFT_BIN_DIR"
 else
-    cargo build --release --manifest-path "$root/Cargo.toml" \
+    cargo build --release --locked --manifest-path "$root/Cargo.toml" \
         -p openecraft -p openecraft-parts-manager -p openecraft-cli -p openecraft-parts-server -p openecraft-project-server
     bin_dir="$root/target/release"
 fi
@@ -91,10 +93,21 @@ Source: https://github.com/nilres/OpenECraft
 Files: *
 Copyright: OpenECraft contributors
 License: MIT or Apache-2.0
+Comment: The programs contain libraries and fonts under their own licenses, listed in
+ THIRD-PARTY-LICENSES.html; the license texts are LICENSE-MIT and LICENSE-APACHE.
+
+Files: usr/bin/*
+Copyright: OpenECraft contributors and the authors listed in THIRD-PARTY-LICENSES.html
+License: (MIT or Apache-2.0) and OFL-1.1 and Ubuntu-font-1.0 and Bitstream-Vera and MPL-2.0
+Comment: Rust libraries (MIT, Apache-2.0, BSD, ISC, Zlib, BSL-1.0, Unicode-3.0,
+ CDLA-Permissive-2.0, MPL-2.0) and fonts linked into the programs: Noto Sans SC / JP /
+ KR subsets (OFL-1.1, OFL-NotoSans.txt), Ubuntu Light (Ubuntu Font Licence), Noto Emoji
+ (OFL-1.1), Hack (MIT and Bitstream Vera License). All license texts are in
+ THIRD-PARTY-LICENSES.html.
 EOF
     # dpkg-shlibdeps wants a debian/control in the current directory.
     mkdir -p "$work/shlibs/debian"
-    printf 'Source: openecraft\n\nPackage: openecraft\n' > "$work/shlibs/debian/control"
+    printf 'Source: openecraft\n\nPackage: openecraft\nArchitecture: any\n' > "$work/shlibs/debian/control"
     shlibs="$(cd "$work/shlibs" && dpkg-shlibdeps -O "$pkg"/usr/bin/* | sed -n 's/^shlibs:Depends=//p')"
     install -d "$pkg/DEBIAN"
     # The window system and OpenGL libraries are loaded at run time, dpkg-shlibdeps
@@ -132,26 +145,49 @@ build_rpm() {
     cp "$work/rpm/RPMS/$arch/openecraft-$pkgver-1.$arch.rpm" "$out/"
 }
 
+# appimagetool and the AppImage runtime it puts in front of the image, pinned with their
+# SHA-256 (RUNTIME-LICENSES.txt lists the runtime's components; update both together).
+appimagetool_version=1.9.1
+runtime_version=20251108
+declare -A appimagetool_sha256=(
+    [x86_64]=ed4ce84f0d9caff66f50bcca6ff6f35aae54ce8135408b3fa33abfc3cb384eb0
+    [aarch64]=f0837e7448a0c1e4e650a93bb3e85802546e60654ef287576f46c71c126a9158
+)
+declare -A runtime_sha256=(
+    [x86_64]=2fca8b443c92510f1483a883f60061ad09b46b978b2631c807cd873a47ec260d
+    [aarch64]=00cbdfcf917cc6c0ff6d3347d59e0ca1f7f45a6df1a428a0d6d8a78664d87444
+)
+
+# download <url> <file> <sha256>: downloads once, refuses a file with another checksum.
+download() {
+    if [ ! -f "$2" ] || ! echo "$3  $2" | sha256sum -c --status -; then
+        need curl appimage
+        curl -fL -o "$2.part" "$1"
+        echo "$3  $2.part" | sha256sum -c --status - || die "checksum of $1 does not match"
+        mv "$2.part" "$2"
+    fi
+}
+
 build_appimage() {
-    local dir="$work/OpenECraft.AppDir" tool="${APPIMAGETOOL:-}"
+    local dir="$work/OpenECraft.AppDir" tool="${APPIMAGETOOL:-}" runtime
+    [ -n "${runtime_sha256[$arch]:-}" ] || die "no AppImage runtime for $arch"
     stage "$dir/usr"
+    install -m 644 "$here/appimage/RUNTIME-LICENSES.txt" "$dir/usr/share/doc/openecraft/APPIMAGE-RUNTIME-LICENSES.txt"
     install -m 755 "$here/appimage/AppRun" "$dir/AppRun"
     cp "$here/$id.desktop" "$dir/$id.desktop"
     cp "$root/assets/icon.png" "$dir/$id.png"
     ln -sf "$id.png" "$dir/.DirIcon"
     if [ -z "$tool" ]; then
-        tool="$(command -v appimagetool || true)"
+        tool="$work/appimagetool-$appimagetool_version-$arch.AppImage"
+        download "https://github.com/AppImage/appimagetool/releases/download/$appimagetool_version/appimagetool-$arch.AppImage" \
+            "$tool" "${appimagetool_sha256[$arch]}"
+        chmod +x "$tool"
     fi
-    if [ -z "$tool" ]; then
-        tool="$work/appimagetool-1.9.1-$arch.AppImage"
-        [ -x "$tool" ] || {
-            need curl appimage
-            curl -fL -o "$tool" "https://github.com/AppImage/appimagetool/releases/download/1.9.1/appimagetool-$arch.AppImage"
-            chmod +x "$tool"
-        }
-    fi
+    runtime="$work/runtime-$runtime_version-$arch"
+    download "https://github.com/AppImage/type2-runtime/releases/download/$runtime_version/runtime-$arch" \
+        "$runtime" "${runtime_sha256[$arch]}"
     # Extract-and-run works without FUSE (containers, CI).
-    ARCH="$arch" APPIMAGE_EXTRACT_AND_RUN=1 "$tool" "$dir" "$out/OpenECraft-$version-$arch.AppImage"
+    ARCH="$arch" APPIMAGE_EXTRACT_AND_RUN=1 "$tool" --runtime-file "$runtime" "$dir" "$out/OpenECraft-$version-$arch.AppImage"
 }
 
 build_flatpak() {

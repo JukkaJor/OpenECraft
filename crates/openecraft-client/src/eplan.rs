@@ -3,8 +3,9 @@
 //! the EPLAN Data Portal like a parts server: server info, faceted search, parts by
 //! number and the files of a part (commercial data as CSV, DXF drawings, pictures).
 //! The portal needs the personal access token of an EPLAN account (sent as
-//! `Authorization: Bearer PAT:…`) or the token of a browser session. Its API offers
-//! no changes, so the connection is read-only.
+//! `Authorization: Bearer PAT:…`), the access the portal provides for its API; the
+//! token of a browser session is not used. Its API offers no changes, so the
+//! connection is read-only.
 //!
 //! | Parts server | EPLAN Data Portal |
 //! | --- | --- |
@@ -62,12 +63,12 @@ impl EplanEndpoint {
         api::url(&self.url, path)
     }
 
-    /// A personal access token is sent as `Bearer PAT:<token>`; the token of a browser
-    /// session (a JWT, `eyJ…`) or one written with `PAT:` as it is.
+    /// The personal access token is sent as `Bearer PAT:<token>` (also when written
+    /// with `PAT:`).
     fn authorized(&self, mut req: ehttp::Request) -> ehttp::Request {
         let token = self.token.trim();
         if !token.is_empty() {
-            let value = if token.starts_with("PAT:") || token.starts_with("eyJ") { format!("Bearer {token}") } else { format!("Bearer PAT:{token}") };
+            let value = format!("Bearer PAT:{}", token.strip_prefix("PAT:").unwrap_or(token));
             req.headers.insert("Authorization", value);
         }
         req

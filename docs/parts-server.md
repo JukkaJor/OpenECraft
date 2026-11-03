@@ -118,6 +118,12 @@ ePulse). The portal then works like a parts server: search by text, manufacturer
 product group, part details with the commercial data (CSV), DXF drawings and
 pictures, adding parts to the local database and the update check of the database.
 
+Only personal access tokens are sent (as `Bearer PAT:<token>`), the access EPLAN
+provides for the portal's API; the token of a browser session is not used. The use of
+the portal and of the part data taken from it is governed by EPLAN's terms of use and
+the account's license: check them before putting portal parts on a shared parts
+server. OpenECraft is not affiliated with EPLAN.
+
 - `openecraft_client::eplan` wraps the portal's REST API (JSON:API): it builds the
   portal's requests from the parts server's queries and turns the answers into
   `ServerInfo`, `SearchResult` and `Part`. `openecraft_client::Connection` offers the

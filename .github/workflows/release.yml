@@ -7,7 +7,7 @@ on:
     tags: ['v*']
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   version:
@@ -19,9 +19,13 @@ jobs:
           version="$(sed -n '/^\[workspace\.package\]/,/^\[/s/^version *= *"\([^"]*\)".*/\1/p' Cargo.toml | head -n 1)"
           fail() { echo "::error::$*"; exit 1; }
           [ "v$version" = "$GITHUB_REF_NAME" ] || fail "tag $GITHUB_REF_NAME does not match version $version of Cargo.toml"
-          grep -q "<release version=\"$version\"" installer/linux/io.github.nilres.OpenECraft.metainfo.xml \
-            || fail "no <release version=\"$version\"> in installer/linux/io.github.nilres.OpenECraft.metainfo.xml"
-          grep -q "^## \[$version\]" CHANGELOG.md || fail "no section ## [$version] in CHANGELOG.md"
+          metainfo=installer/linux/io.github.nilres.OpenECraft.metainfo.xml
+          release_date="$(sed -n "s/.*<release version=\"$version\" date=\"\([^\"]*\)\".*/\1/p" "$metainfo" | head -n 1)"
+          [ -n "$release_date" ] || fail "no <release version=\"$version\" date=\"…\"> in $metainfo"
+          changelog_date="$(sed -n "s/^## \[$version\] - \([0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}\)\$/\1/p" CHANGELOG.md | head -n 1)"
+          [ -n "$changelog_date" ] || fail "no section ## [$version] - <yyyy-mm-dd> in CHANGELOG.md (a date, not \"unreleased\")"
+          [ "$release_date" = "$changelog_date" ] \
+            || fail "release date $release_date in $metainfo differs from $changelog_date in CHANGELOG.md"
 
   build:
     needs: version
@@ -31,6 +35,10 @@ jobs:
   publish:
     needs: build
     runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
@@ -47,9 +55,41 @@ jobs:
           (cd assets && sha256sum -- * > SHA256SUMS)
           # The section of this version in the changelog, without its heading.
           awk -v v="$version" '/^## \[/ { on = index($0, "## [" v "]") == 1; next } on' CHANGELOG.md > notes.md
+          {
+            echo
+            echo '### Downloads'
+            echo
+            echo 'Check a download with `sha256sum -c SHA256SUMS --ignore-missing`.'
+            if [ "$PRIVATE" = false ]; then
+              echo 'Its origin (build provenance of this workflow) with `gh attestation verify <file> --repo ${{ github.repository }}`.'
+            fi
+            echo 'The licenses of the libraries and fonts the programs contain are in `THIRD-PARTY-LICENSES.html`.'
+            if [ -z "$WINDOWS_CERTIFICATE" ]; then
+              echo
+              echo 'The Windows setup is not code signed: SmartScreen asks for confirmation on first start (*More info › Run anyway*).'
+            fi
+            if [ -z "$MACOS_CERTIFICATE" ] || [ -z "$APPLE_ID" ]; then
+              echo
+              echo 'The macOS apps are not notarized: Gatekeeper asks for confirmation on first start (*System Settings › Privacy & Security › Open Anyway*).'
+            fi
+          } >> notes.md
+        env:
+          WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          PRIVATE: ${{ github.event.repository.private }}
+      # Attestations of private repositories need GitHub Enterprise Cloud.
+      - name: Build provenance
+        if: ${{ !github.event.repository.private }}
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-path: 'assets/*'
       - name: Draft release
         run: |
-          gh release create "$GITHUB_REF_NAME" --draft --verify-tag \
+          # A version with a suffix (0.2.0-rc.1) is a pre-release.
+          prerelease=()
+          case "$GITHUB_REF_NAME" in *-*) prerelease=(--prerelease) ;; esac
+          gh release create "$GITHUB_REF_NAME" --draft --verify-tag "${prerelease[@]}" \
             --title "OpenECraft ${GITHUB_REF_NAME#v}" --notes-file notes.md assets/*
         env:
           GH_TOKEN: ${{ github.token }}

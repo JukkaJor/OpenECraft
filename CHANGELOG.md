@@ -260,4 +260,7 @@ with a command line, an MCP server, a parts server and a project server.
   stopped after 5 minutes without answer.
 - **Languages:** English, German, French, Spanish and 16 more.
 - **Packages:** Windows setup, deb, rpm, AppImage, Flatpak, snap, tar.gz, macOS disk
-  image and the web version.
+  image and the web version. Every package, the web version included, carries the
+  license texts of OpenECraft and of the libraries and fonts it contains
+  (`THIRD-PARTY-LICENSES.html`); release files come with `SHA256SUMS`. The EPLAN Data
+  Portal is read with the personal access token of the EPLAN account only.

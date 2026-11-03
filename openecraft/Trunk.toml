@@ -5,3 +5,13 @@ dist = "dist"
 [serve]
 addresses = ["127.0.0.1"]
 port = 8080
+
+# License files next to the page (installer/web/licenses.sh).
+[[hooks]]
+stage = "post_build"
+command = "bash"
+command_arguments = ["../installer/web/licenses.sh"]
+
+[hooks.windows]
+command = "powershell"
+command_arguments = ["-ExecutionPolicy", "Bypass", "-File", "..\\installer\\web\\licenses.ps1"]

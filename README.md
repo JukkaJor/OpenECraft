@@ -110,4 +110,17 @@ cargo clippy -p openecraft -p openecraft-parts-manager --target wasm32-unknown-u
 
 MIT ([LICENSE-MIT](LICENSE-MIT)) or Apache-2.0 ([LICENSE-APACHE](LICENSE-APACHE)), at
 your option. The licenses of the libraries and fonts OpenECraft contains are listed in
-`THIRD-PARTY-LICENSES.html`, which comes with every package.
+`THIRD-PARTY-LICENSES.html`, which comes with every package (the web version next to
+its page).
+
+## Trademarks
+
+OpenECraft is an independent open source project. It is not affiliated with, endorsed
+or sponsored by EPLAN GmbH & Co. KG, Autodesk, Siemens or any other company named in
+it. EPLAN and EPLAN Electric P8 are trademarks of EPLAN GmbH & Co. KG; Autodesk,
+AutoCAD and Vault are trademarks of Autodesk, Inc.; Parasolid, JT and TIA Portal
+are trademarks of Siemens; all other product and company names are trademarks of their
+owners. They are used only to name the products and file formats OpenECraft works with.
+The bundled manufacturer catalogs (`crates/openecraft-parts/catalogs/`) are compiled
+from public data sheets; check the parts against the manufacturer's data before
+ordering.
