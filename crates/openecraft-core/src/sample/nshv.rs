@@ -111,6 +111,7 @@ const DEVICES: &[(&str, &[&str])] = &[
     ("=GRID+HAK1-F1", &["GEN.NH2-BASE-3P-400A"]),
     ("=GRID+HAK2-F1", &["GEN.NH2-BASE-3P-400A"]),
     ("=GRID+HV1-X0", &["HAG.KS30C"]),
+    ("=GRID+HV1-X1", &["HAG.KS30C"]),
     ("=GRID+HV1-F1", &["HAG.SPA811Z"]),
     ("=MS+HV1-F10", &["HAG.LVSG3CPX"]),
     ("=MS+HV1-T1", &["GEN.CT-SET-400-5A"]),
@@ -320,9 +321,11 @@ fn supplies(prj: &mut Project, section: u64) {
             core(&mut g, (x, 36.0), (x, 68.0), cable, c);
         }
         core(&mut g, (x0 + 24.0, 24.0), (x0 + 24.0, 68.0), cable, "GNYE");
-        for j in 0..4 {
-            g.sym("term", x0 + 8.0 * j as f32, 72.0, 0, "-X0", &(4 * k + j + 1).to_string(), "");
+        // The phases on the busbar terminals of the phase bars, the PEN on the PEN bar.
+        for j in 0..3 {
+            g.sym("term", x0 + 8.0 * j as f32, 72.0, 0, "-X0", &(3 * k + j + 1).to_string(), "");
         }
+        g.sym("term", x0 + 24.0, 72.0, 0, "-X1", &(k + 1).to_string(), "");
     }
     g.text(220.0, 52.0, "-W1, -W2 NAYY-J 4 x 240 SE, Al, on busbar terminals for aluminium", 2.5);
     g.text(220.0, 60.0, "A third supply from house connection box 3 is prepared", 2.5);
@@ -585,6 +588,7 @@ fn enclosures(prj: &mut Project, db: &PartsDb) {
         "HAG.FZ402",
         panel::RAIL_PART,
         "GEN.BB-3X30X10-185",
+        "GEN.BB-1X30X10",
         "GEN.GLAND-M40",
         "GEN.GLAND-M63",
     ] {
@@ -609,8 +613,13 @@ fn enclosures(prj: &mut Project, db: &PartsDb) {
     on_rail(prj, hv1, 300.0, 30.0, &["=GRID+HV1-F1", "=MS+HV1-F11", "=MS+HV1-X1", "=EMS+HV1-P5", "=EMS+HV1-F5"]);
     profile(prj, hv1, ItemKind::Busbar, "GEN.BB-3X30X10-185", (20.0, 800.0), (480.0, 800.0));
     panel::place_device(prj, hv1, "=GRID+HV1-X0", p(30.0, 970.0));
+    // The PEN bar below the phases, the PEN of both supply cables on it.
+    profile(prj, hv1, ItemKind::Busbar, "GEN.BB-1X30X10", (20.0, 1100.0), (350.0, 1100.0));
+    panel::place_device(prj, hv1, "=GRID+HV1-X1", p(30.0, 1070.0));
     strip(prj, hv1, "=MS+HV1-F10", 370.0);
-    profile(prj, hv1, ItemKind::Busbar, "GEN.BB-3X30X10-185", (520.0, 800.0), (990.0, 800.0));
+    profile(prj, hv1, ItemKind::Busbar, "GEN.BB-3X30X10-185", (520.0, 800.0), (780.0, 800.0));
+    // The busbar of the PV inverters behind the coupling switch: a section of its own.
+    profile(prj, hv1, ItemKind::Busbar, "GEN.BB-3X30X10-185", (800.0, 800.0), (990.0, 800.0));
     strip(prj, hv1, "=MS+HV1-Q10", 530.0);
     for (tag, x) in [("=DIST+HV1-Q25", 660.0), ("=DIST+HV1-Q26", 730.0), ("=PV+HV1-Q41", 800.0), ("=PV+HV1-Q42", 870.0)] {
         strip(prj, hv1, tag, x);

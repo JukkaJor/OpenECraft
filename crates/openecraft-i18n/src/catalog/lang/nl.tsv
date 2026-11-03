@@ -6444,3 +6444,5 @@ Grid and system protection relay (voltage and frequency)	Net- en installatiebeve
 The archive unpacks to more than {} MB	Het archief pakt uit tot meer dan {} MB
 Only web and e-mail addresses (http, https, mailto) are links	Alleen web- en e-mailadressen (http, https, mailto) zijn links
 The plugin program did not answer within {} s and was stopped	Het pluginprogramma heeft niet binnen {} s geantwoord en is gestopt
+Busbar systems	Railsystemen
+{}: the busbar system with {} bars joins {} conductors ({}): short circuit	{}: het railsysteem met {} rails verbindt {} geleiders ({}): kortsluiting

@@ -6444,3 +6444,5 @@ Grid and system protection relay (voltage and frequency)	Relé de proteção de 
 The archive unpacks to more than {} MB	O arquivo compactado se descompacta em mais de {} MB
 Only web and e-mail addresses (http, https, mailto) are links	Somente endereços web e de e-mail (http, https, mailto) são links
 The plugin program did not answer within {} s and was stopped	O programa do plug-in não respondeu em {} s e foi interrompido
+Busbar systems	Sistemas de barramentos
+{}: the busbar system with {} bars joins {} conductors ({}): short circuit	{}: o sistema de barramentos com {} barras une {} condutores ({}): curto-circuito

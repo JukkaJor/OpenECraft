@@ -193,7 +193,9 @@ with a command line, an MCP server, a parts server and a project server.
   a cable takes the rated current of the part providing the function it feeds (the
   motor operator, not the breaker it sits on). A fuse switch disconnector with solid
   links isolates only: no protection, no selectivity. Cable entry flanges are ways in
-  for the 3D routing like cable glands.
+  for the 3D routing like cable glands. The check `busbars` finds busbar systems whose
+  devices join more conductors than they have bars (a short circuit); the 3D view and
+  the 3D exports draw each bar of a busbar system on its own.
 - **Revisions and review:** released pages, approval workflow, baselines with compare
   and merge, comments and redlining.
 - **Parts:** a parts database with mounting data and 3D models (STEP, IGES, Parasolid,

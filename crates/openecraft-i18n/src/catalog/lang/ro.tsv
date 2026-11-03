@@ -6444,3 +6444,5 @@ Grid and system protection relay (voltage and frequency)	Releu de protecție a r
 The archive unpacks to more than {} MB	Arhiva se dezarhivează la mai mult de {} MB
 Only web and e-mail addresses (http, https, mailto) are links	Doar adresele web și de e-mail (http, https, mailto) sunt linkuri
 The plugin program did not answer within {} s and was stopped	Programul pluginului nu a răspuns în {} s și a fost oprit
+Busbar systems	Sisteme de bare colectoare
+{}: the busbar system with {} bars joins {} conductors ({}): short circuit	{}: sistemul de bare cu {} bare unește {} conductoare ({}): scurtcircuit

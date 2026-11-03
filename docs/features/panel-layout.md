@@ -34,7 +34,14 @@ line-ups, rooms of the building with their floor-standing equipment and pipe run
 - Copper **busbar systems** (bars drawn, metres and holders in the BOM) and rectangular
   or round **cutouts** in the mounting plate. A device placed over a busbar system is
   mounted onto its bars; devices on the same busbar system are connected by the bars,
-  not by wires.
+  not by wires. The 3D view draws every bar on its own, on insulating holders. Each bar
+  is one conductor: the check `busbars` reports a system whose devices join more
+  conductors than it has bars (part data `Bars`) as a short circuit, such as a PEN
+  terminal on the bars of the phases or the feeders behind a coupling switch on the
+  busbar before it. It takes the feed side of switches and fuses (the outgoing side
+  where that is the one the other devices share: an incoming strip), each terminal as
+  one conductor, and follows the conductors through the primaries of current
+  transformers.
 - Mounting layout pages (scaled 2D model view with dimensions) for printing / SVG;
   rails and ducts appear in the BOM by cut length, enclosures per piece.
 - Jump between a device in the schematic and its place in the panel layout.

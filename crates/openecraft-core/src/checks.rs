@@ -26,6 +26,7 @@ pub fn builtin() -> Vec<Check> {
         entry("devices", tr_const!("Devices and connection points"), |prj, an| check(prj, &an.index, &an.netlist)),
         entry("accessories", tr_const!("Part accessories"), |prj, an| check_accessories(prj, &an.index)),
         entry("mounting_pages", tr_const!("Mounting layout pages"), |prj, _| check_layout(prj)),
+        entry("busbars", tr_const!("Busbar systems"), |prj, an| crate::panel::busbars::problems(prj, &an.netlist)),
         entry("wires", tr_const!("Cables and wire numbers"), |prj, an| check_wires(prj, &an.netlist, &an.open)),
         entry("potentials", tr_const!("Potential definitions"), |prj, an| check_potentials(prj, &an.netlist, &an.open)),
         entry("plugs", tr_const!("Plugs"), |prj, _| crate::plugs::problems(prj).into_iter().map(|(message, target)| Issue::plain(Severity::Warning, message, target)).collect()),

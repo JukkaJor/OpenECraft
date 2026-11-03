@@ -6444,3 +6444,5 @@ Grid and system protection relay (voltage and frequency)	Nät- och anläggningss
 The archive unpacks to more than {} MB	Arkivet packas upp till mer än {} MB
 Only web and e-mail addresses (http, https, mailto) are links	Endast webb- och e-postadresser (http, https, mailto) är länkar
 The plugin program did not answer within {} s and was stopped	Plugin-programmet svarade inte inom {} s och stoppades
+Busbar systems	Skensystem
+{}: the busbar system with {} bars joins {} conductors ({}): short circuit	{}: skensystemet med {} skenor förbinder {} ledare ({}): kortslutning

@@ -6444,3 +6444,5 @@ Grid and system protection relay (voltage and frequency)	Przekaźnik zabezpiecze
 The archive unpacks to more than {} MB	Archiwum po rozpakowaniu zajmuje ponad {} MB
 Only web and e-mail addresses (http, https, mailto) are links	Tylko adresy internetowe i e-mail (http, https, mailto) są linkami
 The plugin program did not answer within {} s and was stopped	Program wtyczki nie odpowiedział w ciągu {} s i został zatrzymany
+Busbar systems	Systemy szyn zbiorczych
+{}: the busbar system with {} bars joins {} conductors ({}): short circuit	{}: system szyn zbiorczych z {} szynami łączy {} przewody ({}): zwarcie

@@ -6444,3 +6444,5 @@ Grid and system protection relay (voltage and frequency)	Relé ochrany sítě a 
 The archive unpacks to more than {} MB	Archiv se rozbalí na více než {} MB
 Only web and e-mail addresses (http, https, mailto) are links	Odkazy jsou pouze webové a e-mailové adresy (http, https, mailto)
 The plugin program did not answer within {} s and was stopped	Program pluginu neodpověděl do {} s a byl ukončen
+Busbar systems	Přípojnicové systémy
+{}: the busbar system with {} bars joins {} conductors ({}): short circuit	{}: přípojnicový systém s {} přípojnicemi spojuje {} vodiče ({}): zkrat

@@ -6444,3 +6444,5 @@ Grid and system protection relay (voltage and frequency)	Verkko- ja laitossuojar
 The archive unpacks to more than {} MB	Arkisto purkautuu yli {} megatavuksi
 Only web and e-mail addresses (http, https, mailto) are links	Vain verkko- ja sähköpostiosoitteet (http, https, mailto) ovat linkkejä
 The plugin program did not answer within {} s and was stopped	Laajennusohjelma ei vastannut {} sekunnissa, ja se pysäytettiin
+Busbar systems	Kiskojärjestelmät
+{}: the busbar system with {} bars joins {} conductors ({}): short circuit	{}: kiskojärjestelmä, jossa on {} kiskoa, yhdistää {} johdinta ({}): oikosulku

@@ -6443,3 +6443,5 @@ Grid and system protection relay (voltage and frequency)	Реле захисту
 The archive unpacks to more than {} MB	Архів розпаковується більш ніж у {} МБ
 Only web and e-mail addresses (http, https, mailto) are links	Посиланнями можуть бути лише веб- і поштові адреси (http, https, mailto)
 The plugin program did not answer within {} s and was stopped	Програма плагіна не відповіла за {} с і була зупинена
+Busbar systems	Системи збірних шин
+{}: the busbar system with {} bars joins {} conductors ({}): short circuit	{}: система збірних шин з {} шинами з'єднує {} провідники ({}): коротке замикання

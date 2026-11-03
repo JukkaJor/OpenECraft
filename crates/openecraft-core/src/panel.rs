@@ -19,6 +19,7 @@ use crate::parts::{Exit, FnKind};
 use std::collections::{BTreeSet, HashMap, HashSet};
 
 mod assembly;
+pub mod busbars;
 mod checks;
 mod drives;
 mod fastening;
@@ -850,6 +851,9 @@ pub fn device_mesh(prj: &Project, it: &PanelItem) -> Option<Vec<[[f32; 3]; 3]>> 
 
 /// Like [`device_mesh`], with the colour of each triangle where its model has one.
 pub fn device_mesh_painted(prj: &Project, it: &PanelItem) -> Option<Vec<(Tri, Option<[u8; 3]>)>> {
+    if it.kind == ItemKind::Busbar {
+        return Some(busbars::mesh(prj, it));
+    }
     if it.kind != ItemKind::Device {
         return None;
     }

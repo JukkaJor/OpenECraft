@@ -6444,3 +6444,5 @@ Grid and system protection relay (voltage and frequency)	Şebeke ve tesis koruma
 The archive unpacks to more than {} MB	Arşiv açıldığında {} MB'tan büyük oluyor
 Only web and e-mail addresses (http, https, mailto) are links	Yalnızca web ve e-posta adresleri (http, https, mailto) bağlantı olabilir
 The plugin program did not answer within {} s and was stopped	Eklenti programı {} sn içinde yanıt vermedi ve durduruldu
+Busbar systems	Bara sistemleri
+{}: the busbar system with {} bars joins {} conductors ({}): short circuit	{}: {} baralı bara sistemi {} iletkeni birleştiriyor ({}): kısa devre
