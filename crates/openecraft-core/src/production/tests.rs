@@ -162,3 +162,14 @@ fn door_cutouts_and_nc_data() {
     assert_eq!(door_cutout(Some(&part), &it), (true, 30.5, 30.5));
     assert_eq!(door_cutout(None, &it), (false, 92.0, 68.0));
 }
+
+#[test]
+fn bars_sit_at_their_centre_distance() {
+    let parts = crate::parts::catalog();
+    // 185 mm apart in the middle of the 400 mm wide system.
+    assert_eq!(bar_centres(parts, "GEN.BB-3X30X10-185", 400.0), vec![15.0, 200.0, 385.0]);
+    assert_eq!(bar_centres(parts, "GEN.BB-3X30X10-60", 150.0), vec![15.0, 75.0, 135.0]);
+    // Without a centre distance, or one the system is too narrow for: evenly spaced.
+    assert_eq!(bar_centres(parts, "GEN.BB-3X30X10", 90.0), vec![15.0, 45.0, 75.0]);
+    assert_eq!(bar_centres(parts, "GEN.BB-3X30X10-185", 300.0), vec![50.0, 150.0, 250.0]);
+}

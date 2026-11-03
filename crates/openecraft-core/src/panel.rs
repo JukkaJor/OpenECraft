@@ -19,6 +19,7 @@ use crate::parts::{Exit, FnKind};
 use std::collections::{BTreeSet, HashMap, HashSet};
 
 mod assembly;
+pub mod busbars;
 mod checks;
 mod drives;
 mod fastening;
@@ -542,6 +543,11 @@ pub fn new_enclosure(prj: &mut Project, part: &str, name: &str) -> Enclosure {
         if let Some(s) = system_of_part(pd) {
             apply_system(&mut e, s.id(), None);
         }
+        // An enclosure delivered with its plinth (part data `Plinth: 200`).
+        if let Some(h) = pd.tech_value("Plinth").and_then(|v| v.trim().trim_end_matches("mm").trim().parse::<f32>().ok()).filter(|h| *h > 0.0) {
+            e.build.plinth = h;
+            e.build.plinth_included = true;
+        }
     }
     e
 }
@@ -845,6 +851,9 @@ pub fn device_mesh(prj: &Project, it: &PanelItem) -> Option<Vec<[[f32; 3]; 3]>> 
 
 /// Like [`device_mesh`], with the colour of each triangle where its model has one.
 pub fn device_mesh_painted(prj: &Project, it: &PanelItem) -> Option<Vec<(Tri, Option<[u8; 3]>)>> {
+    if it.kind == ItemKind::Busbar {
+        return Some(busbars::mesh(prj, it));
+    }
     if it.kind != ItemKind::Device {
         return None;
     }
@@ -859,6 +868,17 @@ pub fn device_mesh_painted(prj: &Project, it: &PanelItem) -> Option<Vec<(Tri, Op
         for piece in a.pieces() {
             let sub = a.piece_item(it, piece);
             match piece.part.model_3d.as_ref() {
+                Some(mesh) => out.extend(painted(mesh, place_mesh(mesh, &sub))),
+                None => out.extend(box_triangles([sub.x, sub.y, sub.z], [sub.x + sub.w, sub.y + sub.h, sub.z + sub.d]).into_iter().map(|t| (t, None))),
+            }
+        }
+        return Some(out);
+    }
+    // Busbar terminals across the bars: each upright on its bar.
+    if let Some(places) = busbars::terminals_on_bars(prj, it) {
+        let mut out = Vec::new();
+        for (sub, number, _) in places {
+            match part_by_number(prj, &number).and_then(|p| p.model_3d.as_ref()) {
                 Some(mesh) => out.extend(painted(mesh, place_mesh(mesh, &sub))),
                 None => out.extend(box_triangles([sub.x, sub.y, sub.z], [sub.x + sub.w, sub.y + sub.h, sub.z + sub.d]).into_iter().map(|t| (t, None))),
             }
@@ -904,7 +924,7 @@ pub fn device_mesh_painted(prj: &Project, it: &PanelItem) -> Option<Vec<(Tri, Op
 pub fn device_size(prj: &Project, tag: &str) -> Option<DeviceSize> {
     let Some(data) = prj.devices.get(tag) else { return group_size(prj, tag) };
     if let Some(a) = assembly(prj, tag) {
-        return Some(DeviceSize { tag: tag.into(), part: a.main.part.number.clone(), w: a.w, h: a.main.size[1], d: a.d, from_part: true });
+        return Some(DeviceSize { tag: tag.into(), part: a.main.part.number.clone(), w: a.w, h: a.h, d: a.d, from_part: true });
     }
     let parts: Vec<_> = data
         .parts

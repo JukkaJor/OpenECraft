@@ -520,6 +520,17 @@ fn coils(lib: &mut Lib) {
         lib.b.coil_box(false).rect(-7.0, -2.0, -3.0, 2.0, false).text(-5.0, 0.0, t, 1.5, Center);
         lib.push(def(key, name, C::Coils, "K", MAIN_MIRROR), Some(K::Coil));
     }
+    // Motor operator switching a circuit breaker on (and off), drawn as its drive.
+    lib.b.coil_box(false).circle(0.0, 0.0, 1.6, false).text(0.0, 0.0, "M", 1.6, Center);
+    lib.push(def("coil_motor_operator", "Motor operator of a circuit breaker", C::Coils, "Q", MAIN_MIRROR), Some(K::Coil));
+    // Grid and system protection (VDE-AR-N 4105): voltage and frequency relay measuring
+    // the three phases and N; its contacts trip the coupling switch.
+    lib.b.rect(-3.0, 0.0, 27.0, 12.0, false).text(12.0, 3.8, "U< U>", 2.0, Center).text(12.0, 8.4, "f< f>", 2.0, Center);
+    for (i, label) in ["L1", "L2", "L3", "N"].into_iter().enumerate() {
+        let x = i as f32 * 8.0;
+        lib.b.l(x, -4.0, x, 0.0).pin(x, -4.0, label);
+    }
+    lib.push(def("relay_grid_protection", "Grid and system protection relay (voltage and frequency)", C::Measuring, "K", MAIN), Some(K::Generic));
 
     // Counting devices (IEC 60617-08-07): drive with the counter mechanism.
     lib.b.coil_box(false).rect(3.0, -2.0, 6.0, 2.0, false).circle(4.5, 0.0, 0.8, false);

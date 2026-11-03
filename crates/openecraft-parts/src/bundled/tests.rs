@@ -7,7 +7,8 @@ use crate::productgroups::group_id;
 fn bundled_catalogs_are_consistent() {
     let bundles = all().unwrap();
     assert_eq!(bundles.len(), FILES.len());
-    let mut numbers: Vec<String> = default_catalog().into_iter().map(|p| p.number).collect();
+    let generic = default_catalog();
+    let mut numbers: Vec<String> = generic.iter().map(|p| p.number.clone()).collect();
     for (bundle, id) in bundles.iter().zip(ids()) {
         let c = &bundle.catalog;
         assert_eq!((c.id.as_str(), catalog_id(id)), (id, id.to_string()));
@@ -28,10 +29,12 @@ fn bundled_catalogs_are_consistent() {
             // Terminals take their designation from the device tag; accessories have no functions.
             assert!(p.functions.iter().all(|f| f.kind == FnKind::Terminal || !f.pin_list().is_empty()), "{}: function template", p.number);
             assert!(!p.functions.is_empty() || mounting || matches!(p.subgroup.as_str(), "Accessories" | "End bracket"), "{}: no functions", p.number);
+            // Accessories pair with parts of their catalog or of the generic one (a
+            // module carrying the transformers the distribution system operator brings).
             for a in p.accessories.iter().chain(&p.fits) {
-                assert!(bundle.parts.iter().any(|q| &q.number == a), "{}: accessory {a} missing", p.number);
+                assert!(bundle.parts.iter().chain(&generic).any(|q| &q.number == a), "{}: accessory {a} missing", p.number);
             }
-            assert!(!p.accessory || !crate::accessory::mains_of(&bundle.parts, p).is_empty(), "{}: accessory fits nothing", p.number);
+            assert!(!p.accessory || !crate::accessory::mains_of(bundle.parts.iter().chain(&generic), p).is_empty(), "{}: accessory fits nothing", p.number);
             // Every part with dimensions has a generated model, mounting material too.
             assert_eq!(p.model_3d.is_some(), p.width > 0.0 && p.height > 0.0 && p.depth > 0.0, "{}: generated model", p.number);
             // Units are written alike in every catalog (the facets list each spelling).
@@ -66,4 +69,29 @@ fn hager_signal_contact_fits_several_rccbs() {
     assert!(cz.accessory && cz.accessory_mount == crate::AccessoryMount::Left);
     let mains: Vec<&str> = crate::accessory::mains_of(&hager.parts, cz).iter().map(|p| p.number.as_str()).collect();
     assert_eq!(mains, ["HAG.CCA216D", "HAG.CDA440D", "HAG.CDA463D"]);
+}
+
+#[test]
+fn hager_breaker_and_fuse_switch_take_their_accessories() {
+    let hager = load("hager").unwrap();
+    let get = |n: &str| hager.parts.iter().find(|p| p.number == n).unwrap_or_else(|| panic!("{n}"));
+    // The coupling switch of the grid protection: motor operator in front, release
+    // and auxiliary switch in its slots.
+    let breaker = get("HAG.HNT161GR");
+    let mounts: Vec<(&str, crate::AccessoryMount)> =
+        crate::accessory::accessories_of(&hager.parts, breaker).iter().map(|p| (p.number.as_str(), p.accessory_mount)).collect();
+    use crate::AccessoryMount::*;
+    // The 230 V release of the P630 fits the P250 too (it names both).
+    assert_eq!(mounts, [("HAG.HXT041H", Front), ("HAG.HXA011H", Inside), ("HAG.HXA021H", Inside), ("HAG.HXA014H", Inside)]);
+    // The NH1 fuse switch disconnector stands on its univers N module.
+    let module = get("HAG.UE31E1B");
+    assert_eq!(module.accessory_mount, Behind);
+    assert!(crate::accessory::fits(module, get("HAG.LT153")));
+    // The cabinet comes with its plinth.
+    assert_eq!(get("HAG.FR25S2").tech_value("Plinth"), Some("200"));
+    // The current transformers clip in behind the poles of the NH1 - NH3 strips.
+    let ct = get("HAG.LVZW150");
+    assert_eq!(ct.accessory_mount, Behind);
+    let strips: Vec<&str> = crate::accessory::mains_of(&hager.parts, ct).iter().map(|p| p.number.as_str()).collect();
+    assert_eq!(strips, ["HAG.LVSG1CPX", "HAG.LVSG2CPX", "HAG.LVSG3CPX"]);
 }

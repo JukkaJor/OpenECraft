@@ -1,0 +1,98 @@
+use super::*;
+use crate::sample::example;
+
+fn bar_with(prj: &Project, tag: &str) -> u64 {
+    let (_, it) = crate::panel::locate(prj, tag).unwrap_or_else(|| panic!("{tag}"));
+    let e = prj.layout.enclosures.iter().find(|e| e.items.iter().any(|i| i.id == it.id)).unwrap();
+    e.items.iter().find(|b| b.kind == ItemKind::Busbar && b.y <= it.y + it.h && it.y <= b.y + b.h && b.x <= it.x && it.x <= b.x + b.w).unwrap().id
+}
+
+#[test]
+fn each_bar_carries_one_conductor() {
+    let prj = example("industrial_main_distribution").unwrap();
+    let nl = Netlist::build(&prj, true);
+    let uses = uses(&prj, &nl);
+    // The supply busbar: the phases of both supply cables and the isolation strip.
+    let supply = uses.iter().find(|u| u.busbar == bar_with(&prj, "=GRID+HV1-X01")).unwrap();
+    assert_eq!((supply.bars, supply.nets.len()), (3, 3), "{supply:?}");
+    assert!(supply.devices.contains(&"=MS+HV1-F10".to_string()));
+    // The strips behind the coupling switch have a busbar of their own.
+    let pv = uses.iter().find(|u| u.busbar == bar_with(&prj, "=PV+HV1-Q41")).unwrap();
+    assert!(!pv.devices.contains(&"=DIST+HV1-Q25".to_string()), "{pv:?}");
+    // The measured strips: the conductors through their transformers.
+    let dist = uses.iter().find(|u| u.busbar == bar_with(&prj, "=DIST+HV2-Q21")).unwrap();
+    assert_eq!((dist.devices.len(), dist.nets.len()), (4, 3), "{dist:?}");
+    assert!(problems(&prj, &nl).is_empty());
+}
+
+#[test]
+fn a_pen_terminal_on_the_phase_bars_is_a_short_circuit() {
+    let mut prj = example("industrial_main_distribution").unwrap();
+    // The PEN terminals moved onto the busbar of the phases.
+    let (ei, x0) = crate::panel::locate(&prj, "=GRID+HV1-X02").map(|(ei, it)| (ei, it.clone())).unwrap();
+    let x1 = prj.layout.enclosures[ei].items.iter_mut().find(|i| i.tag == "=GRID+HV1-X1").unwrap();
+    (x1.x, x1.y) = (x0.x + x0.w + 20.0, x0.y + 20.0);
+    let nl = Netlist::build(&prj, true);
+    let issues = problems(&prj, &nl);
+    assert_eq!(issues.len(), 1, "{issues:?}");
+    assert!(issues[0].message().contains("3 bars joins 4 conductors"), "{}", issues[0].message());
+}
+
+#[test]
+fn the_bars_are_drawn_apart() {
+    let prj = example("industrial_main_distribution").unwrap();
+    let id = bar_with(&prj, "=DIST+HV2-Q21");
+    let it = prj.layout.enclosures.iter().flat_map(|e| &e.items).find(|i| i.id == id).unwrap();
+    let tris = mesh(&prj, it);
+    // Three copper bars across the system (y), apart from each other.
+    let mut ys: Vec<f32> = tris.iter().filter(|t| t.1 == Some([200, 120, 60])).flat_map(|t| t.0.iter().map(|v| v[1])).collect();
+    ys.sort_by(f32::total_cmp);
+    ys.dedup_by(|a, b| (*a - *b).abs() < 0.01);
+    assert_eq!(ys.len(), 6, "{ys:?}");
+    assert!(ys.windows(2).skip(1).step_by(2).all(|w| w[1] - w[0] > 50.0), "gaps between the bars: {ys:?}");
+}
+
+#[test]
+fn the_holders_carry_the_bars() {
+    let prj = example("industrial_main_distribution").unwrap();
+    let id = bar_with(&prj, "=DIST+HV2-Q21");
+    let it = prj.layout.enclosures.iter().flat_map(|e| &e.items).find(|i| i.id == id).unwrap();
+    let ys = |color: [u8; 3]| {
+        let v: Vec<f32> = mesh(&prj, it).iter().filter(|t| t.1 == Some(color)).flat_map(|t| t.0.iter().map(|v| v[1])).collect();
+        (v.iter().copied().fold(f32::MAX, f32::min), v.iter().copied().fold(f32::MIN, f32::max))
+    };
+    let ((b0, b1), (h0, h1)) = (ys(COPPER), ys(HOLDER));
+    assert!(h0 < b0 && b1 < h1, "bars {b0}..{b1}, holders {h0}..{h1}");
+    assert!(h0 >= it.y - 0.01 && h1 <= it.y + it.h + 0.01, "holders {h0}..{h1} in {}..{}", it.y, it.y + it.h);
+    // In the 3D exports the bars and their holders are solids of their own colour.
+    let e = prj.layout.enclosures.iter().find(|e| e.items.iter().any(|i| i.id == id)).unwrap();
+    let solids = crate::export3d::enclosure_solids(&prj, e);
+    let colour = |name: &str| solids.iter().filter(|s| s.name == name).map(|s| s.color).collect::<std::collections::BTreeSet<_>>();
+    assert_eq!((colour("Busbar"), colour("Busbar holder")), ([COPPER].into(), [HOLDER].into()));
+}
+
+#[test]
+fn each_supply_terminal_sits_on_its_bar() {
+    let prj = example("industrial_main_distribution").unwrap();
+    let id = bar_with(&prj, "=GRID+HV1-X01");
+    let bar = prj.layout.enclosures.iter().flat_map(|e| &e.items).find(|i| i.id == id).unwrap();
+    let centres: Vec<f32> = crate::production::bar_centres(&prj.parts, &bar.part, bar.h).into_iter().map(|c| bar.y + c).collect();
+    for tag in ["=GRID+HV1-X01", "=GRID+HV1-X02"] {
+        let (_, it) = crate::panel::locate(&prj, tag).unwrap();
+        let places = terminals_on_bars(&prj, it).unwrap_or_else(|| panic!("{tag} is not across the bars"));
+        assert_eq!(places.iter().map(|p| p.2.as_str()).collect::<Vec<_>>(), ["1", "2", "3"]);
+        for ((sub, _, _), c) in places.iter().zip(&centres) {
+            assert!((sub.y + sub.h / 2.0 - c).abs() < 0.1, "{tag}: terminal at {} for the bar at {c}", sub.y);
+        }
+        // The cable comes in from below: the terminals upright, the points on them.
+        let points = crate::panel::device_points(&prj, it);
+        for (sub, _, label) in &places {
+            let on = points.iter().filter(|p| &p.terminal == label).collect::<Vec<_>>();
+            assert!(!on.is_empty(), "{tag}:{label}");
+            assert!(on.iter().all(|p| p.pos[1] >= sub.y - 0.1 && p.pos[1] <= sub.y + sub.h + 0.1), "{tag}:{label} {on:?}");
+        }
+    }
+    // A strip along the bars stays a strip.
+    let (_, x1) = crate::panel::locate(&prj, "=GRID+HV1-X1").unwrap();
+    assert!(terminals_on_bars(&prj, x1).is_none());
+}

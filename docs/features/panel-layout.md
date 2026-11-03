@@ -34,7 +34,17 @@ line-ups, rooms of the building with their floor-standing equipment and pipe run
 - Copper **busbar systems** (bars drawn, metres and holders in the BOM) and rectangular
   or round **cutouts** in the mounting plate. A device placed over a busbar system is
   mounted onto its bars; devices on the same busbar system are connected by the bars,
-  not by wires.
+  not by wires. The bars lie at the part's `Centre distance` (evenly spaced without
+  one); the 3D view draws every bar on its own, on insulating holders reaching just
+  across them. A busbar terminal strip placed across the bars (`busbars::place_on_bars`)
+  puts each terminal upright on its own bar, one strip per supply cable. Each bar
+  is one conductor: the check `busbars` reports a system whose devices join more
+  conductors than it has bars (part data `Bars`) as a short circuit, such as a PEN
+  terminal on the bars of the phases or the feeders behind a coupling switch on the
+  busbar before it. It takes the feed side of switches and fuses (the outgoing side
+  where that is the one the other devices share: an incoming strip), each terminal as
+  one conductor, and follows the conductors through the primaries of current
+  transformers.
 - Mounting layout pages (scaled 2D model view with dimensions) for printing / SVG;
   rails and ducts appear in the BOM by cut length, enclosures per piece.
 - Jump between a device in the schematic and its place in the panel layout.
@@ -186,6 +196,31 @@ cable leaves straight up through the top) and the PEN terminal block
 (`GEN.TB-PEN-240-V`). The example `building_services` hangs one on the wall above the
 cable entry, with the main earthing busbar (`GEN.MET-BAR-10`) and the lug of the
 foundation earth electrode (`GEN.FE-LUG-V4A-10`, symbol *Earth electrode*) beside it.
+
+## Distribution cabinets with component modules
+
+A manufacturer's enclosure part that comes with its plinth says so in its data
+(`Plinth: 200`): a new enclosure of it stands on the plinth, which is drawn and
+exported but is no part of its own in the bill of materials (the Hager univers
+cabinet `HAG.FR25S2`, 1850 mm + 200 mm plinth, five fields, protection class II).
+Distribution systems build the cabinet from component modules: a module the device
+stands on is an accessory mounted *under the part* (`HAG.UE31E1B` under the NH1 fuse
+switch disconnector `HAG.LT153`, `HAG.UE31SS400` under the current transformers), so
+the device takes the module's footprint and depth and the part sits in front of it.
+The example `pv_transformer_metering` builds such a cabinet field by field after a
+real one: connection point zone and surge arrester, consumption metering with NH1
+isolation, transformer module, voltage paths and load break switch, the NA
+protection, the generation metering below the coupling switch and the busbars of the
+feeders; lifting eyes in the roof, the cables of the consumers through the roof, the
+supply from below; the two meter cabinets of the distribution system operator with
+their test terminal blocks beside it. Cable entry flanges (part subgroup `Cable
+entry`, a membrane taking several large cables, such as the univers FZ402) are ways in
+for the 3D routing like cable glands. The example `industrial_main_distribution`
+bays two univers cabinets into the main distribution of an industrial plant: the
+aluminium supply cables on busbar terminals and through an entry flange in the
+bottom, a 185 mm busbar system through both cabinets with vertical NH fuse switch
+disconnector strips, the current transformers clipped in behind the measured ones,
+the coupling switches of the NA protection below.
 
 ## 19-inch racks
 

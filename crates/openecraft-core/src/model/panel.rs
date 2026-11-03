@@ -304,6 +304,10 @@ pub struct Build {
     pub system: String,
     /// Plinth height (mm), 0 without plinth.
     pub plinth: f32,
+    /// The plinth comes with the enclosure part (part data `Plinth`), it is no part of
+    /// its own.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub plinth_included: bool,
     /// Side bayed to the neighbouring enclosure: no side panel, a baying kit instead.
     pub left_open: bool,
     pub right_open: bool,

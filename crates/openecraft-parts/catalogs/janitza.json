@@ -1,0 +1,42 @@
+{
+  "catalog": {
+    "id": "janitza",
+    "name": "Janitza",
+    "manufacturer": "Janitza",
+    "version": "2026.1",
+    "description": "Power analyser UMG 604-PRO for energy monitoring and the zero export of battery storage systems. Curated from public data sheets; check against the manufacturer data before ordering."
+  },
+  "parts": [
+    {
+      "number": "JAN.52.16.202",
+      "type_number": "UMG 604-PRO",
+      "order_number": "52.16.202",
+      "manufacturer": "Janitza",
+      "description": "Power analyser UMG 604-PRO, 230 V AC supply, 4 voltage and 4 current inputs (x/1 A or x/5 A), Ethernet, Modbus, DIN rail 6 modules",
+      "group": "Measuring instruments",
+      "subgroup": "System monitoring",
+      "identifier": "P",
+      "functions": [
+        {
+          "kind": "Meter",
+          "pins": "1S1 1S2 2S1 2S2 3S1 3S2 V1 V2 V3 N"
+        },
+        {
+          "kind": "Generic",
+          "pins": "L N"
+        }
+      ],
+      "voltage": "230 V AC",
+      "current": "1 A / 5 A (transformer)",
+      "mounting": "Mounting rail 35 mm",
+      "tech_data": "Accuracy class: 0.2S (energy)\nInterfaces: Ethernet, RS-485 (Modbus RTU)\nModules: 6",
+      "mounting_data": {
+        "power_loss": 5.0
+      },
+      "width": 107.5,
+      "height": 90,
+      "depth": 82,
+      "weight": 0.35
+    }
+  ]
+}

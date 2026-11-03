@@ -89,6 +89,14 @@ pub fn enclosure_solids(prj: &Project, e: &Enclosure) -> Vec<Solid> {
         solid(&name, component_color(c.role), matches!(c.role, Role::Door | Role::RoomWall(_)), tris);
     }
     for it in e.items.iter().filter(|i| i.kind != ItemKind::Cutout) {
+        // A busbar system: its copper bars and their insulating holders apart.
+        if it.kind == ItemKind::Busbar {
+            for (color, name) in [(panel::busbars::COPPER, "Busbar"), (panel::busbars::HOLDER, "Busbar holder")] {
+                let tris: Vec<Tri> = panel::busbars::mesh(prj, it).into_iter().filter(|t| t.1 == Some(color)).map(|t| t.0).collect();
+                solid(name, color, false, panel::place_triangles(e, it, tris).into_iter().map(|t| t.map(up)).collect());
+            }
+            continue;
+        }
         let name = if it.tag.is_empty() { kind_name(it.kind) } else { it.tag.as_str() };
         let tris = match panel::device_mesh(prj, it) {
             Some(tris) => panel::place_triangles(e, it, tris).into_iter().map(|t| t.map(up)).collect(),

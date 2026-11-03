@@ -84,3 +84,68 @@ fn plain_devices_and_strips_are_drawn_as_before() {
     let prj = project(&[("-F3", &["HAG.CZ001"])]);
     assert_eq!(assembly(&prj, "-F3").unwrap().main.part.number, "HAG.CZ001");
 }
+
+#[test]
+fn the_main_part_stands_on_its_base_and_takes_the_accessories_built_into_it() {
+    let mut prj = project(&[]);
+    let base = Part { number: "OWN.BASE".into(), width: 250.0, height: 450.0, depth: 40.0, accessory: true, accessory_mount: AccessoryMount::Behind, ..Default::default() };
+    let switch = Part {
+        number: "OWN.Q".into(),
+        width: 105.0,
+        height: 160.0,
+        depth: 90.0,
+        functions: vec![crate::parts::FunctionTemplate::new(crate::parts::FnKind::Breaker3, "1 3 5 2 4 6")],
+        ..Default::default()
+    };
+    // An undervoltage release without dimensions in a slot of the switch.
+    let release =
+        Part { number: "OWN.UVR".into(), accessory: true, accessory_mount: AccessoryMount::Inside, functions: vec![crate::parts::FunctionTemplate::new(crate::parts::FnKind::Coil, "D1 D2")], ..Default::default() };
+    prj.parts.extend([base, switch, release]);
+    for n in ["OWN.Q", "OWN.BASE", "OWN.UVR"] {
+        crate::parts::add_to_device(&mut prj, &PartsDb::default(), "-Q1", n, 1);
+    }
+    let a = assembly(&prj, "-Q1").unwrap();
+    assert_eq!((a.w, a.h, a.d), (250.0, 450.0, 130.0));
+    assert_eq!((a.main.at, a.main.z, a.behind[0].at, a.behind[0].z), (72.5, 40.0, 0.0, 0.0));
+    assert_eq!(a.inside.len(), 1);
+    let size = device_size(&prj, "-Q1").unwrap();
+    assert_eq!((size.part.as_str(), size.w, size.h, size.d), ("OWN.Q", 250.0, 450.0, 130.0));
+
+    let it = placed(&mut prj, "-Q1");
+    assert!(mounted(&prj, &it).is_some());
+    let a = assembly(&prj, "-Q1").unwrap();
+    let main = a.piece_item(&it, &a.main);
+    assert_eq!((main.x - it.x, main.y - it.y, main.z - it.z, main.w, main.h), (72.5, 145.0, 40.0, 105.0, 160.0));
+    // The terminals of the switch and of its release are on the switch, in front of the base.
+    let points = device_points(&prj, &it);
+    for pin in ["1", "6", "D1", "D2"] {
+        let p = points.iter().find(|p| p.pin == pin).unwrap_or_else(|| panic!("{pin}"));
+        assert!(p.pos[0] >= main.x && p.pos[0] <= main.x + main.w && p.pos[1] >= main.y && p.pos[1] <= main.y + main.h, "{pin} {:?}", p.pos);
+        assert!(p.pos[2] >= main.z, "{pin}");
+    }
+    // The 3D model shows the base behind the switch.
+    let tris = device_mesh(&prj, &it).unwrap();
+    let back = tris.iter().flatten().map(|v| v[2]).fold(f32::MAX, f32::min);
+    let front = tris.iter().flatten().map(|v| v[2]).fold(f32::MIN, f32::max);
+    assert!((back - it.z).abs() < 0.01 && (front - (it.z + 130.0)).abs() < 0.01, "{back} {front}");
+}
+
+#[test]
+fn transformers_behind_a_vertical_strip_lie_along_it() {
+    let mut prj = project(&[]);
+    let strip = Part { number: "OWN.STRIP".into(), width: 100.0, height: 740.0, depth: 140.0, ..Default::default() };
+    let ct = Part { number: "OWN.CT".into(), width: 90.0, height: 80.0, depth: 60.0, accessory: true, accessory_mount: AccessoryMount::Behind, ..Default::default() };
+    prj.parts.extend([strip, ct]);
+    crate::parts::add_to_device(&mut prj, &PartsDb::default(), "-Q1", "OWN.STRIP", 1);
+    crate::parts::add_to_device(&mut prj, &PartsDb::default(), "-Q1", "OWN.CT", 3);
+    let a = assembly(&prj, "-Q1").unwrap();
+    // One layer of three transformers along the strip's height, centred under it.
+    assert_eq!((a.w, a.h, a.d, a.main.z), (100.0, 740.0, 200.0, 60.0));
+    let across: Vec<f32> = a.behind.iter().map(|b| b.across).collect();
+    assert_eq!(across, [-80.0, 0.0, 80.0]);
+    assert!(a.behind.iter().all(|b| b.at == 5.0 && b.z == 0.0));
+    let it = placed(&mut prj, "-Q1");
+    let a = assembly(&prj, "-Q1").unwrap();
+    let ys: Vec<f32> = a.behind.iter().map(|b| a.piece_item(&it, b).y - it.y).collect();
+    assert_eq!(ys, [250.0, 330.0, 410.0]);
+}

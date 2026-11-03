@@ -1096,12 +1096,11 @@ pub fn draw_enclosure(
             ItemKind::Busbar => {
                 d.rect(a, b, 0.0, Ink::Plate, true);
                 d.rect(a, b, 0.2, ink, false);
-                // The bars, evenly spaced across the system.
-                let n = crate::production::bar_count(parts, &it.part);
+                // The bars across the system (at their centre distance).
                 let across = if horizontal { it.h } else { it.w };
-                let pitch = across / n as f32;
-                for k in 0..n {
-                    let off = pitch * (k as f32 + 0.5);
+                let centres = crate::production::bar_centres(parts, &it.part, across);
+                let pitch = centres.windows(2).map(|w| w[1] - w[0]).fold(across, f32::min);
+                for off in centres {
                     let half = (pitch * 0.18).min(3.0);
                     let (r0, r1) = if horizontal {
                         (tf(it.x, it.y + off - half), tf(it.x + it.w, it.y + off + half))
@@ -1170,7 +1169,23 @@ pub fn draw_enclosure(
                 // Terminal strips: every element of the strip in its place.
                 let cells = panel::strip_cells(prj, it);
                 let mounted = panel::mounted(prj, it);
+                let on_bars = panel::busbars::terminals_on_bars(prj, it);
                 match model {
+                    // Busbar terminals across the bars: each upright on its bar.
+                    _ if on_bars.is_some() => {
+                        for (sub, number, _) in on_bars.as_ref().unwrap() {
+                            let (pa, pb) = (tf(sub.x, sub.y), tf(sub.x + sub.w, sub.y + sub.h));
+                            d.rect(pa, pb, 0.0, Ink::Fill, true);
+                            match parts.iter().chain(crate::parts::catalog()).find(|x| &x.number == number).and_then(|x| x.model_2d.as_ref()) {
+                                Some(m) => draw_model_2d(d, m, sub, &tf, k, ink),
+                                None => d.rect(pa, pb, 0.15, ink, false),
+                            }
+                        }
+                        let size = size * 0.8;
+                        let half = p(it.tag.chars().count() as f32 * size * 0.33 + size * 0.2, size * 0.6);
+                        d.rect(c - half, c + half, 0.0, Ink::Plate, true);
+                        d.text(c, &it.tag, size, Anchor::Center, VAnchor::Middle, text_ink);
+                    }
                     Some(_) if mounted.is_some() => {
                         // Accessories on the main part: each part's front view in its
                         // box, front accessories over the main part.

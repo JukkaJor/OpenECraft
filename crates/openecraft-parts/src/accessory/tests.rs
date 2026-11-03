@@ -37,4 +37,6 @@ fn mounts_read_keys_and_names() {
     assert_eq!(AccessoryMount::from_key(""), Some(AccessoryMount::Auto));
     assert_eq!(AccessoryMount::from_key("roof"), None);
     assert!(AccessoryMount::Right.is_side() && !AccessoryMount::Front.is_side());
+    assert_eq!(AccessoryMount::from_key("Behind"), Some(AccessoryMount::Behind));
+    assert!(!AccessoryMount::Behind.is_side() && !AccessoryMount::Inside.is_side());
 }

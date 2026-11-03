@@ -174,3 +174,16 @@ fn meters_are_no_loads_of_their_cable() {
     let d = cable_drops(&prj, &an.connections);
     assert_eq!((d[0].load.as_str(), d[0].current), ("-M1", Some(1.9)));
 }
+
+#[test]
+fn a_fuse_switch_with_solid_links_only_isolates() {
+    // The isolation before the transformers of a metering: solid links, no fuses.
+    let (mut prj, _, _) = circuit("16 mm²", "16 mm²", "160 A");
+    prj.parts.push(Part { number: "ACME.NH-LINK".into(), subgroup: SOLID_LINK.into(), ..Default::default() });
+    prj.devices.get_mut("-F1").unwrap().parts.push(PartRef { number: "ACME.NH-LINK".into(), count: 3 });
+    assert!(isolates_only(&prj, "-F1"));
+    assert_eq!(protective_current(&prj, "-F1"), None);
+    assert!(crate::protection::of_device(&prj, "-F1").is_none());
+    let o = overloads(&prj, &Netlist::build(&prj, true), &Netlist::build(&prj, false));
+    assert!(o.is_empty(), "nothing is protected by solid links: {o:?}");
+}

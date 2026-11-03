@@ -113,11 +113,22 @@ pub(crate) fn passes_current(prj: &Project, s: &SymbolInst) -> bool {
         Some(FnKind::MainContacts3 | FnKind::MainContacts4 | FnKind::MainContact | FnKind::Overload | FnKind::Disconnector3 | FnKind::ResidualCurrent)
     )
         || prj.symbol(&s.sym).is_some_and(|d| d.func == Func::Aux(ContactKind::MainNo))
+        || (is_protective(&s.sym) && isolates_only(prj, &s.tag))
 }
 
 /// Subgroup of the fuse links (NH, D, cylindrical) put into fuse bases and fuse switch
 /// disconnectors.
 pub const FUSE_LINK: &str = "Fuse link";
+
+/// Subgroup of the solid links put into fuse bases and fuse switch disconnectors in
+/// place of fuse links: the device isolates (the isolation of a transformer metering),
+/// it does not protect.
+pub const SOLID_LINK: &str = "Solid link";
+
+/// A fuse base or fuse switch disconnector fitted with solid links.
+pub fn isolates_only(prj: &Project, tag: &str) -> bool {
+    !tag.is_empty() && device_parts(prj, tag).iter().any(|p| p.subgroup == SOLID_LINK)
+}
 
 /// The fuse link of a device (the one with the highest rated current), if it has one.
 pub fn fuse_link<'a>(prj: &'a Project, tag: &str) -> Option<&'a Part> {
@@ -128,6 +139,9 @@ pub fn fuse_link<'a>(prj: &'a Project, tag: &str) -> Option<&'a Part> {
 /// Rated current of a protective device: that of its fuse links, otherwise the largest
 /// rated current of its parts that have a protective function.
 pub fn protective_current(prj: &Project, tag: &str) -> Option<f32> {
+    if isolates_only(prj, tag) {
+        return None;
+    }
     if let Some(link) = fuse_link(prj, tag) {
         return parse_current(&link.current);
     }
@@ -286,7 +300,12 @@ pub fn cable_drops(prj: &Project, conns: &[Connection]) -> Vec<CableDrop> {
                     continue;
                 }
                 tags.push(&s.tag);
-                for part in device_parts(prj, &s.tag) {
+                // The parts providing the function at the cable (the motor operator on a
+                // circuit breaker, not the breaker), all parts if none does.
+                let parts = device_parts(prj, &s.tag);
+                let kind = kind_of_symbol(&s.sym);
+                let providing: Vec<&Part> = parts.iter().copied().filter(|p| kind.is_some_and(|k| p.functions.iter().any(|f| f.kind == k))).collect();
+                for part in if providing.is_empty() { parts } else { providing } {
                     if let Some(i) = parse_current(&part.current) {
                         if load.as_ref().is_none_or(|l| i > l.1) {
                             load = Some((s.tag.clone(), i, parse_voltage(&part.voltage)));

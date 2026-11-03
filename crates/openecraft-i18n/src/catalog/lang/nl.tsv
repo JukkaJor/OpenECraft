@@ -6435,6 +6435,14 @@ Double-click (3D view)	Dubbelklik (3D-weergave)
 Look at the point clicked, closer	Naar het aangeklikte punt kijken, dichterbij
 Earth electrode	Aardelektrode
 House connection box	Huisaansluitkast
+Under the part (base)	Onder het artikel (sokkel)
+Built into the part	In het artikel ingebouwd
+Motor operator of a circuit breaker	Motoraandrijving van een vermogensschakelaar
+Grid and system protection relay (voltage and frequency)	Net- en installatiebeveiligingsrelais (spanning en frequentie)
+13 · Transformer-rated metering with PV and grid protection	13 · Transformatormeting met PV en netbeveiliging
+14 · Main low-voltage distribution of an industrial plant	14 · Hoofdverdeler laagspanning van een industriebedrijf
 The archive unpacks to more than {} MB	Het archief pakt uit tot meer dan {} MB
 Only web and e-mail addresses (http, https, mailto) are links	Alleen web- en e-mailadressen (http, https, mailto) zijn links
 The plugin program did not answer within {} s and was stopped	Het pluginprogramma heeft niet binnen {} s geantwoord en is gestopt
+Busbar systems	Railsystemen
+{}: the busbar system with {} bars joins {} conductors ({}): short circuit	{}: het railsysteem met {} rails verbindt {} geleiders ({}): kortsluiting

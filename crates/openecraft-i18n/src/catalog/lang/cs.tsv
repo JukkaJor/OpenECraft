@@ -6435,6 +6435,14 @@ Double-click (3D view)	Dvojklik (3D zobrazení)
 Look at the point clicked, closer	Podívat se na kliknutý bod zblízka
 Earth electrode	Zemnič
 House connection box	Přípojková skříň
+Under the part (base)	Pod dílem (základna)
+Built into the part	Vestavěné do dílu
+Motor operator of a circuit breaker	Motorový pohon jističe
+Grid and system protection relay (voltage and frequency)	Relé ochrany sítě a zařízení (napětí a frekvence)
+13 · Transformer-rated metering with PV and grid protection	13 · Nepřímé měření s FVE a ochranou sítě
+14 · Main low-voltage distribution of an industrial plant	14 · Hlavní rozvaděč nízkého napětí průmyslového závodu
 The archive unpacks to more than {} MB	Archiv se rozbalí na více než {} MB
 Only web and e-mail addresses (http, https, mailto) are links	Odkazy jsou pouze webové a e-mailové adresy (http, https, mailto)
 The plugin program did not answer within {} s and was stopped	Program pluginu neodpověděl do {} s a byl ukončen
+Busbar systems	Přípojnicové systémy
+{}: the busbar system with {} bars joins {} conductors ({}): short circuit	{}: přípojnicový systém s {} přípojnicemi spojuje {} vodiče ({}): zkrat
