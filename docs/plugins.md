@@ -96,7 +96,8 @@ one JSON object to its stdin and reads one JSON object from its stdout, both in 
 not installed, as on Windows, `python` is started instead). Every request
 has `"api": 1` and a `method`. An answer `{"error": "message"}` (or a non-zero exit
 code, with the message on stderr) is an error. `project` is the project as in a
-`.oec` file.
+`.oec` file. A program that has not answered after 5 minutes is stopped and the request
+fails. Plugins run with the rights of the user: load only plugin folders you trust.
 
 | Request | Answer |
 | --- | --- |

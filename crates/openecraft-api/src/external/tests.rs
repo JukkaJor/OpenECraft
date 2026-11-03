@@ -89,3 +89,22 @@ fn plugin_programs_talk_utf8_and_python3_falls_back_to_python() {
     assert_eq!(alternative(Path::new("python3")), Some(PathBuf::from("python")));
     assert_eq!(alternative(Path::new("node")), None);
 }
+
+/// Not a test: the plugin program of [`plugin_programs_that_hang_are_stopped`].
+#[test]
+#[ignore]
+fn hanging_plugin_program() {
+    std::thread::sleep(Duration::from_secs(60));
+}
+
+#[test]
+fn plugin_programs_that_hang_are_stopped() {
+    // This test binary, running the test above, is a program that does not answer.
+    let exe = std::env::current_exe().unwrap();
+    let run = vec![exe.display().to_string(), "--ignored".into(), "--exact".into(), "external::tests::hanging_plugin_program".into()];
+    let transport = process(std::env::temp_dir(), run, Duration::from_millis(500));
+    let start = Instant::now();
+    let err = transport(&json!({ "method": "describe" })).unwrap_err();
+    assert!(err.contains("did not answer"), "{err}");
+    assert!(start.elapsed() < Duration::from_secs(20));
+}

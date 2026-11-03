@@ -110,3 +110,15 @@ fn packed_projects_are_small_and_read_back() {
     assert!(unpack("{}").is_err());
     assert!(unpack("oec-deflate-base64:!!").is_err());
 }
+
+#[test]
+fn zip_bombs_are_refused() {
+    let mut z = ZipWriter::new("2026-01-02");
+    z.add("zeros.bin", &vec![0u8; 1 << 20]);
+    z.add("small.txt", b"x");
+    let bytes = z.finish();
+    assert!(bytes.len() < 1 << 16, "deflated");
+    assert_eq!(crate::zip::read_zip_limited(&bytes, (1 << 20) + 1).unwrap().len(), 2);
+    let err = crate::zip::read_zip_limited(&bytes, 1 << 20).unwrap_err();
+    assert!(err.contains("more than"), "{err}");
+}

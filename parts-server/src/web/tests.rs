@@ -45,7 +45,8 @@ fn the_page_uses_known_texts_only() {
     let known: Vec<&str> = TEXTS.to_vec();
     let mut missing = Vec::new();
     for marker in ["t(\"", "tf(\"", "data-t=\"", "data-tp=\""] {
-        let mut rest = PAGE;
+        let page = format!("{PAGE}{SCRIPT}");
+        let mut rest = page.as_str();
         while let Some(i) = rest.find(marker) {
             let before = rest[..i].chars().last();
             rest = &rest[i + marker.len()..];

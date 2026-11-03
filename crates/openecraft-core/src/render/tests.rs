@@ -236,3 +236,16 @@ fn black_wires_are_drawn_black_not_in_the_wire_ink() {
     assert!(d.lines.contains(&Ink::Color(red)));
     assert!(!d.lines.contains(&Ink::Wire), "no wire falls back to the wire ink");
 }
+
+#[test]
+fn only_web_links_are_exported() {
+    let mut prj = Project::default();
+    for (id, link) in [(1, "javascript:alert(1)"), (2, "file:///C:/Windows/System32/calc.exe"), (3, "mailto:anna@example.org")] {
+        prj.pages[0].texts.push(TextItem { id, pos: p(100.0, 100.0 + id as f32 * 10.0), text: "x".into(), link: link.into(), ..Default::default() });
+    }
+    let an = Analysis::with_builtin(&prj);
+    let mut d = Rec::default();
+    draw_page(&mut d, &prj, &an.index, &an, 0, &Opts::default());
+    let urls: Vec<&str> = d.urls.iter().map(|u| u.2.as_str()).collect();
+    assert_eq!(urls, ["mailto:anna@example.org"]);
+}

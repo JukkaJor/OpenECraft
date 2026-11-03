@@ -6424,3 +6424,6 @@ Double-click (3D view)	双击（3D 视图）
 Look at the point clicked, closer	看向单击的点，并靠近
 Earth electrode	接地极
 House connection box	进户箱
+The archive unpacks to more than {} MB	压缩包解压后超过 {} MB
+Only web and e-mail addresses (http, https, mailto) are links	只有网址和电子邮件地址（http、https、mailto）可作为链接
+The plugin program did not answer within {} s and was stopped	插件程序在 {} 秒内没有响应，已被停止

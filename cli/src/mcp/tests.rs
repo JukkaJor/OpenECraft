@@ -100,3 +100,26 @@ fn the_offered_tools_can_be_limited() {
     let r = handle(&mut s, &request(2, "tools/call", json!({ "name": "check", "arguments": {} }))).unwrap();
     assert_eq!(r["error"]["code"], -32602);
 }
+
+#[test]
+fn files_stay_in_the_root_folder() {
+    let root = std::env::temp_dir().join(format!("oec-mcp-root-{}", std::process::id()));
+    std::fs::create_dir_all(&root).unwrap();
+    let mut s = session();
+    s.mcp_root = Some(root.clone());
+    // Built-in templates are names, not files.
+    assert_eq!(call_tool(&mut s, "new_project", json!({ "template": "Machine" }))["isError"], false);
+    let inside = root.join("plan.oec");
+    let r = call_tool(&mut s, "save_project", json!({ "path": inside.display().to_string() }));
+    assert_eq!(r["isError"], false, "{r}");
+    assert!(inside.exists());
+    for outside in [std::env::temp_dir().join("oec-elsewhere.oec"), root.join("..").join("oec-escaped.oec")] {
+        let r = call_tool(&mut s, "save_project", json!({ "path": outside.display().to_string() }));
+        assert_eq!(r["isError"], true, "{}", outside.display());
+        assert!(r["content"][0]["text"].as_str().unwrap().contains("OPENECRAFT_MCP_ROOT"));
+        assert!(!outside.exists());
+    }
+    let r = call_tool(&mut s, "new_project", json!({ "template": std::env::temp_dir().join("t.oec").display().to_string() }));
+    assert_eq!(r["isError"], true);
+    let _ = std::fs::remove_dir_all(&root);
+}

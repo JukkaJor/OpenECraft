@@ -213,6 +213,22 @@ with a command line, an MCP server, a parts server and a project server.
   Parasolid; ERP / PDM / PLM connectors and Autodesk Vault.
 - **Teams and automation:** a project server with page locks, roles and Active
   Directory / LDAP sign-in; a command line, an MCP server for AI agents and plugins.
+- **Security:** the servers check the token before they read a request's body, send
+  security headers with every answer, end sessions 30 days after the sign-in (sessions
+  of earlier versions end at once), count failed sign-ins per name and client address
+  so that nobody locks others out, and do not tell which user names exist. The data
+  portal page runs only its own script: files that can run scripts (SVG, XML) are
+  downloaded instead of shown and only web addresses become datasheet links. A
+  manufacturer user can no longer put parts into the catalog of another manufacturer.
+  Importing XML nested thousands of levels deep no longer crashes the parts server or
+  the editor, and archives unpacking to more than 1 GB are refused. On a project
+  server without token and accounts only its own machine creates users; reviewers
+  approve and comment in their own name only; managers of a project cannot lift the
+  denials of the administrators; anonymous callers cannot work under the name of an
+  account. Links of texts are opened and exported only for web and e-mail addresses.
+  The Vault and EPLAN clients send their token to their own server only, the MCP server
+  keeps its files in one folder (`OPENECRAFT_MCP_ROOT`) and plugin programs are
+  stopped after 5 minutes without answer.
 - **Languages:** English, German, French, Spanish and 16 more.
 - **Packages:** Windows setup, deb, rpm, AppImage, Flatpak, snap, tar.gz, macOS disk
   image and the web version.

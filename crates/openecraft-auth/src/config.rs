@@ -69,6 +69,9 @@ impl<R: Right> AccessFile<R> {
             Err(e) => return Err(e),
         };
         config.check().map_err(invalid)?;
+        for d in config.directories.iter().filter(|d| !d.bind_password.is_empty()) {
+            log::warn!("directory {}: the password of the service account is in {}, better use bind_password_env", d.id, path.display());
+        }
         Ok(AccessFile { path: Some(path.to_path_buf()), config })
     }
 
@@ -78,9 +81,7 @@ impl<R: Right> AccessFile<R> {
 
     pub fn save(&self) -> io::Result<()> {
         let Some(path) = &self.path else { return Ok(()) };
-        let tmp = path.with_extension("json.tmp");
-        std::fs::write(&tmp, serde_json::to_string_pretty(&self.config).unwrap_or_default())?;
-        std::fs::rename(&tmp, path)
+        write_private(path, serde_json::to_string_pretty(&self.config).unwrap_or_default().as_bytes())
     }
 
     /// Replaces the policy (checked) and stores it.
@@ -95,6 +96,33 @@ impl<R: Right> AccessFile<R> {
     pub fn settings(&self) -> Settings<R> {
         Settings { policy: self.config.policy.clone(), providers: self.config.directories.iter().map(Directory::provider).collect() }
     }
+}
+
+/// Writes a file with secrets (password hashes, sessions, access settings): first a
+/// temporary file, then renamed, so a crash never leaves a half written file. On Unix
+/// only the owner may read it.
+pub fn write_private(path: &Path, data: &[u8]) -> io::Result<()> {
+    use std::io::Write;
+    let mut tmp = path.as_os_str().to_owned();
+    tmp.push(".tmp");
+    let tmp = PathBuf::from(tmp);
+    let mut options = std::fs::OpenOptions::new();
+    options.write(true).create(true).truncate(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        options.mode(0o600);
+    }
+    let mut file = options.open(&tmp)?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        file.set_permissions(std::fs::Permissions::from_mode(0o600))?;
+    }
+    file.write_all(data)?;
+    file.sync_all()?;
+    drop(file);
+    std::fs::rename(&tmp, path)
 }
 
 #[cfg(test)]

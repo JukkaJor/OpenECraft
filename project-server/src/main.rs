@@ -74,6 +74,9 @@ async fn main() {
         log::info!("sign-in with directory {} ({})", d.id, d.url);
     }
     let token = args.token;
+    if openecraft_auth::server_config::secret_on_command_line(std::env::args(), "--token") {
+        log::warn!("--token on the command line can be read by other users of this machine: use OPENECRAFT_PROJECT_TOKEN or the configuration file");
+    }
     if token.is_none() && users.accounts.is_empty() && access.config.directories.is_empty() {
         log::warn!("no access token, user accounts or directories: everyone who reaches the server can change its projects");
     }
@@ -91,7 +94,8 @@ async fn main() {
         tokio::signal::ctrl_c().await.ok();
         log::info!("shutting down");
     };
-    if let Err(e) = axum::serve(listener, routes::router(state)).with_graceful_shutdown(shutdown).await {
+    let app = routes::router(state).into_make_service_with_connect_info::<std::net::SocketAddr>();
+    if let Err(e) = axum::serve(listener, app).with_graceful_shutdown(shutdown).await {
         log::error!("server error: {e}");
         std::process::exit(1);
     }

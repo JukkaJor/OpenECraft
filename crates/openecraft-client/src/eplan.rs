@@ -120,7 +120,8 @@ impl EplanEndpoint {
     /// The file; the token is only sent to the portal itself.
     pub fn file(&self, id: &str) -> ehttp::Request {
         let url = self.file_url(id);
-        let own = url.starts_with(self.url.trim().trim_end_matches('/'));
+        let base = self.url.trim().trim_end_matches('/');
+        let own = crate::same_origin(&url, base) && url.get(..base.len()).is_some_and(|p| p.eq_ignore_ascii_case(base)) && url[base.len()..].starts_with(['/', '?']);
         let req = ehttp::Request::get(url);
         if own {
             self.authorized(req)

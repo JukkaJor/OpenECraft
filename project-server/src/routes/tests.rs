@@ -536,3 +536,85 @@ async fn signing_out_or_deleting_a_user_closes_their_projects() {
     let list: Vec<ProjectSummary> = serde_json::from_str(&with(&app, "GET", "/api/v1/projects", TOKEN, &()).await.1).unwrap();
     assert!(list[0].users.is_empty());
 }
+
+/// A request from the client at `ip`.
+async fn from(app: &Router, ip: [u8; 4], method: &str, uri: &str, body: &impl Serialize) -> StatusCode {
+    let req = Request::builder()
+        .method(method)
+        .uri(uri)
+        .header(header::CONTENT_TYPE, "application/json")
+        .extension(axum::extract::ConnectInfo(std::net::SocketAddr::from((ip, 50000))))
+        .body(Body::from(serde_json::to_string(body).unwrap()))
+        .unwrap();
+    app.clone().oneshot(req).await.unwrap().status()
+}
+
+#[tokio::test]
+async fn open_servers_are_not_taken_over_from_outside() {
+    let app = app(None);
+    let admin = UserUpdate { password: Some("intruder-password".into()), role: Some(ProjectRole::Admin), projects: vec![], groups: None };
+    assert_eq!(from(&app, [203, 0, 113, 9], "PUT", "/api/v1/users/intruder", &admin).await, StatusCode::FORBIDDEN);
+    assert_eq!(from(&app, [203, 0, 113, 9], "PUT", "/api/v1/access", &Policy::<ProjectRight>::default()).await, StatusCode::FORBIDDEN);
+    // The machine of the server sets up the first administrator.
+    assert_eq!(from(&app, [127, 0, 0, 1], "PUT", "/api/v1/users/root", &admin).await, StatusCode::OK);
+}
+
+#[tokio::test]
+async fn approvals_are_given_in_the_own_name() {
+    let app = app(Some(TOKEN));
+    let t = sign_in(&app, &[("rev", Some(ProjectRole::Reviewer), &[])]).await;
+    let req = CreateRequest { name: "Plant 1".into(), user: "admin".into(), project: two_pages() };
+    let (s, _) = with(&app, "POST", "/api/v1/projects", TOKEN, &req).await;
+    assert_eq!(s, StatusCode::CREATED);
+    let (_, text) = with(&app, "POST", "/api/v1/projects/Plant%201/open", &t[0], &OpenRequest { user: "rev".into() }).await;
+    let opened: Opened = serde_json::from_str(&text).unwrap();
+    let mut project = opened.snapshot.project.clone();
+    project.review.approvals.push(openecraft_core::review::Approval { id: 999, rev: 1, revision: "A".into(), user: "Chief Engineer".into(), approved: true, ..Default::default() });
+    let save = SaveRequest { session: opened.session.clone(), project, release: vec![], base_revision: opened.snapshot.revision, strict: false };
+    let (s, text) = with(&app, "PUT", "/api/v1/projects/Plant%201", &t[0], &save).await;
+    assert!(s.is_success(), "{text}");
+    let snapshot: Snapshot = serde_json::from_str(&text).unwrap();
+    assert_eq!(snapshot.project.review.approvals[0].user, "rev");
+}
+
+#[tokio::test]
+async fn managers_cannot_lift_denials() {
+    let app = app(Some(TOKEN));
+    let t = sign_in(&app, &[("olga", Some(ProjectRole::Editor), &[])]).await;
+    let req = CreateRequest { name: "Plant 1".into(), user: String::new(), project: two_pages() };
+    assert_eq!(with(&app, "POST", "/api/v1/projects", &t[0], &req).await.0, StatusCode::CREATED);
+    let owner = Grant::new(Subject::User("olga".into()), "manager", "Plant 1");
+    let denial = Grant { deny: true, ..Grant::new(Subject::Group("externals".into()), "viewer", "Plant 1") };
+    let (s, _) = with(&app, "PUT", "/api/v1/projects/Plant%201/access", TOKEN, &vec![owner.clone(), denial.clone()]).await;
+    assert!(s.is_success());
+    let (s, text) = with(&app, "PUT", "/api/v1/projects/Plant%201/access", &t[0], &vec![owner.clone()]).await;
+    assert_eq!(s, StatusCode::FORBIDDEN, "{text}");
+    // Denying more stays possible.
+    let more = Grant { deny: true, ..Grant::new(Subject::Group("guests".into()), "viewer", "Plant 1") };
+    let (s, text) = with(&app, "PUT", "/api/v1/projects/Plant%201/access", &t[0], &vec![owner, denial, more]).await;
+    assert!(s.is_success(), "{text}");
+}
+
+#[tokio::test]
+async fn bodies_of_unknown_callers_are_not_read() {
+    let app = app(Some(TOKEN));
+    // Refused for the missing token before the body is parsed (else 422 or 400).
+    assert_eq!(call(&app, "POST", "/api/v1/projects", None, "{not json".into()).await.0, StatusCode::UNAUTHORIZED);
+    assert_eq!(call(&app, "PUT", "/api/v1/projects/x", Some("wrong"), "{not json".into()).await.0, StatusCode::UNAUTHORIZED);
+    let big = format!(r#"{{"user": "x", "password": "{}"}}"#, "x".repeat(SMALL_BODY));
+    assert_eq!(call(&app, "POST", "/api/v1/login", None, big).await.0, StatusCode::PAYLOAD_TOO_LARGE);
+}
+
+#[tokio::test]
+async fn anonymous_callers_cannot_take_names_of_accounts() {
+    let app = app(Some(TOKEN));
+    sign_in(&app, &[("olga", Some(ProjectRole::Editor), &[])]).await;
+    let policy = Policy::<ProjectRight> { anonymous: "viewer".into(), ..Default::default() };
+    assert!(with(&app, "PUT", "/api/v1/access", TOKEN, &policy).await.0.is_success());
+    let req = CreateRequest { name: "Plant 1".into(), user: "admin".into(), project: two_pages() };
+    assert_eq!(with(&app, "POST", "/api/v1/projects", TOKEN, &req).await.0, StatusCode::CREATED);
+    assert_eq!(error(&app, "POST", "/api/v1/projects/Plant%201/open", &OpenRequest { user: "Olga".into() }).await.0, StatusCode::FORBIDDEN);
+    let opened: Opened = ok(&app, "POST", "/api/v1/projects/Plant%201/open", &OpenRequest { user: "visitor".into() }).await;
+    // The key to a session cannot be guessed.
+    assert!(opened.session.session.len() > 64, "{}", opened.session.session);
+}

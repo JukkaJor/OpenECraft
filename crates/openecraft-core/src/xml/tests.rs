@@ -34,3 +34,11 @@ fn writer_output_parses_back() {
     assert_eq!(root.child("B").unwrap().text, "line 1\nline 2");
     assert_eq!(root.child("C").unwrap().attr("v"), Some("1"));
 }
+
+#[test]
+fn deep_nesting_is_refused() {
+    let doc = |n: usize| format!("{}{}", "<a>".repeat(n), "</a>".repeat(n));
+    assert!(parse(&doc(MAX_DEPTH)).is_ok());
+    assert!(parse(&doc(MAX_DEPTH + 1)).unwrap_err().contains("nested"));
+    assert!(parse(&doc(1_000_000)).is_err());
+}

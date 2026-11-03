@@ -125,3 +125,16 @@ fn connection_errors_name_the_cause() {
     assert_eq!(reason("io: something else"), "something else");
     assert!(check(Err("io: x (os error 10061)".into())).unwrap_err().starts_with("connection failed: the server refuses"));
 }
+
+#[test]
+fn origins_of_addresses() {
+    assert_eq!(origin("https://Vault.Example.com/a?b"), Some(("https".into(), "vault.example.com".into(), 443)));
+    assert_eq!(origin("http://srv:8090"), Some(("http".into(), "srv".into(), 8090)));
+    assert_eq!(origin("http://[::1]:8091/x"), Some(("http".into(), "::1".into(), 8091)));
+    assert_eq!(origin("https://user@evil.example/"), None);
+    assert_eq!(origin("/relative"), None);
+    assert!(same_origin("https://vault.example.com:443/next", "https://VAULT.example.com"));
+    assert!(!same_origin("https://vault.example.com.evil.example/next", "https://vault.example.com"));
+    assert!(!same_origin("http://vault.example.com/next", "https://vault.example.com"));
+    assert!(!same_origin("https://vault.example.com:8443/", "https://vault.example.com"));
+}

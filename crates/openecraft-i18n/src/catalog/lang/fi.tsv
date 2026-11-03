@@ -6435,3 +6435,6 @@ Double-click (3D view)	Kaksoisnapsautus (3D-näkymä)
 Look at the point clicked, closer	Katso napsautettua kohtaa läheltä
 Earth electrode	Maadoituselektrodi
 House connection box	Liittymiskaappi
+The archive unpacks to more than {} MB	Arkisto purkautuu yli {} megatavuksi
+Only web and e-mail addresses (http, https, mailto) are links	Vain verkko- ja sähköpostiosoitteet (http, https, mailto) ovat linkkejä
+The plugin program did not answer within {} s and was stopped	Laajennusohjelma ei vastannut {} sekunnissa, ja se pysäytettiin

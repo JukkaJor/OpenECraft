@@ -3,7 +3,6 @@
 
 use openecraft_core::collab::{Lock, Session, Target, SESSION_TIMEOUT_SECS};
 use std::collections::{BTreeMap, BTreeSet};
-use std::hash::{BuildHasher, RandomState};
 use std::time::{Duration, Instant};
 
 struct Entry {
@@ -33,8 +32,8 @@ impl Sessions {
     /// Starts a session of `user` on `project`.
     pub fn open(&mut self, project: &str, user: &str, now: Instant) -> Session {
         self.counter += 1;
-        let random = RandomState::new().hash_one(self.counter);
-        let id = format!("{}-{random:016x}", self.counter);
+        // The number is shown to others, the random part is the key to the session.
+        let id = format!("{}-{}", self.counter, openecraft_auth::new_token());
         self.sessions.insert(id.clone(), Entry { user: user.to_string(), project: project.to_string(), seen: now, locks: BTreeSet::new(), owner: None });
         Session { user: user.to_string(), session: id }
     }

@@ -70,10 +70,8 @@ impl JsonBackend {
             std::fs::create_dir_all(dir)?;
         }
         let json = serde_json::to_string_pretty(&self.db).map_err(io::Error::other)?;
-        // Write a temporary file first so a crash never leaves a half written database.
-        let tmp = path.with_extension("tmp");
-        std::fs::write(&tmp, json)?;
-        std::fs::rename(&tmp, path)
+        // Holds the password hashes and sessions of the accounts.
+        openecraft_auth::write_private(path, json.as_bytes())
     }
 
     fn write_file(&mut self, f: &StoredFile) -> io::Result<()> {

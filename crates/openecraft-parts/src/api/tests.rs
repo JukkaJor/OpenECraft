@@ -52,3 +52,13 @@ fn bearer_tokens() {
     assert!(!token_matches("abc", "abd"));
     assert!(!token_matches("abc", "abcd"));
 }
+
+#[test]
+fn only_web_addresses_are_links() {
+    for ok in ["https://example.com/a.pdf", "HTTP://host:8080/x?y", " mailto:anna@example.com "] {
+        assert!(is_web_link(ok), "{ok}");
+    }
+    for bad in ["javascript:alert(1)", "JavaScript://%0aalert(1)", "data:text/html,x", "file:///C:/Windows/System32/calc.exe", r"\\server\share\x.exe", r"C:\docs\a.pdf", "https:evil", "https://", "https://a b", "mailto:", "", "ms-settings:"] {
+        assert!(!is_web_link(bad), "{bad}");
+    }
+}
