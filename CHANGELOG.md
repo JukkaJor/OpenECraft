@@ -195,7 +195,9 @@ with a command line, an MCP server, a parts server and a project server.
   links isolates only: no protection, no selectivity. Cable entry flanges are ways in
   for the 3D routing like cable glands. The check `busbars` finds busbar systems whose
   devices join more conductors than they have bars (a short circuit); the 3D view and
-  the 3D exports draw each bar of a busbar system on its own.
+  the 3D exports draw each bar of a busbar system on its own, at the part's centre
+  distance, on holders reaching just across the bars (their own solids in the 3D
+  exports). A busbar terminal strip across the bars puts each terminal on its own bar.
 - **Revisions and review:** released pages, approval workflow, baselines with compare
   and merge, comments and redlining.
 - **Parts:** a parts database with mounting data and 3D models (STEP, IGES, Parasolid,

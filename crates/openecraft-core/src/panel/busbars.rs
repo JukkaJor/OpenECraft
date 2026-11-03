@@ -133,13 +133,15 @@ pub fn uses(prj: &Project, nl: &Netlist) -> Vec<BusbarUse> {
     out
 }
 
+/// Colour of the copper bars and of their insulating holders.
+pub const COPPER: [u8; 3] = [200, 120, 60];
+pub const HOLDER: [u8; 3] = [70, 72, 78];
+
 /// The bars of a busbar system for the 3D view: each bar on edge at the front of the
-/// system, evenly spaced across it like in the 2D view (part data `Bars`, `Bar: Cu 30 x
-/// 10 mm`), on insulating holders behind them.
+/// system, at their centres like in the 2D view (part data `Bars`, `Centre distance`,
+/// `Bar: Cu 30 x 10 mm`), on insulating holders behind them that reach just across the
+/// outer bars.
 pub fn mesh(prj: &Project, it: &PanelItem) -> Vec<(Tri, Option<[u8; 3]>)> {
-    const COPPER: [u8; 3] = [200, 120, 60];
-    const HOLDER: [u8; 3] = [70, 72, 78];
-    let n = crate::production::bar_count(&prj.parts, &it.part);
     let section = super::part_by_number(prj, &it.part).and_then(|p| p.tech_value("Bar")).map(numbers).unwrap_or_default();
     let (big, small) = match section.as_slice() {
         [a, b, ..] => (a.max(*b), a.min(*b)),
@@ -147,7 +149,8 @@ pub fn mesh(prj: &Project, it: &PanelItem) -> Vec<(Tri, Option<[u8; 3]>)> {
     };
     let horizontal = it.w >= it.h;
     let (along, across) = if horizontal { (it.w, it.h) } else { (it.h, it.w) };
-    let pitch = across / n as f32;
+    let centres = crate::production::bar_centres(&prj.parts, &it.part, across);
+    let pitch = centres.windows(2).map(|w| w[1] - w[0]).fold(across, f32::min);
     let thick = small.min(pitch * 0.5);
     let depth = big.min(it.d * 0.6);
     // Along / across the system and depth to plate coordinates.
@@ -157,16 +160,86 @@ pub fn mesh(prj: &Project, it: &PanelItem) -> Vec<(Tri, Option<[u8; 3]>)> {
         box_triangles([p[0].min(q[0]), p[1].min(q[1]), p[2]], [p[0].max(q[0]), p[1].max(q[1]), q[2]])
     };
     let mut out = Vec::new();
-    for k in 0..n {
-        let c = pitch * (k as f32 + 0.5);
+    for c in &centres {
         out.extend(block(0.0, along, c - thick / 2.0, c + thick / 2.0, it.d - depth, it.d).into_iter().map(|t| (t, Some(COPPER))));
     }
+    let (first, last) = (centres.first().copied().unwrap_or(0.0), centres.last().copied().unwrap_or(across));
+    let (c0, c1) = ((first - 2.0 * thick).max(0.0), (last + 2.0 * thick).min(across));
     let holders = ((along / 400.0).ceil() as usize).max(1) + 1;
     for k in 0..holders {
         let a = (along - 30.0) * k as f32 / (holders - 1) as f32;
-        out.extend(block(a, a + 30.0, 0.0, across, 0.0, it.d - depth).into_iter().map(|t| (t, Some(HOLDER))));
+        out.extend(block(a, a + 30.0, c0, c1, 0.0, it.d - depth).into_iter().map(|t| (t, Some(HOLDER))));
     }
     out
+}
+
+/// A terminal strip placed across the bars of a busbar system (the busbar terminals of
+/// a supply cable): each terminal upright on its own bar, the cable coming in across
+/// the bars, in strip order from the first bar the strip covers. Per terminal its box
+/// (as high as the part, at most as far as the bars are apart), part and designation;
+/// `None` for a strip that is not across bars or has more terminals than it covers bars.
+pub fn terminals_on_bars(prj: &Project, it: &PanelItem) -> Option<Vec<(PanelItem, String, String)>> {
+    if it.kind != ItemKind::Device {
+        return None;
+    }
+    super::part_by_number(prj, &it.part).filter(|p| p.mounting.to_lowercase().contains("busbar") && crate::strips::is_terminal_part(p))?;
+    let e = prj.layout.enclosures.iter().find(|e| e.items.iter().any(|i| i.id == it.id))?;
+    let bar = e.items.iter().find(|b| {
+        b.kind == ItemKind::Busbar && b.face == it.face && it.x < b.x + b.w && b.x < it.x + it.w && it.y < b.y + b.h && b.y < it.y + it.h
+    })?;
+    let horizontal = bar.w >= bar.h;
+    let ((start, len), (b0, across), across_bars) =
+        if horizontal { ((it.y, it.h), (bar.y, bar.h), it.h > it.w) } else { ((it.x, it.w), (bar.x, bar.w), it.w > it.h) };
+    if !across_bars {
+        return None;
+    }
+    let centres: Vec<f32> =
+        crate::production::bar_centres(&prj.parts, &bar.part, across).into_iter().map(|c| b0 + c).filter(|c| *c >= start && *c <= start + len).collect();
+    let layout = crate::strips::strip_layout(prj, &it.tag);
+    let terminals: Vec<(&String, &String)> = layout
+        .iter()
+        .filter_map(|el| match &el.kind {
+            crate::strips::ElementKind::Terminal(label) | crate::strips::ElementKind::Spare(label) => Some((&el.part, label)),
+            _ => None,
+        })
+        .collect();
+    if terminals.is_empty() || terminals.len() > centres.len() {
+        return None;
+    }
+    let gap = centres.windows(2).map(|w| w[1] - w[0]).fold(f32::MAX, f32::min);
+    Some(
+        terminals
+            .into_iter()
+            .zip(centres)
+            .map(|((part, label), c)| {
+                let high = super::part_by_number(prj, part).map_or(gap, |p| p.height).min(gap * 0.9);
+                let mut sub = it.clone();
+                if horizontal {
+                    (sub.y, sub.h) = (c - high / 2.0, high);
+                } else {
+                    (sub.x, sub.w) = (c - high / 2.0, high);
+                }
+                (sub, part.clone(), label.clone())
+            })
+            .collect(),
+    )
+}
+
+/// Places the terminal strip `tag` across the bars of the busbar item `bar`, `at` mm
+/// along it: as wide as one terminal, as long as the system is wide (a terminal on
+/// each bar).
+pub fn place_on_bars(prj: &mut Project, enc: usize, tag: &str, bar: u64, at: f32) -> Option<u64> {
+    let b = prj.layout.enclosures.get(enc)?.items.iter().find(|i| i.id == bar)?.clone();
+    let size = super::device_size(prj, tag)?;
+    let wide = super::part_by_number(prj, &size.part)?.width;
+    let id = super::place_device(prj, enc, tag, crate::geom::p(b.x + at, b.y))?;
+    let it = prj.layout.enclosures[enc].items.iter_mut().find(|i| i.id == id)?;
+    if b.w >= b.h {
+        (it.x, it.y, it.w, it.h) = (b.x + at, b.y, wide, b.h);
+    } else {
+        (it.x, it.y, it.w, it.h) = (b.x, b.y + at, b.w, wide);
+    }
+    Some(id)
 }
 
 /// The numbers in a text (`Cu 30 x 10 mm` → 30, 10).

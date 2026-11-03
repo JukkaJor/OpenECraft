@@ -874,6 +874,17 @@ pub fn device_mesh_painted(prj: &Project, it: &PanelItem) -> Option<Vec<(Tri, Op
         }
         return Some(out);
     }
+    // Busbar terminals across the bars: each upright on its bar.
+    if let Some(places) = busbars::terminals_on_bars(prj, it) {
+        let mut out = Vec::new();
+        for (sub, number, _) in places {
+            match part_by_number(prj, &number).and_then(|p| p.model_3d.as_ref()) {
+                Some(mesh) => out.extend(painted(mesh, place_mesh(mesh, &sub))),
+                None => out.extend(box_triangles([sub.x, sub.y, sub.z], [sub.x + sub.w, sub.y + sub.h, sub.z + sub.d]).into_iter().map(|t| (t, None))),
+            }
+        }
+        return Some(out);
+    }
     let cells = strip_cells(prj, it);
     if cells.is_empty() {
         let mesh = part_by_number(prj, &it.part)?.model_3d.as_ref()?;

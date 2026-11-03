@@ -642,9 +642,11 @@ pub(super) fn cables(prj: &mut Project, db: &PartsDb, list: &[(&str, &str, f32, 
     }
 }
 
-pub(super) fn profile(prj: &mut Project, enc: usize, kind: ItemKind, part: &str, a: (f32, f32), b: (f32, f32)) {
+pub(super) fn profile(prj: &mut Project, enc: usize, kind: ItemKind, part: &str, a: (f32, f32), b: (f32, f32)) -> u64 {
     let item = panel::new_profile(prj, kind, part, p(a.0, a.1), p(b.0, b.1));
+    let id = item.id;
     prj.layout.enclosures[enc].items.push(item);
+    id
 }
 
 /// Devices side by side from `x` on the rail at height `rail_y`.
@@ -679,7 +681,7 @@ pub(super) fn push(prj: &mut Project, e: Enclosure) -> usize {
 /// generation metering, inverter feeders; busbars at the bottom. The meter cabinets
 /// +ZS1 and +ZS2 with their test terminal blocks.
 fn enclosures(prj: &mut Project, db: &PartsDb) {
-    for part in ["HAG.FR25S2", "HAG.FZ831", "HAG.UD21APZ", "HAG.FP62ZG2", panel::RAIL_PART, "GEN.BB-3X30X10", "GEN.PE-BAR-10", "GEN.GLAND-M63", "GEN.GLAND-M40", "GEN.GLAND-M32", "GEN.GLAND-M20", "PXC.3022218", "PXC.3209552"] {
+    for part in ["HAG.FR25S2", "HAG.FZ831", "HAG.UD21APZ", "HAG.FP62ZG2", panel::RAIL_PART, "GEN.BB-3X30X10", "GEN.BB-3X30X10-60", "GEN.PE-BAR-10", "GEN.GLAND-M63", "GEN.GLAND-M40", "GEN.GLAND-M32", "GEN.GLAND-M20", "PXC.3022218", "PXC.3209552"] {
         crate::parts::ensure_in_project(prj, db, part);
     }
     let e = panel::new_enclosure(prj, "HAG.FR25S2", "+HV");
@@ -691,8 +693,9 @@ fn enclosures(prj: &mut Project, db: &PartsDb) {
     on_rail(prj, hv, 420.0, 15.0, &["=GRID+HV-F1", "=GRID+HV-F2", "=GRID+HV-X2"]);
     rail(prj, 10.0, 240.0, 1450.0);
     on_rail(prj, hv, 1450.0, 15.0, &["=GRID+HV-X1"]);
-    profile(prj, hv, ItemKind::Busbar, "GEN.BB-3X30X10", (20.0, 1700.0), (480.0, 1700.0));
-    panel::place_device(prj, hv, "=GRID+HV-X0", p(30.0, 1655.0));
+    // The main busbar, a feed-in terminal on each of its bars.
+    let main = profile(prj, hv, ItemKind::Busbar, "GEN.BB-3X30X10-60", (20.0, 1670.0), (480.0, 1670.0));
+    panel::busbars::place_on_bars(prj, hv, "=GRID+HV-X0", main, 30.0);
     panel::place_accessory(prj, hv, "GEN.PE-BAR-10", Face::Plate, p(20.0, 1765.0));
     // Field 2: consumption metering, power flowing up from the busbar.
     panel::place_device(prj, hv, "=MS1+HV-Q10", p(300.0, 150.0));

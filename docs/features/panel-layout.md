@@ -34,7 +34,10 @@ line-ups, rooms of the building with their floor-standing equipment and pipe run
 - Copper **busbar systems** (bars drawn, metres and holders in the BOM) and rectangular
   or round **cutouts** in the mounting plate. A device placed over a busbar system is
   mounted onto its bars; devices on the same busbar system are connected by the bars,
-  not by wires. The 3D view draws every bar on its own, on insulating holders. Each bar
+  not by wires. The bars lie at the part's `Centre distance` (evenly spaced without
+  one); the 3D view draws every bar on its own, on insulating holders reaching just
+  across them. A busbar terminal strip placed across the bars (`busbars::place_on_bars`)
+  puts each terminal upright on its own bar, one strip per supply cable. Each bar
   is one conductor: the check `busbars` reports a system whose devices join more
   conductors than it has bars (part data `Bars`) as a short circuit, such as a PEN
   terminal on the bars of the phases or the feeders behind a coupling switch on the

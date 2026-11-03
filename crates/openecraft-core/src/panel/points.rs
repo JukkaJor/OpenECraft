@@ -121,6 +121,20 @@ pub fn device_points(prj: &Project, it: &PanelItem) -> Vec<PlacedPoint> {
             }
         }
     }
+    // Busbar terminals across the bars: each upright on its bar.
+    if let Some(places) = super::busbars::terminals_on_bars(prj, it) {
+        let mut out = Vec::new();
+        for (sub, number, label) in places {
+            let part = super::part_by_number(prj, &number).unwrap_or(main);
+            let size = part.size().unwrap_or([mw, mh, md]);
+            let from = out.len();
+            piece_points(&mut out, part, size, &sub, super::item_rotated(&sub, size[1]));
+            for p in &mut out[from..] {
+                p.terminal = label.clone();
+            }
+        }
+        return out;
+    }
     let strip = super::is_strip_part(main);
     if strip {
         depth = super::strip_depth(&parts);

@@ -183,6 +183,26 @@ pub fn bar_count(parts: &[Part], part: &str) -> usize {
         .clamp(1, 8)
 }
 
+/// Centres of the bars of a busbar system across its width `across` (mm from its
+/// edge): at the part's centre distance (`Centre distance: 185 mm`) where the bars fit,
+/// otherwise evenly spaced.
+pub fn bar_centres(parts: &[Part], part: &str, across: f32) -> Vec<f32> {
+    let n = bar_count(parts, part);
+    let distance = parts
+        .iter()
+        .find(|x| x.number == part)
+        .and_then(|x| x.tech_value("Centre distance"))
+        .and_then(|v| v.trim().trim_end_matches("mm").trim().parse::<f32>().ok())
+        .filter(|c| n > 1 && *c > 0.0 && (n - 1) as f32 * c < across);
+    match distance {
+        Some(c) => {
+            let first = (across - (n - 1) as f32 * c) / 2.0;
+            (0..n).map(|k| first + k as f32 * c).collect()
+        }
+        None => (0..n).map(|k| across / n as f32 * (k as f32 + 0.5)).collect(),
+    }
+}
+
 // ---------------------------------------------------------------------- cutouts
 
 /// Opening in the mounting plate or the door, in the coordinates of its face.

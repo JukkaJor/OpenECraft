@@ -110,7 +110,8 @@ pub(super) fn project() -> Project {
 const DEVICES: &[(&str, &[&str])] = &[
     ("=GRID+HAK1-F1", &["GEN.NH2-BASE-3P-400A"]),
     ("=GRID+HAK2-F1", &["GEN.NH2-BASE-3P-400A"]),
-    ("=GRID+HV1-X0", &["HAG.KS30C"]),
+    ("=GRID+HV1-X01", &["HAG.KS30C"]),
+    ("=GRID+HV1-X02", &["HAG.KS30C"]),
     ("=GRID+HV1-X1", &["HAG.KS30C"]),
     ("=GRID+HV1-F1", &["HAG.SPA811Z"]),
     ("=MS+HV1-F10", &["HAG.LVSG3CPX"]),
@@ -321,9 +322,10 @@ fn supplies(prj: &mut Project, section: u64) {
             core(&mut g, (x, 36.0), (x, 68.0), cable, c);
         }
         core(&mut g, (x0 + 24.0, 24.0), (x0 + 24.0, 68.0), cable, "GNYE");
-        // The phases on the busbar terminals of the phase bars, the PEN on the PEN bar.
+        // The phases on the busbar terminals of the phase bars (a terminal on each bar
+        // per cable), the PEN on the PEN bar.
         for j in 0..3 {
-            g.sym("term", x0 + 8.0 * j as f32, 72.0, 0, "-X0", &(3 * k + j + 1).to_string(), "");
+            g.sym("term", x0 + 8.0 * j as f32, 72.0, 0, &format!("-X0{}", k + 1), &(j + 1).to_string(), "");
         }
         g.sym("term", x0 + 24.0, 72.0, 0, "-X1", &(k + 1).to_string(), "");
     }
@@ -611,8 +613,9 @@ fn enclosures(prj: &mut Project, db: &PartsDb) {
     panel::place_device(prj, hv1, "=EMS+HV1-T5", p(730.0, 40.0));
     rail(prj, hv1, 20.0, 980.0, 300.0);
     on_rail(prj, hv1, 300.0, 30.0, &["=GRID+HV1-F1", "=MS+HV1-F11", "=MS+HV1-X1", "=EMS+HV1-P5", "=EMS+HV1-F5"]);
-    profile(prj, hv1, ItemKind::Busbar, "GEN.BB-3X30X10-185", (20.0, 800.0), (480.0, 800.0));
-    panel::place_device(prj, hv1, "=GRID+HV1-X0", p(30.0, 970.0));
+    let supply = profile(prj, hv1, ItemKind::Busbar, "GEN.BB-3X30X10-185", (20.0, 800.0), (480.0, 800.0));
+    panel::busbars::place_on_bars(prj, hv1, "=GRID+HV1-X01", supply, 40.0);
+    panel::busbars::place_on_bars(prj, hv1, "=GRID+HV1-X02", supply, 160.0);
     // The PEN bar below the phases, the PEN of both supply cables on it.
     profile(prj, hv1, ItemKind::Busbar, "GEN.BB-1X30X10", (20.0, 1100.0), (350.0, 1100.0));
     panel::place_device(prj, hv1, "=GRID+HV1-X1", p(30.0, 1070.0));

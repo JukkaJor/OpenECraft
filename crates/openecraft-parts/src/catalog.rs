@@ -647,7 +647,8 @@ Breaking capacity: 100 kA".into();
         ("GEN.BB-3X30X10", "Busbar system 3-pole, Cu 30 x 10 mm, 60 mm centre distance", 118.0, (1000.0, 90.0, 50.0, 8.1), "Bars: 3\nBar: Cu 30 x 10 mm\nRated current: 800 A"),
         ("GEN.BB-4X12X5", "Busbar system 4-pole, Cu 12 x 5 mm, 40 mm centre distance", 49.0, (1000.0, 135.0, 40.0, 2.1), "Bars: 4\nBar: Cu 12 x 5 mm\nRated current: 200 A"),
         ("GEN.BB-1X30X10", "Busbar 1-pole, Cu 30 x 10 mm, for N, PE or PEN", 40.0, (1000.0, 40.0, 50.0, 2.7), "Bars: 1\nBar: Cu 30 x 10 mm\nRated current: 800 A"),
-        ("GEN.BB-3X30X10-185", "Busbar system 3-pole, Cu 30 x 10 mm, 185 mm centre distance, for NH fuse switch disconnector strips", 168.0, (1000.0, 400.0, 50.0, 8.1), "Bars: 3\nBar: Cu 30 x 10 mm\nRated current: 800 A"),
+        ("GEN.BB-3X30X10-60", "Busbar system 3-pole, Cu 30 x 10 mm, 60 mm centre distance, holders 150 mm wide", 124.0, (1000.0, 150.0, 50.0, 8.1), "Bars: 3\nBar: Cu 30 x 10 mm\nCentre distance: 60 mm\nRated current: 800 A"),
+        ("GEN.BB-3X30X10-185", "Busbar system 3-pole, Cu 30 x 10 mm, 185 mm centre distance, for NH fuse switch disconnector strips", 168.0, (1000.0, 400.0, 50.0, 8.1), "Bars: 3\nBar: Cu 30 x 10 mm\nCentre distance: 185 mm\nRated current: 800 A"),
     ] {
         let p = c.add(number, desc, "Mounting", "Busbar system", "", price, dims, &[]);
         p.quantity_unit = "m".into();
