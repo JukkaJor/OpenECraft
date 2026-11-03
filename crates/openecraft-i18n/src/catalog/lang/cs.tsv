@@ -6435,3 +6435,6 @@ Double-click (3D view)	Dvojklik (3D zobrazení)
 Look at the point clicked, closer	Podívat se na kliknutý bod zblízka
 Earth electrode	Zemnič
 House connection box	Přípojková skříň
+The archive unpacks to more than {} MB	Archiv se rozbalí na více než {} MB
+Only web and e-mail addresses (http, https, mailto) are links	Odkazy jsou pouze webové a e-mailové adresy (http, https, mailto)
+The plugin program did not answer within {} s and was stopped	Program pluginu neodpověděl do {} s a byl ukončen

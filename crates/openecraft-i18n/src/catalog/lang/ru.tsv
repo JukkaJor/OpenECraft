@@ -6434,3 +6434,6 @@ Double-click (3D view)	Двойной щелчок (3D-вид)
 Look at the point clicked, closer	Посмотреть на точку щелчка, ближе
 Earth electrode	Заземлитель
 House connection box	Вводной щит
+The archive unpacks to more than {} MB	Архив распаковывается более чем в {} МБ
+Only web and e-mail addresses (http, https, mailto) are links	Ссылками могут быть только веб- и почтовые адреса (http, https, mailto)
+The plugin program did not answer within {} s and was stopped	Программа плагина не ответила за {} с и была остановлена

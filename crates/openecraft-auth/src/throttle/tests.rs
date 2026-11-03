@@ -1,21 +1,64 @@
 use super::*;
 
+fn ip(last: u8) -> Option<IpAddr> {
+    Some(IpAddr::from([192, 0, 2, last]))
+}
+
 #[test]
 fn delays_after_repeated_failures() {
     let mut t = Throttle::default();
     let now = Instant::now();
     for _ in 0..FREE_ATTEMPTS {
-        assert_eq!(t.wait("Anna", now), None);
-        t.failed("anna ", now);
+        assert_eq!(t.wait("Anna", ip(1), now), None);
+        t.failed("anna ", ip(1), now);
     }
-    assert_eq!(t.wait("ANNA", now), Some(1));
-    assert_eq!(t.wait("anna", now + Duration::from_secs(2)), None);
-    t.failed("anna", now);
-    assert_eq!(t.wait("anna", now), Some(2));
+    assert_eq!(t.wait("ANNA", ip(1), now), Some(1));
+    assert_eq!(t.wait("anna", ip(1), now + Duration::from_secs(2)), None);
+    t.failed("anna", ip(1), now);
+    assert_eq!(t.wait("anna", ip(1), now), Some(2));
     // Other names are not affected; a success forgets the failures.
-    assert_eq!(t.wait("ben", now), None);
-    t.succeeded("Anna");
-    assert_eq!(t.wait("anna", now), None);
+    assert_eq!(t.wait("ben", ip(1), now), None);
+    t.succeeded("Anna", ip(1));
+    assert_eq!(t.wait("anna", ip(1), now), None);
+}
+
+#[test]
+fn others_cannot_lock_a_user_out() {
+    let mut t = Throttle::default();
+    let now = Instant::now();
+    for _ in 0..20 {
+        t.failed("anna", ip(66), now);
+    }
+    assert!(t.wait("anna", ip(66), now).is_some());
+    assert_eq!(t.wait("anna", ip(1), now), None);
+}
+
+#[test]
+fn many_names_from_one_client_are_slowed_down() {
+    let mut t = Throttle::default();
+    let now = Instant::now();
+    for i in 0..FREE_CLIENT_ATTEMPTS {
+        assert_eq!(t.wait(&format!("user{i}"), ip(66), now), None);
+        t.failed(&format!("user{i}"), ip(66), now);
+    }
+    assert_eq!(t.wait("someone else", ip(66), now), Some(1));
+    assert_eq!(t.wait("someone else", ip(1), now), None);
+    // Signing in to an own account does not reset the client.
+    t.succeeded("mallory", ip(66));
+    assert_eq!(t.wait("someone else", ip(66), now), Some(1));
+}
+
+#[test]
+fn failures_are_forgotten() {
+    let mut t = Throttle::default();
+    let now = Instant::now();
+    for _ in 0..FREE_ATTEMPTS + 3 {
+        t.failed("anna", ip(1), now);
+    }
+    assert!(t.wait("anna", ip(1), now).is_some());
+    assert_eq!(t.wait("anna", ip(1), now + FORGET_AFTER), None);
+    t.failed("anna", ip(1), now + FORGET_AFTER);
+    assert_eq!(t.wait("anna", ip(1), now + FORGET_AFTER), None, "counting starts again");
 }
 
 #[test]
@@ -23,7 +66,7 @@ fn wait_is_capped() {
     let mut t = Throttle::default();
     let now = Instant::now();
     for _ in 0..40 {
-        t.failed("x", now);
+        t.failed("x", None, now);
     }
-    assert_eq!(t.wait("x", now), Some(MAX_WAIT.as_secs()));
+    assert_eq!(t.wait("x", None, now), Some(MAX_WAIT.as_secs()));
 }

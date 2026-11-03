@@ -413,7 +413,7 @@ pub fn part_editor(ui: &mut egui::Ui, part: &mut Part, state: &mut EditorState, 
                 text_row(ui, tr("Certificates"), &mut part.certificates);
                 text_row(ui, tr("Datasheet (URL)"), &mut part.datasheet);
             });
-            if part.datasheet.starts_with("http") {
+            if openecraft_parts::api::is_web_link(&part.datasheet) {
                 ui.hyperlink_to(tr("Open datasheet"), &part.datasheet);
             }
         }

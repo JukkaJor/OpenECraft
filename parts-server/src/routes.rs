@@ -1,15 +1,16 @@
 //! HTTP routes of the parts server (see `openecraft_parts::api` for the API).
 
-use crate::auth::{hash_password, verify_password, Account};
+use crate::auth::{hash_password, verify_account_password, Account};
 use crate::storage::Store;
 use crate::web;
 use axum::body::Bytes;
-use axum::extract::{DefaultBodyLimit, Path, Query, State};
+use axum::extract::{DefaultBodyLimit, Path, Query, Request, State};
 use axum::http::{header, HeaderMap, Method, StatusCode};
+use axum::middleware::Next;
 use axum::response::{IntoResponse, Response};
 use axum::routing::{delete, get, post};
 use axum::{Json, Router};
-use openecraft_auth::{AccessFile, SignInError, Throttle};
+use openecraft_auth::{AccessFile, ClientIp, SignInError, Throttle};
 use openecraft_parts::access::{Access, Policy, Right, Settings, SERVER};
 use openecraft_parts::api::{
     bearer_token, token_matches, Accessories, ApiError, ImportResult, Login, PartList, PartQuery, ServerInfo, Session, UserUpdate, API_PREFIX,
@@ -76,14 +77,18 @@ fn forbidden(msg: impl Into<String>) -> AppError {
 
 type Result<T> = std::result::Result<T, AppError>;
 
+/// Largest body of a request anybody may send (sign-in, search).
+const SMALL_BODY: usize = 64 * 1024;
+
 pub fn router(state: AppState) -> Router {
     let api = |path: &str| format!("{API_PREFIX}{path}");
     Router::new()
         .route("/", get(web::index))
+        .route("/portal.js", get(web::script))
         .route(&api("/texts"), get(web::texts))
         .route(&api("/info"), get(info))
         .route(&api("/parts"), get(list))
-        .route(&api("/search"), post(search))
+        .route(&api("/search"), post(search).layer(DefaultBodyLimit::max(SMALL_BODY)))
         .route(&api("/parts/{number}"), get(get_part).put(put_part).delete(delete_part))
         .route(&api("/parts/{number}/accessories"), get(accessories))
         .route(&api("/parts/{number}/history"), get(history))
@@ -95,16 +100,31 @@ pub fn router(state: AppState) -> Router {
         .route(&api("/export.csv"), get(export_csv))
         .route(&api("/catalogs"), get(catalogs))
         .route(&api("/catalogs/{id}"), get(get_catalog).put(put_catalog).delete(delete_catalog))
-        .route(&api("/login"), post(login))
+        .route(&api("/login"), post(login).layer(DefaultBodyLimit::max(SMALL_BODY)))
         .route(&api("/logout"), post(logout))
         .route(&api("/favorites"), get(favorites).put(set_favorites))
         .route(&api("/users"), get(users))
         .route(&api("/users/{name}"), axum::routing::put(put_user).delete(delete_user))
         .route(&api("/access"), get(access).put(save_access))
         .layer(DefaultBodyLimit::max(32 * 1024 * 1024))
+        .layer(axum::middleware::from_fn_with_state(state.clone(), signed_in_changes))
         .layer(axum::middleware::map_response(openecraft_auth::json_errors))
+        .layer(axum::middleware::map_response(openecraft_auth::security_headers))
         .layer(cors())
         .with_state(state)
+}
+
+/// Changes need a signed-in user, checked before their body is read: nobody else
+/// makes the server read and parse large bodies.
+async fn signed_in_changes(State(state): State<AppState>, req: Request, next: Next) -> Response {
+    let open = [Method::GET, Method::HEAD, Method::OPTIONS].contains(req.method())
+        || ["/login", "/logout", "/search"].iter().any(|p| req.uri().path() == format!("{API_PREFIX}{p}"));
+    if !open {
+        if let Err(e) = user(&state, req.headers()) {
+            return e.into_response();
+        }
+    }
+    next.run(req).await
 }
 
 /// Any origin may call the API (e.g. the web app): authentication uses bearer
@@ -298,10 +318,20 @@ fn check_part(part: &Part) -> Result<()> {
     Ok(())
 }
 
-/// The catalog a part names must exist.
-fn check_catalog(store: &Store, part: &Part) -> Result<()> {
-    if !part.catalog.trim().is_empty() && store.catalog(part.catalog.trim())?.is_none() {
-        return Err(bad(format!("catalog '{}' of part '{}' not found: create the catalog first", part.catalog.trim(), part.number)));
+/// The catalog a part names must exist; a part may only be put into a catalog the
+/// user may add parts to (that of a manufacturer they may change), unless it is in
+/// it already (`old`).
+fn check_catalog(store: &Store, user: &User, access: &Access<PartsRight>, part: &Part, old: Option<&Part>) -> Result<()> {
+    let name = part.catalog.trim();
+    if name.is_empty() {
+        return Ok(());
+    }
+    let Some(catalog) = store.catalog(name)? else {
+        return Err(bad(format!("catalog '{name}' of part '{}' not found: create the catalog first", part.number)));
+    };
+    let unchanged = old.is_some_and(|o| o.catalog.trim().eq_ignore_ascii_case(name));
+    if !unchanged && !access.allows(catalog.manufacturer.trim(), PartsRight::EditParts) {
+        return Err(forbidden(format!("user '{}' may not add parts to catalog '{name}'", user.name)));
     }
     Ok(())
 }
@@ -344,9 +374,10 @@ async fn put_part(
     }
     check_part(&part)?;
     let mut store = store(&state);
-    check_catalog(&store, &part)?;
+    let old = store.get(&number)?;
+    check_catalog(&store, &user, &access, &part, old.as_ref())?;
     need(&user, &access, PartsRight::EditParts, &part.manufacturer)?;
-    if let Some(old) = store.get(&number)? {
+    if let Some(old) = &old {
         need(&user, &access, PartsRight::EditParts, &old.manufacturer)?;
     }
     check_new_number(&store, &number)?;
@@ -434,8 +465,20 @@ async fn detach(State(state): State<AppState>, headers: HeaderMap, Path((number,
 async fn file(State(state): State<AppState>, headers: HeaderMap, Path(id): Path<String>) -> Result<Response> {
     reader(&state, &headers)?;
     let f = store(&state).file(&id)?.ok_or_else(|| not_found(format!("file '{id}' not found")))?;
-    let disposition = format!("inline; filename=\"{}\"", f.name.replace(['"', '\\', '\r', '\n'], "_"));
-    Ok(([(header::CONTENT_TYPE, content_type(&f.name).to_string()), (header::CONTENT_DISPOSITION, disposition)], f.data).into_response())
+    let kind = content_type(&f.name);
+    let disposition = format!("{}; filename=\"{}\"", if shown_inline(kind) { "inline" } else { "attachment" }, f.name.replace(['"', '\\', '\r', '\n'], "_"));
+    let mut resp = ([(header::CONTENT_TYPE, kind.to_string()), (header::CONTENT_DISPOSITION, disposition)], f.data).into_response();
+    if kind == "application/pdf" {
+        // The PDF viewer of the browser needs its own resources.
+        resp.headers_mut().insert(header::CONTENT_SECURITY_POLICY, header::HeaderValue::from_static("frame-ancestors 'none'"));
+    }
+    Ok(resp)
+}
+
+/// Files the browser shows instead of saving them: types that cannot run scripts on
+/// the server's address (SVG, XML and HTML can).
+fn shown_inline(content_type: &str) -> bool {
+    matches!(content_type, "application/pdf" | "image/png" | "image/jpeg" | "image/gif" | "image/webp" | "text/plain")
 }
 
 /// Body: CSV (header names as in the export), JSON (parts database or part list) or BMEcat.
@@ -457,9 +500,10 @@ async fn import_parts(State(state): State<AppState>, headers: HeaderMap, body: S
     }
     let mut store = store(&state);
     for p in &parts {
-        check_catalog(&store, p)?;
+        let old = store.get(&p.number)?;
+        check_catalog(&store, &user, &access, p, old.as_ref())?;
         need(&user, &access, PartsRight::EditParts, &p.manufacturer)?;
-        if let Some(old) = store.get(&p.number)? {
+        if let Some(old) = &old {
             need(&user, &access, PartsRight::EditParts, &old.manufacturer)?;
         }
         check_new_number(&store, &p.number)?;
@@ -531,18 +575,25 @@ async fn delete_catalog(State(state): State<AppState>, headers: HeaderMap, Path(
 /// Signs in with a local account or, if the server has none of that name, with its
 /// directories; a directory user gets an account (reader, groups, sessions) on the
 /// first sign-in.
-async fn login(State(state): State<AppState>, Json(login): Json<Login>) -> Result<Json<Session>> {
-    if let Some(wait) = throttle(&state).wait(&login.name, Instant::now()) {
+async fn login(State(state): State<AppState>, ClientIp(client): ClientIp, Json(login): Json<Login>) -> Result<Json<Session>> {
+    if let Some(wait) = throttle(&state).wait(&login.name, client, Instant::now()) {
         return Err(AppError(StatusCode::TOO_MANY_REQUESTS, format!("too many failed sign-ins, try again in {wait} s")));
     }
     let refused = || {
-        throttle(&state).failed(&login.name, Instant::now());
+        throttle(&state).failed(&login.name, client, Instant::now());
         AppError(StatusCode::UNAUTHORIZED, "wrong user name or password".into())
     };
     let local = store(&state).account(login.name.trim()).filter(|a| a.user.provider.is_empty() && login.provider.trim().is_empty()).cloned();
+    let directories = !access_file(&state).config.directories.is_empty();
     let mut account = match local {
-        Some(a) if verify_password(&login.password, &a.password) => a,
+        Some(a) if password_matches(&login.password, Some(&a.password)).await => a,
         Some(_) => {
+            log::warn!("failed login of '{}'", login.name);
+            return Err(refused());
+        }
+        None if !directories => {
+            // As long as a wrong password, so the answer does not tell which names exist.
+            password_matches(&login.password, None).await;
             log::warn!("failed login of '{}'", login.name);
             return Err(refused());
         }
@@ -565,7 +616,7 @@ async fn login(State(state): State<AppState>, Json(login): Json<Login>) -> Resul
             account
         }
     };
-    throttle(&state).succeeded(&login.name);
+    throttle(&state).succeeded(&login.name, client);
     let token = account.start_session();
     let user = account.user.clone();
     store(&state).put_account(account)?;
@@ -574,6 +625,12 @@ async fn login(State(state): State<AppState>, Json(login): Json<Login>) -> Resul
     let policy = &file.config.policy;
     let access = policy.access(&user.identity(), &user.grants()).with(policy.anonymous_access());
     Ok(Json(Session { token, user, access }))
+}
+
+/// Checks a password (Argon2) without blocking the other requests.
+async fn password_matches(password: &str, hash: Option<&str>) -> bool {
+    let (password, hash) = (password.to_string(), hash.map(String::from));
+    tokio::task::spawn_blocking(move || verify_account_password(&password, hash.as_deref())).await.unwrap_or(false)
 }
 
 async fn logout(State(state): State<AppState>, headers: HeaderMap) -> Result<StatusCode> {

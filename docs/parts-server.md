@@ -88,7 +88,9 @@ cargo run --release -p openecraft-parts-server -- --config parts-server.toml
 - REST API (`/api/v1`, see `openecraft_parts::api`): `GET /info`, `GET /parts`,
   `POST /search`, `GET|PUT|DELETE /parts/{number}`, `GET /parts/{number}/accessories` (its accessories
   and, for an accessory, the parts it fits), `GET /parts/{number}/history[/{revision}]`,
-  `POST|DELETE /parts/{number}/attachments`, `GET /files/{id}`, `POST /import` (CSV,
+  `POST|DELETE /parts/{number}/attachments`, `GET /files/{id}` (PDF, raster images and
+  text are shown in the browser, other files such as SVG and XML are downloaded, so
+  that no file runs a script on the server's address), `POST /import` (CSV,
   JSON or BMEcat), `GET /export.csv` (all parts, or those of the query in the address:
   `q`, groups, manufacturer, catalog, lifecycle, sort), `GET|PUT|DELETE /catalogs/{id}`, `POST /login`,
   `POST /logout`, `GET|PUT /favorites`, `GET|PUT|DELETE /users/{name}`, `GET|PUT /access`.

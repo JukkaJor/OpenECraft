@@ -51,6 +51,12 @@ fn requests_of_the_api() {
     assert_eq!(pasted.server_info().url, e.server_info().url);
     // Next pages come as server paths.
     assert_eq!(e.next("/AutodeskDM/Services/api/vault/v2/vaults/101/item-versions?cursorState=x").url, "https://vault.example.com/AutodeskDM/Services/api/vault/v2/vaults/101/item-versions?cursorState=x");
+    // The token goes to the Vault server only.
+    assert!(e.next("/vaults/101/item-versions?cursorState=x").headers.get("Authorization").is_some());
+    assert!(e.next("https://vault.example.com/AutodeskDM/x").headers.get("Authorization").is_some());
+    let elsewhere = e.next("https://evil.example/collect");
+    assert_eq!(elsewhere.url, "https://evil.example/collect");
+    assert_eq!(elsewhere.headers.get("Authorization"), None);
     // Actions have no body and no content type.
     assert!(e.checkout("12").body.is_empty());
     assert_eq!(e.checkout("12").headers.get("Content-Type"), None);

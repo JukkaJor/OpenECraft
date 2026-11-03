@@ -1652,8 +1652,12 @@ impl Editor {
             if let Some(w) = world {
                 let hit = self.hit(prj, page_i, w);
                 let ctrl = ui.input(|i| i.modifiers.ctrl || i.modifiers.command);
-                if let (true, Some(link)) = (ctrl, hit.and_then(|id| prj.pages[page_i].texts.iter().find(|t| t.id == id)).map(|t| t.link.clone()).filter(|l| !l.is_empty())) {
-                    out.open_url = Some(link);
+                if let (true, Some(link)) = (ctrl, hit.and_then(|id| prj.pages[page_i].texts.iter().find(|t| t.id == id)).map(|t| t.link.trim().to_string()).filter(|l| !l.is_empty())) {
+                    if openecraft_parts::api::is_web_link(&link) {
+                        out.open_url = Some(link);
+                    } else {
+                        out.message = Some(tr("Only web and e-mail addresses (http, https, mailto) are links").to_string());
+                    }
                     return;
                 }
                 self.select_at(prj, page_i, w, shift);

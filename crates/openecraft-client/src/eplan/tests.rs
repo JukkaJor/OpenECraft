@@ -107,6 +107,13 @@ fn files_keep_the_token_on_the_portal() {
     assert_eq!(other.url, "https://cdn.test/512.jpg");
     assert_eq!(other.headers.get("Authorization"), None);
     assert!(e.needs_token("download/dxf_data/part/4711") && !e.needs_token("https://cdn.test/512.jpg"));
+    // Addresses that only start like the portal's are other servers.
+    for id in ["https://portal.test/api.evil.test/x", "https://portal.test/apix/y", "https://portal.test.evil.test/api/z"] {
+        assert_eq!(e.file(id).headers.get("Authorization"), None, "{id}");
+    }
+    assert!(e.file("https://portal.test/api/download/1").headers.get("Authorization").is_some());
+    let bare = EplanEndpoint { url: "https://portal.test".into(), ..endpoint("abc") };
+    assert_eq!(bare.file("https://portal.test.evil.test/x").headers.get("Authorization"), None);
 }
 
 #[test]

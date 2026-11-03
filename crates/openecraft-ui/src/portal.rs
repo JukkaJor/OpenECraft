@@ -598,7 +598,7 @@ pub fn browser(ui: &mut egui::Ui, b: &mut Browser, client: &mut ServerClient, lo
                             {
                                 client.download_file(&ctx, &a.id, &a.name, FileUse::Macros);
                             }
-                            if let Some(link) = client.file_link(&a.id) {
+                            if let Some(link) = client.file_link(&a.id).filter(|l| openecraft_parts::api::is_web_link(l)) {
                                 ui.hyperlink_to("🔗", link).on_hover_text(tr("Open in the browser"));
                             }
                         });

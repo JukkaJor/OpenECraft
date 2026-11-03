@@ -7,6 +7,7 @@ use crate::session::Session;
 use crate::tools;
 use serde_json::{json, Map, Value};
 use std::io::{BufRead, Write};
+use std::path::{Component, Path, PathBuf};
 
 pub const PROTOCOL_VERSION: &str = "2025-06-18";
 const SUPPORTED: [&str; 3] = [PROTOCOL_VERSION, "2025-03-26", "2024-11-05"];
@@ -24,6 +25,63 @@ catalog or the parts server (parts_* tools).";
 /// of tools.
 pub fn tools_from_env() -> Vec<String> {
     std::env::var("OPENECRAFT_MCP_TOOLS").unwrap_or_default().split(',').map(|s| s.trim().to_string()).filter(|s| !s.is_empty()).collect()
+}
+
+/// Folder the files of the MCP tools must be in, from `OPENECRAFT_MCP_ROOT` (`*`:
+/// anywhere); default the working folder. An agent misled by text it reads cannot
+/// read or overwrite files elsewhere (other projects, settings, plugin folders).
+pub fn root_from_env() -> Option<PathBuf> {
+    match std::env::var("OPENECRAFT_MCP_ROOT").unwrap_or_default().trim() {
+        "*" => None,
+        "" => std::env::current_dir().ok(),
+        dir => Some(PathBuf::from(dir)),
+    }
+}
+
+/// Parameters of the tools that name files or folders.
+const PATH_PARAMS: [&str; 6] = ["path", "output", "folder", "database", "target", "template"];
+
+/// The absolute path without `.` and `..`, its existing part with symbolic links
+/// resolved.
+fn resolve(path: &Path) -> PathBuf {
+    let full = if path.is_absolute() { path.to_path_buf() } else { std::env::current_dir().unwrap_or_default().join(path) };
+    let mut out = PathBuf::new();
+    for c in full.components() {
+        match c {
+            Component::ParentDir => {
+                out.pop();
+            }
+            Component::CurDir => {}
+            c => out.push(c),
+        }
+    }
+    let mut missing = Vec::new();
+    let mut existing = out.as_path();
+    while !existing.exists() {
+        let (Some(name), Some(parent)) = (existing.file_name(), existing.parent()) else { break };
+        missing.push(name.to_owned());
+        existing = parent;
+    }
+    let mut resolved = existing.canonicalize().unwrap_or_else(|_| existing.to_path_buf());
+    resolved.extend(missing.iter().rev());
+    resolved
+}
+
+/// The file and folder parameters of a tool call lie in `root`.
+fn confine(root: &Path, args: &Map<String, Value>) -> Result<(), String> {
+    let root = resolve(root);
+    for (name, value) in args.iter().filter(|(k, _)| PATH_PARAMS.contains(&k.as_str())) {
+        let Some(path) = value.as_str().map(str::trim).filter(|p| !p.is_empty()) else { continue };
+        // Built-in templates are names, not files.
+        let file = path.contains(['/', '\\']) || [".oec", ".oecz"].iter().any(|e| path.to_lowercase().ends_with(e));
+        if name == "template" && !file {
+            continue;
+        }
+        if !resolve(Path::new(path)).starts_with(&root) {
+            return Err(format!("{path} is outside {}, the folder this MCP server may use (OPENECRAFT_MCP_ROOT)", root.display()));
+        }
+    }
+    Ok(())
 }
 
 /// True if the MCP server offers the tool `name`.
@@ -103,7 +161,8 @@ fn call(session: &mut Session, params: &Value) -> Result<Value, (i64, String)> {
         Some(_) => return Err((-32602, "arguments must be an object".into())),
     };
     // Tool errors are results the agent can react to, not protocol errors.
-    let (text, is_error) = match tools::call(session, tool, &args) {
+    let allowed = session.mcp_root.as_deref().map_or(Ok(()), |root| confine(root, &args));
+    let (text, is_error) = match allowed.and_then(|_| tools::call(session, tool, &args)) {
         Ok(Value::String(text)) => (text, false),
         Ok(mut value) => {
             tools::tidy(&mut value);

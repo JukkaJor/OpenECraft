@@ -2,6 +2,7 @@
 //! (written atomically on every change): the user with role, projects and groups, the
 //! password hash (none for users of a directory) and the hashes of the session tokens.
 
+use openecraft_auth::{unix_now, SessionKey};
 use openecraft_core::collab::ProjectUser;
 use serde::{Deserialize, Serialize};
 use std::io;
@@ -15,8 +16,8 @@ pub struct Account {
     pub user: ProjectUser,
     /// Argon2 hash (PHC string).
     pub password: String,
-    /// SHA-256 of the session tokens, oldest first.
-    pub sessions: Vec<String>,
+    /// SHA-256 of the session tokens with their start, oldest first.
+    pub sessions: Vec<SessionKey>,
 }
 
 #[derive(Default)]
@@ -39,9 +40,7 @@ impl Users {
 
     pub fn save(&self) -> io::Result<()> {
         let Some(path) = &self.path else { return Ok(()) };
-        let tmp = path.with_extension("json.tmp");
-        std::fs::write(&tmp, serde_json::to_string_pretty(&self.accounts).unwrap_or_default())?;
-        std::fs::rename(&tmp, path)
+        openecraft_auth::write_private(path, serde_json::to_string_pretty(&self.accounts).unwrap_or_default().as_bytes())
     }
 
     pub fn find_mut(&mut self, name: &str) -> Option<&mut Account> {
@@ -50,7 +49,7 @@ impl Users {
 
     /// The account a session token belongs to.
     pub fn by_token(&self, token: &str) -> Option<&Account> {
-        self.accounts.iter().find(|a| openecraft_auth::has_session(&a.sessions, token))
+        self.accounts.iter().find(|a| openecraft_auth::has_session(&a.sessions, token, unix_now()))
     }
 
     /// Creates or replaces the account of an administrator (start-up option).

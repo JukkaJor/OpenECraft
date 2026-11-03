@@ -26,6 +26,9 @@ pub struct Session {
     /// Tools the MCP server offers: names or prefixes ending in `*`; empty = all
     /// (`OPENECRAFT_MCP_TOOLS`).
     pub mcp_tools: Vec<String>,
+    /// Folder the files of the MCP tools must be in; `None` = anywhere (the command
+    /// line). See `mcp::root_from_env`.
+    pub mcp_root: Option<PathBuf>,
 }
 
 impl Session {
@@ -41,6 +44,7 @@ impl Session {
             vault,
             plugins: Plugins::new(crate::tools::all().map(|t| t.name)),
             mcp_tools: Vec::new(),
+            mcp_root: None,
         }
     }
 

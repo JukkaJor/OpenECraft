@@ -6428,3 +6428,6 @@ Double-click (3D view)	ダブルクリック (3D ビュー)
 Look at the point clicked, closer	クリックした点を近くから見る
 Earth electrode	接地極
 House connection box	引込盤
+The archive unpacks to more than {} MB	アーカイブの展開後のサイズが {} MB を超えます
+Only web and e-mail addresses (http, https, mailto) are links	リンクにできるのは Web アドレスとメールアドレス（http、https、mailto）だけです
+The plugin program did not answer within {} s and was stopped	プラグインプログラムが {} 秒以内に応答しなかったため停止しました

@@ -6435,3 +6435,6 @@ Double-click (3D view)	Dupla kattintás (3D nézet)
 Look at the point clicked, closer	A kattintott pont megtekintése közelebbről
 Earth electrode	Földelő
 House connection box	Csatlakozószekrény
+The archive unpacks to more than {} MB	Az archívum kicsomagolva több mint {} MB
+Only web and e-mail addresses (http, https, mailto) are links	Csak webes és e-mail-címek (http, https, mailto) lehetnek hivatkozások
+The plugin program did not answer within {} s and was stopped	A bővítményprogram nem válaszolt {} mp alatt, ezért leállt

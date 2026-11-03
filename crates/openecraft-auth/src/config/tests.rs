@@ -47,3 +47,20 @@ fn files_are_checked() {
     assert!(!serde_json::to_string(&settings).unwrap().contains("CN=svc"), "directory settings stay on the server");
     let _ = std::fs::remove_dir_all(&dir);
 }
+
+#[test]
+fn private_files_are_replaced_whole() {
+    let dir = dir().join("private");
+    std::fs::create_dir_all(&dir).unwrap();
+    let path = dir.join("users.json");
+    write_private(&path, b"first").unwrap();
+    write_private(&path, b"second").unwrap();
+    assert_eq!(std::fs::read(&path).unwrap(), b"second");
+    assert!(!dir.join("users.json.tmp").exists());
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        assert_eq!(std::fs::metadata(&path).unwrap().permissions().mode() & 0o777, 0o600);
+    }
+    let _ = std::fs::remove_dir_all(&dir);
+}

@@ -138,11 +138,30 @@ administrators see them in the user list and session tokens work as for local us
 A name that already belongs to a local account cannot sign in through a directory.
 
 Passwords of local accounts need at least 8 characters. After 5 failed sign-ins of a
-user name (local or directory) every further attempt of that name waits, 1 s at first
-and twice as long after every further failure, up to 5 minutes; the servers answer
-`429 Too Many Requests` meanwhile. A successful sign-in forgets the failures. Errors
-of both servers come as `{"error": "…"}`, also for unknown routes and requests that do
-not parse.
+user name (local or directory) from one client address every further attempt of that
+name from there waits, 1 s at first and twice as long after every further failure, up
+to 5 minutes; after 30 failed sign-ins of a client with any names its attempts wait
+the same way. The servers answer `429 Too Many Requests` meanwhile. Others cannot lock
+a user out this way; a successful sign-in forgets the failures of the name (not those
+of the client), and failures are forgotten after an hour. A name without account takes
+as long to refuse as a wrong password, so the answers do not tell which names exist.
+Errors of both servers come as `{"error": "…"}`, also for unknown routes and requests
+that do not parse.
+
+A session (the token of a sign-in) ends at sign-out, when the password is changed and
+30 days after the sign-in; a user keeps at most 20. Sessions stored by earlier versions
+have no start and count as ended: their users sign in once more. Requests that change
+something are checked before their body is read, so unknown callers cannot make a
+server read large bodies; sign-in (and the parts server's search) take at most 64 kB.
+
+Both servers send `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`,
+`Referrer-Policy: no-referrer` and a content security policy with every answer. The
+user and access files (`users.json`, `access.json`, a JSON parts database) are written
+readable for their owner only (Unix). Prefer `bind_password_env` to `bind_password`
+(the servers warn about a password in the file) and `OPENECRAFT_TOKEN` /
+`OPENECRAFT_PROJECT_TOKEN` or the configuration file to `--token`, which other users of
+the machine see in the list of processes. Neither server speaks TLS: put a reverse proxy
+with HTTPS in front of a server that is reached over the network.
 
 Values are escaped for LDAP filters and DNs. Keep the service account read-only.
 

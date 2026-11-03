@@ -207,6 +207,36 @@ pub(crate) fn reason(error: &str) -> String {
     }
 }
 
+/// Scheme, host and port of an address (`https://Host:443/x` → `https`, `host`, 443);
+/// None for an address without scheme or host.
+pub fn origin(url: &str) -> Option<(String, String, u16)> {
+    let (scheme, rest) = url.trim().split_once("://")?;
+    let scheme = scheme.to_ascii_lowercase();
+    let authority = rest.split(['/', '?', '#']).next().unwrap_or_default();
+    // Credentials in the address hide the real host.
+    if authority.contains('@') || authority.is_empty() {
+        return None;
+    }
+    // `[::1]:8080` (IPv6) or `host:8080`.
+    let split = match authority.strip_prefix('[') {
+        Some(v6) => v6.split_once(']').map(|(h, rest)| (h, rest.strip_prefix(':'))),
+        None => Some(authority.split_once(':').map_or((authority, None), |(h, p)| (h, Some(p)))),
+    };
+    let (host, port) = split?;
+    let port = match port {
+        Some(p) => p.parse().ok()?,
+        None if scheme == "https" => 443,
+        None => 80,
+    };
+    (!host.is_empty()).then(|| (scheme, host.to_ascii_lowercase(), port))
+}
+
+/// Both addresses are on the same server (scheme, host and port): a token for one may
+/// be sent to the other.
+pub fn same_origin(a: &str, b: &str) -> bool {
+    origin(a).is_some_and(|o| Some(o) == origin(b))
+}
+
 /// Successful response or a readable error (server message, HTTP status, connection error).
 pub fn check(result: ehttp::Result<ehttp::Response>) -> Result<ehttp::Response, String> {
     match result {

@@ -17,11 +17,15 @@ use openecraft_core::issue::{Issue, Severity};
 use openecraft_i18n::tr_fmt;
 use serde::Deserialize;
 use serde_json::{json, Value};
-use std::io::Write;
+use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
+use std::time::{Duration, Instant};
 
 pub const MANIFEST: &str = "plugin.json";
+
+/// Longest a plugin program may take for one request; then it is stopped.
+pub const TIMEOUT: Duration = Duration::from_secs(300);
 
 /// Sends a request to the plugin and returns its answer.
 pub type Transport = Arc<dyn Fn(&Value) -> Result<Value, String> + Send + Sync>;
@@ -96,7 +100,7 @@ impl External {
         if m.run.is_empty() {
             return Err(tr_fmt!("{}: the program to run is missing", path.display()));
         }
-        Ok(External::new(m.info, process(dir.to_path_buf(), m.run)))
+        Ok(External::new(m.info, process(dir.to_path_buf(), m.run, TIMEOUT)))
     }
 }
 
@@ -121,8 +125,8 @@ fn alternative(program: &Path) -> Option<PathBuf> {
     (program.as_os_str() == "python3").then(|| PathBuf::from("python"))
 }
 
-/// Runs the program once per request.
-fn process(dir: PathBuf, run: Vec<String>) -> Transport {
+/// Runs the program once per request; stops it after `timeout`.
+fn process(dir: PathBuf, run: Vec<String>, timeout: Duration) -> Transport {
     Arc::new(move |request: &Value| {
         // A program given by path is found in the plugin folder.
         let program = if run[0].contains(['/', '\\']) && dir.join(&run[0]).exists() { dir.join(&run[0]) } else { PathBuf::from(&run[0]) };
@@ -134,14 +138,39 @@ fn process(dir: PathBuf, run: Vec<String>) -> Transport {
             other => other,
         };
         let mut child = started.map_err(|e| tr_fmt!("Cannot start {}: {}", program.display(), openecraft_i18n::io_error(&e)))?;
-        if let Some(mut stdin) = child.stdin.take() {
-            stdin.write_all(request.to_string().as_bytes()).map_err(|e| e.to_string())?;
+        // Request and answers flow at the same time, so a program that answers before it
+        // has read everything does not block.
+        let (stdin, request) = (child.stdin.take(), request.to_string());
+        let writer = std::thread::spawn(move || stdin.map(|mut s| s.write_all(request.as_bytes())));
+        let read = |pipe: Option<Box<dyn Read + Send>>| {
+            std::thread::spawn(move || {
+                let mut buf = Vec::new();
+                if let Some(mut p) = pipe {
+                    let _ = p.read_to_end(&mut buf);
+                }
+                buf
+            })
+        };
+        let stdout = read(child.stdout.take().map(|p| Box::new(p) as Box<dyn Read + Send>));
+        let stderr = read(child.stderr.take().map(|p| Box::new(p) as Box<dyn Read + Send>));
+        let deadline = Instant::now() + timeout;
+        let status = loop {
+            match child.try_wait().map_err(|e| e.to_string())? {
+                Some(status) => break status,
+                None if Instant::now() < deadline => std::thread::sleep(Duration::from_millis(10)),
+                None => {
+                    let _ = child.kill();
+                    let _ = child.wait();
+                    return Err(tr_fmt!("The plugin program did not answer within {} s and was stopped", timeout.as_secs()));
+                }
+            }
+        };
+        let _ = writer.join();
+        let (stdout, stderr) = (stdout.join().unwrap_or_default(), stderr.join().unwrap_or_default());
+        if !status.success() {
+            return Err(tr_fmt!("The plugin program failed: {}", String::from_utf8_lossy(&stderr).trim()));
         }
-        let out = child.wait_with_output().map_err(|e| e.to_string())?;
-        if !out.status.success() {
-            return Err(tr_fmt!("The plugin program failed: {}", String::from_utf8_lossy(&out.stderr).trim()));
-        }
-        serde_json::from_slice(&out.stdout).map_err(|e| tr_fmt!("Invalid answer of the plugin: {}", e))
+        serde_json::from_slice(&stdout).map_err(|e| tr_fmt!("Invalid answer of the plugin: {}", e))
     })
 }
 

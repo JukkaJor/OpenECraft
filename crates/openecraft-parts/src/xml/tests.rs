@@ -25,3 +25,12 @@ fn broken_documents_are_refused() {
     assert!(parse("just text").is_err());
     assert_eq!(unescape("a &unknown; b &amp"), "a &unknown; b &amp");
 }
+
+#[test]
+fn deep_nesting_is_refused() {
+    let doc = |n: usize| format!("<BMECAT>{}{}</BMECAT>", "<a>".repeat(n), "</a>".repeat(n));
+    assert!(parse(&doc(MAX_DEPTH - 1)).is_ok());
+    assert!(parse(&doc(MAX_DEPTH)).unwrap_err().contains("nested"));
+    // Millions of levels: an error, not a stack overflow.
+    assert!(parse(&doc(1_000_000)).is_err());
+}

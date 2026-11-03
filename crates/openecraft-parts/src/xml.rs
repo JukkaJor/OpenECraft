@@ -2,6 +2,10 @@
 //! (namespace prefixes dropped), attributes, children and text. Comments, processing
 //! instructions and the DOCTYPE are skipped; entities and CDATA are resolved.
 
+/// Deepest nesting of elements read: deeper documents are refused instead of
+/// overflowing the stack when the tree is walked or dropped.
+pub const MAX_DEPTH: usize = 256;
+
 /// An XML element.
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct Element {
@@ -157,6 +161,8 @@ pub fn parse(text: &str) -> Result<Element, String> {
             let el = Element { name: local(name), attributes: attributes(attrs), ..Default::default() };
             if empty {
                 stack.last_mut().ok_or("unexpected tag")?.children.push(el);
+            } else if stack.len() > MAX_DEPTH {
+                return Err(format!("elements are nested deeper than {MAX_DEPTH} levels"));
             } else {
                 stack.push(el);
             }

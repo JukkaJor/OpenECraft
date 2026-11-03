@@ -11,11 +11,13 @@ mod account;
 mod config;
 mod directory;
 mod errors;
+mod headers;
 pub mod server_config;
 pub mod throttle;
 
 pub use account::*;
-pub use config::{AccessConfig, AccessFile};
+pub use config::{write_private, AccessConfig, AccessFile};
 pub use directory::{common_name, sign_in, Directory, DirectoryKind, SignInError};
 pub use errors::{error_text, json_errors};
+pub use headers::{security_headers, ClientIp, DEFAULT_CSP};
 pub use throttle::Throttle;

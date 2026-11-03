@@ -142,3 +142,11 @@ fn import_reads_edz_and_text_files() {
     assert_eq!(import(PART.as_bytes()).unwrap()[0].number, "SIE.LOGO");
     assert_eq!(import(b"Part number;Description\nX.1;Test\n").unwrap()[0].number, "X.1");
 }
+
+#[test]
+fn archives_unpacking_to_too_much_are_refused() {
+    let zeros = vec![0u8; 1 << 16];
+    let bytes = archive(&[("items/a.bin", &zeros), ("items/b.bin", &zeros)]);
+    assert_eq!(unpack_with_limit(&bytes, 1 << 17).unwrap().len(), 2);
+    assert!(unpack_with_limit(&bytes, (1 << 17) - 1).unwrap_err().contains("more than"));
+}

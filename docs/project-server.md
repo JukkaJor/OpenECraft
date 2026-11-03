@@ -23,7 +23,9 @@ cargo run --release -p openecraft-project-server -- --config project-server.toml
   `<name>.state.json` (revision, id counter) in the data directory.
 - With `--token` (or `OPENECRAFT_PROJECT_TOKEN`) every request needs
   `Authorization: Bearer <token>`; without it, user accounts and directories everyone
-  who reaches the server can change its projects.
+  who reaches the server can change its projects, but only clients on the server's own
+  machine may create users and change the access settings (so nobody else takes the
+  server over by creating the first administrator).
 - The server speaks plain HTTP, so tokens and passwords cross the network unencrypted.
   Keep it on `127.0.0.1` behind a TLS reverse proxy when it is reachable from other
   machines, e.g. with [Caddy](https://caddyserver.com/), which fetches the certificate:
@@ -37,7 +39,10 @@ cargo run --release -p openecraft-project-server -- --config project-server.toml
   creates the first administrator with the password from
   `OPENECRAFT_PROJECT_ADMIN_PASSWORD` (at least 8 characters, as every password). Users
   sign in from *Tools › Project server…* (user name, password, *Sign in*); the server uses
-  the account's name on the locks, whatever the request says. User names have at most 64
+  the account's name on the locks, whatever the request says, and for the comments,
+  replies, markup and approvals a signed-in user adds (approvals of other users stay as
+  they are). Anonymous callers cannot use the name of an account. Managers of a project
+  may add denials on it but only administrators lift them. User names have at most 64
   characters and no control characters; a new user needs a role, directory groups or a
   grant in the access settings. Signing out closes the projects opened with that
   sign-in and releases their locks; deleting a user closes all of theirs. A failed

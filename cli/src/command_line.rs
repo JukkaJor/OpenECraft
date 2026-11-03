@@ -42,6 +42,7 @@ pub fn run(argv: &[String]) -> Result<String, String> {
         },
         "mcp" => {
             session.mcp_tools = mcp::tools_from_env();
+            session.mcp_root = mcp::root_from_env();
             mcp::serve(&mut session, std::io::stdin().lock(), std::io::stdout().lock())?;
             Ok(String::new())
         }

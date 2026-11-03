@@ -38,3 +38,11 @@ fn files_are_read_and_relative_paths_follow_the_file() {
     assert!(load::<Settings>(&dir.join("missing.toml")).unwrap_err().contains("missing.toml"));
     std::fs::remove_dir_all(&dir).ok();
 }
+
+#[test]
+fn secrets_on_the_command_line_are_found() {
+    let args = |a: &[&str]| a.iter().map(|s| s.to_string()).collect::<Vec<_>>();
+    assert!(secret_on_command_line(args(&["server", "--token", "x"]), "--token"));
+    assert!(secret_on_command_line(args(&["server", "--token=x"]), "--token"));
+    assert!(!secret_on_command_line(args(&["server", "--tokens", "--config", "a.toml"]), "--token"));
+}

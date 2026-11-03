@@ -6435,3 +6435,6 @@ Double-click (3D view)	Doppio clic (vista 3D)
 Look at the point clicked, closer	Guarda il punto cliccato, più da vicino
 Earth electrode	Dispersore di terra
 House connection box	Cassetta di allacciamento
+The archive unpacks to more than {} MB	L'archivio si decomprime in più di {} MB
+Only web and e-mail addresses (http, https, mailto) are links	Solo gli indirizzi web ed e-mail (http, https, mailto) sono link
+The plugin program did not answer within {} s and was stopped	Il programma del plugin non ha risposto entro {} s ed è stato interrotto
