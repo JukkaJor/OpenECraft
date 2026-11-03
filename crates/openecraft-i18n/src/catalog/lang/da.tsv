@@ -6441,3 +6441,6 @@ Motor operator of a circuit breaker	Motordrev til en effektafbryder
 Grid and system protection relay (voltage and frequency)	Net- og anlægsbeskyttelsesrelæ (spænding og frekvens)
 13 · Transformer-rated metering with PV and grid protection	13 · Transformermåling med solceller og netbeskyttelse
 14 · Main low-voltage distribution of an industrial plant	14 · Hovedtavle for lavspænding i en industrivirksomhed
+The archive unpacks to more than {} MB	Arkivet udpakkes til mere end {} MB
+Only web and e-mail addresses (http, https, mailto) are links	Kun web- og e-mailadresser (http, https, mailto) er links
+The plugin program did not answer within {} s and was stopped	Plugin-programmet svarede ikke inden for {} s og blev stoppet

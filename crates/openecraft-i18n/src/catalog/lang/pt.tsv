@@ -6441,3 +6441,6 @@ Motor operator of a circuit breaker	Acionamento motorizado de um disjuntor
 Grid and system protection relay (voltage and frequency)	Relé de proteção de rede e instalação (tensão e frequência)
 13 · Transformer-rated metering with PV and grid protection	13 · Medição indireta com TC, FV e proteção de rede
 14 · Main low-voltage distribution of an industrial plant	14 · Quadro geral de baixa tensão de uma planta industrial
+The archive unpacks to more than {} MB	O arquivo compactado se descompacta em mais de {} MB
+Only web and e-mail addresses (http, https, mailto) are links	Somente endereços web e de e-mail (http, https, mailto) são links
+The plugin program did not answer within {} s and was stopped	O programa do plug-in não respondeu em {} s e foi interrompido

@@ -126,10 +126,17 @@ impl VaultEndpoint {
         self.get(&self.vault_path(&path))
     }
 
-    /// The next page of a collection (`pagination.nextUrl`).
+    /// The next page of a collection (`pagination.nextUrl`); the token is only sent to
+    /// the Vault server itself.
     pub fn next(&self, next_url: &str) -> ehttp::Request {
-        let url = if next_url.starts_with("http://") || next_url.starts_with("https://") { next_url.to_string() } else { format!("{}{next_url}", self.server()) };
-        self.authorized(ehttp::Request::get(url))
+        let absolute = next_url.starts_with("http://") || next_url.starts_with("https://");
+        let url = if absolute { next_url.to_string() } else { format!("{}/{}", self.server(), next_url.trim_start_matches('/')) };
+        let req = ehttp::Request::get(url);
+        if !absolute || crate::same_origin(next_url, self.server()) {
+            self.authorized(req)
+        } else {
+            req
+        }
     }
 
     /// GET /vaults/{vault}/file-versions/{id} → [`FileVersion`]

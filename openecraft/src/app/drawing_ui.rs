@@ -116,8 +116,12 @@ fn text_properties(ui: &mut egui::Ui, t: &mut TextItem, names: &[String]) {
         ui.label(tr("Link"));
         ui.horizontal(|ui| {
             ui.add(egui::TextEdit::singleline(&mut t.link).desired_width(150.0));
-            if !t.link.is_empty() && ui.button(tr("Open link")).on_hover_text(tr("Ctrl + click on the text opens it as well")).clicked() {
-                ui.ctx().open_url(egui::OpenUrl::new_tab(t.link.clone()));
+            if openecraft_parts::api::is_web_link(&t.link) {
+                if ui.button(tr("Open link")).on_hover_text(tr("Ctrl + click on the text opens it as well")).clicked() {
+                    ui.ctx().open_url(egui::OpenUrl::new_tab(t.link.trim().to_string()));
+                }
+            } else if !t.link.trim().is_empty() {
+                ui.colored_label(crate::style::warning(), tr("Only web and e-mail addresses (http, https, mailto) are links"));
             }
         });
         ui.end_row();

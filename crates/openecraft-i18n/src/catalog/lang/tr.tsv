@@ -6441,3 +6441,6 @@ Motor operator of a circuit breaker	Devre kesicinin motor tahriki
 Grid and system protection relay (voltage and frequency)	Şebeke ve tesis koruma rölesi (gerilim ve frekans)
 13 · Transformer-rated metering with PV and grid protection	13 · PV ve şebeke korumalı akım trafolu ölçüm
 14 · Main low-voltage distribution of an industrial plant	14 · Bir sanayi tesisinin alçak gerilim ana dağıtım panosu
+The archive unpacks to more than {} MB	Arşiv açıldığında {} MB'tan büyük oluyor
+Only web and e-mail addresses (http, https, mailto) are links	Yalnızca web ve e-posta adresleri (http, https, mailto) bağlantı olabilir
+The plugin program did not answer within {} s and was stopped	Eklenti programı {} sn içinde yanıt vermedi ve durduruldu

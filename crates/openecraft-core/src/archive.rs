@@ -213,7 +213,7 @@ pub fn pack(prj: &Project) -> String {
 pub fn unpack(text: &str) -> Result<Project, String> {
     let data = text.strip_prefix(PACKED).ok_or_else(|| tr("Not a packed project").to_string())?;
     let bytes = crate::document::base64_decode(data).ok_or_else(|| tr("Not a packed project").to_string())?;
-    let json = miniz_oxide::inflate::decompress_to_vec(&bytes).map_err(|_| tr("Not a packed project").to_string())?;
+    let json = miniz_oxide::inflate::decompress_to_vec_with_limit(&bytes, crate::zip::MAX_UNPACKED).map_err(|_| tr("Not a packed project").to_string())?;
     Project::from_json(&String::from_utf8_lossy(&json))
 }
 

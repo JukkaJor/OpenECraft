@@ -89,8 +89,16 @@ impl ZipWriter {
     }
 }
 
+/// Most an archive may unpack to (all files together): more is refused rather than
+/// running out of memory on a crafted archive (a "ZIP bomb").
+pub const MAX_UNPACKED: usize = 1 << 30;
+
 /// Files of a ZIP archive (stored or deflated).
 pub fn read_zip(bytes: &[u8]) -> Result<Vec<(String, Vec<u8>)>, String> {
+    read_zip_limited(bytes, MAX_UNPACKED)
+}
+
+pub(crate) fn read_zip_limited(bytes: &[u8], limit: usize) -> Result<Vec<(String, Vec<u8>)>, String> {
     let damaged = || tr("The archive is damaged").to_string();
     let u16_at = |i: usize| bytes.get(i..i + 2).map(|b| u16::from_le_bytes([b[0], b[1]])).ok_or_else(damaged);
     let u32_at = |i: usize| bytes.get(i..i + 4).map(|b| u32::from_le_bytes([b[0], b[1], b[2], b[3]])).ok_or_else(damaged);
@@ -101,6 +109,8 @@ pub fn read_zip(bytes: &[u8]) -> Result<Vec<(String, Vec<u8>)>, String> {
     let count = u16_at(eocd + 10)? as usize;
     let mut at = u32_at(eocd + 16)? as usize;
     let mut files = Vec::new();
+    let mut left = limit;
+    let too_large = || tr_fmt!("The archive unpacks to more than {} MB", limit >> 20);
     for _ in 0..count {
         if u32_at(at)? != 0x0201_4b50 {
             return Err(damaged());
@@ -120,13 +130,15 @@ pub fn read_zip(bytes: &[u8]) -> Result<Vec<(String, Vec<u8>)>, String> {
         let start = local + 30 + u16_at(local + 26)? as usize + u16_at(local + 28)? as usize;
         let body = bytes.get(start..start + csize).ok_or_else(damaged)?;
         let data = match method {
+            0 if body.len() > left => return Err(too_large()),
             0 => body.to_vec(),
-            8 => miniz_oxide::inflate::decompress_to_vec(body).map_err(|_| damaged())?,
+            8 => miniz_oxide::inflate::decompress_to_vec_with_limit(body, left).map_err(|e| if e.status == miniz_oxide::inflate::TINFLStatus::HasMoreOutput { too_large() } else { damaged() })?,
             _ => return Err(tr_fmt!("{}: compression method not supported", name)),
         };
         if crc32(&data) != crc {
             return Err(damaged());
         }
+        left -= data.len();
         files.push((name, data));
     }
     Ok(files)

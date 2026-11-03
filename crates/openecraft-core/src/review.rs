@@ -88,6 +88,31 @@ pub fn merge_records<T: Record>(theirs: &[T], mine: &[T]) -> Vec<T> {
     out
 }
 
+/// What a signed-in `user` may write into the review records of a shared project
+/// (`mine`, compared with the stored `theirs`): new approvals, comments, replies and
+/// markups are in their name, the authors of existing records stay, and approvals of
+/// other users stay as they are.
+pub fn sign(theirs: &Review, mine: &mut Review, user: &str) {
+    let user = user.trim();
+    for a in &mut mine.approvals {
+        match theirs.approvals.iter().find(|t| t.id == a.id) {
+            None => a.user = user.into(),
+            Some(t) if a.rev > t.rev && !t.user.trim().eq_ignore_ascii_case(user) => *a = t.clone(),
+            Some(t) => a.user = t.user.clone(),
+        }
+    }
+    for c in &mut mine.comments {
+        let old = theirs.comments.iter().find(|t| t.id == c.id);
+        c.author = old.map_or_else(|| user.into(), |t| t.author.clone());
+        for (i, r) in c.replies.iter_mut().enumerate() {
+            r.author = old.and_then(|t| t.replies.get(i)).map_or_else(|| user.into(), |t| t.author.clone());
+        }
+    }
+    for m in &mut mine.markups {
+        m.author = theirs.markups.iter().find(|t| t.id == m.id).map_or_else(|| user.into(), |t| t.author.clone());
+    }
+}
+
 pub fn merge(theirs: &Review, mine: &Review) -> Review {
     Review {
         comments: merge_records(&theirs.comments, &mine.comments),

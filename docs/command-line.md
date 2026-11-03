@@ -50,6 +50,11 @@ openecraft-cli --server http://127.0.0.1:8090 --token <secret> parts_import --pa
 - Help and messages follow `--lang` or the system language; the MCP server answers in
   English unless `--lang` is given.
 
+- `OPENECRAFT_MCP_ROOT` is the folder the files of the MCP tools must be in (`path`,
+  `output`, `folder`, `database`, `target` and template files); default the working
+  folder of the server, `*` allows every folder. An agent misled by text it reads (a
+  project, a part, a web page) cannot read or overwrite files elsewhere, such as other
+  projects or plugin folders.
 - `OPENECRAFT_MCP_TOOLS` limits the tools the MCP server offers, for clients that take
   only a limited number: names separated by commas, `parts_*` for all tools starting
   with `parts_` (e.g. `new_project,open_project,save_project,place_symbol,connect,check,export`).

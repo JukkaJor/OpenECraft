@@ -6441,3 +6441,6 @@ Motor operator of a circuit breaker	Acționare cu motor a unui întreruptor auto
 Grid and system protection relay (voltage and frequency)	Releu de protecție a rețelei și instalației (tensiune și frecvență)
 13 · Transformer-rated metering with PV and grid protection	13 · Măsurare indirectă cu PV și protecție de rețea
 14 · Main low-voltage distribution of an industrial plant	14 · Tablou general de joasă tensiune al unei fabrici
+The archive unpacks to more than {} MB	Arhiva se dezarhivează la mai mult de {} MB
+Only web and e-mail addresses (http, https, mailto) are links	Doar adresele web și de e-mail (http, https, mailto) sunt linkuri
+The plugin program did not answer within {} s and was stopped	Programul pluginului nu a răspuns în {} s și a fost oprit

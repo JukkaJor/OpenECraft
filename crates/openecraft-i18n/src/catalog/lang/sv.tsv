@@ -6441,3 +6441,6 @@ Motor operator of a circuit breaker	Motordon för effektbrytare
 Grid and system protection relay (voltage and frequency)	Nät- och anläggningsskyddsrelä (spänning och frekvens)
 13 · Transformer-rated metering with PV and grid protection	13 · Transformatormätning med solceller och nätskydd
 14 · Main low-voltage distribution of an industrial plant	14 · Huvudcentral för lågspänning i en industrianläggning
+The archive unpacks to more than {} MB	Arkivet packas upp till mer än {} MB
+Only web and e-mail addresses (http, https, mailto) are links	Endast webb- och e-postadresser (http, https, mailto) är länkar
+The plugin program did not answer within {} s and was stopped	Plugin-programmet svarade inte inom {} s och stoppades

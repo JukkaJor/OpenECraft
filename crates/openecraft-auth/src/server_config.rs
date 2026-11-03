@@ -26,5 +26,11 @@ pub fn relative_to(config: &Path, path: PathBuf) -> PathBuf {
     }
 }
 
+/// True if the secret option `flag` (e.g. `--token`) is given on the command line,
+/// where other users of the machine can read it in the list of processes.
+pub fn secret_on_command_line(args: impl IntoIterator<Item = String>, flag: &str) -> bool {
+    args.into_iter().any(|a| a == flag || a.strip_prefix(flag).is_some_and(|rest| rest.starts_with('=')))
+}
+
 #[cfg(test)]
 mod tests;

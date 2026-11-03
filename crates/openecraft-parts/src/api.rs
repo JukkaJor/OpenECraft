@@ -296,6 +296,17 @@ pub fn bearer_token(header: &str) -> Option<&str> {
     header.strip_prefix("Bearer ").map(str::trim)
 }
 
+/// An address that may be opened or exported as a link: a web address (http, https)
+/// or an e-mail address (mailto), never one that runs code (`javascript:`), opens
+/// files or programs of the machine (`file:`, UNC paths) or other apps.
+pub fn is_web_link(url: &str) -> bool {
+    let url = url.trim();
+    let Some((scheme, rest)) = url.split_once(':') else { return false };
+    let web = matches!(scheme.to_ascii_lowercase().as_str(), "http" | "https") && rest.starts_with("//") && rest.len() > 2;
+    let mail = scheme.eq_ignore_ascii_case("mailto") && !rest.is_empty();
+    (web || mail) && !url.chars().any(|c| c.is_whitespace() || c.is_control())
+}
+
 /// Compares a presented token with the expected one in constant time.
 pub fn token_matches(presented: &str, expected: &str) -> bool {
     presented.len() == expected.len() && presented.bytes().zip(expected.bytes()).fold(0u8, |acc, (x, y)| acc | (x ^ y)) == 0

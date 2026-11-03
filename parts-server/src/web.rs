@@ -3,7 +3,8 @@
 //! texts are written in English and translated through [`texts`].
 
 use axum::extract::Query;
-use axum::response::Html;
+use axum::http::header;
+use axum::response::{Html, IntoResponse};
 use axum::Json;
 use openecraft_i18n::{tr_const, translate, Lang};
 use openecraft_parts::portal::{AttachmentKind, ChangeKind, Lifecycle, Role, Sort};
@@ -12,6 +13,11 @@ use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
 const PAGE: &str = include_str!("web/portal.html");
+const SCRIPT: &str = include_str!("web/portal.js");
+
+/// The page runs its own script only; parts data never becomes code.
+pub const PAGE_CSP: &str =
+    "default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
 
 /// Texts of the page (`{}`: placeholders filled in by the page).
 const TEXTS: &[&str] = &[
@@ -123,8 +129,12 @@ pub struct WebTexts {
     pub keys: BTreeMap<String, String>,
 }
 
-pub async fn index() -> Html<&'static str> {
-    Html(PAGE)
+pub async fn index() -> impl IntoResponse {
+    ([(header::CONTENT_SECURITY_POLICY, PAGE_CSP)], Html(PAGE))
+}
+
+pub async fn script() -> impl IntoResponse {
+    ([(header::CONTENT_TYPE, "text/javascript; charset=utf-8")], SCRIPT)
 }
 
 pub fn web_texts(lang: Lang) -> WebTexts {

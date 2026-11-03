@@ -271,7 +271,7 @@ pub fn draw_text_item(d: &mut dyn Draw, prj: &Project, page_i: usize, t: &TextIt
     for (q, line) in text::lines(t, &shown) {
         d.styled_text(q, &line, &style, ink);
     }
-    if !t.link.is_empty() {
+    if openecraft_parts::api::is_web_link(&t.link) {
         let b = text::bounds(t, &shown);
         d.link_url(b.min, b.max, &t.link);
     }

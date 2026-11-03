@@ -4,6 +4,10 @@
 
 use std::fmt::Write;
 
+/// Deepest nesting of elements read: deeper documents are refused instead of
+/// overflowing the stack when the tree is walked or dropped.
+pub const MAX_DEPTH: usize = 256;
+
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct Element {
     /// Local name (without namespace prefix).
@@ -155,6 +159,8 @@ pub fn parse(text: &str) -> Result<Element, String> {
                     Some(parent) => parent.children.push(el),
                     None => root = Some(el),
                 }
+            } else if stack.len() >= MAX_DEPTH {
+                return Err(format!("elements are nested deeper than {MAX_DEPTH} levels"));
             } else {
                 stack.push(el);
             }

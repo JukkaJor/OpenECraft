@@ -6440,3 +6440,6 @@ Motor operator of a circuit breaker	Моторний привід автомат
 Grid and system protection relay (voltage and frequency)	Реле захисту мережі та установки (напруга і частота)
 13 · Transformer-rated metering with PV and grid protection	13 · Трансформаторний облік із СЕС і захистом мережі
 14 · Main low-voltage distribution of an industrial plant	14 · Головний розподільний щит НН промислового підприємства
+The archive unpacks to more than {} MB	Архів розпаковується більш ніж у {} МБ
+Only web and e-mail addresses (http, https, mailto) are links	Посиланнями можуть бути лише веб- і поштові адреси (http, https, mailto)
+The plugin program did not answer within {} s and was stopped	Програма плагіна не відповіла за {} с і була зупинена

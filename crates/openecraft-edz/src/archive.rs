@@ -4,7 +4,7 @@ use openecraft_parts::portal::AttachmentKind;
 use openecraft_parts::xml::{self, Element};
 use openecraft_parts::Part;
 use sevenz_rust2::{ArchiveReader, Password};
-use std::io::Cursor;
+use std::io::{Cursor, Read};
 
 /// A file of the archive that belongs to a part.
 #[derive(Clone, Debug, PartialEq)]
@@ -29,20 +29,38 @@ pub fn is_edz(bytes: &[u8]) -> bool {
     bytes.starts_with(&[b'7', b'z', 0xBC, 0xAF, 0x27, 0x1C])
 }
 
+/// Most an archive may unpack to (all files together): more is refused rather than
+/// running out of memory on a crafted archive.
+pub const MAX_UNPACKED: u64 = 1 << 30;
+
 /// The files of the archive: path (with `/`) and content.
 fn unpack(bytes: &[u8]) -> Result<Vec<(String, Vec<u8>)>, String> {
+    unpack_with_limit(bytes, MAX_UNPACKED)
+}
+
+fn unpack_with_limit(bytes: &[u8], limit: u64) -> Result<Vec<(String, Vec<u8>)>, String> {
     let mut reader = ArchiveReader::new(Cursor::new(bytes), Password::empty()).map_err(|e| format!("not a readable EDZ archive: {e}"))?;
     let mut files = Vec::new();
+    let mut left = limit;
+    let mut too_large = false;
     reader
         .for_each_entries(|entry, data| {
             let mut buf = Vec::new();
-            data.read_to_end(&mut buf)?;
+            Read::take(&mut *data, left + 1).read_to_end(&mut buf)?;
+            if buf.len() as u64 > left {
+                too_large = true;
+                return Ok(false);
+            }
+            left -= buf.len() as u64;
             if !entry.is_directory() {
                 files.push((entry.name().replace('\\', "/"), buf));
             }
             Ok(true)
         })
         .map_err(|e| format!("not a readable EDZ archive: {e}"))?;
+    if too_large {
+        return Err(format!("the EDZ archive unpacks to more than {} MB", limit >> 20));
+    }
     Ok(files)
 }
 

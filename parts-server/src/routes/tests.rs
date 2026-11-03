@@ -329,7 +329,13 @@ async fn web_page_and_texts() {
     let (status, headers, page) = send(&app, "GET", "/", None, Vec::new()).await;
     assert_eq!(status, StatusCode::OK);
     assert!(headers[header::CONTENT_TYPE].to_str().unwrap().starts_with("text/html"));
-    assert!(String::from_utf8(page).unwrap().contains("/api/v1"));
+    assert_eq!(headers[header::CONTENT_SECURITY_POLICY], web::PAGE_CSP);
+    assert_eq!(headers[header::X_FRAME_OPTIONS], "DENY");
+    assert!(String::from_utf8(page).unwrap().contains("<script src=\"/portal.js\"></script>"));
+    let (status, headers, script) = send(&app, "GET", "/portal.js", None, Vec::new()).await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(headers[header::CONTENT_TYPE].to_str().unwrap().starts_with("text/javascript"));
+    assert!(String::from_utf8(script).unwrap().contains("/api/v1"));
     let texts: web::WebTexts = json(&app, "GET", "/api/v1/texts?lang=fr-CA", None, "").await;
     assert_eq!(texts.lang, "fr");
     let texts: web::WebTexts = json(&app, "GET", "/api/v1/texts?lang=xx", None, "").await;
@@ -527,4 +533,66 @@ async fn parts_are_checked_before_storing() {
     for uri in ["/api/v1/parts?top_group=fluid", "/api/v1/parts?lifecycle=active", "/api/v1/parts?sort=price"] {
         assert_eq!(call(&app, "GET", uri, None, "").await.0, StatusCode::OK, "{uri}");
     }
+}
+
+#[tokio::test]
+async fn files_that_can_run_scripts_are_downloaded() {
+    let app = app(Some(TOKEN));
+    let svg = br#"<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>"#.to_vec();
+    for (name, body, disposition) in [("evil.svg", svg, "attachment"), ("x.xml", b"<a/>".to_vec(), "attachment"), ("photo.png", b"png".to_vec(), "inline")] {
+        let (status, _, part) = send(&app, "POST", &format!("/api/v1/parts/GEN.CT-9A-24DC/attachments?name={name}"), Some(TOKEN), body).await;
+        assert_eq!(status, StatusCode::OK);
+        let part: Part = serde_json::from_slice(&part).unwrap();
+        let id = &part.attachments.iter().find(|a| a.name == name).unwrap().id;
+        let (_, headers, _) = send(&app, "GET", &format!("/api/v1/files/{id}"), None, Vec::new()).await;
+        assert!(headers[header::CONTENT_DISPOSITION].to_str().unwrap().starts_with(disposition), "{name}");
+        assert_eq!(headers[header::X_CONTENT_TYPE_OPTIONS], "nosniff");
+        assert_eq!(headers[header::CONTENT_SECURITY_POLICY], openecraft_auth::DEFAULT_CSP);
+    }
+}
+
+#[tokio::test]
+async fn changes_are_refused_before_their_body_is_read() {
+    let app = app(Some(TOKEN));
+    // Not even parsed: no token is a 401, not a 400 for the body.
+    assert_eq!(call(&app, "POST", "/api/v1/import", None, "{not json").await.0, StatusCode::UNAUTHORIZED);
+    assert_eq!(call(&app, "PUT", "/api/v1/parts/X", Some("wrong"), "{not json").await.0, StatusCode::UNAUTHORIZED);
+    // Requests anybody may send have a small limit.
+    let big = format!(r#"{{"name": "x", "password": "{}"}}"#, "x".repeat(SMALL_BODY));
+    assert_eq!(call(&app, "POST", "/api/v1/login", None, &big).await.0, StatusCode::PAYLOAD_TOO_LARGE);
+}
+
+#[tokio::test]
+async fn manufacturers_keep_out_of_foreign_catalogs() {
+    let app = app(Some(TOKEN));
+    let acme = sign_up(&app, "acme", "manufacturer", "ACME").await;
+    json::<Catalog>(&app, "PUT", "/api/v1/catalogs/other", Some(TOKEN), r#"{"manufacturer": "Other"}"#).await;
+    json::<Catalog>(&app, "PUT", "/api/v1/catalogs/acme", Some(TOKEN), r#"{"manufacturer": "ACME"}"#).await;
+    let (status, text) = call(&app, "PUT", "/api/v1/parts/ACME-1", Some(&acme), r#"{"manufacturer": "ACME", "catalog": "other"}"#).await;
+    assert_eq!(status, StatusCode::FORBIDDEN, "{text}");
+    let parts = r#"[{"number": "ACME-2", "manufacturer": "ACME", "catalog": "other"}]"#;
+    assert_eq!(call(&app, "POST", "/api/v1/import", Some(&acme), parts).await.0, StatusCode::FORBIDDEN);
+    assert_eq!(call(&app, "PUT", "/api/v1/parts/ACME-1", Some(&acme), r#"{"manufacturer": "ACME", "catalog": "acme"}"#).await.0, StatusCode::CREATED);
+    // A part an administrator put into another catalog stays editable.
+    json::<Part>(&app, "PUT", "/api/v1/parts/ACME-3", Some(TOKEN), r#"{"manufacturer": "ACME", "catalog": "other"}"#).await;
+    let (status, text) = call(&app, "PUT", "/api/v1/parts/ACME-3", Some(&acme), r#"{"manufacturer": "ACME", "catalog": "other", "description": "new"}"#).await;
+    assert_eq!(status, StatusCode::OK, "{text}");
+}
+
+#[tokio::test]
+async fn unknown_names_take_as_long_as_wrong_passwords() {
+    let app = app(Some(TOKEN));
+    sign_up(&app, "anna", "reader", "").await;
+    let time = |name: &'static str| {
+        let app = app.clone();
+        async move {
+            let start = std::time::Instant::now();
+            let body = format!(r#"{{"name": "{name}", "password": "wrong-password"}}"#);
+            assert_eq!(call(&app, "POST", "/api/v1/login", None, &body).await.0, StatusCode::UNAUTHORIZED);
+            start.elapsed()
+        }
+    };
+    let known = time("anna").await;
+    let unknown = time("nobody").await;
+    assert!(unknown * 4 > known, "unknown {unknown:?}, known {known:?}");
 }

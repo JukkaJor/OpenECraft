@@ -9,7 +9,7 @@ fn accounts_are_stored_and_found() {
     assert!(users.accounts.is_empty());
     assert!(users.set_admin("Anna", "pw").is_err(), "too short");
     users.set_admin("Anna", "long-password").unwrap();
-    let token = openecraft_auth::start_session(&mut users.find_mut("anna").unwrap().sessions);
+    let token = openecraft_auth::start_session(&mut users.find_mut("anna").unwrap().sessions, openecraft_auth::unix_now());
     users.save().unwrap();
     let back = Users::open(&dir).unwrap();
     let a = back.by_token(&token).unwrap();

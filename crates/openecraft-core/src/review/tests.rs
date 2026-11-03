@@ -139,3 +139,38 @@ fn external_csv_with_other_columns() {
     assert!(import_requests(&mut prj, "a;b\n1;2\n").is_err());
     assert!(import_requests(&mut prj, "[{").is_err());
 }
+
+#[test]
+fn signed_in_users_write_in_their_own_name() {
+    let theirs = Review {
+        approvals: vec![Approval { id: 1, rev: 1, user: "chief".into(), approved: false, ..Default::default() }],
+        comments: vec![Comment { id: 2, rev: 1, author: "anna".into(), replies: vec![Reply { author: "anna".into(), ..Default::default() }], ..Default::default() }],
+        markups: vec![Markup { id: 3, rev: 1, author: "anna".into(), ..Default::default() }],
+        ..Default::default()
+    };
+    let mut mine = theirs.clone();
+    // Approving in the name of another user, changing their approval, rewriting authors.
+    mine.approvals[0].approved = true;
+    mine.approvals[0].rev = 2;
+    mine.approvals.push(Approval { id: 9, rev: 1, user: "chief".into(), approved: true, ..Default::default() });
+    mine.comments[0].author = "chief".into();
+    mine.comments[0].replies[0].author = "chief".into();
+    mine.comments[0].replies.push(Reply { author: "chief".into(), text: "ok".into(), ..Default::default() });
+    mine.comments.push(Comment { id: 10, rev: 1, author: "chief".into(), ..Default::default() });
+    mine.markups[0].author = "chief".into();
+    sign(&theirs, &mut mine, "mallory");
+    assert_eq!(mine.approvals[0], theirs.approvals[0], "others' approvals stay");
+    assert_eq!(mine.approvals[1].user, "mallory");
+    assert_eq!(mine.comments[0].author, "anna");
+    let replies: Vec<&str> = mine.comments[0].replies.iter().map(|r| r.author.as_str()).collect();
+    assert_eq!(replies, ["anna", "mallory"]);
+    assert_eq!(mine.comments[1].author, "mallory");
+    assert_eq!(mine.markups[0].author, "anna");
+    // Own approvals may change.
+    let mut own = theirs.clone();
+    own.approvals[0].approved = true;
+    own.approvals[0].rev = 2;
+    sign(&theirs, &mut own, "Chief");
+    assert!(own.approvals[0].approved);
+    assert_eq!(own.approvals[0].user, "chief");
+}
