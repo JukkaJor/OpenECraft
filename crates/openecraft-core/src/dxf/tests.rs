@@ -80,3 +80,23 @@ fn rotated_and_styled_texts() {
     assert!(after.contains(&(51, "15.0")), "{after:?}");
     assert!(after.contains(&(72, "1")) && after.contains(&(73, "2")), "{after:?}");
 }
+
+#[test]
+fn layers_that_become_equal_stay_apart() {
+    use crate::model::*;
+    let mut prj = Project::default();
+    for (id, name) in [(90, "Layer A"), (91, "layer_a")] {
+        prj.layers.push(crate::graphics::Layer::new(name));
+        prj.pages[0].shapes.push(Shape { id, kind: ShapeKind::Circle, a: crate::geom::p(50.0, 50.0), b: crate::geom::p(60.0, 50.0), layer: name.into(), ..Default::default() });
+    }
+    let dxf = pages_dxf(&prj, &[0]);
+    let p = pairs(&dxf);
+    let table: Vec<&str> = p.iter().filter(|(c, v)| *c == 2 && v.starts_with("USER_")).map(|(_, v)| *v).collect();
+    assert_eq!(table, ["USER_LAYER_A", "USER_LAYER_A_2"]);
+    assert!(p.contains(&(8, "USER_LAYER_A")) && p.contains(&(8, "USER_LAYER_A_2")));
+}
+
+#[test]
+fn characters_beyond_the_basic_plane() {
+    assert_eq!(dxf_text("Ω \u{1F600}"), "\\U+03A9 ?");
+}
