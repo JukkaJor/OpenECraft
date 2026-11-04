@@ -133,3 +133,15 @@ fn dates_and_strings() {
     let mut p = Parser { b: b"/A#20B", i: 0 };
     assert_eq!(p.obj(0), Some(Obj::Name("A B".into())));
 }
+
+#[test]
+fn stream_lengths_and_sizes_out_of_range_are_safe() {
+    // A length beyond any file: the stream ends at `endstream`.
+    let pdf = b"%PDF-1.4\n1 0 obj\n<< /Length 1e30 >>\nstream\nab\nendstream\nendobj\n%%EOF\n";
+    assert!(read(pdf).is_err());
+    // Object streams unpack to at most the limit.
+    let dict = Obj::Dict(vec![("Filter".into(), Obj::Name("FlateDecode".into()))]);
+    let z = miniz_oxide::deflate::compress_to_vec_zlib(&[0u8; 4096], 6);
+    assert_eq!(decode(&dict, &z, 4096).map(|d| d.len()), Some(4096));
+    assert_eq!(decode(&dict, &z, 4095), None);
+}

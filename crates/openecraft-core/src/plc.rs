@@ -120,8 +120,8 @@ pub fn points(prj: &Project, nl: &Netlist) -> Vec<Point> {
     v
 }
 
-/// Gives the points of a card consecutive addresses from its start byte (inputs and
-/// outputs separately, in schematic order) in the address scheme of its station.
+/// Gives the digital points of a card consecutive addresses from its start byte (inputs
+/// and outputs separately, in schematic order) in the address scheme of its station.
 /// Returns the number of changed addresses.
 pub fn readdress(prj: &mut Project, card: &str) -> usize {
     let symbols = prj.symbol_table();
@@ -130,7 +130,7 @@ pub fn readdress(prj: &mut Project, card: &str) -> usize {
         let mut list: Vec<(usize, usize)> = Vec::new();
         for (pi, pg) in prj.pages.iter().enumerate() {
             for (si, s) in pg.symbols.iter().enumerate() {
-                if is_plc(&symbols, s) && s.tag == card && (s.sym == "plc_in") == input {
+                if is_plc(&symbols, s) && s.tag == card && s.sym == if input { "plc_in" } else { "plc_out" } {
                     list.push((pi, si));
                 }
             }

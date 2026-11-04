@@ -1462,6 +1462,26 @@ impl Project {
         v
     }
 
+    /// Device tags in use apart from the placed symbols, cables and harnesses: devices
+    /// of the device list, items of the cabinet layouts, terminal strips, plugs and PLC
+    /// cards without placed functions and the symbols of inactive options.
+    pub fn unplaced_tags(&self) -> impl Iterator<Item = &str> {
+        let parked = self.model_options.options.iter().flat_map(|o| &o.parked).flat_map(|p| match &p.item {
+            options::Item::Symbol(s) => vec![s.tag.as_str()],
+            options::Item::Page(pg) => pg.symbols.iter().map(|s| s.tag.as_str()).collect(),
+            _ => Vec::new(),
+        });
+        self.devices
+            .keys()
+            .chain(self.strips.keys())
+            .chain(self.plugs.keys())
+            .chain(self.plc_cards.keys())
+            .map(String::as_str)
+            .chain(self.layout.enclosures.iter().flat_map(|e| e.items.iter()).map(|i| i.tag.as_str()))
+            .chain(parked)
+            .filter(|t| !t.is_empty())
+    }
+
     /// Next free device tag for an identifying letter within a structure, e.g.
     /// `=A1-K3` (counted per structure, as `=A1-K1` and `=A2-K1` are different devices).
     pub fn next_tag(&self, structure: &str, letter: &str) -> String {
@@ -1470,6 +1490,7 @@ impl Project {
         let max = tags
             .chain(self.cables.iter().map(|c| c.tag.as_str()))
             .chain(self.harnesses.iter().map(|h| h.tag.as_str()))
+            .chain(self.unplaced_tags())
             .filter_map(|t| t.strip_prefix(&prefix)?.parse::<u32>().ok())
             .max()
             .unwrap_or(0);

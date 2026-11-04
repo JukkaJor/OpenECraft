@@ -104,9 +104,12 @@ pub fn plan_devices(prj: &Project, opts: &DeviceNumbering) -> Vec<(String, Strin
             }
         }
     }
-    // Cables and harnesses share the tag space.
+    // Cables and harnesses share the tag space, devices that are not placed (or not
+    // on schematic pages) keep their tags.
     keep.extend(prj.cables.iter().map(|c| c.tag.clone()));
     keep.extend(prj.harnesses.iter().map(|h| h.tag.clone()));
+    let moving: HashSet<&str> = todo.iter().map(|t| t.1.as_str()).collect();
+    keep.extend(prj.unplaced_tags().filter(|t| !moving.contains(t)).map(String::from));
     todo.sort_by(|a, b| a.0.cmp(&b.0).then_with(|| a.1.cmp(&b.1)));
     let has_n = opts.format.contains("{n}");
     let step = opts.step.max(1);

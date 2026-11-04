@@ -58,3 +58,14 @@ fn shared_strings_written_by_excel_are_read() {
     let sheets = read(&z.finish()).unwrap();
     assert_eq!(sheets[0].1, vec![vec!["Tag".to_string(), String::new(), "Rich text".into()], vec![], vec![String::new(), "4".into(), "TRUE".into()]]);
 }
+
+#[test]
+fn row_and_column_references_out_of_range_count_as_missing() {
+    let mut z = ZipWriter::new("2026-01-01");
+    z.add("xl/workbook.xml", br#"<workbook><sheets><sheet name="Tab" sheetId="1"/></sheets></workbook>"#);
+    let sheet = br#"<worksheet><sheetData><row r="0"><c r="A0" t="str"><v>a</v></c></row><row r="99999999999"><c r="AAAAAAAAAAAAAAAAAAAA2" t="str"><v>b</v></c><c r="XFE2" t="str"><v>c</v></c></row></sheetData></worksheet>"#;
+    z.add("xl/worksheets/sheet1.xml", sheet);
+    let sheets = read(&z.finish()).unwrap();
+    assert_eq!(sheets[0].1, vec![vec!["a".to_string()], vec!["b".to_string(), "c".into()]]);
+    assert_eq!((column_of("XFD1"), column_of("XFE1"), column_of("AAAA1")), (Some(16383), None, None));
+}
