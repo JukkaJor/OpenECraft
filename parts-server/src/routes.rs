@@ -493,6 +493,9 @@ async fn import_parts(State(state): State<AppState>, headers: HeaderMap, body: S
     }
     for p in &parts {
         check_part(p)?;
+        if p.successor == p.number {
+            return Err(bad(format!("part '{}' cannot be its own successor", p.number)));
+        }
     }
     let mut seen = std::collections::BTreeSet::new();
     if let Some(dup) = parts.iter().find(|p| !seen.insert(p.number.to_lowercase())) {

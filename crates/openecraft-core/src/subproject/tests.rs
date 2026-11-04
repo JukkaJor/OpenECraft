@@ -103,3 +103,23 @@ fn discarding_unlocks_the_pages() {
     assert!(prj.subprojects.is_empty());
     assert!(discard(&mut prj, "S").is_err());
 }
+
+#[test]
+fn a_subproject_is_inserted_once_and_only_from_its_latest_extraction() {
+    let mut prj = demo_project();
+    let ids = select_pages(&prj, &["2".into()], "").unwrap();
+    let first = extract(&mut prj, "Power", "", &ids, "2026-10-24").unwrap();
+    insert(&mut prj, &first, "2026-10-25").unwrap();
+    // Changed here after the insert: inserting the file again would undo it.
+    let at = prj.pages.iter().position(|p| p.name == "2").unwrap();
+    prj.pages[at].description = "Edited after the insert".into();
+    assert!(insert(&mut prj, &first, "2026-10-26").is_err());
+    assert_eq!(prj.pages[at].description, "Edited after the insert");
+    // Taken out again: only the new file goes back in.
+    let ids = vec![prj.pages[at].id];
+    let second = extract(&mut prj, "Power", "", &ids, "2026-10-27").unwrap();
+    assert!(insert(&mut prj, &first, "2026-10-28").is_err());
+    insert(&mut prj, &second, "2026-10-28").unwrap();
+    let at = prj.pages.iter().position(|p| p.name == "2").unwrap();
+    assert_eq!(prj.pages[at].description, "Edited after the insert");
+}

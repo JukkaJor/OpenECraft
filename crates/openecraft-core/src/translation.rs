@@ -166,7 +166,8 @@ pub fn set(prj: &mut Project, line: &str, lang: &str, translation: &str) {
 /// Dictionary as CSV for translators: one column per language, source first.
 pub fn to_csv(prj: &Project) -> String {
     let langs = &prj.languages;
-    let esc = |s: &str| if s.contains([';', '"', '\n']) { format!("\"{}\"", s.replace('"', "\"\"")) } else { s.to_string() };
+    // Tabs separate columns on reading too.
+    let esc = |s: &str| if s.contains([';', '\t', '"', '\n']) { format!("\"{}\"", s.replace('"', "\"\"")) } else { s.to_string() };
     let mut out = langs.all().join(";");
     out.push('\n');
     for (line, tr) in &langs.dictionary {

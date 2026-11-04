@@ -19,7 +19,7 @@ fn multi_language_texts() {
     assert_eq!(language_text("fr_FR@Contacteur;de_DE@Schütz;"), "Schütz");
     assert_eq!(language_text("fr_FR@Contacteur;"), "Contacteur");
     assert_eq!(language_text(" plain "), "plain");
-    assert_eq!(language_text("mail@example.org"), "example.org", "anything with @ is a language text");
+    assert_eq!(language_text("mail@example.org"), "mail@example.org", "an @ without a language code is part of the text");
 }
 
 #[test]
@@ -108,4 +108,18 @@ fn function_templates_connection_points_and_holes() {
     // In one file, and without the other documents.
     assert_eq!(from_eplan_xml(&format!("<root>{}{}</root>", &DEVICE[DEVICE.find("<part ").unwrap()..DEVICE.find("</partsmanagement>").unwrap()], &DEVICE_POINTS[DEVICE_POINTS.find("<terminal ").unwrap()..DEVICE_POINTS.find("</partsmanagement>").unwrap()])).unwrap()[0].connection_points.len(), 2);
     assert!(from_eplan_xml(DEVICE).unwrap()[0].connection_points.is_empty());
+}
+
+#[test]
+fn semicolons_and_lines_survive_the_eplan_round_trip() {
+    let p = Part { number: "X.1".into(), description: "Contactor; 3 poles".into(), tech_data: "Rated current: 9 A\nCoil: 24 V DC".into(), ..Default::default() };
+    let back = from_eplan_xml(&to_eplan_xml(&[p])).unwrap();
+    assert_eq!((back[0].description.as_str(), back[0].tech_data.as_str()), ("Contactor; 3 poles", "Rated current: 9 A\nCoil: 24 V DC"));
+}
+
+#[test]
+fn a_semicolon_ends_an_entry_only_before_a_language_code() {
+    assert_eq!(language_text("de_DE@Schütz; 3-polig;en_US@Contactor; 3 poles;"), "Contactor; 3 poles");
+    assert_eq!(language_text("en_US@a;;"), "a;");
+    assert_eq!(language_text("//??_??@{{LOGO!}};"), "LOGO!");
 }

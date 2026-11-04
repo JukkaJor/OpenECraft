@@ -299,6 +299,9 @@ async fn import_and_export() {
     assert_eq!(status, StatusCode::OK);
     let (status, _) = call(&app, "POST", "/api/v1/import", Some(TOKEN), "{ broken").await;
     assert_eq!(status, StatusCode::BAD_REQUEST);
+    // A part is not its own successor, as with a single part.
+    let (status, _) = call(&app, "POST", "/api/v1/import", Some(TOKEN), r#"[{"number": "IMP.3", "successor": "IMP.3"}]"#).await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
 
     let (status, csv) = call(&app, "GET", "/api/v1/export.csv", None, "").await;
     assert_eq!(status, StatusCode::OK);

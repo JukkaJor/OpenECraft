@@ -119,7 +119,7 @@ pub fn extract(prj: &mut Project, name: &str, description: &str, pages: &[u64], 
     for pg in prj.pages.iter_mut().filter(|p| chosen.contains(&p.id)) {
         pg.locked = true;
     }
-    let child = Child { name: name.into(), description: description.into(), pages: pages.to_vec(), exported: date.into(), inserted: String::new(), out: true, locked_before };
+    let child = Child { name: name.into(), description: description.into(), pages: pages.to_vec(), exported: date.into(), inserted: String::new(), out: true, locked_before, first_id: sub.next_id };
     prj.subprojects.children.retain(|c| c.name != name);
     prj.subprojects.children.push(child);
     Ok(sub)
@@ -141,6 +141,14 @@ pub struct Inserted {
 pub fn insert(prj: &mut Project, sub: &Project, date: &str) -> Result<Inserted, String> {
     let parent = sub.subprojects.parent.as_ref().ok_or_else(|| tr("This project is not a subproject").to_string())?;
     let child = prj.subprojects.child(&parent.name).cloned().ok_or_else(|| tr_fmt!("Subproject {} was not taken out of this project", parent.name))?;
+    // Inserting again (or a file of an earlier extraction) would undo what was changed
+    // here since.
+    if !child.out {
+        return Err(tr_fmt!("Subproject {} was inserted already", child.name));
+    }
+    if sub.next_id < child.first_id {
+        return Err(tr_fmt!("The file is from an earlier extraction of subproject {}", child.name));
+    }
     if let Some(o) = sub.model_options.options.iter().find(|o| !o.parked.is_empty()) {
         return Err(tr_fmt!("Activate option {} in the subproject first", o.name));
     }

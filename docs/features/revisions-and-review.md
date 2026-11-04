@@ -6,7 +6,8 @@ Revisions with locked pages and marked changes, the approval workflow, baselines
 
 A revision stores a snapshot of all pages and can release (lock) them;
 locked pages are read only. Changes since the last released revision (added / changed /
-removed symbols, wires, texts, pages) are listed, marked on the pages with a revision
+removed symbols, wires, texts, graphics, dimensions, images, connection and cable
+definitions, pages and their properties) are listed, marked on the pages with a revision
 triangle and reported in the *revision overview*; changed items name the changed
 properties with old and new value (`Device tag: -K1 › -K2; Position`).
 
@@ -15,8 +16,9 @@ properties with old and new value (`Device tag: -K1 › -K2; Position`).
 With approvers defined (*Project data › Revisions… › Approval
 workflow*: user names and the number of approvals needed) a new revision starts as a
 draft, is submitted for review, approved or rejected by the approvers (recorded with
-user, date and note) and released once approved. Pages changed after the submission
-block the release until the revision is submitted again (earlier approvals become void).
+user, date and note) and released once approved. Pages changed in any way after the
+submission block the release until the revision is submitted again (earlier approvals
+become void).
 
 ## Baselines and compare / merge
 

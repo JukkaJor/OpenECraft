@@ -9,7 +9,7 @@
 
 use openecraft_i18n::{tr, tr_const, tr_fmt};
 use crate::geom::{p, P};
-use crate::model::{natural_cmp, Page, Project, Shape, SymbolInst, TextItem, Wire};
+use crate::model::{natural_cmp, CableDef, ConnDef, Dimension, ImageItem, Page, Project, Shape, SymbolInst, TextItem, Wire};
 use std::sync::Arc;
 pub use crate::model::revision::{Revision, Snapshot, State, Workflow};
 
@@ -86,7 +86,8 @@ impl ChangeKind {
 #[derive(Clone, Debug, PartialEq)]
 pub struct Change {
     pub kind: ChangeKind,
-    /// "Symbol", "Wire", "Text", "Graphic" or "Page".
+    /// "Symbol", "Wire", "Text", "Graphic", "Dimension", "Image", "Connection
+    /// definition point", "Cable definition" or "Page".
     pub what: &'static str,
     pub id: u64,
     pub label: String,
@@ -214,6 +215,10 @@ fn diff<T: PartialEq>(old: &[T], new: &[T], k: &Kind<T>, out: &mut Vec<Change>) 
     }
 }
 
+fn no_details<T>(_: &T, _: &T) -> Vec<Detail> {
+    Vec::new()
+}
+
 fn mid(a: P, b: P) -> P {
     p((a.x + b.x) / 2.0, (a.y + b.y) / 2.0)
 }
@@ -226,12 +231,26 @@ pub fn compare(old: &[Page], new: &[Page]) -> Vec<PageChanges> {
         match old.iter().find(|o| o.id == n.id) {
             None => changes.push(Change { kind: ChangeKind::Added, what: "Page", id: n.id, label: n.description.clone(), pos: p(0.0, 0.0), details: Vec::new() }),
             Some(o) => {
-                let details = changed(&[
+                let mut details = changed(&[
                     (tr_const!("Page name"), o.name.clone(), n.name.clone()),
                     (tr_const!("Description"), o.description.clone(), n.description.clone()),
                     (tr_const!("Structure"), crate::structure::page_structure(o), crate::structure::page_structure(n)),
                     (tr_const!("Page type"), o.kind.label(), n.kind.label()),
+                    (tr_const!("Title block"), o.title_block.clone(), n.title_block.clone()),
+                    (tr_const!("Plot frame"), o.frame.clone(), n.frame.clone()),
                 ]);
+                // Page data without a value to show: named only.
+                for (field, differs) in [
+                    (tr_const!("Section"), o.section != n.section),
+                    (tr_const!("Document"), o.document != n.document),
+                    (tr_const!("Page properties"), o.values != n.values),
+                    (tr_const!("Macro"), o.macro_boxes != n.macro_boxes),
+                    (tr_const!("Report"), o.report != n.report),
+                ] {
+                    if differs {
+                        details.push(Detail { field, old: String::new(), new: String::new() });
+                    }
+                }
                 if !details.is_empty() {
                     changes.push(Change { kind: ChangeKind::Modified, what: "Page", id: n.id, label: tr("page properties").into(), pos: p(0.0, 0.0), details });
                 }
@@ -241,9 +260,16 @@ pub fn compare(old: &[Page], new: &[Page]) -> Vec<PageChanges> {
                 diff(&o.wires, &n.wires, &wire, &mut changes);
                 let text = Kind { what: "Text", id: &|t: &TextItem| t.id, describe: &|t: &TextItem| (t.text.lines().next().unwrap_or("").to_string(), t.pos), details: &text_details };
                 diff(&o.texts, &n.texts, &text, &mut changes);
-                let none = |_: &Shape, _: &Shape| Vec::new();
-                let shape = Kind { what: "Graphic", id: &|s: &Shape| s.id, describe: &|s: &Shape| (String::new(), mid(s.a, s.b)), details: &none };
+                let shape = Kind { what: "Graphic", id: &|s: &Shape| s.id, describe: &|s: &Shape| (String::new(), mid(s.a, s.b)), details: &no_details };
                 diff(&o.shapes, &n.shapes, &shape, &mut changes);
+                let dim = Kind { what: "Dimension", id: &|d: &Dimension| d.id, describe: &|d: &Dimension| (d.text.clone(), mid(d.a, d.b)), details: &no_details };
+                diff(&o.dimensions, &n.dimensions, &dim, &mut changes);
+                let image = Kind { what: "Image", id: &|i: &ImageItem| i.id, describe: &|i: &ImageItem| (i.file.name.clone(), mid(i.a, i.b)), details: &no_details };
+                diff(&o.images, &n.images, &image, &mut changes);
+                let conn = Kind { what: "Connection definition point", id: &|c: &ConnDef| c.id, describe: &|c: &ConnDef| (String::new(), c.pos), details: &no_details };
+                diff(&o.conn_defs, &n.conn_defs, &conn, &mut changes);
+                let cable = Kind { what: "Cable definition", id: &|c: &CableDef| c.id, describe: &|c: &CableDef| (c.cable.clone(), mid(c.a, c.b)), details: &no_details };
+                diff(&o.cable_defs, &n.cable_defs, &cable, &mut changes);
             }
         }
         if !changes.is_empty() {
@@ -426,7 +452,9 @@ pub fn release(prj: &mut Project, i: usize, lock: bool) -> Result<(), String> {
         Status::Released => return Err(tr("The revision is already released").into()),
         _ => return Err(tr("The revision is not approved").into()),
     }
-    if prj.revisions[i].state == State::InReview && !compare(&prj.revisions[i].pages.0, &prj.pages).is_empty() {
+    // Any change of the pages counts (only releasing locks them).
+    let unlocked = |pages: &[Page]| pages.iter().map(|p| Page { locked: false, ..p.clone() }).collect::<Vec<_>>();
+    if prj.revisions[i].state == State::InReview && unlocked(&prj.revisions[i].pages.0) != unlocked(&prj.pages) {
         return Err(tr("The pages were changed after the submission; submit the revision again").into());
     }
     finish_release(prj, i, lock);

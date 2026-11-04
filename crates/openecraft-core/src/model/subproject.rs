@@ -41,4 +41,12 @@ pub struct Child {
     /// Pages that were locked before the subproject was taken out.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub locked_before: Vec<u64>,
+    /// First id reserved for the subproject when it was taken out (0: files of older
+    /// versions); a subproject file of an earlier extraction counts below it.
+    #[serde(skip_serializing_if = "is_zero")]
+    pub first_id: u64,
+}
+
+fn is_zero(v: &u64) -> bool {
+    *v == 0
 }

@@ -152,3 +152,38 @@ fn changed_items_list_their_changed_properties() {
     let page = pc.changes.iter().find(|c| c.what == "Page").unwrap();
     assert_eq!(page.details[0].field, "Description");
 }
+
+#[test]
+fn all_page_content_counts_as_a_change() {
+    let mut prj = demo_project();
+    create(&mut prj, "A", "", "", "", false);
+    let old = prj.pages.clone();
+    let pg = &mut prj.pages[1];
+    pg.dimensions.push(crate::model::Dimension { id: 900_001, ..Default::default() });
+    pg.cable_defs.push(crate::model::CableDef { id: 900_002, cable: "-W9".into(), ..Default::default() });
+    pg.conn_defs.push(crate::model::ConnDef { id: 900_003, ..Default::default() });
+    pg.values.insert("page.drawing_number".into(), "D-17".into());
+    let changes = compare(&old, &prj.pages);
+    let whats: Vec<&str> = changes.iter().flat_map(|pc| pc.changes.iter().map(|c| c.what)).collect();
+    for what in ["Dimension", "Cable definition", "Connection definition point", "Page"] {
+        assert!(whats.contains(&what), "{what}: {whats:?}");
+    }
+    let page = changes[0].changes.iter().find(|c| c.what == "Page").unwrap();
+    assert_eq!(page.details.iter().map(|d| d.field).collect::<Vec<_>>(), ["Page properties"]);
+}
+
+#[test]
+fn changes_after_the_approval_need_a_new_submission() {
+    let mut prj = demo_project();
+    create(&mut prj, "A", "", "", "", false);
+    prj.workflow = Workflow { approvers: vec!["Anna".into()], required: 1 };
+    prj.pages[1].description = "changed".into();
+    create(&mut prj, "B", "", "", "", false);
+    submit(&mut prj, 1).unwrap();
+    decide(&mut prj, 1, "Anna", "", true, "").unwrap();
+    prj.pages[1].dimensions.push(crate::model::Dimension { id: 900_001, ..Default::default() });
+    assert!(release(&mut prj, 1, false).is_err());
+    submit(&mut prj, 1).unwrap();
+    decide(&mut prj, 1, "Anna", "", true, "").unwrap();
+    release(&mut prj, 1, true).unwrap();
+}

@@ -22,16 +22,38 @@ pub fn is_eplan_xml(text: &str) -> bool {
     t.starts_with('<') && t.contains("P_ARTICLE_PARTNR")
 }
 
+/// `de_DE`, `en_US`, `??_??`: the code of an entry of a multi-language value.
+fn is_language(code: &str) -> bool {
+    let b = code.as_bytes();
+    b.len() == 5 && b[2] == b'_' && [b[0], b[1], b[3], b[4]].iter().all(|c| c.is_ascii_alphabetic() || *c == b'?')
+}
+
 /// The text of a multi-language value in the preferred language. Language neutral
-/// texts (`??_??@{{LOGO!}};//??_??@LOGO!;`) come after English and German.
+/// texts (`??_??@{{LOGO!}};//??_??@LOGO!;`) come after English and German. A `;`
+/// ends an entry only before the next language code: texts may contain it.
 pub fn language_text(value: &str) -> String {
     if !value.contains('@') {
         return value.trim().to_string();
     }
-    let entries: Vec<(&str, &str)> = value
-        .split(';')
-        .filter_map(|e| e.split_once('@'))
-        .map(|(l, t)| (l.trim().trim_start_matches('/'), t.trim()))
+    let mut segments: Vec<&str> = value.split(';').collect();
+    if segments.last().is_some_and(|s| s.trim().is_empty()) {
+        segments.pop();
+    }
+    let mut raw: Vec<(&str, String)> = Vec::new();
+    for seg in segments {
+        match seg.trim_start().trim_start_matches('/').split_once('@').filter(|(l, _)| is_language(l.trim())) {
+            Some((l, t)) => raw.push((l.trim(), t.to_string())),
+            None => {
+                if let Some((_, t)) = raw.last_mut() {
+                    t.push(';');
+                    t.push_str(seg);
+                }
+            }
+        }
+    }
+    let entries: Vec<(&str, &str)> = raw
+        .iter()
+        .map(|(l, t)| (*l, t.trim()))
         .map(|(l, t)| (l, t.strip_prefix("{{").and_then(|t| t.strip_suffix("}}")).unwrap_or(t)))
         .filter(|(_, t)| !t.is_empty())
         .collect();
@@ -300,7 +322,7 @@ pub fn to_eplan_xml(parts: &[Part]) -> String {
             ("P_ARTICLE_ELECTRICALCURRENT", p.current.clone()),
             ("P_ARTICLE_ELECTRICALPOWER", p.power.clone()),
             ("P_ARTICLE_CERTIFICATE", p.certificates.clone()),
-            ("P_ARTICLE_CHARACTERISTICS", lang(&p.tech_data.replace('\n', "; "))),
+            ("P_ARTICLE_CHARACTERISTICS", lang(&p.tech_data)),
             ("P_ARTICLE_PRODUCTTOPGROUP", c.top_group.to_string()),
             ("P_ARTICLE_PRODUCTGROUP", c.group.to_string()),
             ("P_ARTICLE_PRODUCTSUBGROUP", c.subgroup.to_string()),
