@@ -309,3 +309,13 @@ fn text_files_have_no_byte_order_mark() {
     let marked: Vec<String> = files.iter().filter(|f| std::fs::read(f).is_ok_and(|b| b.starts_with(b"\xef\xbb\xbf"))).map(|f| display(f)).collect();
     assert!(marked.is_empty(), "remove the byte order mark of {marked:?}");
 }
+
+/// `snap pack` refuses licenses missing in the list of snapd, which fails the release.
+#[test]
+fn the_snap_names_only_licenses_snapd_knows() {
+    let manifest = std::fs::read_to_string(root().join("installer/linux/snap/snapcraft.yaml")).unwrap();
+    let license = manifest.lines().find(|l| l.starts_with("license:")).expect("license of the snap");
+    for unknown in ["Ubuntu-font-1.0", "Bitstream-Vera"] {
+        assert!(!license.contains(unknown), "snapd does not know {unknown}");
+    }
+}
