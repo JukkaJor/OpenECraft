@@ -225,15 +225,81 @@ pub fn in_pages(prj: &Project, id: u64) -> bool {
     prj.pages.iter().any(|p| p.id == id || item_ids(p).contains(&id))
 }
 
+/// The order of all pages: those of the project and the parked ones (also `extra`),
+/// each where its order says when it was taken out.
+fn page_order<'a>(prj: &'a Project, extra: impl IntoIterator<Item = &'a Parked>) -> Vec<u64> {
+    let mut order: Vec<u64> = prj.pages.iter().map(|p| p.id).collect();
+    let parked = prj.model_options.options.iter().flat_map(|o| &o.parked).chain(extra);
+    for p in parked.filter(|p| matches!(p.item, Item::Page(_))) {
+        let id = p.item.id();
+        let Some(me) = p.order.iter().position(|x| *x == id) else { continue };
+        if order.contains(&id) {
+            continue;
+        }
+        // After the nearest page that came before it, past the others that did.
+        let earlier = &p.order[..me];
+        let mut at = earlier.iter().rev().find_map(|x| order.iter().position(|y| y == x)).map_or(0, |i| i + 1);
+        while at < order.len() && earlier.contains(&order[at]) {
+            at += 1;
+        }
+        order.insert(at, id);
+    }
+    order
+}
+
+/// Where a parked page goes back: after the nearest page of the project that comes
+/// before it (`pending`: pages still to be put back).
+fn page_at(prj: &Project, p: &Parked, pending: &[Parked]) -> usize {
+    let id = p.item.id();
+    let order = page_order(prj, std::iter::once(p).chain(pending));
+    if let Some(me) = order.iter().position(|x| *x == id).filter(|_| !p.order.is_empty()) {
+        return order[..me].iter().rev().find_map(|x| prj.pages.iter().position(|pg| pg.id == *x)).map_or(0, |i| i + 1);
+    }
+    // Files of older versions: after the page that was before it.
+    if p.page == 0 {
+        0
+    } else {
+        prj.pages.iter().position(|x| x.id == p.page).map(|i| i + 1).unwrap_or(p.index.min(prj.pages.len()))
+    }
+}
+
+/// A page of the project or one parked by an option.
+fn page_mut(prj: &mut Project, id: u64) -> Option<&mut Page> {
+    let Project { pages, model_options, .. } = prj;
+    pages.iter_mut().find(|x| x.id == id).or_else(|| {
+        model_options.options.iter_mut().flat_map(|o| o.parked.iter_mut()).find_map(|q| match &mut q.item {
+            Item::Page(pg) if pg.id == id => Some(&mut **pg),
+            _ => None,
+        })
+    })
+}
+
+/// Takes the content of the inactive options out that is in the pages (it came back
+/// with a page of another option).
+fn park_inactive(prj: &mut Project) {
+    for i in 0..prj.model_options.options.len() {
+        let o = &prj.model_options.options[i];
+        if o.active {
+            continue;
+        }
+        let ids: BTreeSet<u64> = o.members.iter().copied().filter(|id| in_pages(prj, *id)).collect();
+        if !ids.is_empty() {
+            let parked = take(prj, &ids);
+            prj.model_options.options[i].parked.extend(parked);
+        }
+    }
+}
+
 /// Takes the objects out of the pages (whole pages with their content).
 fn take(prj: &mut Project, ids: &BTreeSet<u64>) -> Vec<Parked> {
     let mut out = Vec::new();
+    let order = page_order(prj, []);
     let mut before = 0;
     let mut kept = Vec::new();
     for (index, pg) in std::mem::take(&mut prj.pages).into_iter().enumerate() {
         let id = pg.id;
         if ids.contains(&id) {
-            out.push(Parked { page: before, index, item: Item::Page(Box::new(pg)) });
+            out.push(Parked { page: before, index, item: Item::Page(Box::new(pg)), order: order.clone() });
         } else {
             kept.push(pg);
         }
@@ -248,7 +314,7 @@ fn take(prj: &mut Project, ids: &BTreeSet<u64>) -> Vec<Parked> {
                 pg.$list.retain(|x| {
                     let keep = !ids.contains(&x.id);
                     if !keep {
-                        out.push(Parked { page, index: i, item: Item::$variant($wrap(x.clone())) });
+                        out.push(Parked { page, index: i, item: Item::$variant($wrap(x.clone())), order: Vec::new() });
                     }
                     i += 1;
                     keep
@@ -267,21 +333,19 @@ fn take(prj: &mut Project, ids: &BTreeSet<u64>) -> Vec<Parked> {
     out
 }
 
-/// Puts parked content back (pages first, items in the order they were taken out).
-/// Items whose page no longer exists are dropped.
+/// Puts parked content back (pages first, items in the order they were taken out);
+/// items whose page is parked by another option go back into that page, items whose
+/// page no longer exists are dropped. Content of inactive options stays out.
 fn put_back(prj: &mut Project, parked: Vec<Parked>) {
-    let (pages, items): (Vec<Parked>, Vec<Parked>) = parked.into_iter().partition(|p| matches!(p.item, Item::Page(_)));
-    for p in pages {
+    let (mut pages, items): (Vec<Parked>, Vec<Parked>) = parked.into_iter().partition(|p| matches!(p.item, Item::Page(_)));
+    while !pages.is_empty() {
+        let p = pages.remove(0);
+        let at = page_at(prj, &p, &pages);
         let Item::Page(pg) = p.item else { continue };
-        let at = if p.page == 0 {
-            0
-        } else {
-            prj.pages.iter().position(|x| x.id == p.page).map(|i| i + 1).unwrap_or(p.index.min(prj.pages.len()))
-        };
         prj.pages.insert(at, *pg);
     }
     for p in items {
-        let Some(pg) = prj.pages.iter_mut().find(|x| x.id == p.page) else { continue };
+        let Some(pg) = page_mut(prj, p.page) else { continue };
         fn put<T>(list: &mut Vec<T>, index: usize, x: T) {
             list.insert(index.min(list.len()), x);
         }
@@ -297,6 +361,7 @@ fn put_back(prj: &mut Project, parked: Vec<Parked>) {
             Item::CableDef(x) => put(&mut pg.cable_defs, p.index, x),
         }
     }
+    park_inactive(prj);
 }
 
 /// Number of members of an option that are pages.

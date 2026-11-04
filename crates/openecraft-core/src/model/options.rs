@@ -34,6 +34,11 @@ pub struct Parked {
     /// Position in its list.
     pub index: usize,
     pub item: Item,
+    /// Pages: the order of all pages (also parked ones) when it was taken out, so that
+    /// it goes back between the right pages whatever came back meanwhile. Empty in
+    /// files of older versions.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub order: Vec<u64>,
 }
 
 /// Content of an inactive option.

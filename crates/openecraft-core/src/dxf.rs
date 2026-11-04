@@ -7,6 +7,7 @@ use crate::model::Project;
 use crate::render::{draw_page, Draw, Ink, Opts, TextStyle, VAnchor};
 use crate::analysis::Analysis;
 use crate::symbols::Anchor;
+use std::collections::HashMap;
 use std::fmt::Write;
 
 /// Layers: name and AutoCAD colour index.
@@ -32,14 +33,17 @@ fn layer(ink: Ink) -> &'static str {
     }
 }
 
-/// Text for DXF: non-ASCII characters as `\U+XXXX`.
+/// Text for DXF: non-ASCII characters as `\U+XXXX`; the code has four digits, so
+/// characters beyond U+FFFF become `?`.
 fn dxf_text(s: &str) -> String {
     let mut out = String::new();
     for c in s.chars() {
         if (' '..='~').contains(&c) {
             out.push(c);
-        } else {
+        } else if (c as u32) <= 0xFFFF {
             let _ = write!(out, "\\U+{:04X}", c as u32);
+        } else {
+            out.push('?');
         }
     }
     out
@@ -53,12 +57,32 @@ pub struct DxfDraw {
     h: f32,
     /// Layer of the project the following elements are on.
     user_layer: Option<String>,
+    /// DXF layer of each project layer (unique, see [`user_layers`]).
+    user_layers: HashMap<String, String>,
 }
 
 /// DXF layer of a project layer (the default layer has none of its own).
 fn user_layer_name(name: &str) -> String {
     let clean: String = name.chars().map(|c| if c.is_ascii_alphanumeric() || c == '-' || c == '_' { c.to_ascii_uppercase() } else { '_' }).collect();
     format!("USER_{clean}")
+}
+
+/// DXF layers of the project layers, added to `layers`: names that become equal (DXF
+/// layer names know neither blanks nor case) get a number.
+fn user_layers(prj: &Project, layers: &mut Vec<(String, u8)>) -> HashMap<String, String> {
+    let mut out = HashMap::new();
+    for name in crate::graphics::layer_names(prj).into_iter().filter(|n| !n.is_empty()) {
+        let base = user_layer_name(&name);
+        let mut dxf = base.clone();
+        let mut k = 2;
+        while layers.iter().any(|(n, _)| n.eq_ignore_ascii_case(&dxf)) {
+            dxf = format!("{base}_{k}");
+            k += 1;
+        }
+        layers.push((dxf.clone(), 7));
+        out.insert(name, dxf);
+    }
+    out
 }
 
 impl DxfDraw {
@@ -68,7 +92,7 @@ impl DxfDraw {
 
     fn entity(&mut self, kind: &str, ink: Ink, dashed: bool) {
         let name = match &self.user_layer {
-            Some(l) => user_layer_name(l),
+            Some(l) => self.user_layers.get(l).cloned().unwrap_or_else(|| user_layer_name(l)),
             None => layer(ink).to_string(),
         };
         let _ = write!(self.out, "0\n{kind}\n8\n{name}\n");
@@ -171,11 +195,9 @@ pub fn pages_dxf(prj: &Project, pages: &[usize]) -> String {
 /// Pages as one DXF drawing, drawn with the host's analysis.
 pub fn pages_dxf_with(prj: &Project, an: &Analysis, pages: &[usize]) -> String {
     let idx = &an.index;
-    let mut d = DxfDraw { out: String::new(), dx: 0.0, h: 0.0, user_layer: None };
     let mut layers: Vec<(String, u8)> = LAYERS.iter().map(|(n, c)| (n.to_string(), *c)).collect();
-    for name in crate::graphics::layer_names(prj).iter().filter(|n| !n.is_empty()) {
-        layers.push((user_layer_name(name), 7));
-    }
+    let user_layers = user_layers(prj, &mut layers);
+    let mut d = DxfDraw { out: String::new(), dx: 0.0, h: 0.0, user_layer: None, user_layers };
     header(&mut d.out, &layers);
     d.out.push_str("0\nSECTION\n2\nENTITIES\n");
     for &i in pages {

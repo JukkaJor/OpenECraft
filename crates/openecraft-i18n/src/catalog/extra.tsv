@@ -6041,3 +6041,6 @@ Only web and e-mail addresses (http, https, mailto) are links	Nur Web- und E-Mai
 The plugin program did not answer within {} s and was stopped	Das Plugin-Programm hat nicht innerhalb von {} s geantwortet und wurde beendet	Le programme du plugin n'a pas répondu en {} s et a été arrêté	El programa del plugin no ha respondido en {} s y se ha detenido
 Busbar systems	Sammelschienensysteme	Systèmes de jeux de barres	Sistemas de embarrado
 {}: the busbar system with {} bars joins {} conductors ({}): short circuit	{}: Das Sammelschienensystem mit {} Schienen verbindet {} Leiter ({}): Kurzschluss	{} : le système de jeu de barres à {} barres relie {} conducteurs ({}) : court-circuit	{}: el sistema de embarrado con {} barras une {} conductores ({}): cortocircuito
+Subproject {} was inserted already	Teilprojekt {} wurde bereits eingefügt	Le sous-projet {} a déjà été réinséré	El subproyecto {} ya se ha insertado
+The file is from an earlier extraction of subproject {}	Die Datei stammt aus einer früheren Auslagerung von Teilprojekt {}	Le fichier provient d'une extraction antérieure du sous-projet {}	El archivo procede de una extracción anterior del subproyecto {}
+Graphic	Grafik	Graphique	Gráfico

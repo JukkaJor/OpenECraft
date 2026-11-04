@@ -317,3 +317,59 @@ fn paste_lands_where_its_offset_says() {
     let w = prj.pages[0].wires.iter().find(|w| ids.contains(&w.id)).unwrap();
     assert_eq!((w.a, w.b), (p(0.0, 0.0) + d, p(0.0, 20.0) + d));
 }
+
+#[test]
+fn pasted_devices_keep_the_letters_of_their_tag() {
+    let mut prj = Project::default();
+    let ctx = PlaceCtx::default();
+    let coil = prj.symbol("coil").unwrap();
+    let mut s = new_symbol(&mut prj, 0, &ctx, &coil, p(40.0, 40.0), 0, false);
+    s.tag = "-Q1".into();
+    let id = s.id;
+    prj.pages[0].symbols.push(s);
+    let clip = copy(&prj.pages[0], &BTreeSet::from([id]));
+    let ids = paste(&mut prj, 0, &clip, p(80.0, 40.0));
+    let new = prj.pages[0].symbols.iter().find(|s| ids.contains(&s.id)).unwrap();
+    assert_eq!(new.tag, "-Q2");
+}
+
+#[test]
+fn the_wires_of_one_connection_share_a_core() {
+    let mut prj = Project::default();
+    let id = prj.new_id();
+    prj.cables.push(Cable { id, tag: "-W1".into(), cores: "BN BK GY".into(), ..Default::default() });
+    // An L of two wires, a T of three (one ends on another) and a single wire.
+    let wires = [(10, (40.0, 10.0), (40.0, 30.0)), (11, (40.0, 30.0), (60.0, 30.0)), (12, (80.0, 10.0), (80.0, 50.0)), (13, (80.0, 30.0), (100.0, 30.0)), (14, (120.0, 10.0), (120.0, 30.0))];
+    for (id, a, b) in wires {
+        prj.pages[0].wires.push(Wire { id, a: p(a.0, a.1), b: p(b.0, b.1), ..Default::default() });
+    }
+    assert_eq!(assign_cores(&mut prj, 0, &BTreeSet::from([10, 11, 12, 13, 14]), "-W1"), 5);
+    let core = |prj: &Project, id: u64| prj.pages[0].wires.iter().find(|w| w.id == id).unwrap().core.clone();
+    let cores: Vec<String> = [10, 11, 12, 13, 14].iter().map(|&i| core(&prj, i)).collect();
+    assert_eq!(cores, ["BN", "BN", "BK", "BK", "GY"]);
+    // A new segment of a connection takes the core the connection has.
+    prj.pages[0].wires.push(Wire { id: 15, a: p(60.0, 30.0), b: p(60.0, 50.0), ..Default::default() });
+    assert_eq!(assign_cores(&mut prj, 0, &BTreeSet::from([15]), "-W1"), 1);
+    assert_eq!(core(&prj, 15), "BN");
+}
+
+#[test]
+fn renaming_reaches_lists_of_tags_and_inactive_options() {
+    let mut prj = crate::sample::demo_project();
+    let (pi, tag) = prj.pages.iter().enumerate().find_map(|(i, p)| p.symbols.iter().find(|s| s.tag.starts_with("-K")).map(|s| (i, s.tag.clone()))).unwrap();
+    prj.pct_loops.push(crate::model::process::PctLoop { devices: vec![tag.clone()], ..Default::default() });
+    let subsystem = crate::model::safety::Subsystem { devices: vec![tag.clone()], channel2: vec![tag.clone()], ..Default::default() };
+    prj.electrical.safety.push(crate::model::safety::SafetyFunction { subsystems: vec![subsystem], ..Default::default() });
+    prj.review.requests.push(crate::model::review::ChangeRequest { id: 1, rev: 1, devices: vec![tag.clone()], ..Default::default() });
+    let sym = prj.pages[pi].symbols.iter().find(|s| s.tag == tag).unwrap().id;
+    crate::options::define(&mut prj, "Opt", "", "").unwrap();
+    crate::options::assign(&mut prj, "Opt", &[sym]).unwrap();
+    crate::options::set_active(&mut prj, "Opt", false).unwrap();
+    rename_device(&mut prj, &tag, "-K99");
+    assert_eq!(prj.pct_loops[0].devices, ["-K99"]);
+    let s = &prj.electrical.safety[0].subsystems[0];
+    assert_eq!((s.devices.as_slice(), s.channel2.as_slice()), (&["-K99".to_string()][..], &["-K99".to_string()][..]));
+    assert_eq!((prj.review.requests[0].devices.as_slice(), prj.review.requests[0].rev), (&["-K99".to_string()][..], 2));
+    crate::options::set_active(&mut prj, "Opt", true).unwrap();
+    assert_eq!(prj.pages.iter().flat_map(|p| &p.symbols).find(|s| s.id == sym).map(|s| s.tag.as_str()), Some("-K99"));
+}

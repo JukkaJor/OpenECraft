@@ -43,3 +43,16 @@ fn replace_changes_texts_but_not_released_pages() {
     assert!(replace(&mut prj, &q, "XYZ") > 0);
     assert!(find(&prj, &Query::new("XYZ")).iter().any(|h| h.kind == Kind::FunctionText));
 }
+
+#[test]
+fn matches_ignoring_case_keep_their_place_when_lower_case_changes_lengths() {
+    // ẞ is one byte longer than ß, İ one byte shorter than its lower case form: the
+    // lengths even out, the positions do not.
+    let q = Query::new("ab");
+    assert_eq!(q.replace("\u{1E9E}ab\u{130}", "x"), Some("\u{1E9E}x\u{130}".to_string()));
+    assert_eq!(Query::new("straße").replace("STRAẞE 1", "Weg"), Some("Weg 1".to_string()));
+    // A match that ends inside the lower case form of one character is none.
+    assert_eq!(Query::new("i").replace("\u{130}", "x"), None);
+    let word = Query { whole_word: true, ..Query::new("ab") };
+    assert!(word.matches("\u{1E9E} AB \u{130}") && !word.matches("\u{1E9E}AB"));
+}

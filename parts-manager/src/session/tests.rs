@@ -250,3 +250,16 @@ fn parts_are_only_editable_with_the_right_to_change_them() {
     assert!(s.may_change(Some(&acme)));
     assert!(!s.may_change(Some(&reader)));
 }
+
+#[test]
+fn numbers_that_differ_only_in_case_are_taken() {
+    let mut s = loaded(&["A.1", "B.1"]);
+    s.select("A.1");
+    s.draft.as_mut().unwrap().part.number = "b.1".into();
+    assert!(s.number_taken());
+    // Also the part's own number in other case, as on the server.
+    s.draft.as_mut().unwrap().part.number = "a.1".into();
+    assert!(s.number_taken());
+    s.draft.as_mut().unwrap().part.number = "A.1".into();
+    assert!(!s.number_taken());
+}

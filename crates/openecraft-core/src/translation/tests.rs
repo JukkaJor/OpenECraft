@@ -98,3 +98,15 @@ fn language_codes_are_those_of_iso_639() {
     assert_eq!(normalize_code("en,"), None);
     assert!(ISO_639_1.windows(2).all(|w| w[0] < w[1]));
 }
+
+#[test]
+fn texts_with_tabs_survive_the_csv() {
+    let mut prj = Project::default();
+    prj.languages.targets = vec!["de".into(), "fr".into()];
+    set(&mut prj, "Motor\tleft", "de", "Motor links");
+    set(&mut prj, "Motor\tleft", "fr", "Moteur gauche");
+    let mut other = Project::default();
+    from_csv(&mut other, &to_csv(&prj)).unwrap();
+    assert_eq!(other.languages.lookup("Motor\tleft", "de"), Some("Motor links"));
+    assert_eq!(other.languages.lookup("Motor\tleft", "fr"), Some("Moteur gauche"));
+}

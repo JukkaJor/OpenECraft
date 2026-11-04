@@ -94,7 +94,8 @@ symbol), free channels of cards with a device description to drag into the page.
 ## PLC overview
 
 All inputs / outputs per card with connected devices, editable
-addresses and function texts, card start byte / rack / slot, readdressing, **symbol
+addresses and function texts, card start byte / rack / slot, readdressing (of the
+digital points; analog ones keep their word addresses), **symbol
 table export / import** (CSV: name, data type, address, comment) for PLC programming
 tools, the tag table of **Siemens TIA Portal** (Excel sheet *PLC Tags*), the tag
 import of **Rockwell Studio 5000** (aliases of the module channels), the symbol table

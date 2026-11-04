@@ -97,3 +97,25 @@ fn renamed_devices_keep_their_tags_when_updated() {
     let b = prj.pages[pi].macro_boxes[1].clone();
     assert_eq!(tag_of(&prj, &b.items), renamed, "the renamed tag stays");
 }
+
+#[test]
+fn updates_keep_the_content_in_place() {
+    // A box of a single symbol: its drawing reaches beyond its insertion point.
+    let mut prj = demo_project();
+    let src = prj.pages.iter().position(|p| p.symbols.iter().any(|s| s.tag.starts_with("-K"))).unwrap();
+    let sym = prj.pages[src].symbols.iter().find(|s| s.tag.starts_with("-K")).unwrap().id;
+    let m = from_selection(&prj.pages[src], &[sym].into(), "Unit");
+    let id = prj.new_id();
+    prj.pages.push(crate::model::Page::new(id, "99", "Macro test", crate::model::PageKind::Schematic));
+    let mut lib = MacroLibrary { macros: vec![m.clone()] };
+    let pi = prj.pages.len() - 1;
+    place(&mut prj, pi, &m, &BTreeMap::new(), p(100.0, 100.0));
+    let before = prj.pages[pi].symbols[0].pos;
+    for n in 0..3 {
+        let mut changed = lib.get("Unit").unwrap().clone();
+        changed.clip.symbols[0].function_text = format!("v{n}");
+        lib.upsert(changed);
+        assert_eq!(update(&mut prj, &lib).updated, 1);
+        assert_eq!(prj.pages[pi].symbols[0].pos, before, "update {n}");
+    }
+}

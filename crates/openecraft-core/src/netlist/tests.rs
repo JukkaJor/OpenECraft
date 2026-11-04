@@ -118,3 +118,18 @@ fn a_tap_with_its_own_cross_section_keeps_it() {
     assert_eq!(conns[0].cross_section, "35 mm²");
     assert_eq!(crate::potentials::props_of(&prj, &nl, &open.nets[0]).cross_section, "300 mm²", "the net's own");
 }
+
+#[test]
+fn potentials_and_interruptions_without_pins_name_nothing() {
+    // User symbols may have the function of a potential without a connection point.
+    let mut prj = Project::default();
+    for (key, func) in [("user:pot", Func::Potential), ("user:int", Func::Interruption)] {
+        prj.symbols.push(crate::model::symlib::UserSymbol { key: key.into(), func, ..Default::default() });
+    }
+    let page = &mut prj.pages[0];
+    page.symbols.push(SymbolInst { id: 10, sym: "user:pot".into(), pos: p(40.0, 40.0), label: "L1".into(), ..Default::default() });
+    page.symbols.push(SymbolInst { id: 11, sym: "user:int".into(), pos: p(80.0, 40.0), label: "A".into(), ..Default::default() });
+    let nl = Netlist::build(&prj, true);
+    assert!(nl.nets.iter().all(|n| !n.named));
+    let _ = crate::analysis::Analysis::build(&prj);
+}

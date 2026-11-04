@@ -206,6 +206,14 @@ pub fn page_structure(page: &Page) -> String {
     Dt::of_page(page).structure()
 }
 
+/// Splits the device name of a tag (`-K12`, `-1CR2`) into the identifying letters
+/// (`K`, `CR`); None if it has none.
+pub fn letters_of(name: &str) -> Option<String> {
+    let s = name.trim_start_matches('-').trim_start_matches(|c: char| c.is_ascii_digit());
+    let l: String = s.chars().take_while(|c| c.is_alphabetic()).collect();
+    (!l.is_empty()).then_some(l)
+}
+
 /// Page name with structure, e.g. `=A1+CAB1/3` (just `3` without structure).
 pub fn page_full_name(page: &Page) -> String {
     let s = page_structure(page);

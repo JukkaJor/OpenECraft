@@ -269,6 +269,10 @@ impl Parser<'_> {
     }
 }
 
+/// Most the compressed object streams of a PDF may unpack to, all together: more is
+/// left out rather than running out of memory on a crafted file.
+const MAX_UNPACKED: usize = 1 << 30;
+
 fn find(hay: &[u8], needle: &[u8], from: usize) -> Option<usize> {
     hay.get(from..)?.windows(needle.len()).position(|w| w == needle).map(|i| i + from)
 }
@@ -283,6 +287,7 @@ impl Doc {
     fn parse(b: &[u8]) -> Doc {
         let mut doc = Doc::default();
         let mut at = 0;
+        let mut left = MAX_UNPACKED;
         while let Some(k) = find(b, b"obj", at) {
             at = k + 3;
             let after_ok = b.get(k + 3).is_none_or(|c| c.is_ascii_whitespace() || is_delim(*c));
@@ -323,7 +328,7 @@ impl Doc {
                 if b.get(s) == Some(&b'\n') {
                     s += 1;
                 }
-                let len = obj.get("Length").and_then(Obj::num).map(|l| l as usize).filter(|l| s + l <= b.len());
+                let len = obj.get("Length").and_then(Obj::num).map(|l| l as usize).filter(|l| s.checked_add(*l).is_some_and(|e| e <= b.len()));
                 let end = match len {
                     Some(l) if find(b, b"endstream", s + l).is_some_and(|e| e - (s + l) <= 4) => s + l,
                     _ => find(b, b"endstream", s).unwrap_or(b.len()),
@@ -334,7 +339,8 @@ impl Doc {
                 None
             };
             if obj.get("Type").and_then(Obj::name) == Some("ObjStm") {
-                if let Some(data) = stream.as_deref().and_then(|s| decode(&obj, s)) {
+                if let Some(data) = stream.as_deref().and_then(|s| decode(&obj, s, left)) {
+                    left -= data.len();
                     doc.read_object_stream(&obj, &data);
                 }
                 continue;
@@ -357,7 +363,7 @@ impl Doc {
             entries.push((num, off as usize));
         }
         for (num, off) in entries {
-            let mut p = Parser { b: data, i: first + off };
+            let mut p = Parser { b: data, i: first.saturating_add(off) };
             if let Some(obj) = p.obj(0) {
                 self.objs.insert(num, obj);
             }
@@ -408,7 +414,9 @@ impl Doc {
     }
 }
 
-fn decode(dict: &Obj, data: &[u8]) -> Option<Vec<u8>> {
+/// The data of a stream; None for filters other than Flate and for more than `limit`
+/// bytes.
+fn decode(dict: &Obj, data: &[u8], limit: usize) -> Option<Vec<u8>> {
     let filter = match dict.get("Filter") {
         Some(Obj::Name(n)) => Some(n.as_str()),
         Some(Obj::Array(a)) if a.len() == 1 => a[0].name(),
@@ -416,8 +424,8 @@ fn decode(dict: &Obj, data: &[u8]) -> Option<Vec<u8>> {
         _ => return None,
     };
     match filter {
-        None => Some(data.to_vec()),
-        Some("FlateDecode") => miniz_oxide::inflate::decompress_to_vec_zlib(data).ok(),
+        None => Some(data.to_vec()).filter(|d| d.len() <= limit),
+        Some("FlateDecode") => miniz_oxide::inflate::decompress_to_vec_zlib_with_limit(data, limit).ok(),
         _ => None,
     }
 }

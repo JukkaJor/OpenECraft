@@ -135,9 +135,10 @@ impl PageScan {
             if matches!(def.func, Func::Plug(_)) && !nodes.is_empty() && !s.tag.is_empty() {
                 scan.plug_pins.push(((s.tag.clone(), s.label.clone()), nodes[0]));
             }
-            match def.func {
-                Func::Potential if !s.label.is_empty() => scan.named.push((format!("pot:{}", s.label), nodes[0])),
-                Func::Interruption if !s.label.is_empty() => scan.named.push((format!("int:{}", s.label), nodes[0])),
+            // A user symbol may have no pin at all.
+            match (def.func, nodes.first()) {
+                (Func::Potential, Some(&n)) if !s.label.is_empty() => scan.named.push((format!("pot:{}", s.label), n)),
+                (Func::Interruption, Some(&n)) if !s.label.is_empty() => scan.named.push((format!("int:{}", s.label), n)),
                 _ => {}
             }
         }

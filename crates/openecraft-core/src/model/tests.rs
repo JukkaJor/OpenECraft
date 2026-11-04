@@ -42,3 +42,12 @@ fn only_unreleased_schematic_pages_are_editable() {
     assert!(!Page::new(2, "2", "", PageKind::Report(ReportKind::DeviceList.into())).is_editable());
     assert!(!Page::new(3, "3", "", PageKind::Cover).is_editable());
 }
+
+#[test]
+fn next_tag_skips_unplaced_devices() {
+    let mut prj = Project::default();
+    prj.devices.insert("-K3".into(), DeviceData::default());
+    prj.strips.insert("-X1".into(), Default::default());
+    assert_eq!(prj.next_tag("", "K"), "-K4");
+    assert_eq!(prj.next_tag("", "X"), "-X2");
+}

@@ -194,29 +194,48 @@ fn arc_points(c: P, r: f32, a0: f32, a1: f32) -> Vec<P> {
     (0..=n).map(|k| (a0 + sweep * k as f32 / n as f32).to_radians()).map(|a| p(c.x + r * a.cos(), c.y + r * a.sin())).collect()
 }
 
-/// Transformation of a block reference: scale, rotate, move.
+/// Transformation of a block reference: a linear map (scale, mirror, rotate), then a
+/// move. Kept as a matrix: a mirrored block turns the blocks inside it the other way.
 #[derive(Clone, Copy)]
 struct Tf {
-    sx: f32,
-    sy: f32,
-    cos: f32,
-    sin: f32,
+    /// Columns: images of the x and y axes.
+    x: P,
+    y: P,
     at: P,
 }
 
 impl Tf {
-    const ID: Tf = Tf { sx: 1.0, sy: 1.0, cos: 1.0, sin: 0.0, at: P { x: 0.0, y: 0.0 } };
+    const ID: Tf = Tf { x: P { x: 1.0, y: 0.0 }, y: P { x: 0.0, y: 1.0 }, at: P { x: 0.0, y: 0.0 } };
+
+    /// Scale by `sx`, `sy`, turn by `deg` counter-clockwise, move to `at`.
+    fn new(sx: f32, sy: f32, deg: f32, at: P) -> Tf {
+        let (sin, cos) = deg.to_radians().sin_cos();
+        Tf { x: p(cos * sx, sin * sx), y: p(-sin * sy, cos * sy), at }
+    }
+
+    /// The linear part only.
+    fn map(&self, v: P) -> P {
+        p(self.x.x * v.x + self.y.x * v.y, self.x.y * v.x + self.y.y * v.y)
+    }
 
     fn apply(&self, q: P) -> P {
-        let (x, y) = (q.x * self.sx, q.y * self.sy);
-        p(self.at.x + x * self.cos - y * self.sin, self.at.y + x * self.sin + y * self.cos)
+        self.at + self.map(q)
     }
 
     fn then(&self, outer: &Tf) -> Tf {
         // Points go through self first, then outer.
-        let at = outer.apply(self.at);
-        let ang = self.sin.atan2(self.cos) + outer.sin.atan2(outer.cos);
-        Tf { sx: self.sx * outer.sx, sy: self.sy * outer.sy, cos: ang.cos(), sin: ang.sin(), at }
+        Tf { x: outer.map(self.x), y: outer.map(self.y), at: outer.apply(self.at) }
+    }
+
+    /// A text with the base line at `deg` and height `h`: its angle and height after
+    /// the transformation.
+    fn text(&self, deg: f32, h: f32) -> (f32, f32) {
+        let (sin, cos) = deg.to_radians().sin_cos();
+        let (along, up) = (self.map(p(cos, sin)), self.map(p(-sin, cos)));
+        // The height counts across the new base line.
+        let len = along.x.hypot(along.y).max(1e-9);
+        let across = (along.x * up.y - along.y * up.x).abs() / len;
+        (along.y.atan2(along.x).to_degrees(), h * across)
     }
 }
 
@@ -303,7 +322,7 @@ fn entities(d: &Drawing, ents: &[Entity], tf: Tf, depth: usize, out: &mut Vec<Ge
                 if let (Some((base, block)), true) = (d.blocks.get(name), depth < 8) {
                     let (sx, sy, rot) = if kind == "INSERT" { (num(e, 41, 1.0), num(e, 42, 1.0), num(e, 50, 0.0)) } else { (1.0, 1.0, 0.0) };
                     let at = if kind == "INSERT" { point(e, 10) } else { p(0.0, 0.0) };
-                    let local = Tf { sx, sy, cos: rot.to_radians().cos(), sin: rot.to_radians().sin(), at };
+                    let local = Tf::new(sx, sy, rot, at);
                     // The block's base point lies at the insertion point.
                     let shift = Tf { at: p(-base.x, -base.y), ..Tf::ID };
                     let inner = shift.then(&local).then(&tf);
@@ -318,7 +337,10 @@ fn entities(d: &Drawing, ents: &[Entity], tf: Tf, depth: usize, out: &mut Vec<Ge
         for g in geo {
             out.push(match g {
                 Geo::Line(a, b, dash) => Geo::Line(tf.apply(a), tf.apply(b), dash),
-                Geo::Text { pos, text, height, angle, align } => Geo::Text { pos: tf.apply(pos), text, height: height * tf.sy.abs(), angle, align },
+                Geo::Text { pos, text, height, angle, align } => {
+                    let (angle, height) = tf.text(angle, height);
+                    Geo::Text { pos: tf.apply(pos), text, height, angle, align }
+                }
             });
         }
         k += 1;
@@ -356,7 +378,7 @@ pub fn import_page(prj: &mut Project, text: &str, description: &str, after: usiz
     let d = parse(text)?;
     let mut geo = Vec::new();
     let mut skipped = BTreeSet::new();
-    let unit = Tf { sx: d.unit, sy: d.unit, ..Tf::ID };
+    let unit = Tf::new(d.unit, d.unit, 0.0, p(0.0, 0.0));
     entities(&d, &d.entities, unit, 0, &mut geo, &mut skipped);
     if geo.is_empty() {
         return Err(tr("The DXF file contains nothing that can be imported").into());

@@ -111,3 +111,29 @@ fn files_that_are_no_dxf_are_refused() {
     assert!(import_page(&mut prj, &dxf("", "", ""), "x", 0, DxfOptions::default()).unwrap_err().contains("nothing"));
     assert_eq!(prj.pages.len(), 1);
 }
+
+#[test]
+fn texts_turn_with_their_block() {
+    let text = dxf(
+        "",
+        "0 BLOCK\n2 LBL\n10 0\n20 0\n0 TEXT\n10 0\n20 0\n40 2.5\n50 10\n1 HELLO\n0 ENDBLK",
+        "0 INSERT\n2 LBL\n10 100\n20 100\n41 2\n42 2\n50 90",
+    );
+    let (prj, r) = import(&text, false);
+    let t = &prj.pages[r.page].texts[0];
+    assert!((t.angle - 100.0).abs() < 0.01, "{t:?}");
+    assert!((t.size - 5.0).abs() < 0.01, "{t:?}");
+}
+
+#[test]
+fn blocks_in_a_mirrored_block_turn_the_other_way() {
+    // IN: a line along x, turned 90° inside OUT; OUT is inserted mirrored in x.
+    let blocks = "0 BLOCK\n2 IN\n10 0\n20 0\n0 LINE\n10 0\n20 0\n11 10\n21 0\n0 ENDBLK
+                  0 BLOCK\n2 OUT\n10 0\n20 0\n0 INSERT\n2 IN\n10 0\n20 0\n50 90\n0 ENDBLK";
+    let d = parse(&dxf("", blocks, "0 INSERT\n2 OUT\n10 0\n20 0\n41 -1\n42 1")).unwrap();
+    let mut geo = Vec::new();
+    entities(&d, &d.entities, Tf::ID, 0, &mut geo, &mut BTreeSet::new());
+    // Turned up to (0, 10); mirroring in x leaves it there.
+    let Geo::Line(a, b, _) = &geo[0] else { panic!("{geo:?}") };
+    assert!(a.x.abs() < 0.01 && a.y.abs() < 0.01 && b.x.abs() < 0.01 && (b.y - 10.0).abs() < 0.01, "{a:?} {b:?}");
+}

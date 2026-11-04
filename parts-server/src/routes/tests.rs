@@ -299,6 +299,9 @@ async fn import_and_export() {
     assert_eq!(status, StatusCode::OK);
     let (status, _) = call(&app, "POST", "/api/v1/import", Some(TOKEN), "{ broken").await;
     assert_eq!(status, StatusCode::BAD_REQUEST);
+    // A part is not its own successor, as with a single part.
+    let (status, _) = call(&app, "POST", "/api/v1/import", Some(TOKEN), r#"[{"number": "IMP.3", "successor": "IMP.3"}]"#).await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
 
     let (status, csv) = call(&app, "GET", "/api/v1/export.csv", None, "").await;
     assert_eq!(status, StatusCode::OK);
@@ -442,6 +445,11 @@ async fn admins_from_grants_and_directories() {
     assert_eq!(call(&app, "POST", "/api/v1/login", None, r#"{"name": "ops", "password": "wrong"}"#).await.0, StatusCode::UNAUTHORIZED);
     let settings: Settings<PartsRight> = json(&app, "GET", "/api/v1/access", Some(&ops.token), "").await;
     assert_eq!(settings.providers[0].id, "corp");
+    // Now ops is the last administrator, by grant: it can neither go nor lose the grant.
+    assert_eq!(call(&app, "DELETE", "/api/v1/users/ops", Some(&ops.token), "").await.0, StatusCode::CONFLICT);
+    assert_eq!(call(&app, "PUT", "/api/v1/users/ops", Some(&ops.token), r#"{"role": "Editor", "groups": []}"#).await.0, StatusCode::CONFLICT);
+    assert_eq!(call(&app, "PUT", "/api/v1/access", Some(&ops.token), r#"{"anonymous": "reader"}"#).await.0, StatusCode::CONFLICT);
+    assert!(call(&app, "GET", "/api/v1/users", Some(&ops.token), "").await.0.is_success());
 }
 
 #[tokio::test]

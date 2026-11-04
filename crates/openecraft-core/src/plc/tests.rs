@@ -163,3 +163,15 @@ fn mitsubishi_devices_are_octal() {
     assert!(!devices.is_empty());
     assert!(devices.iter().all(|d| (d.starts_with('X') || d.starts_with('Y')) && d[1..].chars().all(|c| ('0'..='7').contains(&c))), "{devices:?}");
 }
+
+#[test]
+fn readdressing_keeps_the_addresses_of_analog_points() {
+    let mut prj = Project::default();
+    for (i, (sym, label)) in [("plc_in", "I9.9"), ("plc_ai", "IW64"), ("plc_out", "Q9.9"), ("plc_ao", "QW80"), ("plc_out", "Q9.8")].into_iter().enumerate() {
+        let id = prj.new_id();
+        prj.pages[0].symbols.push(SymbolInst { id, sym: sym.into(), tag: "-A1".into(), label: label.into(), pos: crate::geom::p(40.0 + 40.0 * i as f32, 100.0), ..Default::default() });
+    }
+    assert_eq!(readdress(&mut prj, "-A1"), 3);
+    let labels: Vec<&str> = prj.pages[0].symbols.iter().map(|s| s.label.as_str()).collect();
+    assert_eq!(labels, ["I0.0", "IW64", "Q0.0", "QW80", "Q0.1"]);
+}

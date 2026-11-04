@@ -21,7 +21,8 @@ wires such as GNYE are drawn dashed in their second colour.
 
 Cable definitions (tag, type, cores, cross-section, length, part from the
 product group *Cables*). Wires are assigned to cores (several wires at once get the free
-cores in order); cores and the cable tag are shown on the schematic. Cable overview and
+cores in order, the wires of one connection share a core); cores and the cable tag are
+shown on the schematic. Cable overview and
 cable diagram reports, cables in the BOM by length, checks for unknown cables, cores
 used twice or not in the cable.
 
@@ -49,7 +50,8 @@ order (page, column, top to bottom) after a format: `{letter}{n}` (`-K1`),
 `{letter}{page}.{n}` (`-K3.1`), `{letter}{page}{column}` (`-K34`) or NFPA style
 `{page}{column}{letter}` (`-34K`), with start value, step, letters and scope, and a
 preview of the new tags; everything that refers to a tag follows (parts, strips,
-plugs, PLC data, panel layout, harnesses). *Home › Renumber pages…* numbers pages
+plugs, PLC data, panel layout, harnesses); tags of devices that are not placed
+(device list, panel layout) are not given to others. *Home › Renumber pages…* numbers pages
 with start and step, restarting per structure and keeping sub-pages (`3.a`; *Home › New page › New
 sub-page* inserts `3.1`, `3.2`, … after the current page). Page sections hold pages
 and subsections like directories (*Home › New section*, drag pages onto them in the

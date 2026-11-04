@@ -29,13 +29,17 @@ pub fn column_name(mut i: usize) -> String {
     String::from_utf8(s).unwrap_or_default()
 }
 
-/// 0-based column of a cell reference (`B7` → 1).
+/// Most rows and columns of a sheet (Excel's limits, `XFD1048576`).
+const MAX_ROWS: usize = 1 << 20;
+const MAX_COLUMNS: usize = 1 << 14;
+
+/// 0-based column of a cell reference (`B7` → 1); None beyond the last column.
 fn column_of(r: &str) -> Option<usize> {
     let letters: Vec<u8> = r.bytes().take_while(u8::is_ascii_alphabetic).map(|b| b.to_ascii_uppercase()).collect();
-    if letters.is_empty() {
+    if letters.is_empty() || letters.len() > 3 {
         return None;
     }
-    Some(letters.iter().fold(0usize, |n, b| n * 26 + (b - b'A' + 1) as usize) - 1)
+    Some(letters.iter().fold(0usize, |n, b| n * 26 + (b - b'A' + 1) as usize) - 1).filter(|c| *c < MAX_COLUMNS)
 }
 
 /// A cell value written as number: plain decimals without leading zeros or signs that
@@ -189,7 +193,8 @@ pub fn read(bytes: &[u8]) -> Result<Vec<Sheet>, String> {
         let sheet = xml::parse(&sheet)?;
         let mut rows: Vec<Vec<String>> = Vec::new();
         for row in sheet.descendants("row") {
-            let r = row.attr("r").and_then(|r| r.parse::<usize>().ok()).unwrap_or(rows.len() + 1);
+            // Row numbers out of range count as missing (the row after the last one).
+            let r = row.attr("r").and_then(|r| r.parse::<usize>().ok()).filter(|r| (1..=MAX_ROWS).contains(r)).unwrap_or(rows.len() + 1);
             while rows.len() < r {
                 rows.push(Vec::new());
             }

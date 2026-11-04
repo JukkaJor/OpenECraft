@@ -92,3 +92,52 @@ fn options_follow_configurator_conditions() {
     let back = Project::from_json(&text).unwrap();
     assert_eq!(back.model_options, prj.model_options);
 }
+
+#[test]
+fn pages_of_two_options_go_back_in_their_order() {
+    let names = |prj: &Project| prj.pages.iter().map(|p| p.name.clone()).collect::<Vec<_>>();
+    for (off, on) in [(["Y", "X"], ["Y", "X"]), (["X", "Y"], ["X", "Y"]), (["X", "Y"], ["Y", "X"]), (["Y", "X"], ["X", "Y"])] {
+        let mut prj = with_pages(4);
+        let (b, c) = (prj.pages[1].id, prj.pages[2].id);
+        define(&mut prj, "X", "", "").unwrap();
+        define(&mut prj, "Y", "", "").unwrap();
+        assign(&mut prj, "X", &[b]).unwrap();
+        assign(&mut prj, "Y", &[c]).unwrap();
+        for o in off {
+            set_active(&mut prj, o, false).unwrap();
+        }
+        for o in on {
+            set_active(&mut prj, o, true).unwrap();
+        }
+        assert_eq!(names(&prj), ["1", "2", "3", "4"], "off {off:?}, on {on:?}");
+    }
+}
+
+#[test]
+fn content_of_an_option_on_a_page_of_another_one() {
+    let setup = || {
+        let mut prj = demo_project();
+        let (page, sym) = (prj.pages[1].id, prj.pages[1].symbols[0].id);
+        define(&mut prj, "X", "", "").unwrap();
+        define(&mut prj, "Y", "", "").unwrap();
+        assign(&mut prj, "X", &[page]).unwrap();
+        assign(&mut prj, "Y", &[sym]).unwrap();
+        (prj, sym)
+    };
+    let visible = |prj: &Project, sym: u64| prj.pages.iter().any(|p| p.symbols.iter().any(|s| s.id == sym));
+    // The page comes back without the symbol of the inactive option, which follows it.
+    let (mut prj, sym) = setup();
+    set_active(&mut prj, "X", false).unwrap();
+    set_active(&mut prj, "Y", false).unwrap();
+    set_active(&mut prj, "X", true).unwrap();
+    assert!(!visible(&prj, sym));
+    set_active(&mut prj, "Y", true).unwrap();
+    assert!(visible(&prj, sym));
+    // The symbol goes back into the page while that is parked.
+    let (mut prj, sym) = setup();
+    set_active(&mut prj, "Y", false).unwrap();
+    set_active(&mut prj, "X", false).unwrap();
+    set_active(&mut prj, "Y", true).unwrap();
+    set_active(&mut prj, "X", true).unwrap();
+    assert!(visible(&prj, sym));
+}

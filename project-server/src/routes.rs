@@ -37,9 +37,16 @@ impl Server {
         token.is_none() && self.users.accounts.is_empty() && self.access.config.directories.is_empty()
     }
 
-    /// True if no one but `name` could manage users (without server token).
-    fn last_admin(&self, name: &str, token: &Option<String>) -> bool {
-        token.is_none() && !self.users.accounts.iter().any(|a| !a.user.name.eq_ignore_ascii_case(name) && self.access_of(&a.user).allows(SERVER, ProjectRight::Administer))
+    /// True if a change (the users `after` under `policy`) would leave no one who
+    /// manages users where someone does now (without server token, nobody else could).
+    fn loses_admin(&self, token: &Option<String>, policy: &Policy<ProjectRight>, after: &[ProjectUser]) -> bool {
+        let admin = |policy: &Policy<ProjectRight>, u: &ProjectUser| policy.access(&u.identity(), &u.grants()).with(policy.anonymous_access()).allows(SERVER, ProjectRight::Administer);
+        let now = &self.access.config.policy;
+        token.is_none() && self.users.accounts.iter().any(|a| admin(now, &a.user)) && !after.iter().any(|u| admin(policy, u))
+    }
+
+    fn user_list(&self) -> Vec<ProjectUser> {
+        self.users.accounts.iter().map(|a| a.user.clone()).collect()
     }
 
     /// What a user may do: their role, the grants to them and their groups and what
@@ -283,10 +290,6 @@ fn server<'a>(state: &'a AppState, headers: &HeaderMap) -> Result<(MutexGuard<'a
 }
 
 /// An administrator by the built-in role.
-fn server_admin(user: &ProjectUser) -> bool {
-    user.role == Some(ProjectRole::Admin)
-}
-
 fn not_found(name: &str) -> AppError {
     AppError(StatusCode::NOT_FOUND, format!("project '{name}' not found"))
 }
@@ -711,11 +714,18 @@ async fn save_user(State(state): State<AppState>, ClientIp(client): ClientIp, he
         }
         None => None,
     };
-    let demoted = server.users.find_mut(&name).is_some_and(|a| server_admin(&a.user)) && !req.role.is_some_and(|r| r == ProjectRole::Admin);
-    if demoted && server.last_admin(&name, &state.token) {
+    let groups = req.groups.map(|g| g.into_iter().map(|g| g.trim().to_string()).filter(|g| !g.is_empty()).collect::<Vec<_>>());
+    // The account as it will be: administrators by role, grant or group count.
+    let mut after = server.user_list();
+    for u in after.iter_mut().filter(|u| u.name.eq_ignore_ascii_case(&name)) {
+        u.role = req.role;
+        if let Some(g) = groups.clone().filter(|_| u.provider.is_empty()) {
+            u.groups = g;
+        }
+    }
+    if server.loses_admin(&state.token, &server.access.config.policy, &after) {
         return Err(AppError(StatusCode::CONFLICT, "the last administrator cannot be demoted".into()));
     }
-    let groups = req.groups.map(|g| g.into_iter().map(|g| g.trim().to_string()).filter(|g| !g.is_empty()).collect::<Vec<_>>());
     let user = match server.users.find_mut(&name) {
         Some(a) => {
             if !a.user.provider.is_empty() && hash.is_some() {
@@ -752,7 +762,8 @@ async fn save_user(State(state): State<AppState>, ClientIp(client): ClientIp, he
 async fn delete_user(State(state): State<AppState>, ClientIp(client): ClientIp, headers: HeaderMap, Path(name): Path<String>) -> Result<StatusCode> {
     let (mut server, caller) = server(&state, &headers)?;
     caller.admin(client)?;
-    if server.last_admin(name.trim(), &state.token) && server.users.find_mut(&name).is_some_and(|a| server_admin(&a.user)) {
+    let after: Vec<ProjectUser> = server.user_list().into_iter().filter(|u| !u.name.eq_ignore_ascii_case(name.trim())).collect();
+    if server.loses_admin(&state.token, &server.access.config.policy, &after) {
         return Err(AppError(StatusCode::CONFLICT, "the last administrator cannot be deleted".into()));
     }
     let before = server.users.accounts.len();
@@ -776,6 +787,9 @@ async fn access(State(state): State<AppState>, ClientIp(client): ClientIp, heade
 async fn save_access(State(state): State<AppState>, ClientIp(client): ClientIp, headers: HeaderMap, Json(policy): Json<Policy<ProjectRight>>) -> Result<Json<Settings<ProjectRight>>> {
     let (mut server, caller) = server(&state, &headers)?;
     caller.admin(client)?;
+    if server.loses_admin(&state.token, &policy, &server.user_list()) {
+        return Err(AppError(StatusCode::CONFLICT, "the access settings would leave nobody who manages users".into()));
+    }
     server.access.set_policy(policy).map_err(bad)?;
     log::info!("access settings changed by {}", caller.user.as_deref().unwrap_or("token"));
     Ok(Json(server.access.settings()))
