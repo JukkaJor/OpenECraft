@@ -568,7 +568,10 @@ pub fn paste(prj: &mut Project, page_i: usize, clip: &Clip, at: P) -> BTreeSet<u
                     if let Some(n) = rename.get(&s.tag) {
                         s.tag = n.clone();
                     } else {
-                        let n = prj.next_tag(&crate::structure::Dt::parse(&s.tag).structure(), def.letter);
+                        // The copy keeps the letters of its tag (`-Q1` → `-Q2`).
+                        let dt = crate::structure::Dt::parse(&s.tag);
+                        let letter = crate::structure::letters_of(&dt.name).unwrap_or_else(|| def.letter.to_string());
+                        let n = prj.next_tag(&dt.structure(), &letter);
                         // Reserve the tag by temporarily recording it.
                         rename.insert(s.tag.clone(), n.clone());
                         s.tag = n;
@@ -775,7 +778,9 @@ pub fn apply_cable_part(cable: &mut Cable, part: &Part) {
 }
 
 /// Assigns wires of a page to the free cores of a cable in order (left to right,
-/// top to bottom). Returns the number of wires that got a core.
+/// top to bottom). The wires of one connection (joined at their ends) share a core,
+/// also one they already have of the cable. Returns the number of wires that got a
+/// core.
 pub fn assign_cores(prj: &mut Project, page: usize, wires: &BTreeSet<u64>, cable: &str) -> usize {
     let Some(c) = prj.cable(cable) else { return 0 };
     let cores = c.core_list();
@@ -788,16 +793,58 @@ pub fn assign_cores(prj: &mut Project, page: usize, wires: &BTreeSet<u64>, cable
         .map(|(_, w)| w.core.clone())
         .collect();
     let mut free = cores.into_iter().filter(|c| !used.contains(c));
-    let mut sel: Vec<&mut Wire> = prj.pages[page].wires.iter_mut().filter(|w| wires.contains(&w.id)).collect();
-    sel.sort_by(|a, b| a.a.x.min(a.b.x).total_cmp(&b.a.x.min(b.b.x)).then(a.a.y.min(a.b.y).total_cmp(&b.a.y.min(b.b.y))));
+    let group = wire_groups(&prj.pages[page].wires);
+    let mut core_of: HashMap<usize, String> = HashMap::new();
+    for (i, w) in prj.pages[page].wires.iter().enumerate() {
+        if w.cable == cable && !w.core.is_empty() && !wires.contains(&w.id) {
+            core_of.entry(group[i]).or_insert_with(|| w.core.clone());
+        }
+    }
+    let mut sel: Vec<(usize, &mut Wire)> = prj.pages[page].wires.iter_mut().enumerate().filter(|(_, w)| wires.contains(&w.id)).collect();
+    sel.sort_by(|(_, a), (_, b)| a.a.x.min(a.b.x).total_cmp(&b.a.x.min(b.b.x)).then(a.a.y.min(a.b.y).total_cmp(&b.a.y.min(b.b.y))));
     let mut n = 0;
-    for w in sel {
-        let Some(core) = free.next() else { break };
+    for (i, w) in sel {
+        let core = match core_of.get(&group[i]) {
+            Some(core) => core.clone(),
+            None => {
+                let Some(core) = free.next() else { continue };
+                core_of.insert(group[i], core.clone());
+                core
+            }
+        };
         w.cable = cable.to_string();
         w.core = core;
         n += 1;
     }
     n
+}
+
+/// Connection of each wire: wires joined at an end or ending on another one share
+/// one (index of a representative wire).
+fn wire_groups(wires: &[Wire]) -> Vec<usize> {
+    let mut parent: Vec<usize> = (0..wires.len()).collect();
+    fn root(parent: &mut [usize], mut i: usize) -> usize {
+        while parent[i] != i {
+            parent[i] = parent[parent[i]];
+            i = parent[i];
+        }
+        i
+    }
+    let mut at_end: HashMap<(i64, i64), usize> = HashMap::new();
+    for (i, w) in wires.iter().enumerate() {
+        for q in [w.a, w.b] {
+            let j = *at_end.entry(q.key()).or_insert(i);
+            let (ri, rj) = (root(&mut parent, i), root(&mut parent, j));
+            parent[ri] = rj;
+            for (k, v) in wires.iter().enumerate() {
+                if k != i && crate::geom::on_segment_interior(q, v.a, v.b) {
+                    let (ri, rk) = (root(&mut parent, i), root(&mut parent, k));
+                    parent[ri] = rk;
+                }
+            }
+        }
+    }
+    (0..wires.len()).map(|i| root(&mut parent, i)).collect()
 }
 
 /// Changes the structure of a page; with `move_devices` the devices on the page

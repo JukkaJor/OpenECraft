@@ -44,15 +44,9 @@ impl Default for DeviceNumbering {
     }
 }
 
-/// Splits the device name of a tag (`-K12`, `-1CR2`) into the identifying letters
-/// (`K`, `CR`); None if it has none.
-pub fn letters_of(name: &str) -> Option<String> {
-    let s = name.trim_start_matches('-').trim_start_matches(|c: char| c.is_ascii_digit());
-    let l: String = s.chars().take_while(|c| c.is_alphabetic()).collect();
-    (!l.is_empty()).then_some(l)
-}
+pub use crate::structure::letters_of;
 
-fn fill(format: &str, letter: &str, n: Option<u32>, page: &str, column: &str, row: &str) -> String {
+fn fill(format: &str, letter: &str, n: Option<u64>, page: &str, column: &str, row: &str) -> String {
     let mut s = format.replace("{letter}", letter).replace("{page}", page).replace("{column}", column).replace("{row}", row);
     if let Some(n) = n {
         s = s.replace("{n}", &n.to_string());
@@ -112,8 +106,9 @@ pub fn plan_devices(prj: &Project, opts: &DeviceNumbering) -> Vec<(String, Strin
     keep.extend(prj.unplaced_tags().filter(|t| !moving.contains(t)).map(String::from));
     todo.sort_by(|a, b| a.0.cmp(&b.0).then_with(|| a.1.cmp(&b.1)));
     let has_n = opts.format.contains("{n}");
-    let step = opts.step.max(1);
-    let mut counters: BTreeMap<String, u32> = BTreeMap::new();
+    // Counted in u64: a start near the largest u32 cannot overflow.
+    let step = u64::from(opts.step.max(1));
+    let mut counters: BTreeMap<String, u64> = BTreeMap::new();
     let mut used = keep;
     let mut out = Vec::new();
     for (_, tag, loc) in todo {
@@ -125,7 +120,7 @@ pub fn plan_devices(prj: &Project, opts: &DeviceNumbering) -> Vec<(String, Strin
         let group = format!("{}{base}", dt.structure());
         let make = |dt: &Dt, name: String| Dt { name: format!("-{name}"), ..dt.clone() }.tag();
         let new = if has_n {
-            let c = counters.entry(group).or_insert(opts.start);
+            let c = counters.entry(group).or_insert(opts.start.into());
             loop {
                 let t = make(&dt, fill(&base, &letter, Some(*c), page, &column, &row));
                 *c += step;
@@ -190,9 +185,9 @@ impl Default for PageNumbering {
 /// New page names: (page index, new name) of the pages that change. Released pages
 /// keep their name.
 pub fn plan_pages(prj: &Project, opts: &PageNumbering) -> Vec<(usize, String)> {
-    let step = opts.step.max(1);
+    let step = u64::from(opts.step.max(1));
     let renumbered = if opts.sections { sections::renumbered(prj) } else { Default::default() };
-    let mut n: Option<u32> = None;
+    let mut n: Option<u64> = None;
     let mut structure_before: Option<String> = None;
     let mut section_before: Option<u64> = None;
     let mut out = Vec::new();
@@ -215,7 +210,7 @@ pub fn plan_pages(prj: &Project, opts: &PageNumbering) -> Vec<(usize, String)> {
         let name = match (opts.subpages, suffix, n) {
             (true, Some(sfx), Some(cur)) => format!("{prefix}{cur}.{sfx}"),
             _ => {
-                let next = n.map_or(opts.start, |c| c + step);
+                let next = n.map_or(opts.start.into(), |c| c + step);
                 n = Some(next);
                 match (opts.subpages, suffix) {
                     (true, Some(sfx)) => format!("{prefix}{next}.{sfx}"),

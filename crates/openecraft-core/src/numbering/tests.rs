@@ -149,3 +149,15 @@ fn renumbering_leaves_the_tags_of_unplaced_devices_alone() {
     // The pump moved with its coil and was not merged into another device.
     assert_eq!(prj.devices.values().filter(|d| d.description == "Pump").count(), 1);
 }
+
+#[test]
+fn numbering_from_the_largest_start_value_does_not_overflow() {
+    let mut prj = project();
+    let opts = DeviceNumbering { start: u32::MAX, ..Default::default() };
+    let plan = plan_devices(&prj, &opts);
+    assert!(plan.iter().any(|(_, new)| new == "-K4294967296"), "{plan:?}");
+    let id = prj.new_id();
+    prj.pages.push(Page::new(id, "9", "", PageKind::Schematic));
+    let pages = plan_pages(&prj, &PageNumbering { start: u32::MAX, step: u32::MAX, ..Default::default() });
+    assert_eq!(pages.last().map(|p| p.1.as_str()), Some("12884901885"));
+}

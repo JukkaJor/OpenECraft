@@ -317,3 +317,38 @@ fn paste_lands_where_its_offset_says() {
     let w = prj.pages[0].wires.iter().find(|w| ids.contains(&w.id)).unwrap();
     assert_eq!((w.a, w.b), (p(0.0, 0.0) + d, p(0.0, 20.0) + d));
 }
+
+#[test]
+fn pasted_devices_keep_the_letters_of_their_tag() {
+    let mut prj = Project::default();
+    let ctx = PlaceCtx::default();
+    let coil = prj.symbol("coil").unwrap();
+    let mut s = new_symbol(&mut prj, 0, &ctx, &coil, p(40.0, 40.0), 0, false);
+    s.tag = "-Q1".into();
+    let id = s.id;
+    prj.pages[0].symbols.push(s);
+    let clip = copy(&prj.pages[0], &BTreeSet::from([id]));
+    let ids = paste(&mut prj, 0, &clip, p(80.0, 40.0));
+    let new = prj.pages[0].symbols.iter().find(|s| ids.contains(&s.id)).unwrap();
+    assert_eq!(new.tag, "-Q2");
+}
+
+#[test]
+fn the_wires_of_one_connection_share_a_core() {
+    let mut prj = Project::default();
+    let id = prj.new_id();
+    prj.cables.push(Cable { id, tag: "-W1".into(), cores: "BN BK GY".into(), ..Default::default() });
+    // An L of two wires, a T of three (one ends on another) and a single wire.
+    let wires = [(10, (40.0, 10.0), (40.0, 30.0)), (11, (40.0, 30.0), (60.0, 30.0)), (12, (80.0, 10.0), (80.0, 50.0)), (13, (80.0, 30.0), (100.0, 30.0)), (14, (120.0, 10.0), (120.0, 30.0))];
+    for (id, a, b) in wires {
+        prj.pages[0].wires.push(Wire { id, a: p(a.0, a.1), b: p(b.0, b.1), ..Default::default() });
+    }
+    assert_eq!(assign_cores(&mut prj, 0, &BTreeSet::from([10, 11, 12, 13, 14]), "-W1"), 5);
+    let core = |prj: &Project, id: u64| prj.pages[0].wires.iter().find(|w| w.id == id).unwrap().core.clone();
+    let cores: Vec<String> = [10, 11, 12, 13, 14].iter().map(|&i| core(&prj, i)).collect();
+    assert_eq!(cores, ["BN", "BN", "BK", "BK", "GY"]);
+    // A new segment of a connection takes the core the connection has.
+    prj.pages[0].wires.push(Wire { id: 15, a: p(60.0, 30.0), b: p(60.0, 50.0), ..Default::default() });
+    assert_eq!(assign_cores(&mut prj, 0, &BTreeSet::from([15]), "-W1"), 1);
+    assert_eq!(core(&prj, 15), "BN");
+}
