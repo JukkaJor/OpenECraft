@@ -75,7 +75,8 @@ fn requests_of_the_portal() {
     assert_eq!(info.url, "https://portal.test/api/parts?page%5Blimit%5D=1");
     assert_eq!(info.headers.get("Authorization"), Some("Bearer PAT:abc123"));
     assert_eq!(endpoint("PAT:abc").info().headers.get("Authorization"), Some("Bearer PAT:abc"));
-    assert_eq!(endpoint("eyJhbGciOi.x.y").info().headers.get("Authorization"), Some("Bearer eyJhbGciOi.x.y"));
+    // The token of a browser session is not passed on as it is: only personal access tokens.
+    assert_eq!(endpoint("eyJhbGciOi.x.y").info().headers.get("Authorization"), Some("Bearer PAT:eyJhbGciOi.x.y"));
     assert_eq!(endpoint("").info().headers.get("Authorization"), None);
 
     let include = "include=manufacturer%2Cproduct_top_group%2Cproduct_group%2Cproduct_sub_group%2Cpicture_file.preview";

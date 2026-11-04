@@ -8,6 +8,8 @@ on:
   workflow_dispatch:
   workflow_call:
 
+# Release builds are reproducible: the Rust version (dtolnay/rust-toolchain@<version>) and
+# the versions of cargo-about and trunk are pinned, cargo runs with --locked.
 jobs:
   native:
     strategy:
@@ -17,15 +19,17 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@1.97.0
+        with:
+          components: clippy
       - name: Linux dependencies
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y libxkbcommon-dev libgtk-3-dev libwayland-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev
-      - run: cargo test --workspace
-      - run: cargo clippy --workspace --all-targets -- -D warnings
-      - run: cargo build --workspace --release
+      - run: cargo test --workspace --locked
+      - run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - run: cargo build --workspace --release --locked
       - uses: actions/upload-artifact@v4
         with:
           name: openecraft-${{ matrix.os }}
@@ -49,10 +53,10 @@ jobs:
       WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@1.97.0
       - uses: taiki-e/install-action@v2
         with:
-          tool: cargo-about
+          tool: cargo-about@0.9.3
       - name: Inno Setup
         run: choco install innosetup --no-progress -y
       - name: Signing certificate
@@ -83,10 +87,10 @@ jobs:
           apt-get install -y --no-install-recommends ca-certificates curl git build-essential pkg-config file dpkg-dev rpm \
             libxkbcommon-dev libgtk-3-dev libwayland-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@1.97.0
       - uses: taiki-e/install-action@v2
         with:
-          tool: cargo-about
+          tool: cargo-about@0.9.3
       - run: bash installer/linux/build.sh tar.gz deb rpm appimage
       - uses: actions/upload-artifact@v4
         with:
@@ -102,10 +106,10 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@1.97.0
       - uses: taiki-e/install-action@v2
         with:
-          tool: cargo-about
+          tool: cargo-about@0.9.3
       - name: Build dependencies
         run: |
           sudo apt-get update
@@ -121,10 +125,10 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@1.97.0
       - uses: taiki-e/install-action@v2
         with:
-          tool: cargo-about
+          tool: cargo-about@0.9.3
       - name: Build dependencies
         run: |
           sudo apt-get update
@@ -148,12 +152,12 @@ jobs:
       MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@1.97.0
         with:
           targets: aarch64-apple-darwin, x86_64-apple-darwin
       - uses: taiki-e/install-action@v2
         with:
-          tool: cargo-about
+          tool: cargo-about@0.9.3
       - name: Signing certificate
         if: env.MACOS_CERTIFICATE != ''
         env:
@@ -190,13 +194,14 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@1.97.0
         with:
           targets: wasm32-unknown-unknown
+          components: clippy
       - uses: taiki-e/install-action@v2
         with:
-          tool: trunk
-      - run: cargo clippy -p openecraft -p openecraft-parts-manager --target wasm32-unknown-unknown -- -D warnings
+          tool: trunk@0.22.1,cargo-about@0.9.3
+      - run: cargo clippy -p openecraft -p openecraft-parts-manager --target wasm32-unknown-unknown --locked -- -D warnings
       - run: trunk build --release
         working-directory: openecraft
       - run: trunk build --release

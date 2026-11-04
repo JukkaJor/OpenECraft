@@ -5,7 +5,7 @@
 #   powershell -ExecutionPolicy Bypass -File installer\windows\build.ps1
 #
 # Needs Inno Setup 6 (winget install JRSoftware.InnoSetup) and cargo-about for the
-# third-party licenses (cargo install cargo-about --locked).
+# third-party licenses (cargo install cargo-about@0.9.3 --locked --features cli).
 #
 # WINDOWS_SIGN_CERT=<.pfx file> and WINDOWS_SIGN_PASSWORD sign the programs and the setup
 # with signtool (Windows SDK); otherwise they stay unsigned.
@@ -21,11 +21,11 @@ if ($manifest -notmatch '(?ms)^\[workspace\.package\][^\[]*?^version\s*=\s*"([^"
 }
 $version = $Matches[1]
 if (-not (Get-Command cargo-about -ErrorAction SilentlyContinue)) {
-    throw 'cargo-about not found: cargo install cargo-about --locked'
+    throw 'cargo-about not found: cargo install cargo-about@0.9.3 --locked --features cli'
 }
 
 $env:CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_RUSTFLAGS = '-C target-feature=+crt-static'
-cargo build --release --target $target --manifest-path "$root\Cargo.toml" `
+cargo build --release --locked --target $target --manifest-path "$root\Cargo.toml" `
     -p openecraft -p openecraft-parts-manager -p openecraft-cli -p openecraft-parts-server -p openecraft-project-server
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
