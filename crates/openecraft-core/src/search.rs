@@ -73,6 +73,21 @@ pub struct Hit {
     pub text: String,
 }
 
+/// `hay` lower-cased character by character, with the byte offset in `hay` for every
+/// byte offset of the result where the lower case form of a character starts (and for
+/// its end); `None` inside such a form.
+fn folded(hay: &str) -> (String, Vec<Option<usize>>) {
+    let mut out = String::with_capacity(hay.len());
+    let mut offsets = Vec::with_capacity(hay.len() + 1);
+    for (i, c) in hay.char_indices() {
+        offsets.push(Some(i));
+        out.extend(c.to_lowercase());
+        offsets.resize(out.len(), None);
+    }
+    offsets.push(Some(hay.len()));
+    (out, offsets)
+}
+
 impl Query {
     pub fn new(text: &str) -> Query {
         Query { text: text.into(), ..Default::default() }
@@ -87,18 +102,27 @@ impl Query {
         if self.text.is_empty() {
             return Vec::new();
         }
-        let (h, n) = if self.case_sensitive { (hay.to_string(), self.text.clone()) } else { (hay.to_lowercase(), self.text.to_lowercase()) };
-        // Lower-casing can change byte lengths; fall back to no match in that case.
-        if h.len() != hay.len() || n.len() != self.text.len() {
-            return Vec::new();
-        }
+        let (h, n, offsets) = if self.case_sensitive {
+            (hay.to_string(), self.text.clone(), None)
+        } else {
+            let (h, offsets) = folded(hay);
+            (h, self.text.chars().flat_map(char::to_lowercase).collect(), Some(offsets))
+        };
+        // Lower-casing can change byte lengths: positions in `h` back to `hay`.
+        let original = |k: usize| match &offsets {
+            Some(o) => o[k],
+            None => Some(k),
+        };
         let word = |c: Option<char>| c.is_some_and(|c| c.is_alphanumeric() || c == '_');
         let mut out = Vec::new();
         let mut from = 0;
         while let Some(at) = h[from..].find(&n) {
             let (a, b) = (from + at, from + at + n.len());
-            if !self.whole_word || (!word(h[..a].chars().next_back()) && !word(h[b..].chars().next())) {
-                out.push((a, b));
+            // Matches that begin or end inside the lower case form of one character are none.
+            if let (Some(oa), Some(ob)) = (original(a), original(b)) {
+                if !self.whole_word || (!word(hay[..oa].chars().next_back()) && !word(hay[ob..].chars().next())) {
+                    out.push((oa, ob));
+                }
             }
             from = b.max(a + 1);
             while from < h.len() && !h.is_char_boundary(from) {
