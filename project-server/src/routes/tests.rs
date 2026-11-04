@@ -618,3 +618,26 @@ async fn anonymous_callers_cannot_take_names_of_accounts() {
     // The key to a session cannot be guessed.
     assert!(opened.session.session.len() > 64, "{}", opened.session.session);
 }
+
+#[tokio::test]
+async fn the_last_administrator_stays_also_by_grant_and_access_settings() {
+    let app = app(None);
+    let login = |name: &str| serde_json::to_string(&LoginRequest { user: name.into(), password: format!("{name}-password"), ..Default::default() }).unwrap();
+    let account = |role, password: &str| UserUpdate { password: Some(password.into()), role: Some(role), projects: vec![], groups: None };
+    let _: ProjectUser = ok(&app, "PUT", "/api/v1/users/root", &account(ProjectRole::Admin, "root-password")).await;
+    let root = serde_json::from_str::<LoginResponse>(&call(&app, "POST", "/api/v1/login", None, login("root")).await.1).unwrap().token;
+    // Access settings that take the administration from everybody are refused.
+    let deny = Policy::<ProjectRight> { grants: vec![Grant { deny: true, ..Grant::new(Subject::User("root".into()), "admin", "") }], ..Default::default() };
+    assert_eq!(with(&app, "PUT", "/api/v1/access", &root, &deny).await.0, StatusCode::CONFLICT);
+    // Anna administers by a grant; root steps down.
+    assert!(with(&app, "PUT", "/api/v1/users/anna", &root, &account(ProjectRole::Editor, "anna-password")).await.0.is_success());
+    let anna = serde_json::from_str::<LoginResponse>(&call(&app, "POST", "/api/v1/login", None, login("anna")).await.1).unwrap().token;
+    let grant = Policy::<ProjectRight> { grants: vec![Grant::new(Subject::User("anna".into()), "admin", "")], ..Default::default() };
+    assert!(with(&app, "PUT", "/api/v1/access", &root, &grant).await.0.is_success());
+    let editor = UserUpdate { password: None, ..account(ProjectRole::Editor, "") };
+    assert!(with(&app, "PUT", "/api/v1/users/root", &root, &editor).await.0.is_success());
+    // The last administrator by grant can neither go nor lose the grant.
+    assert_eq!(with(&app, "DELETE", "/api/v1/users/anna", &anna, &()).await.0, StatusCode::CONFLICT);
+    assert_eq!(with(&app, "PUT", "/api/v1/access", &anna, &Policy::<ProjectRight>::default()).await.0, StatusCode::CONFLICT);
+    assert!(with(&app, "GET", "/api/v1/users", &anna, &()).await.0.is_success());
+}

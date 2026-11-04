@@ -669,12 +669,18 @@ async fn users(State(state): State<AppState>, headers: HeaderMap) -> Result<Json
     Ok(Json(store(&state).accounts().iter().map(|a| a.user.clone()).collect()))
 }
 
-/// True if removing / demoting `name` would leave nobody who can manage users.
-fn last_admin(state: &AppState, store: &Store, name: &str) -> bool {
+/// True if a change (the users `after` under `policy`) would leave nobody who can
+/// manage users where somebody can now (without server token, nobody else could).
+/// Administrators by role, grant or group count.
+fn loses_admin(state: &AppState, store: &Store, policy: &Policy<PartsRight>, after: &[User]) -> bool {
+    let admin = |policy: &Policy<PartsRight>, u: &User| policy.access(&u.identity(), &u.grants()).allows(SERVER, PartsRight::Administer);
     let file = access_file(state);
-    let policy = &file.config.policy;
-    let admin = |u: &User| policy.access(&u.identity(), &u.grants()).allows(SERVER, PartsRight::Administer);
-    state.token.is_none() && !store.accounts().iter().any(|a| !a.user.name.eq_ignore_ascii_case(name) && admin(&a.user))
+    let now = &file.config.policy;
+    state.token.is_none() && store.accounts().iter().any(|a| admin(now, &a.user)) && !after.iter().any(|u| admin(policy, u))
+}
+
+fn user_list(store: &Store) -> Vec<User> {
+    store.accounts().iter().map(|a| a.user.clone()).collect()
 }
 
 async fn put_user(State(state): State<AppState>, headers: HeaderMap, Path(name): Path<String>, Json(update): Json<UserUpdate>) -> Result<Json<User>> {
@@ -695,13 +701,15 @@ async fn put_user(State(state): State<AppState>, headers: HeaderMap, Path(name):
     if !account.user.provider.is_empty() && !update.password.is_empty() {
         return Err(bad(format!("'{name}' signs in with directory {}, which keeps the password", account.user.provider)));
     }
-    let was_admin = account.user.role == Role::Admin;
     account.user.role = update.role;
     account.user.manufacturer = update.manufacturer.trim().to_string();
     if let Some(groups) = update.groups.filter(|_| account.user.provider.is_empty()) {
         account.user.groups = groups.into_iter().map(|g| g.trim().to_string()).filter(|g| !g.is_empty()).collect();
     }
-    if was_admin && update.role != Role::Admin && last_admin(&state, &store, &name) {
+    let mut after: Vec<User> = user_list(&store).into_iter().filter(|u| !u.name.eq_ignore_ascii_case(&name)).collect();
+    after.push(account.user.clone());
+    let policy = access_file(&state).config.policy.clone();
+    if loses_admin(&state, &store, &policy, &after) {
         return Err(AppError(StatusCode::CONFLICT, "the last administrator cannot be demoted".into()));
     }
     if !update.password.is_empty() {
@@ -719,7 +727,9 @@ async fn delete_user(State(state): State<AppState>, headers: HeaderMap, Path(nam
     let (admin, _) = with_right(&state, &headers, PartsRight::Administer, SERVER)?;
     let mut store = store(&state);
     let account = store.account(&name).cloned().ok_or_else(|| not_found(format!("user '{name}' not found")))?;
-    if account.user.role == Role::Admin && last_admin(&state, &store, &account.user.name) {
+    let after: Vec<User> = user_list(&store).into_iter().filter(|u| !u.name.eq_ignore_ascii_case(&account.user.name)).collect();
+    let policy = access_file(&state).config.policy.clone();
+    if loses_admin(&state, &store, &policy, &after) {
         return Err(AppError(StatusCode::CONFLICT, "the last administrator cannot be deleted".into()));
     }
     store.delete_account(&account.user.name)?;
@@ -734,6 +744,12 @@ async fn access(State(state): State<AppState>, headers: HeaderMap) -> Result<Jso
 
 async fn save_access(State(state): State<AppState>, headers: HeaderMap, Json(policy): Json<Policy<PartsRight>>) -> Result<Json<Settings<PartsRight>>> {
     let (admin, _) = with_right(&state, &headers, PartsRight::Administer, SERVER)?;
+    {
+        let store = store(&state);
+        if loses_admin(&state, &store, &policy, &user_list(&store)) {
+            return Err(AppError(StatusCode::CONFLICT, "the access settings would leave nobody who manages users".into()));
+        }
+    }
     let mut file = access_file(&state);
     file.set_policy(policy).map_err(bad)?;
     log::info!("access settings changed ({})", admin.name);

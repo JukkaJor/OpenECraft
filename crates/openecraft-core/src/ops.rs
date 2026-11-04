@@ -720,6 +720,38 @@ pub fn rename_device(prj: &mut Project, old: &str, new: &str) {
     crate::plc_hw::rename_device(prj, old, new);
     crate::electrofluid::rename_device(prj, old, new);
     prj.field.rename(old, new);
+    // Lists of device tags elsewhere, and the symbols of inactive options.
+    let rename = |tags: &mut Vec<String>| {
+        let mut changed = false;
+        for t in tags.iter_mut().filter(|t| *t == old) {
+            *t = new.to_string();
+            changed = true;
+        }
+        changed
+    };
+    for l in &mut prj.pct_loops {
+        rename(&mut l.devices);
+    }
+    for s in prj.electrical.safety.iter_mut().flat_map(|f| f.subsystems.iter_mut()) {
+        rename(&mut s.devices);
+        rename(&mut s.channel2);
+    }
+    for r in &mut prj.review.requests {
+        if rename(&mut r.devices) {
+            // A new revision of the record, so that shared projects take it over.
+            r.rev += 1;
+        }
+    }
+    for p in prj.model_options.options.iter_mut().flat_map(|o| o.parked.iter_mut()) {
+        let symbols: Vec<&mut SymbolInst> = match &mut p.item {
+            crate::model::options::Item::Symbol(s) => vec![s.as_mut()],
+            crate::model::options::Item::Page(pg) => pg.symbols.iter_mut().collect(),
+            _ => Vec::new(),
+        };
+        for s in symbols.into_iter().filter(|s| s.tag == old) {
+            s.tag = new.to_string();
+        }
+    }
 }
 
 /// Deletes a page; released pages and the last page stay.

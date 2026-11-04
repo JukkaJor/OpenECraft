@@ -352,3 +352,24 @@ fn the_wires_of_one_connection_share_a_core() {
     assert_eq!(assign_cores(&mut prj, 0, &BTreeSet::from([15]), "-W1"), 1);
     assert_eq!(core(&prj, 15), "BN");
 }
+
+#[test]
+fn renaming_reaches_lists_of_tags_and_inactive_options() {
+    let mut prj = crate::sample::demo_project();
+    let (pi, tag) = prj.pages.iter().enumerate().find_map(|(i, p)| p.symbols.iter().find(|s| s.tag.starts_with("-K")).map(|s| (i, s.tag.clone()))).unwrap();
+    prj.pct_loops.push(crate::model::process::PctLoop { devices: vec![tag.clone()], ..Default::default() });
+    let subsystem = crate::model::safety::Subsystem { devices: vec![tag.clone()], channel2: vec![tag.clone()], ..Default::default() };
+    prj.electrical.safety.push(crate::model::safety::SafetyFunction { subsystems: vec![subsystem], ..Default::default() });
+    prj.review.requests.push(crate::model::review::ChangeRequest { id: 1, rev: 1, devices: vec![tag.clone()], ..Default::default() });
+    let sym = prj.pages[pi].symbols.iter().find(|s| s.tag == tag).unwrap().id;
+    crate::options::define(&mut prj, "Opt", "", "").unwrap();
+    crate::options::assign(&mut prj, "Opt", &[sym]).unwrap();
+    crate::options::set_active(&mut prj, "Opt", false).unwrap();
+    rename_device(&mut prj, &tag, "-K99");
+    assert_eq!(prj.pct_loops[0].devices, ["-K99"]);
+    let s = &prj.electrical.safety[0].subsystems[0];
+    assert_eq!((s.devices.as_slice(), s.channel2.as_slice()), (&["-K99".to_string()][..], &["-K99".to_string()][..]));
+    assert_eq!((prj.review.requests[0].devices.as_slice(), prj.review.requests[0].rev), (&["-K99".to_string()][..], 2));
+    crate::options::set_active(&mut prj, "Opt", true).unwrap();
+    assert_eq!(prj.pages.iter().flat_map(|p| &p.symbols).find(|s| s.id == sym).map(|s| s.tag.as_str()), Some("-K99"));
+}

@@ -93,8 +93,10 @@ impl Session {
 
     /// The draft's part number belongs to another part on the server.
     pub fn number_taken(&self) -> bool {
+        // Like the server: numbers that differ only in case are the same.
+        let key = |n: &str| n.to_lowercase();
         self.draft.as_ref().is_some_and(|d| {
-            d.original.as_deref() != Some(d.part.number.as_str()) && self.get(&d.part.number).is_some()
+            d.original.as_deref() != Some(d.part.number.as_str()) && self.parts.iter().any(|p| key(&p.number) == key(&d.part.number))
         })
     }
 

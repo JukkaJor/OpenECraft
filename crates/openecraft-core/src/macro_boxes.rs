@@ -111,8 +111,11 @@ pub fn update(prj: &mut Project, lib: &MacroLibrary) -> Updated {
             continue;
         }
         let clip = m.resolve(&b.values);
-        let at = bounds(prj, pi, &b).map(|r| r.min).unwrap_or_else(|| clip.bounds().min);
         let old = live_items(&prj.pages[pi], &b);
+        // Measured like paste places a clip (insertion points, not drawn extents), or
+        // every update would move the content.
+        let placed = ops::copy(&prj.pages[pi], &old).bounds();
+        let at = if placed.is_valid() { placed.min } else { clip.bounds().min };
         // Device tags of the old symbols (renamed when placed) by symbol and place.
         let old_tags: Vec<(String, crate::geom::P, String)> =
             prj.pages[pi].symbols.iter().filter(|s| old.contains(&s.id) && !s.tag.is_empty()).map(|s| (s.sym.clone(), s.pos - at, s.tag.clone())).collect();
