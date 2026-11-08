@@ -198,6 +198,24 @@ async fn users_roles_and_sessions() {
 }
 
 #[tokio::test]
+async fn sign_ins_at_the_same_time_keep_the_account() {
+    let app = app(Some(TOKEN));
+    sign_up(&app, "eve", "Editor", "").await;
+    let login = r#"{"name": "eve", "password": "password-eve"}"#;
+    // Both sessions stay: the second sign-in does not write back an older copy.
+    let (a, b): (Session, Session) = tokio::join!(json(&app, "POST", "/api/v1/login", None, login), json(&app, "POST", "/api/v1/login", None, login));
+    for token in [&a.token, &b.token] {
+        assert_eq!(call(&app, "GET", "/api/v1/favorites", Some(token), "").await.0, StatusCode::OK);
+    }
+    // A sign-in during which the account is deleted does not bring it back.
+    let (signed_in, deleted) = tokio::join!(call(&app, "POST", "/api/v1/login", None, login), call(&app, "DELETE", "/api/v1/users/eve", Some(TOKEN), ""));
+    assert_eq!(deleted.0, StatusCode::NO_CONTENT);
+    assert_eq!(signed_in.0, StatusCode::UNAUTHORIZED);
+    let users: Vec<User> = json(&app, "GET", "/api/v1/users", Some(TOKEN), "").await;
+    assert!(users.iter().all(|u| u.name != "eve"));
+}
+
+#[tokio::test]
 async fn last_administrator_stays() {
     let state = state(None);
     {
@@ -281,6 +299,22 @@ async fn attachments_and_files() {
     assert_eq!(part.attachments.len(), 1);
     assert_eq!(call(&app, "DELETE", &uri, Some(TOKEN), "").await.0, StatusCode::NOT_FOUND);
     assert_eq!(call(&app, "GET", "/api/v1/files/unknown", None, "").await.0, StatusCode::NOT_FOUND);
+}
+
+#[tokio::test]
+async fn importing_a_part_again_keeps_its_files() {
+    let app = app(Some(TOKEN));
+    let csv = "Part number;Manufacturer;Description\nIMP.1;ACME;Relay\n";
+    json::<ImportResult>(&app, "POST", "/api/v1/import", Some(TOKEN), csv).await;
+    let (status, _, _) = send(&app, "POST", "/api/v1/parts/IMP.1/attachments?name=sheet.pdf", Some(TOKEN), b"%PDF-1.4".to_vec()).await;
+    assert_eq!(status, StatusCode::OK);
+    // The CSV has no files: the data sheet stays with the changed part.
+    let csv = "Part number;Manufacturer;Description\nIMP.1;ACME;Relay, new text\n";
+    json::<ImportResult>(&app, "POST", "/api/v1/import", Some(TOKEN), csv).await;
+    let part: Part = json(&app, "GET", "/api/v1/parts/IMP.1", None, "").await;
+    assert_eq!(part.description, "Relay, new text");
+    assert_eq!(part.attachments.len(), 1);
+    assert_eq!(send(&app, "GET", &openecraft_parts::api::file_path(&part.attachments[0].id), None, Vec::new()).await.2, b"%PDF-1.4");
 }
 
 #[tokio::test]

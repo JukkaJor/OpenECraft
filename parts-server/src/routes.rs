@@ -487,7 +487,7 @@ async fn import_parts(State(state): State<AppState>, headers: HeaderMap, body: S
     if !access.anywhere(PartsRight::EditParts) {
         return Err(forbidden(format!("user '{}' is not allowed to do this", user.name)));
     }
-    let parts = import(&body).map_err(|e| bad(format!("invalid parts data: {e}")))?;
+    let mut parts = import(&body).map_err(|e| bad(format!("invalid parts data: {e}")))?;
     if parts.iter().any(|p| p.number.trim().is_empty()) {
         return Err(bad("every part needs a part number"));
     }
@@ -502,15 +502,20 @@ async fn import_parts(State(state): State<AppState>, headers: HeaderMap, body: S
         return Err(bad(format!("part '{}' appears more than once in the file", dup.number)));
     }
     let mut store = store(&state);
-    for p in &parts {
+    let numbers: std::collections::BTreeSet<String> = parts.iter().map(|p| p.number.clone()).collect();
+    for p in &mut parts {
         let old = store.get(&p.number)?;
         check_catalog(&store, &user, &access, p, old.as_ref())?;
         need(&user, &access, PartsRight::EditParts, &p.manufacturer)?;
-        if let Some(old) = &old {
+        if let Some(old) = old {
             need(&user, &access, PartsRight::EditParts, &old.manufacturer)?;
+            // CSV, BMEcat and EPLAN XML carry no files: the stored ones stay.
+            if p.attachments.is_empty() {
+                p.attachments = old.attachments;
+            }
         }
         check_new_number(&store, &p.number)?;
-        if !p.successor.is_empty() && !parts.iter().any(|q| q.number == p.successor) && store.get(&p.successor)?.is_none() {
+        if !p.successor.is_empty() && !numbers.contains(&p.successor) && store.get(&p.successor)?.is_none() {
             return Err(bad(format!("successor '{}' of part '{}' not found", p.successor, p.number)));
         }
     }
@@ -588,7 +593,7 @@ async fn login(State(state): State<AppState>, ClientIp(client): ClientIp, Json(l
     };
     let local = store(&state).account(login.name.trim()).filter(|a| a.user.provider.is_empty() && login.provider.trim().is_empty()).cloned();
     let directories = !access_file(&state).config.directories.is_empty();
-    let mut account = match local {
+    let account = match local {
         Some(a) if password_matches(&login.password, Some(&a.password)).await => a,
         Some(_) => {
             log::warn!("failed login of '{}'", login.name);
@@ -619,10 +624,30 @@ async fn login(State(state): State<AppState>, ClientIp(client): ClientIp, Json(l
             account
         }
     };
+    // The account may have changed during the check (another sign-in, a new password,
+    // deleted): the session goes on the stored account, not on the copy checked.
+    let mut store = store(&state);
+    let mut account = match store.account(&account.user.name) {
+        Some(now) if now.password == account.password && now.user.provider.eq_ignore_ascii_case(&account.user.provider) => {
+            let mut now = now.clone();
+            if !now.user.provider.is_empty() {
+                now.user.groups = account.user.groups;
+            }
+            now
+        }
+        // The first sign-in of a directory user.
+        None if !account.user.provider.is_empty() => account,
+        _ => {
+            drop(store);
+            log::warn!("failed login of '{}': the account changed meanwhile", login.name);
+            return Err(refused());
+        }
+    };
     throttle(&state).succeeded(&login.name, client);
     let token = account.start_session();
     let user = account.user.clone();
-    store(&state).put_account(account)?;
+    store.put_account(account)?;
+    drop(store);
     log::info!("{} signed in", user.name);
     let file = access_file(&state);
     let policy = &file.config.policy;

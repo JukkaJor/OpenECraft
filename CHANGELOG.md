@@ -179,6 +179,22 @@ its GitHub release ([docs/releasing.md](docs/releasing.md)).
   trench, conduit, cable bridge between building entries) carry routes from room to
   room; devices go on the outside of the walls and on the roof; a Buildings pane with
   a site plan, the plugin `buildings` with its commands, a check and example 15.
+- **Servers:** a very long project or manufacturer name no longer overflows the stack
+  of the access check (wildcards of grants and report blocks are matched without
+  recursion), and failed sign-ins with an empty user name are no longer counted twice
+  against the client. Two sign-ins of one user at the same time on the parts server
+  both keep their session, and a sign-in no longer brings back an account deleted or a
+  password changed meanwhile. Replies to review comments on the project server keep
+  the name of their author only while unchanged, so nobody writes under another name
+  by putting a reply before theirs.
+- **MCP server:** the project files of `batch_project_properties` (`files`) and the
+  macro libraries of `generate_pages`, `update_macro_boxes` and
+  `generate_preplanning_pages` (`macros`) must lie in `OPENECRAFT_MCP_ROOT` like all
+  other files; folder ids of the vault tools are no longer taken for paths.
+- **Parts server:** importing parts that exist already (CSV, BMEcat, EPLAN XML) keeps
+  their data sheets, pictures and other files instead of removing them.
+- **Project archives:** documents and images of the same name are numbered inside
+  the `files` folder (`files/2 …`) instead of in a folder `2 files` of their own.
 
 - Use the DIN-rail clip position from imported mounting data when placing cabinet devices. Matching Beckhoff terminal housings and the EK1100 use the documented 63.8 mm rail datum.
 
