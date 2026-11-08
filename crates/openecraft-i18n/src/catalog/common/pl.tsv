@@ -22,6 +22,7 @@ Bottom	Dno
 Bottom with removable gland plate	Dno ze zdejmowaną płytą dławicową
 Breaking capacity	Zdolność wyłączania
 Bridge	Mostek
+Building	Budynek
 Buildings	Budynki
 Bundles	Wiązki
 Busbar	Szyna zbiorcza
@@ -90,6 +91,7 @@ Descending	Malejąco
 Description	Opis
 Designation	Oznaczenie
 Device	Urządzenie
+Device (PV generator) the modules belong to; its parts then count them in the bill of materials	Urządzenie (generator PV), do którego należą moduły; jego części liczą je wtedy w zestawieniu materiałów
 Device description	Opis urządzenia
 Device tag	Oznaczenie urządzenia
 Device {}	Urządzenie {}
@@ -160,6 +162,7 @@ Integration	Integracja
 Internal (bottom)	Wewnętrzny (dół)
 Interruption point	Punkt przerwania
 Italic	Kursywa
+Its MPP tracker (input), from 1	Jego tracker MPP (wejście), od 1
 Job	Zlecenie
 Jumper	Mostek
 Key	Klucz
@@ -169,6 +172,7 @@ Languages	Języki
 Last change	Ostatnia zmiana
 Layers	Warstwy
 Leave out stored baselines and wiring marks	Pomiń zapisane wersje bazowe i znaczniki okablowania
+Left	Lewo
 Length	Długość
 Level	Poziom
 Lifecycle	Cykl życia
@@ -194,6 +198,8 @@ Minimum digits of the counter (leading zeros)	Minimalna liczba cyfr licznika (ze
 Missing parameter: {}	Brak parametru: {}
 Missing value for --{}	Brak wartości dla --{}
 Model import failed: {}	Import modelu nie powiódł się: {}
+Modules in series	Moduły szeregowo
+Modules side by side in a row	Moduły obok siebie w rzędzie
 Mounted	Zamontowane
 Mounting	Montaż
 Mounting data	Dane montażowe
@@ -216,6 +222,7 @@ No machine {}	Brak maszyny {}
 No page named {}	Brak strony o nazwie {}
 No page template named {}	Brak szablonu strony o nazwie {}
 No page {}	Brak strony {}
+No part {} in the project	Brak części {} w projekcie
 No parts found	Nie znaleziono artykułów
 No plot frame named {}	Brak ramki rysunku o nazwie {}
 No plug {}	Brak wtyku {}
@@ -246,6 +253,7 @@ PCT loop overview	Przegląd pętli AKPiA
 PL	PL
 PLC	PLC
 PLC card	Karta PLC
+PV array	Instalacja PV
 Packaging quantity	Ilość w opakowaniu
 Page	Strona
 Page description	Opis strony
@@ -328,10 +336,12 @@ Reserve	Rezerwa
 Revision	Rewizja
 Revision {}	Rewizja {}
 Rework	Poprawka
+Right	Prawo
 Role	Rola
 Rooms	Pomieszczenia
 Route	Prowadź
 Routing	Prowadzenie
+Rows of modules (east-west: rows of pairs)	Rzędy modułów (wschód-zachód: rzędy par)
 Rule	Reguła
 Rule set	Zestaw reguł
 Safety function	Funkcja bezpieczeństwa
@@ -367,6 +377,7 @@ Sort by	Sortuj według
 Source	Źródło
 State	Stan
 Status	Stan
+String	Łańcuch
 Strip	Odizolowanie
 Structure	Struktura
 Subproject name	Nazwa podprojektu
@@ -389,6 +400,7 @@ Terminals	Zaciski
 Text	Tekst
 Text to find	Tekst do znalezienia
 The identifier must not be empty	Identyfikator nie może być pusty
+The long side of the modules along the rows	Dłuższy bok modułów wzdłuż rzędów
 The page is released	Strona jest wydana
 There is a connection symbol at this point already	W tym punkcie jest już symbol połączenia
 Thermal	Termika
@@ -436,6 +448,7 @@ access denied	odmowa dostępu
 approved	zatwierdzona
 bonded	przyłączone
 file or folder not found	nie znaleziono pliku ani folderu
+landscape	poziomo
 left	w lewo
 mm	mm
 normal	normalny

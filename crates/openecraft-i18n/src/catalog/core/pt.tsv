@@ -7,6 +7,7 @@
 13 · Transformer-rated metering with PV and grid protection	13 · Medição indireta com TC, FV e proteção de rede
 14 · Main low-voltage distribution of an industrial plant	14 · Quadro geral de baixa tensão de uma planta industrial
 15 · Plant with buildings, levels and a shaft	15 · Instalação com edifícios, pavimentos e um shaft
+16 · Office building with roof, stair and installation	16 · Edifício de escritórios com telhado, escada e instalação
 2 · Relay with self-holding contact	2 · Relé com selo (autorretenção)
 3 · Star-delta motor starter	3 · Partida estrela-triângulo
 3/2 directional valve	Válvula direcional 3/2
@@ -182,6 +183,7 @@ Capacitive sensor, 3-wire	Sensor capacitivo, 3 fios
 Capacitor	Capacitor
 Capacitor, polarized	Capacitor, polarizado
 Ceiling	Teto
+Cell temperatures: {} °C (U max), {} °C (U mean), {} °C (U min)	Temperaturas de célula: {} °C (U máx.), {} °C (U média), {} °C (U mín.)
 Centre horizontally	Centralizar horizontalmente
 Centre vertically	Centralizar verticalmente
 Centrifugal pump	Bomba centrífuga
@@ -433,6 +435,7 @@ ERP item master and bill of materials (CSV)	Cadastro de itens e lista de materia
 ERP number	Número ERP
 ETIM class	Classe ETIM
 Earth electrode	Eletrodo de aterramento
+East-west on a flat roof	Leste-oeste em telhado plano
 Edit pages	Editar páginas
 Edit project data	Editar dados do projeto
 Editor	Editor
@@ -520,6 +523,7 @@ Fitting	Engate
 Fittings	Engates
 Flame retardant	Retardante de chama
 Flat cable {} has {} cores, the IDC connector {} has {} pins	O cabo plano {} tem {} condutores, o conector IDC {} tem {} pinos
+Flat roof	Telhado plano
 Float switch NC	Chave de boia NF
 Float switch NO	Chave de boia NA
 Float switch NO (NFPA)	Chave de boia NA (NFPA)
@@ -538,6 +542,8 @@ Fluid power (ISO 1219)	Tecnologia de fluidos (ISO 1219)
 Fluid power and electrics in one project: pneumatic circuit with service unit, valve terminal, 5/2 valves, flow control valves and cylinders; solenoid coils and position switches are linked to the valves and cylinders.	Fluídica e elétrica em um só projeto: esquema pneumático com unidade de conservação, terminal de válvulas, válvulas 5/2, reguladores de vazão e cilindros; bobinas e chaves fim de curso estão vinculadas às válvulas e aos cilindros.
 Fluid power and process	Tecnologia de fluidos e de processos
 Fluid power settings	Configurações de tecnologia de fluidos
+Flush-mounted in the floor	Embutido no piso
+Flush-mounted in the wall	Embutido na parede
 Foot switch NC	Pedal NF
 Foot switch NO	Pedal NA
 Foot switch NO (NFPA)	Pedal NA (NFPA)
@@ -590,6 +596,7 @@ Fuse, LV HBC, 3-pole	Fusível NH, tripolar
 GB (GB/T 4728)	GB (GB/T 4728)
 GOST (ESKD)	GOST (ESKD)
 GTIN	GTIN
+Gable roof	Telhado de duas águas
 Galvanometer	Galvanômetro
 Gas	Gás
 Gas flow switch NC	Chave de fluxo de gás NF
@@ -615,6 +622,7 @@ Grid and system protection relay (voltage and frequency)	Relé de proteção de 
 Grounded conductors must be white or grey (NFPA 79, 13.2.3)	Os condutores aterrados devem ser brancos ou cinza (NFPA 79, 13.2.3)
 HMI	IHM
 HTML document for printing	Documento HTML para impressão
+Half landing (two flights)	Com patamar intermediário (dois lances)
 Hall 1	Galpão 1
 Halogen free	Livre de halogênio
 Hand	Manual
@@ -628,8 +636,15 @@ Heating element	Elemento de aquecimento
 Higher-level product (-)	Produto de nível superior (-)
 Higher-level product of the page	Produto de nível superior da página
 Highest (°C)	Máximo (°C)
+Hinged left, opens inwards	Dobradiças à esquerda, abre para dentro
+Hinged left, opens outwards	Dobradiças à esquerda, abre para fora
+Hinged right, opens inwards	Dobradiças à direita, abre para dentro
+Hinged right, opens outwards	Dobradiças à direita, abre para fora
+Hip roof	Telhado de quatro águas
 Hold-up time	Tempo de retenção
 Holding power	Potência de retenção
+Horizontal, above the floor	Horizontal, acima do piso
+Horizontal, below the ceiling	Horizontal, abaixo do teto
 Horn (NFPA)	Buzina (NFPA)
 Horn / buzzer	Buzina / campainha
 Horn / buzzer HA (GB)	Buzina / cigarra HA (GB)
@@ -654,6 +669,8 @@ Hydraulic oil	Óleo hidráulico
 Hydraulic power unit	Unidade hidráulica
 Hydraulic pump	Bomba hidráulica
 Hysteresis	Histerese
+I mpp (A)	I mpp (A)
+I sc max (A)	I sc máx. (A)
 IEC 60204-1 (machinery: phases BK, DC control BU)	IEC 60204-1 (máquinas: fases BK, comando CC BU)
 IEC 60445 (phases BN, BK, GY)	IEC 60445 (fases BN, BK, GY)
 IEC 61131-3 (%IX0.0 / %QX0.0)	IEC 61131-3 (%IX0.0 / %QX0.0)
@@ -665,6 +682,8 @@ Ik1 min (A)	Ik1 mín. (A)
 Impact protection (IK)	Proteção contra impactos (IK)
 In engineering	Em projeto
 In production	Em produção
+In the ceiling, along the walls	No teto, ao longo das paredes
+In the floor, along the walls	No piso, ao longo das paredes
 Incoming supply	Alimentação de entrada
 Indicator lamp	Lâmpada de sinalização
 Indicator lamp HL (GB)	Sinaleiro HL (GB)
@@ -764,6 +783,7 @@ MAC address	Endereço MAC
 MCAD	MCAD
 MCAD device placement (CSV)	Posicionamento de dispositivos do MCAD (CSV)
 MOSFET N-channel	MOSFET canal N
+MPPT	MPPT
 MTTFd	MTTFd
 Machine (example identifiers)	Máquina (identificadores de exemplo)
 Machine frame	Estrutura da máquina
@@ -827,6 +847,8 @@ Minimum operating temperature	Temperatura de operação mínima
 Mirror contacts	Contatos espelho
 Mirrored	Espelhado
 Mission time	Tempo de missão
+Module	Módulo
+Modules	Módulos
 Moisture	Umidade
 Moment of inertia	Momento de inércia
 Motion detector	Detector de movimento
@@ -918,6 +940,7 @@ No plugs	Sem conectores
 No report block {}	Nenhum bloco de relatório {}
 No segment template named {}	Nenhum modelo de segmento com o nome {}
 No subproject {}	Nenhum subprojeto {}
+No such PV array	Sistema fotovoltaico inexistente
 No such object: {}	Objeto inexistente: {}
 No surge protective device at the supply (IEC 60364-4-44)	Nenhum dispositivo de proteção contra surtos na alimentação (IEC 60364-4-44)
 No terminal {}	Nenhum borne {}
@@ -1054,6 +1077,7 @@ PLC tags for Rockwell Studio 5000 (CSV)	Tags do CLP para Rockwell Studio 5000 (C
 PLC variables for Schneider Control Expert (XSY)	Variáveis do CLP para Schneider Control Expert (XSY)
 PLM	PLM
 PLM engineering BOM (JSON)	BOM de engenharia do PLM (JSON)
+PV strings	Strings fotovoltaicas
 PVC (70 °C)	PVC (70 °C)
 Page / column (3.4.1)	Página / coluna (3.4.1)
 Page name	Nome da página
@@ -1079,6 +1103,7 @@ Panel layout in 3D (STEP)	Layout do painel em 3D (STEP)
 Panel layout in 3D (glTF)	Layout do painel em 3D (glTF)
 Panel layout settings	Configurações do layout do painel
 Panel legend	Legenda do painel
+Parallel to the roof on roof hooks	Paralelo ao telhado sobre ganchos
 Part accessories	Acessórios de peças
 Part data is maintained in the parts management	Os dados de peças são mantidos no gerenciamento de peças
 Part description	Descrição da peça
@@ -1162,6 +1187,7 @@ Potential {} defined {} times	Potencial {} definido {} vezes
 Potentials / Connectors	Potenciais / conectores
 Potentials, interruption points	Potenciais, pontos de interrupção
 Potentiometer	Potenciômetro
+Power (kWp)	Potência (kWp)
 Power and control circuit on several pages: main switch, motor protection, three contactors with interlocks, on-delay timer, interruption points, potentials with wire colours, motor cable and cable reports.	Circuito de potência e de comando em várias páginas: chave geral, proteção do motor, três contatores com intertravamentos, temporizador com retardo na energização, pontos de interrupção, potenciais com cores de fios, cabo do motor e relatórios de cabos.
 Power factor	Fator de potência
 Power factor meter	Medidor de fator de potência
@@ -1249,6 +1275,7 @@ Push button with key NC, latching	Botão com chave NF, com retenção
 Push button with key NO, latching	Botão com chave NA, com retenção
 Pushbutton NC	Botão NF
 Pushbutton NO	Botão NA
+Pyramid roof	Telhado piramidal
 Qty	Qtd.
 RCD {} mA	DR {} mA
 Radiation	Radiação
@@ -1401,6 +1428,7 @@ Setpoint	Valor de referência
 Setting range	Faixa de ajuste
 Sheath colour	Cor da capa
 Sheath material	Material da capa
+Shed roof	Telhado de uma água
 Sheet number	Número da folha
 Sheet steel	Chapa de aço
 Shield clamp	Braçadeira de blindagem
@@ -1429,6 +1457,8 @@ Siren	Sirene
 Site address	Endereço do local de instalação
 Size (mm)	Tamanho (mm)
 Skipped	Ignorado
+Sliding to the left	De correr para a esquerda
+Sliding to the right	De correr para a direita
 Socket outlet	Tomada
 Socket side (female)	Lado dos soquetes (fêmea)
 Soft starter	Soft-starter
@@ -1447,6 +1477,7 @@ Spare	Reserva
 Spare part	Peça de reposição
 Spare terminal	Borne de reserva
 Speed	Velocidade
+Spiral	Caracol
 Stainless steel	Aço inoxidável
 Standard	Norma
 Start / stop circuit with a relay: coil and contacts form one device with cross references and contact image, terminal strip, wire numbers, terminal diagram and connection list.	Circuito liga / desliga com um relé: bobina e contatos formam um dispositivo com referências cruzadas e imagem de contatos, régua de bornes, números de fios, diagrama de bornes e lista de conexões.
@@ -1462,6 +1493,7 @@ Steam	Vapor
 Stock	Estoque
 Stop category	Categoria de parada
 Storage temperature range	Faixa de temperatura de armazenamento
+Straight	Reta
 Straight through from {} to {}, across from {} to {} and from {} to {}	Em linha reta de {} a {}, transversalmente de {} a {} e de {} a {}
 Strain relief	Alívio de tração
 Stretched	Esticado
@@ -1489,6 +1521,7 @@ Suppliers	Fornecedores
 Supply network	Sistema de alimentação
 Supply voltage	Tensão de alimentação
 Surface (m²)	Superfície (m²)
+Surface-mounted	Aparente
 Surge protection type	Tipo de proteção contra surtos
 Surge protective device	Dispositivo de proteção contra surtos
 Surge suppressor	Supressor de surtos
@@ -1597,6 +1630,7 @@ Through-beam sensor, 4-wire	Sensor de barreira, 4 fios
 Through-beam transmitter	Emissor de barreira
 Thyristor	Tiristor
 Tightening torque	Torque de aperto
+Tilted on a flat roof	Inclinado em telhado plano
 Time function	Função de tempo
 Time range	Faixa de tempo
 Time relay coil KT (GB)	Bobina de relé temporizador KT (GB)
@@ -1649,9 +1683,14 @@ Trunking	Canaleta
 Tube	Tubo
 Tubes	Tubos
 Tubing / piping list	Lista de tubos / tubulações
+Turned once (quarter landing)	Com um giro (patamar de canto)
+Turned twice (two quarter landings)	Com dois giros (dois patamares de canto)
 Two connection symbols on page {} lie on the same point	Dois símbolos de conexão na página {} estão no mesmo ponto
 Two-way switch (installation)	Interruptor paralelo (instalação)
 Type numbers	Números de tipo
+U max (V)	U máx. (V)
+U mean (V)	U média (V)
+U min (V)	U mín. (V)
 UL listed	Listado pela UL
 UV resistant	Resistente a UV
 Unbalance {} %	Desequilíbrio {} %
@@ -1680,6 +1719,9 @@ Varistor	Varistor
 Varmeter	Varímetro
 Vector group	Grupo de ligação
 Ventilation clearance	Distância de ventilação
+Vertical, beside the corners	Vertical, junto aos cantos
+Vertical, beside the doors	Vertical, junto às portas
+Vertical, beside the windows	Vertical, junto às janelas
 Vessel	Vaso
 Vibration	Vibração
 Vibration resistance	Resistência a vibrações
@@ -1798,7 +1840,6 @@ is none of	não é nenhum de
 is not	não é
 is not empty	não está vazio
 is one of	é um de
-landscape	paisagem
 leakage	dreno
 low	baixa
 measuring	medição
@@ -1807,6 +1848,7 @@ no header	nenhum cabeçalho
 no list	nenhuma lista
 no path through the route network	nenhum caminho pela rede de rotas
 no way through the enclosure	nenhum caminho pelo gabinete
+no way through the installation zones	nenhum caminho pelas zonas de instalação
 not in the panel layout	não está no layout do painel
 not in the same line-up or room	não está na mesma fileira nem na mesma sala
 not reached	não atingido
@@ -1859,6 +1901,7 @@ yellow	amarelo
 {} fits none of the parts of {}	{} não serve para nenhuma peça de {}
 {} frozen routes changed their length	{} rotas congeladas alteraram seu comprimento
 {} has no MTTFd, B10d, PL or PFHd	{} não tem MTTFd, B10d, PL nem PFHd
+{} has no door or window {}	{} não tem porta nem janela {}
 {} has nothing to manufacture	{} não tem nada a fabricar
 {} is a built-in function definition	{} é uma definição de função integrada
 {} is a built-in property	{} é uma propriedade integrada
@@ -1894,7 +1937,16 @@ yellow	amarelo
 {} {} is routed to the cable entries of its enclosures: they stand in no common room, the way between them is not part of the layout	{} {} é encaminhado até as entradas de cabos de seus gabinetes: eles não estão em uma sala comum, o percurso entre eles não faz parte do layout
 {} {}: bends closer than the bend radius ({} mm)	{} {}: curvas mais fechadas que o raio de curvatura ({} mm)
 {} – {}: connected in the single-line diagram but not in the schematic	{} – {}: conectado no diagrama unifilar, mas não no esquema elétrico
+{}, MPP tracker {}: its strings differ in voltage ({} V and {} V)	{}, rastreador MPP {}: as suas strings diferem na tensão ({} V e {} V)
+{}, MPP tracker {}: the strings deliver {} A, more than the {} A it uses (the power is limited)	{}, rastreador MPP {}: as strings fornecem {} A, mais do que os {} A que ele usa (a potência é limitada)
+{}, MPP tracker {}: the strings reach a short-circuit current of {} A, more than the {} A it takes	{}, rastreador MPP {}: as strings atingem uma corrente de curto-circuito de {} A, mais do que os {} A que ele suporta
 {}: MTTFd {} years is below 3 years	{}: MTTFd de {} anos está abaixo de 3 anos
+{}: PV array {} covers a roof window	{}: o sistema fotovoltaico {} cobre uma janela de telhado
+{}: PV array {} has {} modules, its device {} has {}	{}: o sistema fotovoltaico {} tem {} módulos, o seu dispositivo {} tem {}
+{}: PV array {} is mounted tilted on a pitched roof	{}: o sistema fotovoltaico {} está montado inclinado num telhado inclinado
+{}: PV array {} of roof {} lies across a ridge, a hip or the edge of the roof	{}: o sistema fotovoltaico {} do telhado {} passa sobre uma cumeeira, um espigão ou a borda do telhado
+{}: PV array {} of roof {} lies outside the roof	{}: o sistema fotovoltaico {} do telhado {} está fora do telhado
+{}: PV arrays {} and {} lie over each other	{}: os sistemas fotovoltaicos {} e {} sobrepõem-se
 {}: \"{}\" is not one of {}	{}: \"{}\" não é um de {}
 {}: a TT system needs a residual current device	{}: um sistema TT requer um dispositivo DR
 {}: accessory {} fits none of the device's parts	{}: o acessório {} não serve para nenhuma peça do dispositivo
@@ -1964,11 +2016,21 @@ yellow	amarelo
 {}: slot {} of rack {} is used by {} and {}	{}: o slot {} do rack {} é usado por {} e {}
 {}: solenoid coil not linked to a valve	{}: bobina solenoide não vinculada a uma válvula
 {}: solenoid valve without linked solenoid coil (Fluid and process › Synchronize)	{}: válvula solenoide sem bobina solenoide vinculada (Fluidos e processos › Sincronizar)
+{}: string {} of PV array {} drops to {} V at {} °C, below the MPP range of {} ({} - {} V)	{}: a string {} do sistema fotovoltaico {} desce para {} V a {} °C, abaixo da faixa MPP de {} ({} - {} V)
+{}: string {} of PV array {} is connected to no inverter	{}: a string {} do sistema fotovoltaico {} não está ligada a nenhum inversor
+{}: string {} of PV array {} reaches {} V at maximum power at {} °C, above the MPP range of {} ({} - {} V)	{}: a string {} do sistema fotovoltaico {} atinge {} V à potência máxima a {} °C, acima da faixa MPP de {} ({} - {} V)
+{}: string {} of PV array {} reaches {} V at {} °C, more than the {} V system voltage of its modules	{}: a string {} do sistema fotovoltaico {} atinge {} V a {} °C, mais do que a tensão do sistema de {} V dos seus módulos
+{}: string {} of PV array {} reaches {} V at {} °C, more than the {} V {} takes	{}: a string {} do sistema fotovoltaico {} atinge {} V a {} °C, mais do que os {} V que {} suporta
+{}: string {} of PV array {}: {} has only {} MPP trackers	{}: string {} do sistema fotovoltaico {}: {} tem apenas {} rastreadores MPP
+{}: string {} of PV array {}: {} is no device with PV input data	{}: string {} do sistema fotovoltaico {}: {} não é um dispositivo com dados de entrada FV
 {}: terminal {} is on level {}, but no terminal block is before it	{}: o borne {} está no nível {}, mas não há bloco de bornes antes dele
 {}: terminal {} uses {} levels, its part {} has {}	{}: o borne {} usa {} níveis, sua peça {} tem {}
 {}: terminals {} are {} mm above the floor, at least {} mm required	{}: os bornes {} estão a {} mm acima do piso, são necessários pelo menos {} mm
 {}: the busbar system with {} bars joins {} conductors ({}): short circuit	{}: o sistema de barramentos com {} barras une {} condutores ({}): curto-circuito
+{}: the device {} of PV array {} does not exist	{}: o dispositivo {} do sistema fotovoltaico {} não existe
+{}: the module {} of PV array {} has no electrical data	{}: o módulo {} do sistema fotovoltaico {} não tem dados elétricos
 {}: the station has no port {}	{}: a estação não tem a porta {}
+{}: the strings of PV array {} connect {} modules, the array has {}	{}: as strings do sistema fotovoltaico {} ligam {} módulos, o sistema tem {}
 {}: the {} ({} x {} mm) is larger than the working area of {}	{}: {} ({} x {} mm) é maior que a área de trabalho de {}
 {}: the {} is {} mm thick, {} takes at most {} mm	{}: {} tem {} mm de espessura, {} aceita no máximo {} mm
 {}: voltage drop {} V ({} %) above {} %	{}: queda de tensão {} V ({} %) acima de {} %
@@ -1994,6 +2056,7 @@ yellow	amarelo
 {}: {} is not made for wall mounting, mount it on a rail	{}: {} não é feito para montagem na parede, monte-o em um trilho
 {}: {} is {} … {} mm above the floor, allowed {} … {} mm	{}: {} está a {} … {} mm acima do piso, permitido {} … {} mm
 {}: {} kg on the {} exceed its load of {} kg	{}: {} kg em {} excedem sua carga de {} kg
+{}: {} modules of PV array {} are not connected to a string	{}: {} módulos do sistema fotovoltaico {} não estão ligados a nenhuma string
 {}: {} modules, the head has {} slots	{}: {} módulos, o cabeçote tem {} slots
 {}: {} of {} mm is longer than the stock length of {} mm and has to be joined	{}: {} de {} mm é mais longo que o comprimento em estoque de {} mm e precisa ser emendado
 {}: {} of {} mm is shorter than {} mm and hard to cut	{}: {} de {} mm é mais curto que {} mm e difícil de cortar
@@ -2005,6 +2068,7 @@ yellow	amarelo
 {}: {} solenoid coils linked, the valve has {}	{}: {} bobinas solenoides vinculadas, a válvula tem {}
 {}: {} stands in an inner wall	{}: {} está dentro de uma parede interna
 {}: {} stands in the swing of the door in wall {}	{}: {} está na área de abertura da porta da parede {}
+{}: {} stands in the way of the sliding door in wall {}	{}: {} está no caminho da porta de correr da parede {}
 {}: {} stands outside the room	{}: {} está fora da sala
 {}: {} stands where {} stands	{}: {} está onde está {}
 {}: {} threads on the {} are cut by hand	{}: {} roscas em {} são feitas manualmente

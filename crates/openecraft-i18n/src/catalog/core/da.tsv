@@ -7,6 +7,7 @@
 13 · Transformer-rated metering with PV and grid protection	13 · Transformermåling med solceller og netbeskyttelse
 14 · Main low-voltage distribution of an industrial plant	14 · Hovedtavle for lavspænding i en industrivirksomhed
 15 · Plant with buildings, levels and a shaft	15 · Anlæg med bygninger, etager og et skakt
+16 · Office building with roof, stair and installation	16 · Kontorbygning med tag, trappe og installation
 2 · Relay with self-holding contact	2 · Relæ med selvhold
 3 · Star-delta motor starter	3 · Stjerne-trekant-start
 3/2 directional valve	3/2-retningsventil
@@ -182,6 +183,7 @@ Capacitive sensor, 3-wire	Kapacitiv sensor, 3-leder
 Capacitor	Kondensator
 Capacitor, polarized	Kondensator, polariseret
 Ceiling	Loft
+Cell temperatures: {} °C (U max), {} °C (U mean), {} °C (U min)	Celletemperaturer: {} °C (U maks.), {} °C (U middel), {} °C (U min.)
 Centre horizontally	Centrer vandret
 Centre vertically	Centrer lodret
 Centrifugal pump	Centrifugalpumpe
@@ -433,6 +435,7 @@ ERP item master and bill of materials (CSV)	ERP-varestamdata og stykliste (CSV)
 ERP number	ERP-nummer
 ETIM class	ETIM-klasse
 Earth electrode	Jordelektrode
+East-west on a flat roof	Øst-vest på fladt tag
 Edit pages	Redigér sider
 Edit project data	Redigér projektdata
 Editor	Redaktør
@@ -520,6 +523,7 @@ Fitting	Fitting
 Fittings	Fittings
 Flame retardant	Flammehæmmende
 Flat cable {} has {} cores, the IDC connector {} has {} pins	Fladkablet {} har {} ledere, IDC-stikket {} har {} ben
+Flat roof	Fladt tag
 Float switch NC	Svømmerafbryder, bryde
 Float switch NO	Svømmerafbryder sluttekontakt
 Float switch NO (NFPA)	Svømmerafbryder, slutte (NFPA)
@@ -538,6 +542,8 @@ Fluid power (ISO 1219)	Fluidteknik (ISO 1219)
 Fluid power and electrics in one project: pneumatic circuit with service unit, valve terminal, 5/2 valves, flow control valves and cylinders; solenoid coils and position switches are linked to the valves and cylinders.	Fluidteknik og el i ét projekt: pneumatikdiagram med luftbehandlingsenhed, ventilø, 5/2-ventiler, drøvlekontraventiler og cylindre; magnetspoler og positionsafbrydere er knyttet til ventilerne og cylindrene.
 Fluid power and process	Fluidteknik og procesteknik
 Fluid power settings	Indstillinger for fluidteknik
+Flush-mounted in the floor	Indstøbt i gulvet
+Flush-mounted in the wall	Indmuret i væggen
 Foot switch NC	Fodafbryder, bryde
 Foot switch NO	Fodafbryder, slutte
 Foot switch NO (NFPA)	Fodafbryder, slutte (NFPA)
@@ -590,6 +596,7 @@ Fuse, LV HBC, 3-pole	Sikring, NH, 3-polet
 GB (GB/T 4728)	GB (GB/T 4728)
 GOST (ESKD)	GOST (ESKD)
 GTIN	GTIN
+Gable roof	Sadeltag
 Galvanometer	Galvanometer
 Gas	Gas
 Gas flow switch NC	Gasstrømningsafbryder, bryde
@@ -615,6 +622,7 @@ Grid and system protection relay (voltage and frequency)	Net- og anlægsbeskytte
 Grounded conductors must be white or grey (NFPA 79, 13.2.3)	Jordede ledere skal være hvide eller grå (NFPA 79, 13.2.3)
 HMI	HMI
 HTML document for printing	HTML-dokument til udskrivning
+Half landing (two flights)	Med halvrepos (to løb)
 Hall 1	Hal 1
 Halogen free	Halogenfri
 Hand	Hånd
@@ -628,8 +636,15 @@ Heating element	Varmelegeme
 Higher-level product (-)	Overordnet produkt (-)
 Higher-level product of the page	Sidens overordnede produkt
 Highest (°C)	Højst (°C)
+Hinged left, opens inwards	Hængsler til venstre, åbner indad
+Hinged left, opens outwards	Hængsler til venstre, åbner udad
+Hinged right, opens inwards	Hængsler til højre, åbner indad
+Hinged right, opens outwards	Hængsler til højre, åbner udad
+Hip roof	Valmtag
 Hold-up time	Netudfaldsbrokobling
 Holding power	Holdeeffekt
+Horizontal, above the floor	Vandret, over gulvet
+Horizontal, below the ceiling	Vandret, under loftet
 Horn (NFPA)	Horn (NFPA)
 Horn / buzzer	Horn / summer
 Horn / buzzer HA (GB)	Horn / summer HA (GB)
@@ -654,6 +669,8 @@ Hydraulic oil	Hydraulikolie
 Hydraulic power unit	Hydraulikaggregat
 Hydraulic pump	Hydraulikpumpe
 Hysteresis	Hysterese
+I mpp (A)	I mpp (A)
+I sc max (A)	I sc maks. (A)
 IEC 60204-1 (machinery: phases BK, DC control BU)	IEC 60204-1 (maskiner: faseledere BK, DC-styring BU)
 IEC 60445 (phases BN, BK, GY)	IEC 60445 (faseledere BN, BK, GY)
 IEC 61131-3 (%IX0.0 / %QX0.0)	IEC 61131-3 (%IX0.0 / %QX0.0)
@@ -665,6 +682,8 @@ Ik1 min (A)	Ik1 min (A)
 Impact protection (IK)	Slagfasthed (IK)
 In engineering	Under projektering
 In production	I produktion
+In the ceiling, along the walls	I loftet, langs væggene
+In the floor, along the walls	I gulvet, langs væggene
 Incoming supply	Indgående forsyning
 Indicator lamp	Signallampe
 Indicator lamp HL (GB)	Signallampe HL (GB)
@@ -764,6 +783,7 @@ MAC address	MAC-adresse
 MCAD	MCAD
 MCAD device placement (CSV)	MCAD-enhedsplacering (CSV)
 MOSFET N-channel	MOSFET N-kanal
+MPPT	MPPT
 MTTFd	MTTFd
 Machine (example identifiers)	Maskine (eksempelbetegnelser)
 Machine frame	Maskinramme
@@ -827,6 +847,8 @@ Minimum operating temperature	Minimal driftstemperatur
 Mirror contacts	Spejlkontakter
 Mirrored	Spejlvendt
 Mission time	Brugstid
+Module	Modul
+Modules	Moduler
 Moisture	Fugt
 Moment of inertia	Inertimoment
 Motion detector	Bevægelsesmelder
@@ -918,6 +940,7 @@ No plugs	Ingen stik
 No report block {}	Ingen rapportblok {}
 No segment template named {}	Ingen segmentskabelon med navnet {}
 No subproject {}	Intet delprojekt {}
+No such PV array	Intet sådant solcelleanlæg
 No such object: {}	Intet sådant objekt: {}
 No surge protective device at the supply (IEC 60364-4-44)	Ingen overspændingsbeskyttelse ved forsyningen (IEC 60364-4-44)
 No terminal {}	Ingen klemme {}
@@ -1054,6 +1077,7 @@ PLC tags for Rockwell Studio 5000 (CSV)	PLC-tags til Rockwell Studio 5000 (CSV)
 PLC variables for Schneider Control Expert (XSY)	PLC-variabler til Schneider Control Expert (XSY)
 PLM	PLM
 PLM engineering BOM (JSON)	PLM-konstruktionsstykliste (JSON)
+PV strings	Solcellestrenge
 PVC (70 °C)	PVC (70 °C)
 Page / column (3.4.1)	Side / kolonne (3.4.1)
 Page name	Sidenavn
@@ -1079,6 +1103,7 @@ Panel layout in 3D (STEP)	Tavlelayout i 3D (STEP)
 Panel layout in 3D (glTF)	Tavlelayout i 3D (glTF)
 Panel layout settings	Indstillinger for tavlelayout
 Panel legend	Tavlelegende
+Parallel to the roof on roof hooks	Parallelt med taget på tagkroge
 Part accessories	Artikeltilbehør
 Part data is maintained in the parts management	Artikeldata vedligeholdes i artikelstyringen
 Part description	Artikelbeskrivelse
@@ -1162,6 +1187,7 @@ Potential {} defined {} times	Potentialet {} er defineret {} gange
 Potentials / Connectors	Potentialer / stik
 Potentials, interruption points	Potentialer, afbrydelsespunkter
 Potentiometer	Potentiometer
+Power (kWp)	Effekt (kWp)
 Power and control circuit on several pages: main switch, motor protection, three contactors with interlocks, on-delay timer, interruption points, potentials with wire colours, motor cable and cable reports.	Hoved- og styrekreds på flere sider: hovedafbryder, motorværn, tre kontaktorer med forriglinger, tiltrækningsforsinket tidsrelæ, afbrydelsespunkter, potentialer med lederfarver, motorkabel og kabelrapporter.
 Power factor	Effektfaktor
 Power factor meter	Effektfaktormåler
@@ -1249,6 +1275,7 @@ Push button with key NC, latching	Trykknap med nøgle, bryde, låsende
 Push button with key NO, latching	Trykknap med nøgle, slutte, låsende
 Pushbutton NC	Trykknap brydekontakt
 Pushbutton NO	Trykknap sluttekontakt
+Pyramid roof	Pyramidetag
 Qty	Antal
 RCD {} mA	RCD {} mA
 Radiation	Stråling
@@ -1401,6 +1428,7 @@ Setpoint	Sætpunkt
 Setting range	Indstillingsområde
 Sheath colour	Kappefarve
 Sheath material	Kappemateriale
+Shed roof	Ensidigt tag
 Sheet number	Arknummer
 Sheet steel	Stålplade
 Shield clamp	Skærmklemme
@@ -1429,6 +1457,8 @@ Siren	Sirene
 Site address	Opstillingsstedets adresse
 Size (mm)	Størrelse (mm)
 Skipped	Sprunget over
+Sliding to the left	Skydes til venstre
+Sliding to the right	Skydes til højre
 Socket outlet	Stikkontakt
 Socket side (female)	Bøsningsside (hun)
 Soft starter	Softstarter
@@ -1447,6 +1477,7 @@ Spare	Reserve
 Spare part	Reservedel
 Spare terminal	Reserveklemme
 Speed	Hastighed
+Spiral	Spindeltrappe
 Stainless steel	Rustfrit stål
 Standard	Standard
 Start / stop circuit with a relay: coil and contacts form one device with cross references and contact image, terminal strip, wire numbers, terminal diagram and connection list.	Start-/stopkreds med et relæ: spole og kontakter udgør én komponent med krydshenvisninger og kontaktbillede, klemrække, ledningsnumre, klemplan og forbindelsesliste.
@@ -1462,6 +1493,7 @@ Steam	Damp
 Stock	Lager
 Stop category	Stopkategori
 Storage temperature range	Opbevaringstemperaturområde
+Straight	Lige
 Straight through from {} to {}, across from {} to {} and from {} to {}	Ligeud fra {} til {}, på tværs fra {} til {} og fra {} til {}
 Strain relief	Trækaflastning
 Stretched	Strakt
@@ -1489,6 +1521,7 @@ Suppliers	Leverandører
 Supply network	Netsystem
 Supply voltage	Forsyningsspænding
 Surface (m²)	Overflade (m²)
+Surface-mounted	Udvendig
 Surge protection type	Type af overspændingsbeskyttelse
 Surge protective device	Overspændingsbeskyttelse
 Surge suppressor	Overspændingsafleder
@@ -1597,6 +1630,7 @@ Through-beam sensor, 4-wire	Gennemstrålingssensor, 4-leder
 Through-beam transmitter	Gennemstrålingssender
 Thyristor	Thyristor
 Tightening torque	Tilspændingsmoment
+Tilted on a flat roof	Skråt på fladt tag
 Time function	Tidsfunktion
 Time range	Tidsområde
 Time relay coil KT (GB)	Tidsrelæspole KT (GB)
@@ -1649,9 +1683,14 @@ Trunking	Kabelkanal
 Tube	Rør (slange)
 Tubes	Slanger
 Tubing / piping list	Rør- / slangeliste
+Turned once (quarter landing)	Drejet én gang (kvartreposen)
+Turned twice (two quarter landings)	Drejet to gange (to kvartreposer)
 Two connection symbols on page {} lie on the same point	To forbindelsessymboler på side {} ligger i samme punkt
 Two-way switch (installation)	Korrespondanceafbryder (installation)
 Type numbers	Typenumre
+U max (V)	U maks. (V)
+U mean (V)	U middel (V)
+U min (V)	U min. (V)
 UL listed	UL-listet
 UV resistant	UV-bestandig
 Unbalance {} %	Ubalance {} %
@@ -1680,6 +1719,9 @@ Varistor	Varistor
 Varmeter	Varmeter
 Vector group	Koblingsgruppe
 Ventilation clearance	Ventilationsafstand
+Vertical, beside the corners	Lodret, ved hjørnerne
+Vertical, beside the doors	Lodret, ved dørene
+Vertical, beside the windows	Lodret, ved vinduerne
 Vessel	Beholder
 Vibration	Vibration
 Vibration resistance	Vibrationsbestandighed
@@ -1798,7 +1840,6 @@ is none of	er ingen af
 is not	er ikke
 is not empty	er ikke tom
 is one of	er en af
-landscape	liggende
 leakage	læk
 low	lav
 measuring	måle
@@ -1807,6 +1848,7 @@ no header	ingen overskriftsrække
 no list	ingen liste
 no path through the route network	ingen vej gennem føringsnettet
 no way through the enclosure	ingen vej gennem kapslingen
+no way through the installation zones	ingen vej gennem installationszonerne
 not in the panel layout	ikke i tavlelayoutet
 not in the same line-up or room	ikke i samme sammenbygning eller rum
 not reached	ikke nået
@@ -1859,6 +1901,7 @@ yellow	gul
 {} fits none of the parts of {}	{} passer ikke til nogen artikel i {}
 {} frozen routes changed their length	{} fastlåste føringer har ændret længde
 {} has no MTTFd, B10d, PL or PFHd	{} har hverken MTTFd, B10d, PL eller PFHd
+{} has no door or window {}	{} har ingen dør eller vindue {}
 {} has nothing to manufacture	{} har intet at producere
 {} is a built-in function definition	{} er en indbygget funktionsdefinition
 {} is a built-in property	{} er en indbygget egenskab
@@ -1894,7 +1937,16 @@ yellow	gul
 {} {} is routed to the cable entries of its enclosures: they stand in no common room, the way between them is not part of the layout	{} {} er ført til kabelindføringerne i sine kapslinger: de står ikke i et fælles rum, vejen mellem dem er ikke en del af layoutet
 {} {}: bends closer than the bend radius ({} mm)	{} {}: bøjninger tættere end bøjningsradius ({} mm)
 {} – {}: connected in the single-line diagram but not in the schematic	{} – {}: forbundet i enstregsdiagrammet, men ikke i diagrammet
+{}, MPP tracker {}: its strings differ in voltage ({} V and {} V)	{}, MPP-tracker {}: dens strenge har forskellig spænding ({} V og {} V)
+{}, MPP tracker {}: the strings deliver {} A, more than the {} A it uses (the power is limited)	{}, MPP-tracker {}: strengene leverer {} A, mere end de {} A, den bruger (effekten begrænses)
+{}, MPP tracker {}: the strings reach a short-circuit current of {} A, more than the {} A it takes	{}, MPP-tracker {}: strengene når en kortslutningsstrøm på {} A, mere end de {} A, den tåler
 {}: MTTFd {} years is below 3 years	{}: MTTFd {} år er under 3 år
+{}: PV array {} covers a roof window	{}: solcelleanlæg {} dækker et ovenlysvindue
+{}: PV array {} has {} modules, its device {} has {}	{}: solcelleanlæg {} har {} moduler, dets enhed {} har {}
+{}: PV array {} is mounted tilted on a pitched roof	{}: solcelleanlæg {} er monteret skråt på et skråtag
+{}: PV array {} of roof {} lies across a ridge, a hip or the edge of the roof	{}: solcelleanlæg {} på tag {} ligger hen over en kip, en grat eller tagkanten
+{}: PV array {} of roof {} lies outside the roof	{}: solcelleanlæg {} på tag {} ligger uden for taget
+{}: PV arrays {} and {} lie over each other	{}: solcelleanlæg {} og {} ligger over hinanden
 {}: \"{}\" is not one of {}	{}: \"{}\" er ikke en af {}
 {}: a TT system needs a residual current device	{}: Et TT-system kræver en fejlstrømsafbryder
 {}: accessory {} fits none of the device's parts	{}: tilbehøret {} passer ikke til nogen af enhedens artikler
@@ -1964,11 +2016,21 @@ yellow	gul
 {}: slot {} of rack {} is used by {} and {}	{}: Slot {} i rack {} bruges af {} og {}
 {}: solenoid coil not linked to a valve	{}: magnetspole ikke tilknyttet en ventil
 {}: solenoid valve without linked solenoid coil (Fluid and process › Synchronize)	{}: magnetventil uden tilknyttet magnetspole (Fluid og proces › Synkroniser)
+{}: string {} of PV array {} drops to {} V at {} °C, below the MPP range of {} ({} - {} V)	{}: streng {} i solcelleanlæg {} falder til {} V ved {} °C, under MPP-området for {} ({} - {} V)
+{}: string {} of PV array {} is connected to no inverter	{}: streng {} i solcelleanlæg {} er ikke tilsluttet nogen inverter
+{}: string {} of PV array {} reaches {} V at maximum power at {} °C, above the MPP range of {} ({} - {} V)	{}: streng {} i solcelleanlæg {} når {} V ved maksimal effekt ved {} °C, over MPP-området for {} ({} - {} V)
+{}: string {} of PV array {} reaches {} V at {} °C, more than the {} V system voltage of its modules	{}: streng {} i solcelleanlæg {} når {} V ved {} °C, mere end systemspændingen {} V for dens moduler
+{}: string {} of PV array {} reaches {} V at {} °C, more than the {} V {} takes	{}: streng {} i solcelleanlæg {} når {} V ved {} °C, mere end de {} V, som {} tåler
+{}: string {} of PV array {}: {} has only {} MPP trackers	{}: streng {} i solcelleanlæg {}: {} har kun {} MPP-trackere
+{}: string {} of PV array {}: {} is no device with PV input data	{}: streng {} i solcelleanlæg {}: {} er ingen enhed med PV-indgangsdata
 {}: terminal {} is on level {}, but no terminal block is before it	{}: klemme {} er på etage {}, men der er ingen klemmeblok foran den
 {}: terminal {} uses {} levels, its part {} has {}	{}: klemme {} bruger {} etager, dens artikel {} har {}
 {}: terminals {} are {} mm above the floor, at least {} mm required	{}: klemmer {} er {} mm over gulvet, mindst {} mm påkrævet
 {}: the busbar system with {} bars joins {} conductors ({}): short circuit	{}: skinnesystemet med {} skinner forbinder {} ledere ({}): kortslutning
+{}: the device {} of PV array {} does not exist	{}: enheden {} for solcelleanlæg {} findes ikke
+{}: the module {} of PV array {} has no electrical data	{}: modulet {} i solcelleanlæg {} har ingen elektriske data
 {}: the station has no port {}	{}: Stationen har ingen port {}
+{}: the strings of PV array {} connect {} modules, the array has {}	{}: strengene i solcelleanlæg {} forbinder {} moduler, anlægget har {}
 {}: the {} ({} x {} mm) is larger than the working area of {}	{}: {} ({} x {} mm) er større end arbejdsområdet for {}
 {}: the {} is {} mm thick, {} takes at most {} mm	{}: {} er {} mm tyk, {} kan højst tage {} mm
 {}: voltage drop {} V ({} %) above {} %	{}: Spændingsfald {} V ({} %) over {} %
@@ -1994,6 +2056,7 @@ yellow	gul
 {}: {} is not made for wall mounting, mount it on a rail	{}: {} er ikke beregnet til vægmontage, monter den på en skinne
 {}: {} is {} … {} mm above the floor, allowed {} … {} mm	{}: {} er {} … {} mm over gulvet, tilladt {} … {} mm
 {}: {} kg on the {} exceed its load of {} kg	{}: {} kg på {} overskrider dens bæreevne på {} kg
+{}: {} modules of PV array {} are not connected to a string	{}: {} moduler i solcelleanlæg {} er ikke tilsluttet nogen streng
 {}: {} modules, the head has {} slots	{}: {} moduler, hovedet har {} slots
 {}: {} of {} mm is longer than the stock length of {} mm and has to be joined	{}: {} på {} mm er længere end lagerlængden på {} mm og skal samles
 {}: {} of {} mm is shorter than {} mm and hard to cut	{}: {} på {} mm er kortere end {} mm og svær at afkorte
@@ -2005,6 +2068,7 @@ yellow	gul
 {}: {} solenoid coils linked, the valve has {}	{}: {} magnetspoler tilknyttet, ventilen har {}
 {}: {} stands in an inner wall	{}: {} står i en indervæg
 {}: {} stands in the swing of the door in wall {}	{}: {} står i dørens svingområde i væg {}
+{}: {} stands in the way of the sliding door in wall {}	{}: {} står i vejen for skydedøren i væg {}
 {}: {} stands outside the room	{}: {} står uden for rummet
 {}: {} stands where {} stands	{}: {} står, hvor {} står
 {}: {} threads on the {} are cut by hand	{}: {} gevind på {} skæres manuelt

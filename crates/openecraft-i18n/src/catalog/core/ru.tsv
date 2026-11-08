@@ -7,6 +7,7 @@
 13 · Transformer-rated metering with PV and grid protection	13 · Трансформаторный учёт с СЭС и защитой сети
 14 · Main low-voltage distribution of an industrial plant	14 · Главный распределительный щит НН промышленного предприятия
 15 · Plant with buildings, levels and a shaft	15 · Установка со зданиями, уровнями и шахтой
+16 · Office building with roof, stair and installation	16 · Офисное здание с крышей, лестницей и инсталляцией
 2 · Relay with self-holding contact	2 · Реле с самоподхватом
 3 · Star-delta motor starter	3 · Пуск звезда-треугольник
 3/2 directional valve	Распределитель 3/2
@@ -182,6 +183,7 @@ Capacitive sensor, 3-wire	Ёмкостный датчик, 3-проводный
 Capacitor	Конденсатор
 Capacitor, polarized	Конденсатор, полярный
 Ceiling	Потолок
+Cell temperatures: {} °C (U max), {} °C (U mean), {} °C (U min)	Температуры элементов: {} °C (U макс.), {} °C (U средн.), {} °C (U мин.)
 Centre horizontally	Центрировать по горизонтали
 Centre vertically	Центрировать по вертикали
 Centrifugal pump	Центробежный насос
@@ -433,6 +435,7 @@ ERP item master and bill of materials (CSV)	Основные данные поз
 ERP number	Номер ERP
 ETIM class	Класс ETIM
 Earth electrode	Заземлитель
+East-west on a flat roof	Восток-запад на плоской крыше
 Edit pages	Редактирование листов
 Edit project data	Редактирование данных проекта
 Editor	Редактор
@@ -520,6 +523,7 @@ Fitting	Фитинг
 Fittings	Фитинги
 Flame retardant	Не распространяющий горение
 Flat cable {} has {} cores, the IDC connector {} has {} pins	Плоский кабель {} имеет {} жил, разъём IDC {} имеет {} контактов
+Flat roof	Плоская крыша
 Float switch NC	Поплавковый выключатель, размыкающий контакт
 Float switch NO	Поплавковый выключатель, замыкающий
 Float switch NO (NFPA)	Поплавковый выключатель, замыкающий контакт (NFPA)
@@ -538,6 +542,8 @@ Fluid power (ISO 1219)	Гидропневматика (ISO 1219)
 Fluid power and electrics in one project: pneumatic circuit with service unit, valve terminal, 5/2 valves, flow control valves and cylinders; solenoid coils and position switches are linked to the valves and cylinders.	Гидропневматика и электрика в одном проекте: пневмосхема с блоком подготовки воздуха, пневмоостровом, распределителями 5/2, дросселями с обратным клапаном и цилиндрами; катушки и концевые выключатели связаны с распределителями и цилиндрами.
 Fluid power and process	Гидропневматика и технологические процессы
 Fluid power settings	Настройки гидропневматики
+Flush-mounted in the floor	Скрытая в полу
+Flush-mounted in the wall	Скрытая в стене
 Foot switch NC	Ножной выключатель, размыкающий контакт
 Foot switch NO	Ножной выключатель, замыкающий контакт
 Foot switch NO (NFPA)	Ножной выключатель, замыкающий контакт (NFPA)
@@ -590,6 +596,7 @@ Fuse, LV HBC, 3-pole	Предохранитель с ножевыми конта
 GB (GB/T 4728)	GB (GB/T 4728)
 GOST (ESKD)	ГОСТ (ЕСКД)
 GTIN	GTIN
+Gable roof	Двускатная крыша
 Galvanometer	Гальванометр
 Gas	Газ
 Gas flow switch NC	Реле протока газа, размыкающий контакт
@@ -615,6 +622,7 @@ Grid and system protection relay (voltage and frequency)	Реле защиты �
 Grounded conductors must be white or grey (NFPA 79, 13.2.3)	Заземлённые проводники должны быть белыми или серыми (NFPA 79, 13.2.3)
 HMI	HMI
 HTML document for printing	Документ HTML для печати
+Half landing (two flights)	С промежуточной площадкой (два марша)
 Hall 1	Цех 1
 Halogen free	Не содержит галогенов
 Hand	Ручное
@@ -628,8 +636,15 @@ Heating element	Нагревательный элемент
 Higher-level product (-)	Вышестоящее изделие (-)
 Higher-level product of the page	Вышестоящий продукт листа
 Highest (°C)	Максимум (°C)
+Hinged left, opens inwards	Петли слева, открывается внутрь
+Hinged left, opens outwards	Петли слева, открывается наружу
+Hinged right, opens inwards	Петли справа, открывается внутрь
+Hinged right, opens outwards	Петли справа, открывается наружу
+Hip roof	Вальмовая крыша
 Hold-up time	Время удержания при пропадании сети
 Holding power	Мощность удержания
+Horizontal, above the floor	Горизонтальная, над полом
+Horizontal, below the ceiling	Горизонтальная, под потолком
 Horn (NFPA)	Гудок (NFPA)
 Horn / buzzer	Сирена / зуммер
 Horn / buzzer HA (GB)	Гудок / зуммер HA (GB)
@@ -654,6 +669,8 @@ Hydraulic oil	Гидравлическое масло
 Hydraulic power unit	Гидростанция
 Hydraulic pump	Гидравлический насос
 Hysteresis	Гистерезис
+I mpp (A)	I mpp (А)
+I sc max (A)	I кз макс. (А)
 IEC 60204-1 (machinery: phases BK, DC control BU)	IEC 60204-1 (машины: фазы BK, управление DC BU)
 IEC 60445 (phases BN, BK, GY)	IEC 60445 (фазы BN, BK, GY)
 IEC 61131-3 (%IX0.0 / %QX0.0)	IEC 61131-3 (%IX0.0 / %QX0.0)
@@ -665,6 +682,8 @@ Ik1 min (A)	Ik1 min (A)
 Impact protection (IK)	Ударопрочность (IK)
 In engineering	В проектировании
 In production	В производстве
+In the ceiling, along the walls	В потолке, вдоль стен
+In the floor, along the walls	В полу, вдоль стен
 Incoming supply	Ввод питания
 Indicator lamp	Сигнальная лампа
 Indicator lamp HL (GB)	Сигнальная лампа HL (GB)
@@ -764,6 +783,7 @@ MAC address	MAC-адрес
 MCAD	MCAD
 MCAD device placement (CSV)	Размещение устройств MCAD (CSV)
 MOSFET N-channel	MOSFET с N-каналом
+MPPT	MPPT
 MTTFd	MTTFd
 Machine (example identifiers)	Машина (примеры идентификаторов)
 Machine frame	Станина машины
@@ -827,6 +847,8 @@ Minimum operating temperature	Минимальная рабочая темпер
 Mirror contacts	Зеркальные контакты
 Mirrored	Отражено
 Mission time	Срок эксплуатации
+Module	Модуль
+Modules	Модули
 Moisture	Влажность
 Moment of inertia	Момент инерции
 Motion detector	Датчик движения
@@ -918,6 +940,7 @@ No plugs	Нет разъёмов
 No report block {}	Нет блока отчёта {}
 No segment template named {}	Нет шаблона сегмента с именем {}
 No subproject {}	Нет подпроекта {}
+No such PV array	Нет такого фотоэлектрического поля
 No such object: {}	Объект не найден: {}
 No surge protective device at the supply (IEC 60364-4-44)	Нет устройства защиты от перенапряжений на вводе питания (IEC 60364-4-44)
 No terminal {}	Нет клеммы {}
@@ -1054,6 +1077,7 @@ PLC tags for Rockwell Studio 5000 (CSV)	Теги ПЛК для Rockwell Studio 5
 PLC variables for Schneider Control Expert (XSY)	Переменные ПЛК для Schneider Control Expert (XSY)
 PLM	PLM
 PLM engineering BOM (JSON)	Конструкторская спецификация PLM (JSON)
+PV strings	Фотоэлектрические цепочки
 PVC (70 °C)	ПВХ (70 °C)
 Page / column (3.4.1)	Лист / столбец (3.4.1)
 Page name	Имя листа
@@ -1079,6 +1103,7 @@ Panel layout in 3D (STEP)	Компоновка шкафа в 3D (STEP)
 Panel layout in 3D (glTF)	Компоновка шкафа в 3D (glTF)
 Panel layout settings	Настройки компоновки шкафа
 Panel legend	Легенда шкафа
+Parallel to the roof on roof hooks	Параллельно крыше на кровельных крюках
 Part accessories	Принадлежности изделий
 Part data is maintained in the parts management	Данные изделий ведутся в управлении изделиями
 Part description	Описание изделия
@@ -1162,6 +1187,7 @@ Potential {} defined {} times	Потенциал {} определён {} раз
 Potentials / Connectors	Потенциалы / разъёмы
 Potentials, interruption points	Потенциалы, точки разрыва
 Potentiometer	Потенциометр
+Power (kWp)	Мощность (кВт пик)
 Power and control circuit on several pages: main switch, motor protection, three contactors with interlocks, on-delay timer, interruption points, potentials with wire colours, motor cable and cable reports.	Силовая цепь и цепь управления на нескольких страницах: главный выключатель, защита двигателя, три контактора с блокировками, реле времени с задержкой включения, точки разрыва, потенциалы с цветами проводов, кабель двигателя и отчёты по кабелям.
 Power factor	Коэффициент мощности
 Power factor meter	Измеритель коэффициента мощности
@@ -1249,6 +1275,7 @@ Push button with key NC, latching	Кнопка с ключом, размыкаю
 Push button with key NO, latching	Кнопка с ключом, замыкающий контакт, с фиксацией
 Pushbutton NC	Кнопка, размыкающая
 Pushbutton NO	Кнопка, замыкающая
+Pyramid roof	Шатровая крыша
 Qty	Кол-во
 RCD {} mA	УЗО {} mA
 Radiation	Излучение
@@ -1401,6 +1428,7 @@ Setpoint	Уставка
 Setting range	Диапазон уставок
 Sheath colour	Цвет оболочки
 Sheath material	Материал оболочки
+Shed roof	Односкатная крыша
 Sheet number	Номер листа
 Sheet steel	Листовая сталь
 Shield clamp	Зажим экрана
@@ -1429,6 +1457,8 @@ Siren	Сирена
 Site address	Адрес места установки
 Size (mm)	Размер (мм)
 Skipped	Пропущено
+Sliding to the left	Раздвижная влево
+Sliding to the right	Раздвижная вправо
 Socket outlet	Розетка
 Socket side (female)	Сторона гнёзд (розетка)
 Soft starter	Устройство плавного пуска
@@ -1447,6 +1477,7 @@ Spare	Резерв
 Spare part	Запасная часть
 Spare terminal	Резервная клемма
 Speed	Частота вращения
+Spiral	Винтовая
 Stainless steel	Нержавеющая сталь
 Standard	Стандарт
 Start / stop circuit with a relay: coil and contacts form one device with cross references and contact image, terminal strip, wire numbers, terminal diagram and connection list.	Схема пуска / останова с реле: катушка и контакты образуют одно устройство с перекрёстными ссылками и зеркалом контактов, клеммник, номера проводов, схема клеммника и перечень соединений.
@@ -1462,6 +1493,7 @@ Steam	Пар
 Stock	Складской запас
 Stop category	Категория останова
 Storage temperature range	Диапазон температуры хранения
+Straight	Прямая
 Straight through from {} to {}, across from {} to {} and from {} to {}	Прямо от {} к {}, поперёк от {} к {} и от {} к {}
 Strain relief	Разгрузка от натяжения
 Stretched	Растянуто
@@ -1489,6 +1521,7 @@ Suppliers	Поставщики
 Supply network	Тип сети
 Supply voltage	Напряжение питания
 Surface (m²)	Поверхность (м²)
+Surface-mounted	Открытая прокладка
 Surge protection type	Тип защиты от перенапряжений
 Surge protective device	Устройство защиты от импульсных перенапряжений
 Surge suppressor	Ограничитель перенапряжений
@@ -1597,6 +1630,7 @@ Through-beam sensor, 4-wire	Оптический датчик на просве�
 Through-beam transmitter	Излучатель оптического датчика на просвет
 Thyristor	Тиристор
 Tightening torque	Момент затяжки
+Tilted on a flat roof	С наклоном на плоской крыше
 Time function	Временная функция
 Time range	Диапазон времени
 Time relay coil KT (GB)	Катушка реле времени KT (GB)
@@ -1649,9 +1683,14 @@ Trunking	Кабельный короб
 Tube	Трубка
 Tubes	Трубки
 Tubing / piping list	Список труб / трубок
+Turned once (quarter landing)	С одним поворотом (угловая площадка)
+Turned twice (two quarter landings)	С двумя поворотами (две угловые площадки)
 Two connection symbols on page {} lie on the same point	Два символа соединений на странице {} лежат в одной точке
 Two-way switch (installation)	Проходной выключатель (электроустановочный)
 Type numbers	Номера типов
+U max (V)	U макс. (В)
+U mean (V)	U средн. (В)
+U min (V)	U мин. (В)
 UL listed	Сертифицировано UL
 UV resistant	Стойкий к УФ
 Unbalance {} %	Несимметрия {} %
@@ -1680,6 +1719,9 @@ Varistor	Варистор
 Varmeter	Варметр
 Vector group	Группа соединения обмоток
 Ventilation clearance	Зазор для вентиляции
+Vertical, beside the corners	Вертикальная, у углов
+Vertical, beside the doors	Вертикальная, у дверей
+Vertical, beside the windows	Вертикальная, у окон
 Vessel	Ёмкость
 Vibration	Вибрация
 Vibration resistance	Вибростойкость
@@ -1798,7 +1840,6 @@ is none of	ни одно из
 is not	не равно
 is not empty	не пусто
 is one of	одно из
-landscape	альбомная
 leakage	утечка
 low	низкий
 measuring	измерение
@@ -1807,6 +1848,7 @@ no header	нет строки заголовка
 no list	нет списка
 no path through the route network	нет пути через сеть трасс
 no way through the enclosure	нет пути через шкаф
+no way through the installation zones	нет пути через монтажные зоны
 not in the panel layout	нет в компоновке шкафа
 not in the same line-up or room	не в одном ряду или помещении
 not reached	не достигнуто
@@ -1859,6 +1901,7 @@ yellow	жёлтый
 {} fits none of the parts of {}	{} не подходит ни к одному изделию {}
 {} frozen routes changed their length	Зафиксированных трасс, изменивших длину: {}
 {} has no MTTFd, B10d, PL or PFHd	У {} нет MTTFd, B10d, PL или PFHd
+{} has no door or window {}	У {} нет двери или окна {}
 {} has nothing to manufacture	{}: нечего изготавливать
 {} is a built-in function definition	{} – встроенное определение функции
 {} is a built-in property	{} – встроенное свойство
@@ -1894,7 +1937,16 @@ yellow	жёлтый
 {} {} is routed to the cable entries of its enclosures: they stand in no common room, the way between them is not part of the layout	{} {} проложен до кабельных вводов своих шкафов: они не стоят в общем помещении, путь между ними не входит в компоновку
 {} {}: bends closer than the bend radius ({} mm)	{} {}: изгибы меньше радиуса изгиба ({} мм)
 {} – {}: connected in the single-line diagram but not in the schematic	{} – {}: соединены на однолинейной схеме, но не на схеме
+{}, MPP tracker {}: its strings differ in voltage ({} V and {} V)	{}, MPP-трекер {}: его цепочки различаются по напряжению ({} В и {} В)
+{}, MPP tracker {}: the strings deliver {} A, more than the {} A it uses (the power is limited)	{}, MPP-трекер {}: цепочки дают {} А, больше {} А, которые он использует (мощность ограничивается)
+{}, MPP tracker {}: the strings reach a short-circuit current of {} A, more than the {} A it takes	{}, MPP-трекер {}: цепочки достигают тока короткого замыкания {} А, больше допустимых {} А
 {}: MTTFd {} years is below 3 years	{}: MTTFd {} лет меньше 3 лет
+{}: PV array {} covers a roof window	{}: фотоэлектрическое поле {} закрывает мансардное окно
+{}: PV array {} has {} modules, its device {} has {}	{}: фотоэлектрическое поле {} имеет {} модулей, его устройство {} — {}
+{}: PV array {} is mounted tilted on a pitched roof	{}: фотоэлектрическое поле {} смонтировано с наклоном на скатной крыше
+{}: PV array {} of roof {} lies across a ridge, a hip or the edge of the roof	{}: фотоэлектрическое поле {} крыши {} лежит поперёк конька, ребра или края крыши
+{}: PV array {} of roof {} lies outside the roof	{}: фотоэлектрическое поле {} крыши {} лежит вне крыши
+{}: PV arrays {} and {} lie over each other	{}: фотоэлектрические поля {} и {} перекрываются
 {}: \"{}\" is not one of {}	{}: «{}» не входит в {}
 {}: a TT system needs a residual current device	{}: для системы TT требуется устройство защитного отключения
 {}: accessory {} fits none of the device's parts	{}: принадлежность {} не подходит ни к одному изделию устройства
@@ -1964,11 +2016,21 @@ yellow	жёлтый
 {}: slot {} of rack {} is used by {} and {}	{}: слот {} стойки {} занят {} и {}
 {}: solenoid coil not linked to a valve	{}: катушка не связана с клапаном
 {}: solenoid valve without linked solenoid coil (Fluid and process › Synchronize)	{}: электромагнитный клапан без связанной катушки (Гидропневматика и технологические процессы › Синхронизировать)
+{}: string {} of PV array {} drops to {} V at {} °C, below the MPP range of {} ({} - {} V)	{}: цепочка {} фотоэлектрического поля {} падает до {} В при {} °C, ниже диапазона MPP {} ({} - {} В)
+{}: string {} of PV array {} is connected to no inverter	{}: цепочка {} фотоэлектрического поля {} не подключена ни к одному инвертору
+{}: string {} of PV array {} reaches {} V at maximum power at {} °C, above the MPP range of {} ({} - {} V)	{}: цепочка {} фотоэлектрического поля {} достигает {} В при максимальной мощности при {} °C, выше диапазона MPP {} ({} - {} В)
+{}: string {} of PV array {} reaches {} V at {} °C, more than the {} V system voltage of its modules	{}: цепочка {} фотоэлектрического поля {} достигает {} В при {} °C, больше системного напряжения {} В её модулей
+{}: string {} of PV array {} reaches {} V at {} °C, more than the {} V {} takes	{}: цепочка {} фотоэлектрического поля {} достигает {} В при {} °C, больше {} В, допустимых для {}
+{}: string {} of PV array {}: {} has only {} MPP trackers	{}: цепочка {} фотоэлектрического поля {}: у {} только {} MPP-трекера
+{}: string {} of PV array {}: {} is no device with PV input data	{}: цепочка {} фотоэлектрического поля {}: {} не является устройством с данными входа ФЭ
 {}: terminal {} is on level {}, but no terminal block is before it	{}: клемма {} находится на ярусе {}, но перед ней нет клеммного блока
 {}: terminal {} uses {} levels, its part {} has {}	{}: клемма {} занимает ярусов: {}, а у её изделия {}: {}
 {}: terminals {} are {} mm above the floor, at least {} mm required	{}: клеммы {} находятся на высоте {} мм над полом, требуется не менее {} мм
 {}: the busbar system with {} bars joins {} conductors ({}): short circuit	{}: система сборных шин с {} шинами соединяет {} проводника ({}): короткое замыкание
+{}: the device {} of PV array {} does not exist	{}: устройство {} фотоэлектрического поля {} не существует
+{}: the module {} of PV array {} has no electrical data	{}: у модуля {} фотоэлектрического поля {} нет электрических данных
 {}: the station has no port {}	{}: у станции нет порта {}
+{}: the strings of PV array {} connect {} modules, the array has {}	{}: цепочки фотоэлектрического поля {} соединяют {} модулей, в поле {}
 {}: the {} ({} x {} mm) is larger than the working area of {}	{}: {} ({} x {} мм) больше рабочей зоны {}
 {}: the {} is {} mm thick, {} takes at most {} mm	{}: толщина {} – {} мм, {} обрабатывает не более {} мм
 {}: voltage drop {} V ({} %) above {} %	{}: падение напряжения {} V ({} %) выше {} %
@@ -1994,6 +2056,7 @@ yellow	жёлтый
 {}: {} is not made for wall mounting, mount it on a rail	{}: {} не предназначен для настенного монтажа, установите его на рейку
 {}: {} is {} … {} mm above the floor, allowed {} … {} mm	{}: {} находится на высоте {} … {} мм над полом, допустимо {} … {} мм
 {}: {} kg on the {} exceed its load of {} kg	{}: {} kg на {} превышают допустимую нагрузку {} kg
+{}: {} modules of PV array {} are not connected to a string	{}: {} модулей фотоэлектрического поля {} не подключены к цепочке
 {}: {} modules, the head has {} slots	{}: модулей – {}, у головного модуля слотов – {}
 {}: {} of {} mm is longer than the stock length of {} mm and has to be joined	{}: {} длиной {} мм длиннее складской длины {} мм и требует стыковки
 {}: {} of {} mm is shorter than {} mm and hard to cut	{}: {} длиной {} мм короче {} мм, его трудно отрезать
@@ -2005,6 +2068,7 @@ yellow	жёлтый
 {}: {} solenoid coils linked, the valve has {}	{}: связано катушек – {}, у клапана – {}
 {}: {} stands in an inner wall	{}: {} стоит во внутренней стене
 {}: {} stands in the swing of the door in wall {}	{}: {} стоит в зоне открывания двери в стене {}
+{}: {} stands in the way of the sliding door in wall {}	{}: {} мешает раздвижной двери в стене {}
 {}: {} stands outside the room	{}: {} стоит вне помещения
 {}: {} stands where {} stands	{}: {} стоит на месте {}
 {}: {} threads on the {} are cut by hand	{0}: на {2} вручную нарезается резьб: {1}

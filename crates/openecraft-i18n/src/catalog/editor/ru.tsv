@@ -48,6 +48,7 @@ A baseline stores the whole project (pages, devices, parts, settings). Releasing
 A cable of the bus type for every connection without cable	Кабель шинного типа для каждого соединения без кабеля
 A cutout of the same size at the same place in the neighbour's side wall: together they are a cable passage	Вырез того же размера в том же месте боковой стенки соседа: вместе они образуют кабельный проход
 A file of the same name in the folder gets a new version (checked out and in), otherwise the file is added	Одноимённый файл в папке получает новую версию (извлекается и возвращается), иначе файл добавляется
+A level on top of the highest one	Этаж над самым верхним
 A new project	Новый проект
 A new release is downloaded in the background and installed when you close OpenECraft.	Новая версия загружается в фоновом режиме и устанавливается при закрытии OpenECraft.
 A new release is downloaded in the background and replaces this installation; it is used from the next start.	Новая версия загружается в фоновом режиме и заменяет эту установку; она используется со следующего запуска.
@@ -146,6 +147,7 @@ Archive and version	Архив и версия
 Archive project…	Архивировать проект…
 Arms	Плечи
 As defined by the check	Как задано проверкой
+As the rules say ({})	По правилам ({})
 Aspects of the pages	Аспекты листов
 Aspects, identifiers and work areas as a file for other projects	Аспекты, идентификаторы и рабочие области в виде файла для других проектов
 Assembly {}	Сборка {}
@@ -177,6 +179,8 @@ Back	Назад
 Back to the project (Esc)	Назад к проекту (Esc)
 Back-up up to (kA)	Резервная защита до (kA)
 Background	Фон
+Ballast	Балласт
+Ballast per module	Балласт на модуль
 Baseline {}	Базовая версия {}
 Baseline {} created	Базовая версия {} создана
 Baseline {} {}	Базовая версия {} {}
@@ -201,7 +205,7 @@ Bottom edges	По нижнему краю
 Bottom of the enclosure (without plinth) above the floor; heights are checked when it is known or the enclosure stands on a plinth	Нижний край корпуса (без цоколя) над полом; высоты проверяются, если он известен или корпус стоит на цоколе
 Breaking capacity against the short-circuit current at each protective device of the mains, disconnection at the lowest fault current at the end of its circuit, short-circuit withstand of the cables and selectivity with the device upstream.	Отключающая способность по отношению к току короткого замыкания на каждом защитном устройстве сети, отключение при наименьшем токе замыкания в конце его цепи, стойкость кабелей к короткому замыканию и селективность с вышестоящим устройством.
 Bridge: four wires; the connection comes in at one side and goes to the three others, the opposite side first	Мост: четыре провода; соединение приходит с одной стороны и идёт к трём другим, сначала к противоположной
-Building	Здание
+Building {} added with a level at ground level	Здание {} добавлено с этажом на уровне земли
 Built-in frames cannot be changed; copy one to adapt it.	Встроенные рамки изменить нельзя; скопируйте рамку, чтобы адаптировать её.
 Built-in scheme: copy it to change it.	Встроенная схема: чтобы изменить, скопируйте её.
 Built-in title blocks are read only – use “Copy as new” to make your own.	Встроенные основные надписи доступны только для чтения – используйте «Копировать как новую», чтобы создать собственную.
@@ -230,6 +234,7 @@ Calculations	Расчёты
 Cancel / select tool / clear selection	Отмена / выбрать инструмент / снять выделение
 Card	Плата
 Cards without station: {}	Платы без станции: {}
+Cell temperatures of the strings	Температуры элементов цепочек
 Centre	По центру
 Change project properties of the selected projects	Изменить свойства выбранных проектов
 Change request	Запрос на изменение
@@ -265,12 +270,14 @@ Checks switched off and message levels as a file for other projects	Отключ
 Checks the project data (ids, references, device data, options, subprojects) together with the engineering checks.	Проверяет данные проекта (идентификаторы, ссылки, данные устройств, опции, подпроекты) вместе с инженерными проверками.
 Choices	Варианты выбора
 Choices (separated by commas)	Варианты выбора (через запятую)
+Choose	Выбрать
 Choose a baseline, a revision or a project file to compare the project with.	Выберите базовую версию, ревизию или файл проекта для сравнения с проектом.
 Choose a room first: floor-standing parts go on its floor.	Сначала выберите помещение: напольные изделия ставятся на его пол.
 Choose file…	Выбрать файл…
 Choose pages	Выбрать листы
 Chooses the pages whose structure starts with this	Выбирает листы, структура которых начинается с этого
 Circle	Окружность
+Circuits of a generic manifold	Контуры типового распределителя
 Clear	Очистить
 Clearance	Зазор
 Clearances	Зазоры
@@ -281,6 +288,7 @@ Click into the page to place {}	Щёлкните на листе, чтобы р�
 Click on a wall	Щёлкните по стене
 Click on a wire to place the connection definition point	Щёлкните провод, чтобы разместить точку определения соединения
 Click on the 4 mm grid	Щёлкните по сетке 4 мм
+Click on the wall: the part goes there at its mounting height	Щёлкните по стене: изделие встанет там на свою высоту монтажа
 Click start and end point	Щёлкните начальную и конечную точки
 Click the corners of a machine or building, double-click to finish	Щёлкните углы машины или здания, дважды щёлкните для завершения
 Click the ends of the inner walls; every click starts the next one, ends near a wall snap onto it. Esc, Enter or a double-click ends the chain, Esc again the tool.	Щёлкайте по концам внутренних стен; каждый щелчок начинает следующую, концы у стены притягиваются к ней. Esc, Enter или двойной щелчок завершают цепочку, повторный Esc — инструмент.
@@ -290,7 +298,10 @@ Click to insert · Esc cancel	Щелчок – вставить · Esc – от�
 Click to place a comment	Щёлкните, чтобы разместить комментарий
 Click to place the markup text	Щёлкните, чтобы разместить текст пометки
 Click to place the text from the field below	Щёлкните, чтобы разместить текст из поля ниже
+Click to put new rooms on this level; drop rooms onto it to move them here	Щёлкните, чтобы новые помещения создавались на этом уровне; отпустите здесь помещения, чтобы переместить их на него
 Click to show	Щёлкните, чтобы показать
+Click to show the building in the site plan; right-click for new levels	Щёлкните, чтобы показать здание на ситуационном плане; правый щелчок — новые этажи
+Click to show the site plan of the buildings, or all of the plant in the 3D view	Щёлкните, чтобы показать ситуационный план зданий или всю установку в 3D-виде
 Click to show, right click for more	Щелчок — показать, правая кнопка — ещё
 Click two corners	Щёлкните два угла
 Click two nodes to connect them	Щёлкните два узла, чтобы соединить их
@@ -369,6 +380,7 @@ Core designations separated by blanks	Обозначения жил через �
 Cores 1, 2, 3 … for the wires crossed, plus GNYE	Жилы 1, 2, 3 … для пересекаемых проводов, плюс GNYE
 Corner: two wires at a right angle; with Auto-connect on, connection points facing its arms are wired to it	Угол: два провода под прямым углом; при включённом автосоединении точки подключения напротив его плеч соединяются с ним
 Cover sheet, overview, graphics, report, mounting layout or a page template	Титульный лист, обзор, графика, отчёт, монтажная компоновка или шаблон листа
+Covers	Покрывает
 Covers what is behind the text	Закрывает то, что находится за текстом
 Create	Создать
 Create an enclosure in the panel layout first.	Сначала создайте корпус в компоновке шкафа.
@@ -412,6 +424,7 @@ Define all used	Определить все используемые
 Defined potentials	Определённые потенциалы
 Del	Del
 Delete	Удалить
+Delete PV array	Удалить фотоэлектрическое поле
 Delete cable (its wires are removed from it)	Удалить кабель (его провода отвязываются от него)
 Delete comment	Удалить комментарий
 Delete connection point	Удалить точку подключения
@@ -426,18 +439,24 @@ Delete macro	Удалить макрос
 Delete node	Удалить узел
 Delete page	Удалить лист
 Delete request	Удалить запрос
+Delete roof	Удалить крышу
+Delete roof window	Удалить мансардное окно
 Delete room	Удалить помещение
 Delete room {} with everything on its walls? The cabinets standing in it stay, without a room.	Удалить помещение {} со всем, что на его стенах? Шкафы в нём останутся, без помещения.
 Delete section	Удалить раздел
 Delete shaft	Удалить шахту
+Delete stair	Удалить лестницу
+Delete string	Удалить цепочку
 Delete the group	Удалить группу
 Delete the layer; its items move to the default layer	Удалить слой; его объекты переносятся на слой по умолчанию
 Delete the property and all its values	Удалить свойство со всеми значениями
 Delete this workspace	Удалить это рабочее пространство
 Delete variant	Удалить вариант
+Delete zone	Удалить зону
 Deny	Запретить
 Depth / mounted at	Глубина / монтаж на
 Depth from / to	Глубина от / до
+Depth in the floor	Глубина в полу
 Derive project definition	Создать производное определение проекта
 Descriptions	Описания
 Deselect	Снять выбор
@@ -471,6 +490,7 @@ Digits	Разряды
 Dimension	Размер
 Directed T-junction: where three wires meet, names the device the two wires of the connection start from and the order of their targets	Направленный Т-образный узел: где сходятся три провода, задаёт устройство, от которого идут два провода соединения, и порядок их целей
 Directed crossing: connects the two wires crossing there; each end of its line is wired straight on first and across second	Направленное пересечение: соединяет два пересекающихся там провода; каждый конец его линии соединяется сначала прямо, затем поперёк
+Direction the modules face, counter-clockwise seen from above (0: towards the front)	Направление, в которое обращены модули, против часовой стрелки при виде сверху (0: вперёд)
 Discard changes	Отменить изменения
 Discard draft	Отменить черновик
 Disconnection of distribution circuits	Отключение распределительных цепей
@@ -537,12 +557,14 @@ Drilling list of this face (CSV)	Список сверления этой пов
 Drilling pattern of the face shown as DXF, DWG or CSV	Схема сверления показанной стороны в DXF, DWG или CSV
 Drop between the pages	Отпустите между листами
 Drop between the rows or onto a section	Отпустите между строками или на разделе
+Drop onto a level to put the room on it	Отпустите на уровне, чтобы поставить на него помещение
 Duct fill	Заполнение канала
 Duct fill limit	Предел заполнения канала
 Duplicate	Дублировать
 Each example builds on the one before and shows more of the features.	Каждый пример основан на предыдущем и показывает больше функций.
 Each point-to-point connection can belong to a harness	Каждое соединение «точка – точка» может входить в жгут
 Earthing system	Тип системы заземления
+Eaves	Карниз
 Edge length of the routing grid: smaller is finer and slower	Длина ребра сетки прокладки: чем меньше, тем точнее и медленнее
 Edit	Правка
 Edit in table	Изменить в таблице
@@ -602,6 +624,7 @@ Exported {}	Экспортировано: {}
 Exporting {}	Экспорт {}
 Export…	Экспортировать…
 Extras	Дополнительно
+Facing	Ориентация
 Fans, filters, cable glands, lights, handles: choose one, then click where it goes	Вентиляторы, фильтры, кабельные вводы, светильники, ручки: выберите один, затем щёлкните место установки
 Fastening hardware in the bill of materials	Крепёж в спецификации
 Favorite	Избранное
@@ -642,6 +665,7 @@ Floor plan with {} walls	План с {} стенами
 Floor-standing part	Напольное изделие
 Fluid and process	Гидропневматика и технологические процессы
 Follows its condition: use Apply conditions	Зависит от условия: используйте «Применить условия»
+Foot	Начало
 For	Для
 For parts without Stock length; longer profiles have to be joined	Для изделий без Stock length; более длинные профили требуют стыковки
 For parts without temperature data (Max temperature, Operating temperature); 0: not checked	Для изделий без температурных данных (Max temperature, Operating temperature); 0: не проверяется
@@ -661,8 +685,10 @@ Freeze route	Зафиксировать трассу
 Frequency	Частота
 From / to	От / к
 From a template file…	Из файла шаблона…
+From row to row; 0: free of shade in winter	От ряда к ряду; 0: без затенения зимой
 From the function definition	Из определения функции
 From the left end	От левого конца
+From – to	От – до
 Fullest stretch	Наиболее заполненный участок
 Function definitions	Определения функций
 Function properties	Свойства функции
@@ -687,12 +713,14 @@ Generates the pages of all report blocks again	Заново создаёт ли�
 Generates {} pages	Создаёт листов: {}
 Generation failed: {}	Ошибка создания: {}
 Generic	Универсальный
+German zones (DIN 18015-3)	Немецкие зоны (DIN 18015-3)
 Getting started	Начало работы
 Global variable list with direct addresses for CODESYS, TwinCAT and others	Список глобальных переменных с прямыми адресами для CODESYS, TwinCAT и других
 Go to page	Перейти к листу
 Graphic line	Графическая линия
 Graphic rectangle	Графический прямоугольник
 Graphical form	Графическая форма
+Greatest distance of the roof hooks along a rail	Наибольшее расстояние кровельных крюков вдоль рейки
 Grid	Сетка
 Grid size	Шаг сетки
 Grid {} mm	Сетка {} мм
@@ -707,6 +735,7 @@ Head (CPU / coupler)	Головной модуль (CPU / соединитель
 Header row	Строка заголовка
 Heat map	Тепловая карта
 Heating	Обогрев
+Heating circuit manifolds and control boxes	Распределители отопления и регулирующие коробки
 Height (mm)	Высота (мм)
 Height above the floor	Высота над полом
 Height above the mounting plate	Высота над монтажной панелью
@@ -717,8 +746,11 @@ Help	Справка
 Hide the groups you do not need and put the commands you use most into own groups.	Скройте ненужные группы и поместите самые используемые команды в собственные группы.
 Highest phase unbalance	Наибольшая несимметрия фаз
 Highest short-circuit current	Наибольший ток короткого замыкания
+Highest voltage (open circuit at the lowest temperature), mean and lowest voltage (at maximum power at the mean and the highest temperature), current at maximum power, peak power	Наибольшее напряжение (холостого хода при самой низкой температуре), среднее и наименьшее напряжение (при максимальной мощности при средней и самой высокой температуре), ток при максимальной мощности, пиковая мощность
+Highest: the lowest voltage	Наивысшая: наименьшее напряжение
 Hole to sheet edge	Отверстие до края листа
 Home	Главная
+Hook distance	Шаг крюков
 Horizontal	Горизонтальный
 Horizontal (mm)	По горизонтали (мм)
 Horizontal centres	По центру горизонтально
@@ -730,6 +762,7 @@ Hose defaults and PCT loops of the pre-planning	Параметры шланго�
 Hose number	Номер шланга
 Hoses and pipes	Шланги и трубы
 Hoses rated below it are errors; 0 = not checked	Шланги, рассчитанные на меньшее давление, – ошибки; 0 = не проверяется
+How the leaf opens: hinged at its left or right edge (seen from inside the room), into or out of the room, or sliding along the wall	Как открывается створка: петли у левого или правого края (вид изнутри помещения), внутрь или наружу помещения, или сдвигается вдоль стены
 IP / bus address	IP-адрес / адрес на шине
 ISO 639-1 language code	Код языка по ISO 639-1
 Identifiers	Идентификаторы
@@ -773,6 +806,7 @@ In every section counting starts again after the section number (2.3.1).	В ка
 In strip order; PE and other non-numeric terminals keep their designation	В порядке колодки; PE и другие нечисловые клеммы сохраняют своё обозначение
 In the filtered rows	В отфильтрованных строках
 In the middle of the first wire	В середине первого провода
+In the middle of the front or right slope, on a flat roof tilted towards the front; move it to its place	В середине передного или правого ската, на плоской крыше с наклоном вперёд; переместите его на место
 In the project	В проекте
 In the structure of the current page	В структуре текущего листа
 Include manually set numbers	Включить номера, заданные вручную
@@ -795,6 +829,7 @@ Inside temperature	Внутренняя температура
 Inside without cooling	Внутри без охлаждения
 Installation	Установка
 Installation conditions of the conductors	Условия прокладки проводников
+Installation zones	Монтажные зоны
 Installed plugins	Установленные плагины
 Instead of user name and password	Вместо имени пользователя и пароля
 Instruments in the P&ID carry function letters and loop number in their label (TIC 101); their device tag links them with the schematic.	Приборы на P&ID содержат в надписи буквенный код функции и номер контура (TIC 101); обозначение устройства связывает их со схемой.
@@ -802,6 +837,7 @@ Insulation	Изоляция
 Interruption points refer to	Точки разрыва ссылаются на
 Introduction	Введение
 Invalid value	Недопустимое значение
+Inverter or charge controller (devices with PV input data)	Инвертор или контроллер заряда (устройства с данными входа ФЭ)
 Isometric	Изометрия
 Items on the layer	Объекты на слое
 Items with an anchor keep it; the others are inserted relative to the click.	Элементы с привязкой сохраняют её; остальные вставляются относительно точки щелчка.
@@ -830,14 +866,15 @@ Layer	Слой
 Layer {}	Слой {}
 Layer: {}	Слой: {}
 Layers of graphics, texts, dimensions and images	Слои графики, текстов, размеров и изображений
+Laying in rooms	Прокладка в помещениях
 Laying out the wires, cables and tubes…	Раскладка проводов, кабелей и трубок…
 Layout checks	Проверки компоновки
 Layout properties	Свойства компоновки
 Layout space	Монтажное пространство
 Layout spaces	Монтажные пространства
+Leave out the ceilings of the rooms and the roofs in the 3D view	Скрыть потолки помещений и крыши в 3D-виде
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	В 3D-виде не показывать крышки всех кабельных каналов: провода в них становятся видны
 Leave repeated values of the first column blank	Не повторять одинаковые значения первого столбца
-Left	Слева
 Left edges	По левому краю
 Legend plates (door devices)	Шильдики (устройства на двери)
 Length from the node to the device	Длина от узла до устройства
@@ -849,6 +886,7 @@ Letters, digits, space, - _ . (up to 64 characters)	Буквы, цифры, пр
 Level of a multi-level terminal: upper levels sit on the block of the terminal before	Ярус многоярусной клеммы: верхние ярусы находятся на блоке предыдущей клеммы
 Level of this kind of message	Уровень этого вида сообщений
 Level on top	Уровень сверху
+Level {} added to building {}; new rooms go onto it	Этаж {} добавлен в здание {}; новые помещения размещаются на нём
 Levels	Уровни
 Library	Библиотека
 Limits	Пределы
@@ -888,6 +926,7 @@ Looking for updates…	Поиск обновлений…
 Looks for a new release of OpenECraft on GitHub and installs it in the background	Ищет новую версию OpenECraft на GitHub и устанавливает её в фоновом режиме
 Loop	Контур
 Lowest fault current	Наименьший ток замыкания
+Lowest: the highest open-circuit voltage	Наименьшая: наибольшее напряжение холостого хода
 Macro boxes	Рамки макросов
 Macro boxes ({})	Рамки макросов ({})
 Macro saved to the library	Макрос сохранён в библиотеке
@@ -918,6 +957,7 @@ Master data	Основные данные
 Max. pressure	Макс. давление
 Max. width	Макс. ширина
 Maximum fill of a carrier	Максимальное заполнение кабельной конструкции
+Mean: typical operation	Средняя: типичная работа
 Measured	Измерено
 Measures against common cause failure (at least 65 points)	Меры против отказов по общей причине (не менее 65 баллов)
 Merge a symbol library file	Объединить с файлом библиотеки символов
@@ -926,17 +966,21 @@ Messages	Сообщения
 Messages ({})	Сообщения ({})
 Messages of this session	Сообщения этого сеанса
 Middle	Посередине
+Middle of the PV array in the floor plan of the building	Середина фотоэлектрического поля на плане здания
 Min. bend radius	Мин. радиус изгиба
 Minimize the ribbon	Свернуть ленту
 Mirror	Отразить
 Mirror (selection or symbol being placed)	Отразить (выделенное или размещаемый символ)
 Mode	Режим
 Model of a part (2D / 3D)	Модель изделия (2D / 3D)
+Module part; its size comes from the part	Изделие модуля; его размер берётся из изделия
 Motors feed the short circuit	Двигатели подпитывают короткое замыкание
 Mounted on	Установлено на
 Mounting assistant: the panel items in mounting order with their place and part	Помощник монтажа: элементы компоновки в порядке монтажа с местом и изделием
 Mounting clearance side by side; parts add theirs (Clearance left / right)	Монтажный зазор при установке рядом; изделия добавляют свой (Clearance left / right)
+Mounting height: {}	Высота монтажа: {}
 Mounting plate: {} holes, {} cutouts	Монтажная панель: отверстий – {}, вырезов – {}
+Mounting system	Монтажная система
 Move	Переместить
 Move down	Переместить вниз
 Move left	Сдвинуть влево
@@ -997,15 +1041,18 @@ New report page	Новый лист отчёта
 New request	Новый запрос
 New revision	Новая ревизия
 New revisions start as drafts, are submitted for review and can be released once approved.	Новые ревизии создаются как черновики, отправляются на рецензирование и после утверждения могут быть выпущены.
+New roof	Новая крыша
 New room	Новое помещение
 New room on this level	Новое помещение на этом уровне
 New schematic page	Новый лист схемы
 New scheme	Новая схема
 New section	Новый раздел
 New shaft	Новая шахта
+New stair	Новая лестница
 New sub-page	Новый подлист
 New subsection	Новый подраздел
 New tag for {}	Новое обозначение для {}
+New zone	Новая зона
 New, empty placement scheme	Новая пустая схема размещения
 Next free contact numbers on this device	Следующие свободные номера контактов на этом устройстве
 Next item	Следующий элемент
@@ -1031,6 +1078,7 @@ No enclosure yet – create one with New enclosure, or a room for cabinets with 
 No field cables: place the enclosures and field devices at nodes of the route network.	Нет полевых кабелей: разместите корпуса и полевые устройства в узлах сети трасс.
 No filter fans: an air/air heat exchanger or a cooling unit	Без вентиляторов с фильтром: теплообменник воздух/воздух или холодильный агрегат
 No harnesses defined.	Жгуты не определены.
+No inverter	Без инвертора
 No longer reported	Больше не выдаётся
 No macros yet. Select items in a schematic and save them as a macro.	Макросов пока нет. Выберите элементы на схеме и сохраните их как макрос.
 No modules: plug in PLC cards of the schematic.	Модулей нет: установите платы ПЛК со схемы.
@@ -1105,6 +1153,7 @@ Open project	Открыть проект
 Open projects and files from Autodesk Vault, put the project, exports and 3D models into the vault	Открывать проекты и файлы из Autodesk Vault, помещать проект, экспорты и 3D-модели в хранилище
 Open the project	Открыть проект
 Open to {}: wires cross beside the mounting plates	Открыто к {}: провода проходят рядом с монтажными панелями
+Open walls and floors	Открыть стены и полы
 Open, save, import, export, print and the settings	Открытие, сохранение, импорт, экспорт, печать и настройки
 OpenECraft page templates	Шаблоны листов OpenECraft
 OpenECraft page templates (JSON)	Шаблоны листов OpenECraft (JSON)
@@ -1131,6 +1180,7 @@ Opened {} from the project server	{} открыт с сервера проект
 Opening	Проём
 Opening in the mounting plate / door: click two corners (round: in the properties)	Проём в монтажной панели / двери: щёлкните два угла (круглый – в свойствах)
 Opening {}…	Открытие {}…
+Opens	Открывание
 Opens the page of the release	Открывает страницу выпуска
 Opens the pages for printing in the browser with its print dialog	Открывает листы для печати в браузере с его диалогом печати
 Open…	Открыть…
@@ -1144,6 +1194,7 @@ Other values ({})	Другие значения ({})
 Otherwise from the plant layout, or next to the other line-ups	Иначе по плану установки или рядом с другими рядами корпусов
 Out since {} (pages locked)	Вынесен с {} (листы заблокированы)
 Outer diameter (e.g. 8 mm) or DN	Наружный диаметр (например, 8 мм) или DN
+Outlets, switches, heating	Розетки, выключатели, отопление
 Outline	Контур
 Outlines	Контуры
 Output bytes	Байты выходов
@@ -1151,6 +1202,7 @@ Output failed: {}	Ошибка вывода: {}
 Output to another project	Вывод в другой проект
 Output to project…	Вывести в проект…
 Outputs	Выходы
+Overhang	Свес
 Own colour	Собственный цвет
 Own drawn form	Собственная нарисованная форма
 Own groups	Собственные группы
@@ -1161,6 +1213,7 @@ PLC channels	Каналы ПЛК
 PLC hardware and bus topology	Аппаратура ПЛК и топология шины
 PLC overview	Обзор ПЛК
 PNG or JPEG bitmap, e.g. a logo or a photo	Растровое изображение PNG или JPEG, например логотип или фотография
+PV arrays	Фотоэлектрические поля
 Page graphics	Графика листа
 Page heading	Заголовок листа
 Page list, devices, parts, panel layout and settings	Список листов, устройства, изделия, компоновка шкафа и настройки
@@ -1208,6 +1261,7 @@ Pin-out	Распиновка
 Pipe run	Трасса трубопровода
 Pipe run on a wall, the ceiling or the floor of the room, along which hoses, tubes and pipes are routed: click the corners, double-click or Enter to finish	Трасса трубопровода на стене, потолке или полу помещения, вдоль которой прокладываются шланги, трубки и трубы: щёлкните углы, двойной щелчок или Enter – завершить
 Pipe run {} mm – double-click or Enter to finish	Трасса трубопровода {} мм – двойной щелчок или Enter – завершить
+Pitch	Уклон
 Pitch X / Y	Шаг X / Y
 Place a comment on the page	Разместить комментарий на листе
 Place again at all symbols using it	Заново разместить у всех символов, которые её используют
@@ -1425,12 +1479,20 @@ Revisions, approval and release	Ревизии, утверждение и вып
 Ribbon	Лента
 Ribbon (JSON)	Лента (JSON)
 Ribbon imported	Лента импортирована
-Right	Справа
 Right click for more	Щёлкните правой кнопкой для других действий
 Right edges	По правому краю
 Right neighbour	Сосед справа
 Rights	Права
+Risers	Подъёмы
+Roof window	Мансардное окно
+Roof windows	Мансардные окна
+Roofs	Крыши
 Room	Помещение
+Room added on level {}: drag its walls or draw new ones in the floor plan, put cabinets into it in their properties	Помещение добавлено на уровне {}: перетащите его стены или нарисуйте новые на плане, поставьте в него шкафы в их свойствах
+Room added: drag its walls or draw new ones in the floor plan, put cabinets into it in their properties	Помещение добавлено: перетащите его стены или нарисуйте новые на плане, поставьте в него шкафы в их свойствах
+Room {} now stands on level {}	Помещение {} теперь находится на уровне {}
+Room {} taken out of the building; it stays where it stands	Помещение {} выведено из здания; оно остаётся на своём месте
+Rooms under sloped ceilings (lowest – highest ceiling)	Помещения под скошенными потолками (самый низкий – самый высокий потолок)
 Rotate	Повернуть
 Rotate (selection or symbol being placed)	Повернуть (выделенное или размещаемый символ)
 Round	Круглый
@@ -1445,6 +1507,7 @@ Routing path {} mm – double-click or Enter to finish	Путь прокладк
 Routing paths	Пути прокладки
 Routing rules	Правила прокладки
 Row	Строка
+Row distance	Расстояние между рядами
 Row drawing	Чертёж строки
 Row labels	Подписи строк
 Rows on released pages cannot be changed. A line break in a text is written as \\n.	Строки на выпущенных листах нельзя изменять. Разрыв строки в тексте записывается как \\n.
@@ -1591,12 +1654,16 @@ Signed in to {} as {}	Вход в {} выполнен как {}
 Signed out of Vault	Выход из Vault выполнен
 Single-line	Однолинейный
 Single-line symbols for the power devices of the schematic that have none yet, on a new overview page	Однолинейные символы для силовых устройств схемы, у которых их ещё нет, на новом обзорном листе
+Site	Участок
 Site plan	Генплан
+Site plan, building {}	Ситуационный план, здание {}
 Size {} × {} mm	Размер {} × {} мм
 Slot	Паз
+Slot depth	Глубина штробы
 Slots	Слоты
 Smallest cross-section of control circuits	Наименьшее сечение цепей управления
 Smallest cross-section of power circuits	Наименьшее сечение силовых цепей
+Socket outlets, data and antenna outlets	Розетки, информационные и антенные розетки
 Some wires have no length: place their devices in the panel layout or set the field length.	У некоторых проводов нет длины: разместите их устройства в компоновке шкафа или задайте длину поля.
 Sort by designation	Сортировать по обозначению
 Sort order	Порядок сортировки
@@ -1607,6 +1674,7 @@ Space kept free of routes, or for one class only: click two corners	Простр
 Spare terminals	Резервные клеммы
 Special text	Специальный текст
 Special text: project and page properties such as {page} or {prop:Name} are filled in when the page is drawn	Специальный текст: свойства проекта и листа, например {page} или {prop:Name}, подставляются при отрисовке листа
+Stairs	Лестницы
 Standard form of the report	Стандартная форма отчёта
 Standard size	Стандартный размер
 Standard workspaces	Стандартные рабочие пространства
@@ -1628,6 +1696,8 @@ Still reported	Всё ещё выдаётся
 Stock length	Складская длина
 Stop placing for this device	Завершить размещение для этого устройства
 Stratification (factor c)	Стратификация (коэффициент c)
+Strings	Цепочки
+Strings of this kind in parallel	Цепочки этого вида параллельно
 Strip on the rail	Колодка на монтажной рейке
 Strip {} mm	Зачистка {} мм
 Strips / plugs	Колодки / штекеры
@@ -1652,6 +1722,7 @@ Switch off the check \"{}\"	Отключить проверку «{}»
 Switched off on this computer ({})	Отключено на этом компьютере ({})
 Switches the options with a condition by the configurator options	Переключает опции с условием по параметрам конфигуратора
 Switches to this workspace with its panes at their default places	Переключает на это рабочее пространство с панелями на их местах по умолчанию
+Switches, push buttons and room thermostats	Выключатели, кнопки и комнатные термостаты
 Symbol editor	Редактор символов
 Symbol table import failed: {}	Ошибка импорта таблицы символов: {}
 Symbols and wires on this page are drawn but not evaluated (no devices, connections or reports).	Символы и провода на этом листе рисуются, но не обрабатываются (нет устройств, соединений и отчётов).
@@ -1670,6 +1741,7 @@ Tag	Обозначение
 Tag field	Поле обозначения
 Tag placed by hand	Обозначение размещено вручную
 Take out a subproject	Вынести подпроект
+Take out of the building	Вывести из здания
 Take out {} pages…	Вынести листы ({})…
 Take over cut lengths	Принять длины отрезков
 Take over selected ({})	Перенести выбранные ({})
@@ -1677,6 +1749,7 @@ Take over {} changes	Принять изменения ({})
 Take page out of its option	Исключить лист из опции
 Take selection out of its option	Исключить выделенное из опции
 Take the acceptance back	Отменить принятие
+Take the room out of the building; it stays where it stands	Вывести помещение из здания; оно остаётся на своём месте
 Taken into the drawing: drawn faded	Перенесено в чертёж: отображается бледно
 Takes the comments as function texts (matched by address)	Принимает комментарии как тексты функций (сопоставление по адресу)
 Takes the connection point designations of all functions of this device from the function templates of its parts	Принимает обозначения точек подключения всех функций этого устройства из шаблонов функций его изделий
@@ -1711,6 +1784,7 @@ The door seen from the inside (hinges on the right): cable ducts and the wiring 
 The enclosure stands with its left side against the right side of the chosen one; wires run between them through cable passages	Шкаф стоит левой стороной к правой стороне выбранного; провода проходят между ними через кабельные проходы
 The items are selected and moved together	Элементы выделяются и перемещаются вместе
 The macro library has no page macros (Macros › Save page as macro…).	В библиотеке макросов нет макросов листов (Макросы › Сохранить лист как макрос…).
+The modules no string takes yet in series, on the first inverter	Модули, не занятые ни одной цепочкой, последовательно, на первом инверторе
 The names of its pages follow	Имена его листов меняются вместе с ним
 The page name gets the section number	Имя листа получает номер раздела
 The page type, plot frame, title block, structure, description and the whole content are saved.	Сохраняются тип листа, рамка, основная надпись, структура, описание и всё содержимое.
@@ -1723,6 +1797,7 @@ The project's own page templates as a file	Собственные шаблоны
 The project's own title blocks	Собственные основные надписи проекта
 The project's own title blocks and report schemes	Собственные основные надписи и схемы отчётов проекта
 The properties of the selection in a window beside the page	Свойства выделенного в окне рядом с листом
+The rail or mounting base; its accessories are the hooks, clamps and ballast	Рейка или монтажное основание; его принадлежности — крюки, зажимы и балласт
 The recalculation keeps frozen routes as long as they are still possible	При пересчёте зафиксированные трассы сохраняются, пока это возможно
 The ribbon with the File tab replaces the menus; Ctrl+Shift+P finds any command.	Лента с вкладкой Файл заменяет меню; Ctrl+Shift+P находит любую команду.
 The second fault is checked at the line-to-earth voltage	Двойное замыкание проверяется при напряжении между фазой и землёй
@@ -1745,6 +1820,7 @@ This page contains schematic content which is not evaluated on non-schematic pag
 This project is subproject {} of {} (taken out {}). Save it and insert it into the main project when the work is done.	Этот проект – подпроект {} проекта {} (вынесен {}). Сохраните его и после завершения работы вставьте в основной проект.
 Three wires must meet here: one in its direction and two across. Until then the connection is chained in schematic order.	Здесь должны сходиться три провода: один в его направлении и два поперёк. До тех пор соединение выстраивается в порядке схемы.
 Three-phase short-circuit current at the supply point	Ток трёхфазного короткого замыкания в точке питания
+Tilt	Наклон
 Title	Заголовок
 Title blocks	Основные надписи
 Title blocks, plot frames and page templates	Основные надписи, рамки листов и шаблоны листов
@@ -1760,6 +1836,7 @@ Turn about the vertical, counter-clockwise seen from above (90 °: the fronts fa
 Tutorial	Учебник
 Two wires must meet here at a right angle. With Auto-connect on, connection points facing its arms are wired to it.	Здесь должны сходиться два провода под прямым углом. При включённом автосоединении точки подключения напротив его плеч соединяются с ним.
 Type a point and press Enter: x y in mm, or @dx dy relative to the last point; it acts like a click of the current tool	Введите точку и нажмите Enter: x y в мм или @dx dy относительно последней точки; действует как щелчок текущим инструментом
+U {} / {} / {} V, I {} A, {} kWp	U {} / {} / {} В, I {} А, {} кВт пик
 UI scale	Масштаб интерфейса
 Undo	Отменить
 Undo brings it back.	Отмена вернёт его.
@@ -1835,10 +1912,14 @@ Welcome to OpenECraft	Добро пожаловать в OpenECraft
 What is new	Что нового
 What should be checked or changed?	Что нужно проверить или изменить?
 Wheel / right or middle drag	Колесо / перетаскивание правой или средней кнопкой
+Wheel: zoom · drag: move · click on a room: its floor plan	Колесо: масштаб · перетаскивание: сдвиг · щелчок по помещению: его план
 Wheel: zoom · right click: cancel · graphics snap to 0.5 mm, connection points to the 4 mm grid	Колесо: масштаб · правый щелчок: отмена · графика привязывается к 0,5 мм, точки подключения – к сетке 4 мм
 When it differs from the page	Если отличается от листа
+Where	Положение
 Where the wire starts and ends: a connection point from the part data, one generated from the function template, or the device centre if no connection point matches	Где провод начинается и заканчивается: точка подключения из данных изделия, точка, созданная из шаблона функций, или центр устройства, если ни одна точка подключения не подходит
+Whole building	Всё здание
 Whole words	Слова целиком
+Width / going	Ширина / проступь
 Width / height (mm)	Ширина / высота (мм)
 Width × depth	Ширина × глубина
 Width × height	Ширина × высота
@@ -1895,6 +1976,7 @@ all cards	все платы
 all lines	все строки
 all, or e.g. -X*, -W1	все или, например, -X*, -W1
 all, or e.g. K, Q	все или, например, K, Q
+along z	вдоль z
 both ends	оба конца
 built-in	встроенное
 by hand	вручную
@@ -1928,6 +2010,7 @@ given	задана
 horizontal	горизонтально
 if	если
 kW	kW
+low side at the rear	низкая сторона сзади
 male	штырь
 manual	вручную
 max. {} °C	макс. {} °C
@@ -1937,7 +2020,9 @@ model	модель
 name	имя
 no	нет
 no answer	нет ответа
+no electrical data of the module	нет электрических данных модуля
 no rooms	нет помещений
+no valid levels	нет допустимых уровней
 no wires	нет проводов
 none	нет
 not defined	не определено
@@ -1956,6 +2041,8 @@ pin and socket	штырь и гнездо
 placed / provided by the parts	размещено / предоставлено изделиями
 reached: PL {}	достигнуто: PL {}
 review round {}	раунд рецензирования {}
+ridge {} m	конёк {} м
+sloped ceiling from {} m	скошенный потолок от {} м
 some	некоторые
 taken over	перенесено
 the project data (page list, devices, settings)	данные проекта (список листов, устройства, настройки)
@@ -2061,6 +2148,8 @@ x y	x y
 {} mm on the plate + {} mm reserve; the rest is the way from the connection points to the plate.	{} мм на панели + {} мм запас; остальное – путь от точек подключения до панели.
 {} mm, now {} mm	{} мм, теперь {} мм
 {} mm, removed	{} мм, удалено
+{} modules	{} модулей
+{} modules, {} kWp	{} модулей, {} кВт пик
 {} new texts in the dictionary	Новых текстов в словаре: {}
 {} notes	Примечаний: {}
 {} objects pasted	Вставлено объектов: {}
@@ -2125,6 +2214,7 @@ x y	x y
 {} °C (max.)	{} °C (макс.)
 {} × {} pixels, {}	{} × {} пикселей, {}
 {} – {} ({} pages)	{} – {} (листов: {})
+{}: click to show its floor plan	{}: щёлкните, чтобы показать план
 {}: drag to move it, R turns it, a double-click opens it	{}: перетащите, чтобы переместить, R поворачивает, двойной щелчок открывает
 {}: drag to move it, a double-click shows the floor	{}: перетащите, чтобы переместить, двойной щелчок показывает пол
 {}: nothing to change	{}: нечего изменять

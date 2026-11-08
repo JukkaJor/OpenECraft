@@ -22,6 +22,7 @@ Bottom	Дно
 Bottom with removable gland plate	Дно со съёмной фланцевой панелью
 Breaking capacity	Отключающая способность
 Bridge	Мост
+Building	Здание
 Buildings	Здания
 Bundles	Пучки
 Busbar	Шина
@@ -90,6 +91,7 @@ Descending	По убыванию
 Description	Описание
 Designation	Обозначение
 Device	Устройство
+Device (PV generator) the modules belong to; its parts then count them in the bill of materials	Устройство (фотоэлектрический генератор), к которому относятся модули; его изделия тогда учитывают их в спецификации
 Device description	Описание устройства
 Device tag	Обозначение устройства
 Device {}	Устройство {}
@@ -160,6 +162,7 @@ Integration	Интеграция
 Internal (bottom)	Внутренняя (снизу)
 Interruption point	Точка разрыва
 Italic	Курсив
+Its MPP tracker (input), from 1	Его MPP-трекер (вход), с 1
 Job	Задание
 Jumper	Перемычка
 Key	Ключ
@@ -169,6 +172,7 @@ Languages	Языки
 Last change	Последнее изменение
 Layers	Слои
 Leave out stored baselines and wiring marks	Не включать сохранённые базовые версии и отметки проводки
+Left	Слева
 Length	Длина
 Level	Уровень
 Lifecycle	Жизненный цикл
@@ -194,6 +198,8 @@ Minimum digits of the counter (leading zeros)	Минимальное число 
 Missing parameter: {}	Отсутствует параметр: {}
 Missing value for --{}	Отсутствует значение для --{}
 Model import failed: {}	Ошибка импорта модели: {}
+Modules in series	Модули последовательно
+Modules side by side in a row	Модули рядом в ряду
 Mounted	Смонтировано
 Mounting	Монтаж
 Mounting data	Монтажные данные
@@ -216,6 +222,7 @@ No machine {}	Нет станка {}
 No page named {}	Нет листа с именем {}
 No page template named {}	Нет шаблона листа с именем {}
 No page {}	Нет листа {}
+No part {} in the project	Нет изделия {} в проекте
 No parts found	Изделия не найдены
 No plot frame named {}	Нет рамки листа с именем {}
 No plug {}	Нет штекера {}
@@ -246,6 +253,7 @@ PCT loop overview	Обзор контуров КИПиА
 PL	PL
 PLC	ПЛК
 PLC card	Плата ПЛК
+PV array	Фотоэлектрическое поле
 Packaging quantity	Количество в упаковке
 Page	Лист
 Page description	Описание листа
@@ -328,10 +336,12 @@ Reserve	Резерв
 Revision	Ревизия
 Revision {}	Ревизия {}
 Rework	Доработка
+Right	Справа
 Role	Роль
 Rooms	Помещения
 Route	Обход
 Routing	Прокладка
+Rows of modules (east-west: rows of pairs)	Ряды модулей (восток-запад: ряды пар)
 Rule	Правило
 Rule set	Набор правил
 Safety function	Функция безопасности
@@ -367,6 +377,7 @@ Sort by	Сортировать по
 Source	Источник
 State	Состояние
 Status	Состояние
+String	Цепочка
 Strip	Зачистка
 Structure	Структура
 Subproject name	Имя подпроекта
@@ -389,6 +400,7 @@ Terminals	Клеммы
 Text	Текст
 Text to find	Искомый текст
 The identifier must not be empty	Идентификатор не может быть пустым
+The long side of the modules along the rows	Длинная сторона модулей вдоль рядов
 The page is released	Лист выпущен
 There is a connection symbol at this point already	В этой точке уже есть символ соединения
 Thermal	Тепловой режим
@@ -436,6 +448,7 @@ access denied	доступ запрещён
 approved	утверждено
 bonded	подключён
 file or folder not found	файл или папка не найдены
+landscape	альбомная
 left	влево
 mm	мм
 normal	обычный

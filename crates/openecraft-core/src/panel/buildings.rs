@@ -139,6 +139,12 @@ fn unique<'a>(taken: impl Iterator<Item = &'a str> + Clone, base: String) -> Str
     (2..).map(|k| format!("{base}-{k}")).find(|n| !taken.clone().any(|t| t == n)).unwrap_or(base)
 }
 
+/// A name for a new building: "+B1", "+B2", … not used by a building or an enclosure.
+pub fn free_building_name(layout: &Layout) -> String {
+    let taken = |n: &str| layout.buildings.iter().any(|b| b.name == n) || layout.enclosures.iter().any(|e| e.name == n);
+    (1..).map(|n| format!("+B{n}")).find(|n| !taken(n)).unwrap_or_default()
+}
+
 /// Adds a building with one level at ground level, right of what stands in the plant
 /// already; gives its index.
 pub fn add_building(prj: &mut Project, name: &str) -> Result<usize, String> {
@@ -304,6 +310,27 @@ pub fn set_room_level(prj: &mut Project, ri: usize, level: Option<u64>, place: O
         }
     }
     Ok(())
+}
+
+/// Default height of a new room on a level: the level's height less its ceiling slab.
+pub fn room_height_on(layout: &Layout, level: u64) -> f32 {
+    level_by_id(layout, level).map_or(LEVEL_HEIGHT, |l| l.height) - SLAB
+}
+
+/// Adds a new room of 4 × 3 m, on a level next to its other rooms (as high as the
+/// level less its slab) or, without one, outside the buildings; its index.
+pub fn add_room(prj: &mut Project, name: &str, level: Option<u64>) -> Result<usize, String> {
+    if let Some(id) = level {
+        find_level(&prj.layout, id).ok_or_else(|| tr("No such level").to_string())?;
+    }
+    let height = level.map_or(2800.0, |l| room_height_on(&prj.layout, l));
+    let room = super::new_room(prj, name, 4000.0, 3000.0, height);
+    prj.layout.enclosures.push(room);
+    let ri = prj.layout.enclosures.len() - 1;
+    if level.is_some() {
+        set_room_level(prj, ri, level, None)?;
+    }
+    Ok(ri)
 }
 
 /// Next free place of a room on a level (building floor plan): right of the rooms that
@@ -519,7 +546,9 @@ fn plan_cells(prj: &Project, poses: &[SitePose], ri: usize) -> Vec<[[f32; 2]; 4]
 /// The problems of the buildings: rooms on levels that are gone, higher than their
 /// level or overlapping other rooms of their level; levels overlapping each other;
 /// shafts that join no rooms, and cabinets or floor-standing devices standing in a
-/// shaft; links between buildings whose building entries are gone.
+/// shaft; links between buildings whose building entries are gone; the problems of
+/// their stairs ([`super::stairs::problems`]), roofs ([`super::roofs::problems`]) and
+/// PV arrays ([`super::solar::problems`]).
 pub fn problems(prj: &Project) -> Vec<Issue> {
     let layout = &prj.layout;
     let poses = site_poses(prj);
@@ -588,6 +617,10 @@ pub fn problems(prj: &Project) -> Vec<Issue> {
             _ => v.push(crate::issue!(Severity::Warning, None, "Link {}: a building entry it joins no longer exists", link.name)),
         }
     }
+    v.extend(super::stairs::problems(prj));
+    v.extend(super::roofs::problems(prj));
+    v.extend(super::solar::problems(prj));
+    v.extend(super::solar::strings::problems(prj));
     v
 }
 

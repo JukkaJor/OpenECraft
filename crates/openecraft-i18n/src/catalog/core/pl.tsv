@@ -7,6 +7,7 @@
 13 · Transformer-rated metering with PV and grid protection	13 · Pomiar półpośredni z PV i zabezpieczeniem sieci
 14 · Main low-voltage distribution of an industrial plant	14 · Główna rozdzielnica niskiego napięcia zakładu przemysłowego
 15 · Plant with buildings, levels and a shaft	15 · Instalacja z budynkami, kondygnacjami i szybem
+16 · Office building with roof, stair and installation	16 · Budynek biurowy z dachem, schodami i instalacją
 2 · Relay with self-holding contact	2 · Przekaźnik z podtrzymaniem
 3 · Star-delta motor starter	3 · Rozrusznik gwiazda-trójkąt
 3/2 directional valve	Zawór rozdzielający 3/2
@@ -182,6 +183,7 @@ Capacitive sensor, 3-wire	Czujnik pojemnościowy, 3-przewodowy
 Capacitor	Kondensator
 Capacitor, polarized	Kondensator, spolaryzowany
 Ceiling	Sufit
+Cell temperatures: {} °C (U max), {} °C (U mean), {} °C (U min)	Temperatury ogniw: {} °C (U maks.), {} °C (U śr.), {} °C (U min.)
 Centre horizontally	Wyśrodkuj w poziomie
 Centre vertically	Wyśrodkuj w pionie
 Centrifugal pump	Pompa odśrodkowa
@@ -433,6 +435,7 @@ ERP item master and bill of materials (CSV)	Kartoteka artykułów ERP i zestawie
 ERP number	Numer ERP
 ETIM class	Klasa ETIM
 Earth electrode	Uziom
+East-west on a flat roof	Wschód-zachód na dachu płaskim
 Edit pages	Edycja stron
 Edit project data	Edycja danych projektu
 Editor	Redaktor
@@ -520,6 +523,7 @@ Fitting	Złączka
 Fittings	Złączki
 Flame retardant	Trudnopalny
 Flat cable {} has {} cores, the IDC connector {} has {} pins	Kabel płaski {} ma {} żył, złącze IDC {} ma {} pinów
+Flat roof	Dach płaski
 Float switch NC	Łącznik pływakowy, rozwierny
 Float switch NO	Łącznik pływakowy NO
 Float switch NO (NFPA)	Łącznik pływakowy, zwierny (NFPA)
@@ -538,6 +542,8 @@ Fluid power (ISO 1219)	Napędy płynowe (ISO 1219)
 Fluid power and electrics in one project: pneumatic circuit with service unit, valve terminal, 5/2 valves, flow control valves and cylinders; solenoid coils and position switches are linked to the valves and cylinders.	Technika płynowa i elektryka w jednym projekcie: schemat pneumatyczny z zespołem przygotowania powietrza, wyspą zaworową, zaworami 5/2, zaworami dławiąco-zwrotnymi i siłownikami; cewki elektrozaworów i wyłączniki krańcowe są powiązane z zaworami i siłownikami.
 Fluid power and process	Technika płynowa i procesowa
 Fluid power settings	Ustawienia napędów płynowych
+Flush-mounted in the floor	Podtynkowo w podłodze
+Flush-mounted in the wall	Podtynkowo w ścianie
 Foot switch NC	Łącznik nożny, rozwierny
 Foot switch NO	Łącznik nożny, zwierny
 Foot switch NO (NFPA)	Łącznik nożny, zwierny (NFPA)
@@ -590,6 +596,7 @@ Fuse, LV HBC, 3-pole	Bezpiecznik mocy NH, 3-biegunowy
 GB (GB/T 4728)	GB (GB/T 4728)
 GOST (ESKD)	GOST (ESKD)
 GTIN	GTIN
+Gable roof	Dach dwuspadowy
 Galvanometer	Galwanometr
 Gas	Gaz
 Gas flow switch NC	Czujnik przepływu gazu, rozwierny
@@ -615,6 +622,7 @@ Grid and system protection relay (voltage and frequency)	Przekaźnik zabezpiecze
 Grounded conductors must be white or grey (NFPA 79, 13.2.3)	Przewody uziemione muszą być białe lub szare (NFPA 79, 13.2.3)
 HMI	HMI
 HTML document for printing	Dokument HTML do druku
+Half landing (two flights)	Ze spocznikiem pośrednim (dwa biegi)
 Hall 1	Hala 1
 Halogen free	Bezhalogenowy
 Hand	Ręcznie
@@ -628,8 +636,15 @@ Heating element	Element grzejny
 Higher-level product (-)	Produkt nadrzędny (-)
 Higher-level product of the page	Produkt nadrzędny strony
 Highest (°C)	Najwyższa (°C)
+Hinged left, opens inwards	Zawiasy z lewej, otwiera się do wewnątrz
+Hinged left, opens outwards	Zawiasy z lewej, otwiera się na zewnątrz
+Hinged right, opens inwards	Zawiasy z prawej, otwiera się do wewnątrz
+Hinged right, opens outwards	Zawiasy z prawej, otwiera się na zewnątrz
+Hip roof	Dach czterospadowy
 Hold-up time	Czas podtrzymania
 Holding power	Moc trzymania
+Horizontal, above the floor	Poziomo, nad podłogą
+Horizontal, below the ceiling	Poziomo, pod sufitem
 Horn (NFPA)	Syrena (NFPA)
 Horn / buzzer	Syrena / brzęczyk
 Horn / buzzer HA (GB)	Syrena / brzęczyk HA (GB)
@@ -654,6 +669,8 @@ Hydraulic oil	Olej hydrauliczny
 Hydraulic power unit	Zasilacz hydrauliczny
 Hydraulic pump	Pompa hydrauliczna
 Hysteresis	Histereza
+I mpp (A)	I mpp (A)
+I sc max (A)	I sc maks. (A)
 IEC 60204-1 (machinery: phases BK, DC control BU)	IEC 60204-1 (maszyny: przewody fazowe BK, sterowanie DC BU)
 IEC 60445 (phases BN, BK, GY)	IEC 60445 (przewody fazowe BN, BK, GY)
 IEC 61131-3 (%IX0.0 / %QX0.0)	IEC 61131-3 (%IX0.0 / %QX0.0)
@@ -665,6 +682,8 @@ Ik1 min (A)	Ik1 min (A)
 Impact protection (IK)	Odporność na uderzenia (IK)
 In engineering	W opracowaniu
 In production	W produkcji
+In the ceiling, along the walls	W suficie, wzdłuż ścian
+In the floor, along the walls	W podłodze, wzdłuż ścian
 Incoming supply	Zasilanie
 Indicator lamp	Lampka sygnalizacyjna
 Indicator lamp HL (GB)	Lampka sygnalizacyjna HL (GB)
@@ -764,6 +783,7 @@ MAC address	Adres MAC
 MCAD	MCAD
 MCAD device placement (CSV)	Rozmieszczenie urządzeń MCAD (CSV)
 MOSFET N-channel	MOSFET z kanałem N
+MPPT	MPPT
 MTTFd	MTTFd
 Machine (example identifiers)	Maszyna (przykładowe identyfikatory)
 Machine frame	Rama maszyny
@@ -827,6 +847,8 @@ Minimum operating temperature	Minimalna temperatura pracy
 Mirror contacts	Styki lustrzane
 Mirrored	Odbite lustrzanie
 Mission time	Czas misji
+Module	Moduł
+Modules	Moduły
 Moisture	Wilgotność
 Moment of inertia	Moment bezwładności
 Motion detector	Czujnik ruchu
@@ -918,6 +940,7 @@ No plugs	Brak złączy
 No report block {}	Brak bloku raportu {}
 No segment template named {}	Brak szablonu segmentu o nazwie {}
 No subproject {}	Brak podprojektu {}
+No such PV array	Brak takiej instalacji PV
 No such object: {}	Brak obiektu: {}
 No surge protective device at the supply (IEC 60364-4-44)	Brak ogranicznika przepięć na zasilaniu (IEC 60364-4-44)
 No terminal {}	Brak zacisku {}
@@ -1054,6 +1077,7 @@ PLC tags for Rockwell Studio 5000 (CSV)	Tagi PLC dla Rockwell Studio 5000 (CSV)
 PLC variables for Schneider Control Expert (XSY)	Zmienne PLC dla Schneider Control Expert (XSY)
 PLM	PLM
 PLM engineering BOM (JSON)	Konstrukcyjne zestawienie materiałów PLM (JSON)
+PV strings	Łańcuchy PV
 PVC (70 °C)	PVC (70 °C)
 Page / column (3.4.1)	Strona / kolumna (3.4.1)
 Page name	Nazwa strony
@@ -1079,6 +1103,7 @@ Panel layout in 3D (STEP)	Zabudowa szafy w 3D (STEP)
 Panel layout in 3D (glTF)	Zabudowa szafy w 3D (glTF)
 Panel layout settings	Ustawienia zabudowy szafy
 Panel legend	Legenda szafy
+Parallel to the roof on roof hooks	Równolegle do dachu na hakach dachowych
 Part accessories	Akcesoria części
 Part data is maintained in the parts management	Dane artykułów są utrzymywane w zarządzaniu artykułami
 Part description	Opis artykułu
@@ -1162,6 +1187,7 @@ Potential {} defined {} times	Potencjał {} zdefiniowany {} razy
 Potentials / Connectors	Potencjały / złącza
 Potentials, interruption points	Potencjały, punkty przerwania
 Potentiometer	Potencjometr
+Power (kWp)	Moc (kWp)
 Power and control circuit on several pages: main switch, motor protection, three contactors with interlocks, on-delay timer, interruption points, potentials with wire colours, motor cable and cable reports.	Obwód główny i sterowania na kilku stronach: wyłącznik główny, zabezpieczenie silnika, trzy styczniki z blokadami, przekaźnik czasowy opóźnionego załączania, punkty przerwania, potencjały z kolorami przewodów, kabel silnika i zestawienia kabli.
 Power factor	Współczynnik mocy
 Power factor meter	Miernik współczynnika mocy
@@ -1249,6 +1275,7 @@ Push button with key NC, latching	Przycisk z kluczykiem, rozwierny, z zatrzaskie
 Push button with key NO, latching	Przycisk z kluczykiem, zwierny, z zatrzaskiem
 Pushbutton NC	Przycisk NC
 Pushbutton NO	Przycisk NO
+Pyramid roof	Dach namiotowy
 Qty	Ilość
 RCD {} mA	RCD {} mA
 Radiation	Promieniowanie
@@ -1401,6 +1428,7 @@ Setpoint	Wartość zadana
 Setting range	Zakres nastawy
 Sheath colour	Kolor powłoki
 Sheath material	Materiał powłoki
+Shed roof	Dach jednospadowy
 Sheet number	Numer arkusza
 Sheet steel	Blacha stalowa
 Shield clamp	Zacisk ekranu
@@ -1429,6 +1457,8 @@ Siren	Syrena
 Site address	Adres miejsca instalacji
 Size (mm)	Rozmiar (mm)
 Skipped	Pominięto
+Sliding to the left	Przesuwne w lewo
+Sliding to the right	Przesuwne w prawo
 Socket outlet	Gniazdo wtyczkowe
 Socket side (female)	Strona gniazd (żeńska)
 Soft starter	Układ łagodnego rozruchu
@@ -1447,6 +1477,7 @@ Spare	Rezerwa
 Spare part	Część zamienna
 Spare terminal	Zacisk rezerwowy
 Speed	Prędkość obrotowa
+Spiral	Kręcone
 Stainless steel	Stal nierdzewna
 Standard	Norma
 Start / stop circuit with a relay: coil and contacts form one device with cross references and contact image, terminal strip, wire numbers, terminal diagram and connection list.	Obwód start / stop z przekaźnikiem: cewka i styki tworzą jedno urządzenie z odsyłaczami i obrazem styków, listwa zaciskowa, numery przewodów, schemat listwy i lista połączeń.
@@ -1462,6 +1493,7 @@ Steam	Para
 Stock	Stan magazynowy
 Stop category	Kategoria zatrzymania
 Storage temperature range	Zakres temperatury składowania
+Straight	Proste
 Straight through from {} to {}, across from {} to {} and from {} to {}	Na wprost z {} do {}, poprzecznie z {} do {} i z {} do {}
 Strain relief	Odciążenie
 Stretched	Rozciągnięte
@@ -1489,6 +1521,7 @@ Suppliers	Dostawcy
 Supply network	Układ sieci
 Supply voltage	Napięcie zasilania
 Surface (m²)	Powierzchnia (m²)
+Surface-mounted	Natynkowo
 Surge protection type	Typ ochrony przeciwprzepięciowej
 Surge protective device	Ogranicznik przepięć
 Surge suppressor	Ogranicznik przepięć
@@ -1597,6 +1630,7 @@ Through-beam sensor, 4-wire	Bariera jednodrożna, 4-przewodowa
 Through-beam transmitter	Nadajnik bariery jednodrożnej
 Thyristor	Tyrystor
 Tightening torque	Moment dokręcania
+Tilted on a flat roof	Pochylony na dachu płaskim
 Time function	Funkcja czasowa
 Time range	Zakres czasowy
 Time relay coil KT (GB)	Cewka przekaźnika czasowego KT (GB)
@@ -1649,9 +1683,14 @@ Trunking	Kanał kablowy
 Tube	Przewód rurowy (wąż)
 Tubes	Węże
 Tubing / piping list	Lista rur / przewodów rurowych
+Turned once (quarter landing)	Zabiegowe raz (spocznik narożny)
+Turned twice (two quarter landings)	Zabiegowe dwa razy (dwa spoczniki narożne)
 Two connection symbols on page {} lie on the same point	Dwa symbole połączeń na stronie {} leżą w tym samym punkcie
 Two-way switch (installation)	Łącznik schodowy (instalacyjny)
 Type numbers	Numery typów
+U max (V)	U maks. (V)
+U mean (V)	U śr. (V)
+U min (V)	U min. (V)
 UL listed	Na liście UL
 UV resistant	Odporny na UV
 Unbalance {} %	Asymetria {} %
@@ -1680,6 +1719,9 @@ Varistor	Warystor
 Varmeter	Waromierz
 Vector group	Grupa połączeń
 Ventilation clearance	Odstęp wentylacyjny
+Vertical, beside the corners	Pionowo, przy narożnikach
+Vertical, beside the doors	Pionowo, przy drzwiach
+Vertical, beside the windows	Pionowo, przy oknach
 Vessel	Zbiornik ciśnieniowy
 Vibration	Drgania
 Vibration resistance	Odporność na wibracje
@@ -1798,7 +1840,6 @@ is none of	nie jest żadnym z
 is not	nie jest
 is not empty	nie jest puste
 is one of	jest jednym z
-landscape	poziomo
 leakage	przeciek
 low	niski
 measuring	pomiar
@@ -1807,6 +1848,7 @@ no header	brak nagłówka
 no list	brak listy
 no path through the route network	brak drogi przez sieć tras
 no way through the enclosure	brak drogi przez obudowę
+no way through the installation zones	brak drogi przez strefy instalacyjne
 not in the panel layout	nie w zabudowie szafy
 not in the same line-up or room	nie w tym samym szeregu ani pomieszczeniu
 not reached	nie osiągnięto
@@ -1859,6 +1901,7 @@ yellow	żółty
 {} fits none of the parts of {}	{} nie pasuje do żadnej części {}
 {} frozen routes changed their length	Zamrożone trasy, które zmieniły długość: {}
 {} has no MTTFd, B10d, PL or PFHd	{} nie ma MTTFd, B10d, PL ani PFHd
+{} has no door or window {}	{} nie ma drzwi ani okna {}
 {} has nothing to manufacture	{} nie ma nic do wyprodukowania
 {} is a built-in function definition	{} jest wbudowaną definicją funkcji
 {} is a built-in property	{} jest wbudowaną właściwością
@@ -1894,7 +1937,16 @@ yellow	żółty
 {} {} is routed to the cable entries of its enclosures: they stand in no common room, the way between them is not part of the layout	{} {} jest poprowadzony do wejść kablowych swoich obudów: nie stoją we wspólnym pomieszczeniu, droga między nimi nie należy do układu
 {} {}: bends closer than the bend radius ({} mm)	{} {}: zagięcia ciaśniejsze niż promień gięcia ({} mm)
 {} – {}: connected in the single-line diagram but not in the schematic	{} – {}: połączone na schemacie jednokreskowym, ale nie na schemacie elektrycznym
+{}, MPP tracker {}: its strings differ in voltage ({} V and {} V)	{}, tracker MPP {}: jego łańcuchy różnią się napięciem ({} V i {} V)
+{}, MPP tracker {}: the strings deliver {} A, more than the {} A it uses (the power is limited)	{}, tracker MPP {}: łańcuchy dają {} A, więcej niż {} A, które wykorzystuje (moc jest ograniczona)
+{}, MPP tracker {}: the strings reach a short-circuit current of {} A, more than the {} A it takes	{}, tracker MPP {}: łańcuchy osiągają prąd zwarcia {} A, więcej niż {} A, które przyjmuje
 {}: MTTFd {} years is below 3 years	{}: MTTFd {} lat jest poniżej 3 lat
+{}: PV array {} covers a roof window	{}: instalacja PV {} zakrywa okno dachowe
+{}: PV array {} has {} modules, its device {} has {}	{}: instalacja PV {} ma {} modułów, jej urządzenie {} ma {}
+{}: PV array {} is mounted tilted on a pitched roof	{}: instalacja PV {} jest zamontowana pochylona na dachu skośnym
+{}: PV array {} of roof {} lies across a ridge, a hip or the edge of the roof	{}: instalacja PV {} dachu {} leży na kalenicy, narożu lub krawędzi dachu
+{}: PV array {} of roof {} lies outside the roof	{}: instalacja PV {} dachu {} leży poza dachem
+{}: PV arrays {} and {} lie over each other	{}: instalacje PV {} i {} nachodzą na siebie
 {}: \"{}\" is not one of {}	{}: \"{}\" nie należy do {}
 {}: a TT system needs a residual current device	{}: układ TT wymaga wyłącznika różnicowoprądowego
 {}: accessory {} fits none of the device's parts	{}: akcesorium {} nie pasuje do żadnej części urządzenia
@@ -1964,11 +2016,21 @@ yellow	żółty
 {}: slot {} of rack {} is used by {} and {}	{}: gniazdo {} kasety {} jest zajęte przez {} i {}
 {}: solenoid coil not linked to a valve	{}: cewka elektromagnetyczna niepowiązana z zaworem
 {}: solenoid valve without linked solenoid coil (Fluid and process › Synchronize)	{}: zawór elektromagnetyczny bez powiązanej cewki (Płyny i procesy › Synchronizuj)
+{}: string {} of PV array {} drops to {} V at {} °C, below the MPP range of {} ({} - {} V)	{}: łańcuch {} instalacji PV {} spada do {} V przy {} °C, poniżej zakresu MPP {} ({} - {} V)
+{}: string {} of PV array {} is connected to no inverter	{}: łańcuch {} instalacji PV {} nie jest podłączony do żadnego falownika
+{}: string {} of PV array {} reaches {} V at maximum power at {} °C, above the MPP range of {} ({} - {} V)	{}: łańcuch {} instalacji PV {} osiąga {} V przy mocy maksymalnej przy {} °C, powyżej zakresu MPP {} ({} - {} V)
+{}: string {} of PV array {} reaches {} V at {} °C, more than the {} V system voltage of its modules	{}: łańcuch {} instalacji PV {} osiąga {} V przy {} °C, więcej niż napięcie systemowe {} V jego modułów
+{}: string {} of PV array {} reaches {} V at {} °C, more than the {} V {} takes	{}: łańcuch {} instalacji PV {} osiąga {} V przy {} °C, więcej niż {} V, które przyjmuje {}
+{}: string {} of PV array {}: {} has only {} MPP trackers	{}: łańcuch {} instalacji PV {}: {} ma tylko {} trackery MPP
+{}: string {} of PV array {}: {} is no device with PV input data	{}: łańcuch {} instalacji PV {}: {} nie jest urządzeniem z danymi wejścia PV
 {}: terminal {} is on level {}, but no terminal block is before it	{}: zacisk {} znajduje się na piętrze {}, ale przed nim nie ma bloku zacisków
 {}: terminal {} uses {} levels, its part {} has {}	{}: zacisk {} wykorzystuje {} pięter, jego artykuł {} ma {}
 {}: terminals {} are {} mm above the floor, at least {} mm required	{}: zaciski {} znajdują się {} mm nad podłogą, wymagane co najmniej {} mm
 {}: the busbar system with {} bars joins {} conductors ({}): short circuit	{}: system szyn zbiorczych z {} szynami łączy {} przewody ({}): zwarcie
+{}: the device {} of PV array {} does not exist	{}: urządzenie {} instalacji PV {} nie istnieje
+{}: the module {} of PV array {} has no electrical data	{}: moduł {} instalacji PV {} nie ma danych elektrycznych
 {}: the station has no port {}	{}: stacja nie ma portu {}
+{}: the strings of PV array {} connect {} modules, the array has {}	{}: łańcuchy instalacji PV {} łączą {} modułów, instalacja ma {}
 {}: the {} ({} x {} mm) is larger than the working area of {}	{}: {} ({} x {} mm) jest większa niż obszar roboczy {}
 {}: the {} is {} mm thick, {} takes at most {} mm	{}: {} ma grubość {} mm, {} przyjmuje maks. {} mm
 {}: voltage drop {} V ({} %) above {} %	{}: spadek napięcia {} V ({} %) powyżej {} %
@@ -1994,6 +2056,7 @@ yellow	żółty
 {}: {} is not made for wall mounting, mount it on a rail	{}: {} nie jest przeznaczony do montażu naściennego, zamontuj go na szynie
 {}: {} is {} … {} mm above the floor, allowed {} … {} mm	{}: {} znajduje się {} … {} mm nad podłogą, dopuszczalne {} … {} mm
 {}: {} kg on the {} exceed its load of {} kg	{}: {} kg na {} przekracza jej nośność {} kg
+{}: {} modules of PV array {} are not connected to a string	{}: {} modułów instalacji PV {} nie jest podłączonych do łańcucha
 {}: {} modules, the head has {} slots	{}: moduły: {}, głowica ma {} gniazd
 {}: {} of {} mm is longer than the stock length of {} mm and has to be joined	{}: {} o długości {} mm jest dłuższy niż długość handlowa {} mm i musi być łączony
 {}: {} of {} mm is shorter than {} mm and hard to cut	{}: {} o długości {} mm jest krótszy niż {} mm i trudny do przycięcia
@@ -2005,6 +2068,7 @@ yellow	żółty
 {}: {} solenoid coils linked, the valve has {}	{}: powiązane cewki elektromagnetyczne: {}, zawór ma {}
 {}: {} stands in an inner wall	{}: {} stoi w ścianie wewnętrznej
 {}: {} stands in the swing of the door in wall {}	{}: {} stoi w polu otwierania drzwi w ścianie {}
+{}: {} stands in the way of the sliding door in wall {}	{}: {} stoi na drodze drzwi przesuwnych w ścianie {}
 {}: {} stands outside the room	{}: {} stoi poza pomieszczeniem
 {}: {} stands where {} stands	{}: {} stoi tam, gdzie stoi {}
 {}: {} threads on the {} are cut by hand	{}: {} gwintów na {} jest nacinanych ręcznie

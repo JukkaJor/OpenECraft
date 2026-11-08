@@ -143,11 +143,17 @@ or Enter), walls are dragged to move them or get a length in the room's properti
   right angles; an end near a wall snaps onto it), dragged across to move them, get
   length and thickness in the room's properties and are removed with Del; both sides (`inner1a`, `inner1b`) are faces like
   the walls.
-- **Doors and windows** (*Layout space › Draw › Door / Window*, command
-  `add_wall_opening`) are openings in a wall, placed by clicking the wall in the floor
-  plan or in the view of the wall: a door stands on the floor and swings into the room
-  (drawn with its swing), a window has its sill height; size, position and sill are in
-  their properties.
+- **Doors and windows** (*Layout space › Draw › Door / Window*, commands
+  `add_wall_opening`, `set_wall_opening`) are openings in a wall, placed by clicking the
+  wall in the floor plan or in the view of the wall: a door stands on the floor, a
+  window has its sill height; size, position, sill and how they open are in their
+  properties. *Opens* (`opens`) chooses the hinges at the left or right edge (seen from
+  inside the room) swinging into or out of the room, or a sliding leaf moving left or
+  right along the wall. The floor plan draws the leaf with its swing (from the outer
+  surface of the wall when it opens outwards) or the sliding leaf with its way, the view
+  of the wall the opening sign (its tip at the hinges, dashed when the leaf opens away
+  from the viewer) or an arrow. The check keeps the swing of an inward door and the way
+  of a sliding door in front of the wall free of cabinets.
 - **Cabinets** (their line-ups) stand in it at a place of the floor plan, dragged there
   in the floor plan (R turns the selected one about its centre), and move with the
   room. A cabinet outside the room, across a wall, in an inner wall or in the swing
@@ -157,6 +163,19 @@ or Enter), walls are dragged to move them or get a length in the room's properti
   *Wall mounting* (part editor › Mounting data, a `WALL` badge in the part trees, filter
   *Only parts for direct wall mounting*), then it goes directly on the wall
   (*Insert › Wall-mounted part*, also without a device tag).
+- **Outlets, switches and heating** (*Insert › Outlets, switches, heating*): socket
+  outlets, data and antenna outlets, switches, push buttons, dimmers, room thermostats,
+  heating circuit manifolds and single-room control boxes (RTL / TH). The menu lists
+  the generic parts of the catalog (`GEN.SOCKET-F-UP`, `GEN.SW-2WAY-UP`, …, manifolds
+  `GEN.HCM-2` … `GEN.HCM-12`, the number of circuits chosen in the menu, `GEN.RTL-BOX`)
+  and those of the parts database and of the shipped catalogs `gira` (System 55),
+  `mdt` (KNX push buttons, glass push button, room temperature controller) and `cosmo`
+  (manifolds Standard and Balance, control boxes); a part of a shipped catalog comes
+  into the project when it is chosen. A part with a *Mounting height* in its technical
+  data goes on the wall at that height (its middle above the floor: socket and data
+  outlets 300 mm, switches 1050 mm, thermostats 1500 mm, control boxes 250 mm) where
+  the wall is clicked. The manifolds have a nozzle for flow and return and one pair per
+  circuit, downwards, for the pipe routing.
 - The **floor** (face `floor`) carries the parts marked *Floor mounting* (pumps, tanks,
   compressors; a `FLOOR` badge, filter *Only floor-standing parts*): *Insert ›
   Floor-standing part*, devices to place on the floor's view, command `mount_on_wall`
@@ -204,11 +223,22 @@ floor plan of a room shows the rooms around it faintly with their names and cabi
 of them. *Layout space › Show › All enclosures* shows every room and cabinet at its
 place in 3D, with the routes between them.
 
+The navigator (*Enclosures and rooms*) has the **site** at its root, above the
+buildings with their levels and rooms and the rooms outside buildings. A click on a room
+keeps the 3D view when it is shown and otherwise shows the room's floor plan. A click on
+the site shows the site plan of all buildings in the Layout space (the wheel zooms,
+dragging moves it, a click on a room opens its floor plan) or, in the 3D view, all of
+the plant with its buildings, floor slabs, stairs and roofs; a click on a building shows
+the site plan with it highlighted. The context menu of the site adds a building, that of
+a building a level on top or a basement, that of a level a room on it.
+
 ## Buildings, levels and shafts
 
 *Layout space › Buildings* (plugin `buildings`) manages the buildings of the plant;
-the pane lists them with their levels, shafts and the links between buildings, and
-draws a site plan of all rooms (one level highlighted), shafts and links.
+the pane lists them with their levels, shafts, stairs, roofs and the links between
+buildings, and draws a site plan of all rooms (one level highlighted), shafts, the
+stairs reaching the level shown (steps and walking line), the roofs (eaves, ridges and
+hips dashed) with their roof windows, and the links.
 
 - A **building** (command `add_building`) has a place in the plant (x, z and a turn)
   and **levels** on top of each other (`add_level`, `set_level`: name, height of the
@@ -221,13 +251,79 @@ draws a site plan of all rooms (one level highlighted), shafts and links.
   `level`): the room's place is then measured in the building's floor plan, it stands
   on the level's floor and moves with the building and its level. A new room on a level
   is as high as the level less its ceiling slab (300 mm) and goes next to the other
-  rooms of the level. The navigator groups the rooms by building and level. Removing a
-  level or a building leaves its rooms where they stand in the plant.
+  rooms of the level. The navigator groups the rooms by building and level: a room
+  dragged onto a level (or onto a room of it) is put on that level; a level clicked in
+  it is selected, and *New room* then puts the new room on it (a second click
+  unselects it); the context menu of a level and of its rooms has *New room on this
+  level*, that of a room in a building *Take out of the building*. Removing a level or
+  a building leaves its rooms where they stand in the plant.
 - **Shafts** (`add_shaft`, `set_shaft`) run through a building from one level up to
   another, at a place of its floor plan: cables, tubes and pipes are routed through them
   from a room into the rooms above and below whose floor plans the shaft passes, from
   below the ceiling of one to above the floor of the next. The floor plan of a room
   shows the shafts through its level.
+- **Stairs** (*New stair* in the pane, `add_stair`, `set_stair`) lead from the floor
+  of one level up to the floor of another: *straight*, *turned once* at a quarter
+  landing, *turned twice* at two quarter landings, with a *half landing* (two flights
+  side by side) or *spiral* round a newel, turning left or right. Their foot is the
+  middle of the front edge of the lowest step in the building's floor plan, with the
+  direction of the first flight, the width of the flights and the going of a step; the
+  steps follow from the difference in height (risers near 175 mm). The floor plans of
+  the rooms show the stairs on their level (dashed where they come up from below), the
+  3D view their steps and landings and the hole in the floor slab above.
+- **Roofs** (*New roof* in the pane, `add_roof`, `set_roof`): *flat*, *shed*, *gable*,
+  *hip* or *pyramid* over a rectangle of the building's floor plan (a new one covers
+  the rooms of the building), with the height of its eaves, pitch, overhang and
+  thickness; a gable or shed roof runs along x or z. The underside of the roof starts
+  at the eaves over the walls and rises at the pitch. Where it is lower than the
+  ceiling of a room below it, also on several levels at once (eaves a knee wall above
+  the attic floor, or below the ceiling of the level under it), it becomes that room's
+  ceiling: the room is of different heights at different places. Its walls end under
+  the slope in the 3D view, the view of a wall draws the line where it ends, the floor
+  plan shades the parts under the slope with their lowest height, and the pane and
+  `list_buildings` give the lowest and highest ceiling of each such room. **Roof
+  windows** (`add_roof_window`, `set_roof_window`; 780 × 1180 mm unless set otherwise)
+  lie in a slope at their middle in the floor plan, with their width along the eaves
+  and their length up the slope; they are seen from outside and from the room below.
+- **PV arrays** (*PV array* under a roof in the pane, `add_pv_array`, `set_pv_array`):
+  rows of solar modules on any roof shape. On a slope they lie **parallel** to the
+  covering on rails fastened with roof hooks: two rails under each row of modules in
+  portrait, under each column in landscape, the hooks at most the hook distance apart
+  (1200 mm unless set otherwise). On a flat roof they stand **tilted** towards one side
+  (15° unless set otherwise, facing the direction given) or **east-west** in pairs on
+  ballasted mounting bases, the rows so far apart that they do not shade each other at a
+  winter sun of 17° (or at a given distance). An array lies on the slope under its
+  middle; its module part (the generic ones `GEN.PV-430W` and `GEN.PV-400W-FB`, or
+  modules of the shipped catalogs `longi` and `jinko`) gives the size of the modules
+  and its peak power. The mounting material comes from its **mounting system**: a rail
+  or mounting base of the parts database whose accessories are its roof hooks, rail
+  connectors, end and middle clamps (the one for the module's frame height), ballast
+  and wind deflectors; the generic system `GEN.PV-RAIL-40` / `GEN.PV-BASE-S15` /
+  `GEN.PV-BASE-EW10` fills in what a system lacks. The modules (unless a device, a PV
+  generator, counts them) and the mounting material go into the bill of materials;
+  `list_buildings` gives each array's modules, peak power and material. The site plan
+  draws the modules, the 3D view the modules with their frames, the rails, the mounting
+  bases and the wind deflectors.
+- **PV strings** (*String* under a PV array in the pane, `add_pv_string`,
+  `set_pv_string`, `pv_strings`): the modules of an array in series as strings, several
+  strings of a kind in parallel, each on an MPP tracker of an inverter or charge
+  controller (a device whose part has PV input data: `Max. PV input voltage`, `MPPT
+  voltage range`, `MPP trackers`, `Max. input current per MPPT`, `Max. short-circuit
+  current per MPPT`; the generic inverters `GEN.INV-PV-10KW` and `GEN.INV-PV-40KW`, the
+  Victron Inverter RS Smart Solar and SmartSolar MPPT have them). From the module's data
+  sheet values (`Open-circuit voltage`, `Short-circuit current`, `Voltage` / `Current at
+  maximum power`, the temperature coefficients of Voc, Isc and Pmax) and the cell
+  temperatures of the design (-10 / 25 / 70 °C unless set otherwise) follow the
+  **highest voltage** (open circuit at the lowest temperature), the **mean** and the
+  **lowest voltage** (at maximum power at the mean and the highest temperature, with the
+  coefficient of the power), the current at maximum power, the short-circuit current at
+  the highest temperature and the power. The report *PV strings* lists every string with
+  these values, the total power and the temperatures. The check reports strings whose
+  highest voltage exceeds the greatest input voltage of their inverter or the system
+  voltage of their modules, strings below or above the MPP range of their tracker,
+  trackers the inverter does not have, trackers whose strings together exceed their
+  short-circuit or input current or differ in voltage, and arrays with more modules in
+  strings than they have or modules in no string.
 - **Links between buildings** (`add_site_link`, `set_site_link`): a cable trench, a
   conduit or a cable bridge from a building entry of a room to a building entry of a
   room in another building, through corners in the plant. Routes pass them like a wall
@@ -236,10 +332,26 @@ draws a site plan of all rooms (one level highlighted), shafts and links.
 
 The check *Buildings, levels and shafts* reports rooms on levels that are gone, rooms
 higher than their level or overlapping on one level, levels overlapping each other,
-shafts joining no two rooms, cabinets and floor-standing parts standing in a shaft, and
-links whose building entries are gone. Example 15 (`plant_buildings`) shows a main
-building with two levels and a shaft, a pump house linked by a cable trench through
-which a motor cable is routed, façade lights and a weather station on the roof.
+shafts joining no two rooms, cabinets and floor-standing parts standing in a shaft,
+links whose building entries are gone, stairs without valid levels, with a rise outside
+140 - 200 mm or breaking the step rule (twice the rise and the going 590 - 650 mm),
+roof windows off their slope or across a ridge or hip, rooms the roof comes down to the
+floor of, cabinets higher than the sloped ceiling at their place and items on the walls
+or the ceiling above the slope, PV arrays off their roof or across a ridge, a hip or its
+edge, tilted on a pitched roof, over a roof window or over each other, and PV arrays
+whose device is missing or counts another number of modules. Example 15 (`plant_buildings`) shows a main building
+with two levels and a shaft, a pump house linked by a cable trench through which a
+motor cable is routed, façade lights and a weather station on the roof; example 16
+(`office_building`) adds an office building with an attic under a gable roof, a stair
+turned at a quarter landing, roof windows, a PV array of ten LONGi modules on rails and
+roof hooks in the rear slope, outlets and switches of Gira and MDT and a COSMO heating
+circuit manifold.
+
+**In 3D**, *Layout space › Show › Whole building* shows the building of the room shown
+with all its levels and rooms, their floor slabs, the stairs and the roofs; *All
+enclosures* shows every building of the plant this way. Roofs and gable walls are seen
+from outside like the walls (translucent, or left out with *Hide walls in front*);
+*Hide ceiling* leaves out the ceilings and the roofs to look into the building.
 
 ![Floor plan of the electrical_room example: L-shaped room, inner wall, door, window and the two cabinets](../images/room.png)
 
@@ -392,6 +504,31 @@ one through the middle of the roof, which is reported), then through the room. A
 cabinet hanging on a wall (its bottom above the floor) is also left through a gland in
 its bottom: below each such gland a shaft down to the floor and out to the front of the
 cabinet stays free for the routes. Frozen, such a route keeps its legs.
+
+**Flush-mounted in rooms.** Every cable, wire and tube is laid in rooms *surface-mounted*
+(as above), *flush-mounted in the wall* or *flush-mounted in the floor*: as the routing
+rules say (*Laying in rooms*, command `routing_rules` with `laying`) or as set for it
+(route properties › *Laying in rooms*, command `set_laying` with its key). Flush-mounted
+it runs through the room in slots in its walls, *Slot depth* (30 mm unless set
+otherwise, `slot_depth`) behind their surface less half its thickness, along the middle
+lines of the **installation zones** (routing rules › *Installation zones*, command
+`installation_zones`): horizontal zones above the floor and below the ceiling, cut where
+doors and windows are and joined round the corners of the room, vertical ones beside
+the corners, doors and windows. A device on a wall is fed straight up or down from the
+nearest horizontal zone (or sideways from a vertical zone it lies in); a free end (a
+cable gland on top of a cabinet) goes to the nearest wall first. In the floor the line
+goes straight down the wall (or, low above the floor, straight down) and *Depth in the
+floor* (60 mm, `floor_depth`) below its surface along the zone in the floor. The zones
+are those of DIN 18015-3:2016 unless changed (*German zones (DIN 18015-3)* resets them):
+ZW-o 150 - 450 mm below the ceiling, ZW-u 150 - 450 mm above the floor, ZW-m 1000 -
+1300 mm above the floor for rooms with worktops (off), ZS-t / ZS-f / ZS-e 100 - 300 mm
+beside doors, windows and corners, ZD-r 200 - 500 mm from the walls in the ceiling
+(shown, not routed through) and ZF, the same in the floor (the standard has no zones in
+the floor). A route the zones do not join stays unrouted (*no way through the
+installation zones*). *Show › Installation zones* shows the zones see-through on the
+walls in 3D and in the views of the walls, the one in the floor in the floor plan; *Show
+› Open walls and floors* sees through the walls and floor slabs in 3D, like *Open cable
+ducts*, to show the flush-mounted lines in them.
 Hoses, tubes and pipes end at the nozzles of the generated models of their devices (the
 suction and the pressure nozzle of a pump, the nozzles of a vessel, both ends of a valve
 or a fitting, the outlets of a manifold): the route comes to a point twice as far out of

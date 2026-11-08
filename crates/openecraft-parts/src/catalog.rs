@@ -70,6 +70,122 @@ impl AccessoryPart for Part {
     }
 }
 
+/// Flush-mounted outlets and switches of a room, heating circuit manifolds for 2 to 12
+/// circuits and single-room control boxes, all for direct wall mounting; the outlets
+/// and switches with their usual mounting height above the floor.
+fn room_installation(c: &mut C) {
+    use FnKind::*;
+    let inst = "Installation devices";
+    let sw = "Sensors, switches, pushbuttons";
+    let wall = |p: &mut Part, height: f32, extra: &str| {
+        p.mounting = "Wall".into();
+        p.mounting_data.wall_mount = true;
+        p.tech_data = if extra.is_empty() { format!("Mounting height: {height:.0} mm") } else { format!("Mounting height: {height:.0} mm\n{extra}") };
+    };
+    for (number, desc, w, d, extra) in [
+        ("GEN.SOCKET-F-UP", "Socket outlet type F (Schuko) 16 A 250 V, flush-mounted, with child protection, with frame 80 x 80 mm", 80.0, 12.0, ""),
+        ("GEN.SOCKET-F-2X-UP", "Double socket outlet type F (Schuko) 16 A 250 V, flush-mounted, with child protection, with frame 151 x 80 mm", 151.0, 12.0, ""),
+        ("GEN.SOCKET-F-LID-UP", "Socket outlet type F (Schuko) 16 A 250 V with hinged lid, IP44, flush-mounted, with frame 80 x 80 mm", 80.0, 30.0, "Protection: IP44"),
+        ("GEN.SOCKET-F-USB-UP", "Socket outlet type F (Schuko) 16 A 250 V with USB charger A + C 3 A, flush-mounted, with frame 80 x 80 mm", 80.0, 12.0, "USB: A + C, 5 V, 3 A"),
+    ] {
+        let p = c.add(number, desc, inst, "Socket outlet", "XD", 9.5, (w, 80.0, d, 0.08), &[(SocketOutlet, "L N PE")]);
+        p.voltage = "250 V AC".into();
+        p.current = "16 A".into();
+        wall(p, 300.0, extra);
+    }
+    let p = c.add("GEN.DATA-RJ45-2X-UP", "Data outlet 2 x RJ45 Cat 6A, shielded, flush-mounted, with central plate and frame 80 x 80 mm", inst, "Data outlet", "XF", 24.0, (80.0, 80.0, 14.0, 0.07), &[(Generic, "P1 P2")]);
+    wall(p, 300.0, "Category: 6A (10 Gbit Ethernet)");
+    let p = c.add("GEN.TV-SAT-UP", "Antenna outlet TV / radio / SAT, end outlet, flush-mounted, with central plate and frame 80 x 80 mm", inst, "Antenna outlet", "XF", 14.0, (80.0, 80.0, 14.0, 0.07), &[(Generic, "TV R SAT")]);
+    wall(p, 300.0, "Frequency range: 5 - 2400 MHz");
+    for (number, desc, subgroup, function, extra) in [
+        ("GEN.SW-ONOFF-UP", "Light switch on / off 10 AX 250 V, flush-mounted, with rocker and frame 80 x 80 mm", "Switch", (SwitchNo, "L 1"), "Rockers: 1"),
+        ("GEN.SW-2WAY-UP", "Two-way switch 10 AX 250 V, flush-mounted, with rocker and frame 80 x 80 mm", "Switch", (Changeover, "L 1 2"), "Rockers: 1"),
+        ("GEN.SW-SERIES-UP", "Series switch (two circuits) 10 AX 250 V, flush-mounted, with two rockers and frame 80 x 80 mm", "Switch", (SwitchNo, "L 1"), "Rockers: 2"),
+        ("GEN.PB-NO-UP", "Push button NO 10 A 250 V, flush-mounted, with rocker and frame 80 x 80 mm", "Push button", (PushbuttonNo, "L 1"), "Rockers: 1"),
+        ("GEN.SW-BLIND-UP", "Blind switch up / down 10 A 250 V, interlocked, flush-mounted, with rockers and frame 80 x 80 mm", "Blind switch", (Changeover, "L 1 2"), "Rockers: 2"),
+    ] {
+        let p = c.add(number, desc, sw, subgroup, "SF", 8.5, (80.0, 80.0, 12.0, 0.06), &[function]);
+        if number == "GEN.SW-SERIES-UP" {
+            p.functions.push(FunctionTemplate::new(SwitchNo, "L2 2"));
+        }
+        p.voltage = "250 V AC".into();
+        p.current = "10 A".into();
+        wall(p, 1050.0, extra);
+    }
+    let p = c.add("GEN.DIM-LED-UP", "Rotary dimmer for LED lamps 3 - 100 W, 230 V, phase cut, flush-mounted, with knob and frame 80 x 80 mm", sw, "Dimmer", "PF", 39.0, (80.0, 80.0, 30.0, 0.09), &[(Generic, "L 1")]);
+    p.voltage = "230 V AC".into();
+    p.power = "3 - 100 W".into();
+    wall(p, 1050.0, "");
+    let p = c.add("GEN.RTR-UP", "Room thermostat 230 V for thermal actuators of an underfloor heating, flush-mounted, with display and frame 80 x 80 mm", sw, "Room thermostat", "BT", 49.0, (80.0, 80.0, 20.0, 0.1), &[(Generic, "L N 1")]);
+    p.voltage = "230 V AC".into();
+    wall(p, 1500.0, "Setting range: 5 - 30 °C");
+    // Heating circuit manifolds: flow and return 1", the circuits 3/4" Eurocone at 50 mm.
+    for n in 2..=12usize {
+        // Flow and return in, then each circuit: one function per pair.
+        let pairs: Vec<String> = std::iter::once("F R".to_string()).chain((1..=n).map(|k| format!("F{k} R{k}"))).collect();
+        let number = format!("GEN.HCM-{n}");
+        let desc = format!("Heating circuit manifold stainless steel for {n} circuits, flow bar with flow meters, return bar with valves for actuators, 1\" flow and return, outlets 3/4\" Eurocone, on brackets");
+        let p = c.add(&number, &desc, "Fluid power components", "Heating circuit manifold", "WP", 60.0 + 18.0 * n as f32, (150.0 + 50.0 * n as f32, 420.0, 90.0, 1.0 + 0.4 * n as f32), &[]);
+        p.functions = pairs.iter().map(|pins| FunctionTemplate::new(FluidComponent, pins)).collect();
+        p.mounting = "Wall".into();
+        p.mounting_data.wall_mount = true;
+        p.tech_data = format!("Circuits: {n}\nOutlet spacing: 50 mm\nConnection: 1\" flow and return, outlets 3/4\" Eurocone\nMax. operating pressure: 6 bar\nMax. operating temperature: 60 °C");
+    }
+    for (number, desc, price) in [
+        ("GEN.RTL-BOX", "Single-room control box with return temperature limiter (RTL) 10 - 50 °C for underfloor heating, flush-mounted, 3/4\" Eurocone, with cover", 62.0),
+        ("GEN.RTL-TH-BOX", "Single-room control box with return temperature limiter (RTL) and room thermostat (TH) for underfloor heating, flush-mounted, 3/4\" Eurocone, with cover", 98.0),
+    ] {
+        let p = c.add(number, desc, "Fluid power components", "Control box", "QN", price, (150.0, 150.0, 45.0, 0.9), &[(FluidComponent, "1 2")]);
+        p.mounting = "Wall".into();
+        p.mounting_data.wall_mount = true;
+        p.tech_data = "Mounting height: 250 mm\nConnection: 3/4\" Eurocone\nFor heating circuits up to 20 m²".into();
+    }
+}
+
+/// A further PV module and the mounting material of PV arrays: rails, roof hooks, rail
+/// connectors and module clamps for mounting parallel to the roof, ballasted mounting
+/// bases (south and east-west), ballast and wind deflectors for flat roofs. The rail and
+/// the bases list the rest as their accessories.
+fn solar_mounting(c: &mut C) {
+    let p = c.add("GEN.PV-400W-FB", "PV module 400 Wp, monocrystalline, full black, glass-film, black frame, 1722 x 1134 mm", "Power supplies, transformers", "PV module", "G", 109.0, (1134.0, 1722.0, 30.0, 21.0), &[(FnKind::PvGenerator, "+ -")]);
+    p.current = "13.6 A (Isc)".into();
+    p.power = "400 Wp".into();
+    p.mounting = "Roof".into();
+    p.tech_data = "Open-circuit voltage: 37.4 V\nShort-circuit current: 13.6 A\nVoltage at maximum power: 31.2 V\nCurrent at maximum power: 12.8 A\nEfficiency: 20.5 %\nMax. system voltage: 1500 V DC\nTemperature coefficient of Pmax: -0.34 %/K\nTemperature coefficient of Voc: -0.27 %/K\nTemperature coefficient of Isc: +0.048 %/K".into();
+    let m = "Mounting";
+    let clamps = "Module frame height: 30 - 40 mm";
+    for (number, desc, subgroup, price, dims, tech) in [
+        ("GEN.PV-HOOK", "Roof hook stainless steel for pantiles and plain tiles, height adjustable, with two wood screws 8 x 100 mm for the rafter", "Roof hook", 9.5, (35.0, 180.0, 120.0, 0.9), "Material: stainless steel A2\nFastening: rafter"),
+        ("GEN.PV-RAIL-CONN", "Rail connector for the PV mounting rail 40 x 40 mm, aluminium, with screws", "PV rail connector", 4.2, (150.0, 40.0, 40.0, 0.25), "Material: aluminium"),
+        ("GEN.PV-CLAMP-END", "End clamp aluminium for framed PV modules 30 - 40 mm, with hammer-head bolt M8", "PV end clamp", 2.1, (40.0, 40.0, 45.0, 0.06), clamps),
+        ("GEN.PV-CLAMP-MID", "Middle clamp aluminium for framed PV modules 30 - 40 mm, with hammer-head bolt M8, earthing pin", "PV middle clamp", 2.3, (40.0, 40.0, 45.0, 0.06), clamps),
+        ("GEN.PV-BALLAST", "Ballast concrete block 400 x 250 x 50 mm, 12.5 kg, for flat roof mounting bases", "Ballast", 3.5, (400.0, 250.0, 50.0, 12.5), "Material: concrete"),
+        ("GEN.PV-DEFLECTOR", "Wind deflector aluminium for south-facing flat roof mounting, for one module in landscape", "Wind deflector", 19.0, (1134.0, 400.0, 2.0, 1.6), "Material: aluminium"),
+    ] {
+        let p = c.add(number, desc, m, subgroup, "", price, dims, &[]);
+        p.mounting = "Roof".into();
+        p.accessory = true;
+        p.tech_data = tech.into();
+    }
+    let p = c.add("GEN.PV-RAIL-40", "PV mounting rail aluminium 40 x 40 mm, length 4.2 m, for module clamps and roof hooks", m, "PV mounting rail", "", 38.0, (4200.0, 40.0, 40.0, 3.4), &[]);
+    p.mounting = "Roof".into();
+    p.tech_data = "Material: aluminium EN AW-6063 T66\nMax. span: 1.5 m".into();
+    p.accessories = ["GEN.PV-HOOK", "GEN.PV-RAIL-CONN", "GEN.PV-CLAMP-END", "GEN.PV-CLAMP-MID"].map(String::from).to_vec();
+    for (number, desc, price, tech) in [
+        ("GEN.PV-BASE-S15", "Flat roof mounting base south 15° aluminium, for framed modules in landscape, with protective mat and ballast tray", 24.0, "Tilt: 15°\nOrientation: south\nFastening: ballast"),
+        ("GEN.PV-BASE-EW10", "Flat roof mounting base east-west 10° aluminium, for framed modules in landscape, with protective mat and ballast tray", 29.0, "Tilt: 10°\nOrientation: east-west\nFastening: ballast"),
+    ] {
+        let p = c.add(number, desc, m, "PV mounting base", "", price, (1300.0, 400.0, 350.0, 2.2), &[]);
+        p.mounting = "Roof".into();
+        p.tech_data = tech.into();
+        let mut acc = vec!["GEN.PV-CLAMP-END", "GEN.PV-CLAMP-MID", "GEN.PV-BALLAST"];
+        if number == "GEN.PV-BASE-S15" {
+            acc.push("GEN.PV-DEFLECTOR");
+        }
+        p.accessories = acc.into_iter().map(String::from).collect();
+    }
+}
+
 /// Generic example catalog with function templates.
 pub fn default_catalog() -> Vec<Part> {
     use FnKind::*;
@@ -375,6 +491,13 @@ Breaking capacity: 100 kA".into();
     p.current = "58 A".into();
     p.power = "40 kW".into();
     p.mounting = "Wall".into();
+    p.tech_data = "Max. PV input voltage: 1100 V\nMPPT voltage range: 200 - 1000 V\nMPP trackers: 4\nMax. input current per MPPT: 32 A\nMax. short-circuit current per MPPT: 40 A\nMax. PV power: 60 kWp".into();
+    let p = c.add("GEN.INV-PV-10KW", "PV inverter 3-phase 10 kW, 2 MPP trackers, 400 V AC, wall-mounted", "Power supplies, transformers", "Inverter", "TB", 1650.0, (0.0, 0.0, 0.0, 17.0), &[(PowerSupply, "L1 L2 L3 N PE")]);
+    p.voltage = "3 x 230/400 V AC".into();
+    p.current = "16 A".into();
+    p.power = "10 kW".into();
+    p.mounting = "Wall".into();
+    p.tech_data = "Max. PV input voltage: 1000 V\nMPPT voltage range: 160 - 950 V\nMPP trackers: 2\nMax. input current per MPPT: 16 A\nMax. short-circuit current per MPPT: 20 A\nMax. PV power: 15 kWp".into();
     let p = c.add("GEN.INV-BAT-50KW", "Battery inverter 3-phase 50 kW, 400 V AC, for commercial battery storage, wall-mounted", "Power supplies, transformers", "Inverter", "TB", 9800.0, (0.0, 0.0, 0.0, 85.0), &[(PowerSupply, "L1 L2 L3 N PE")]);
     p.voltage = "3 x 230/400 V AC".into();
     p.current = "73 A".into();
@@ -400,7 +523,8 @@ Breaking capacity: 100 kA".into();
     p.current = "13.9 A (Isc)".into();
     p.power = "430 Wp".into();
     p.mounting = "Roof".into();
-    p.tech_data = "Open-circuit voltage: 39.2 V\nVoltage at maximum power: 32.6 V\nCurrent at maximum power: 13.2 A\nEfficiency: 22 %\nMax. system voltage: 1500 V DC".into();
+    p.tech_data = "Open-circuit voltage: 39.2 V\nShort-circuit current: 13.9 A\nVoltage at maximum power: 32.6 V\nCurrent at maximum power: 13.2 A\nEfficiency: 22 %\nMax. system voltage: 1500 V DC\nTemperature coefficient of Pmax: -0.30 %/K\nTemperature coefficient of Voc: -0.25 %/K\nTemperature coefficient of Isc: +0.046 %/K".into();
+    solar_mounting(&mut c);
     let p = c.add("GEN.PLC-CPU", "PLC CPU 24 V DC, 2 x Ethernet (Modbus TCP, EtherCAT master), 1 MB work memory", "PLC", "CPU", "A", 690.0, (60.0, 100.0, 75.0, 0.3), &[(Generic, "L+ M"), (Generic, "X1 X2")]);
     p.voltage = "24 V DC".into();
     p.tech_data = "Power loss: 6 W\nCurrent consumption: 250 mA".into();
@@ -465,6 +589,7 @@ Breaking capacity: 100 kA".into();
     let p = c.add("GEN.LIGHT-EM-3W", "Emergency light LED 3 W, 3 h, IP65, for wall mounting", "Installation devices", "Emergency light", "E", 89.0, (350.0, 120.0, 60.0, 0.9), &[(Signal, "L N")]);
     p.voltage = "230 V AC".into();
     p.mounting_data.wall_mount = true;
+    room_installation(&mut c);
     let p = c.add("GEN.HEATER-100W", "Enclosure heater 100 W, 230 V AC, with fan", "Installation devices", "Enclosure heater", "E", 75.0, (70.0, 130.0, 70.0, 0.6), &[(Heater, "1 2")]);
     p.voltage = "230 V AC".into();
     p.power = "100 W".into();

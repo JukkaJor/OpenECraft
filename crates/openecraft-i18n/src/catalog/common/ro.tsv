@@ -22,6 +22,7 @@ Bottom	Bază
 Bottom with removable gland plate	Bază cu placă pentru presetupe detașabilă
 Breaking capacity	Capacitate de rupere
 Bridge	Punte
+Building	Clădire
 Buildings	Clădiri
 Bundles	Mănunchiuri
 Busbar	Bară colectoare
@@ -90,6 +91,7 @@ Descending	Descrescător
 Description	Descriere
 Designation	Denumire
 Device	Dispozitiv
+Device (PV generator) the modules belong to; its parts then count them in the bill of materials	Dispozitivul (generator fotovoltaic) căruia îi aparțin modulele; piesele lui le numără atunci în lista de materiale
 Device description	Descriere de dispozitiv
 Device tag	Identificator de dispozitiv
 Device {}	Dispozitiv {}
@@ -160,6 +162,7 @@ Integration	Integrare
 Internal (bottom)	Intern (jos)
 Interruption point	Punct de întrerupere
 Italic	Cursiv
+Its MPP tracker (input), from 1	Urmăritorul său MPP (intrare), de la 1
 Job	Comandă de lucru
 Jumper	Punte
 Key	Cheie
@@ -169,6 +172,7 @@ Languages	Limbi
 Last change	Ultima modificare
 Layers	Straturi
 Leave out stored baselines and wiring marks	Omiterea versiunilor de referință salvate și a marcajelor de cablare
+Left	Stânga
 Length	Lungime
 Level	Nivel
 Lifecycle	Ciclu de viață
@@ -194,6 +198,8 @@ Minimum digits of the counter (leading zeros)	Numărul minim de cifre al contoru
 Missing parameter: {}	Parametru lipsă: {}
 Missing value for --{}	Valoare lipsă pentru --{}
 Model import failed: {}	Importul modelului nu a reușit: {}
+Modules in series	Module în serie
+Modules side by side in a row	Module unul lângă altul într-un rând
 Mounted	Montat
 Mounting	Montaj
 Mounting data	Date de montaj
@@ -216,6 +222,7 @@ No machine {}	Nu există mașina {}
 No page named {}	Nicio pagină cu numele {}
 No page template named {}	Niciun șablon de pagină cu numele {}
 No page {}	Nu există pagina {}
+No part {} in the project	Nicio piesă {} în proiect
 No parts found	Nu s-au găsit articole
 No plot frame named {}	Niciun chenar cu numele {}
 No plug {}	Niciun conector {}
@@ -246,6 +253,7 @@ PCT loop overview	Prezentare bucle AMC
 PL	PL
 PLC	PLC
 PLC card	Card PLC
+PV array	Câmp fotovoltaic
 Packaging quantity	Unitate de ambalare
 Page	Pagină
 Page description	Descrierea paginii
@@ -328,10 +336,12 @@ Reserve	Rezervă
 Revision	Revizie
 Revision {}	Revizia {}
 Rework	Remaniere
+Right	Dreapta
 Role	Rol
 Rooms	Încăperi
 Route	Traseu
 Routing	Pozare
+Rows of modules (east-west: rows of pairs)	Rânduri de module (est-vest: rânduri de perechi)
 Rule	Regulă
 Rule set	Set de reguli
 Safety function	Funcție de siguranță
@@ -367,6 +377,7 @@ Sort by	Sortare după
 Source	Sursă
 State	Stare
 Status	Stare
+String	Șir
 Strip	Dezizolare
 Structure	Structură
 Subproject name	Nume subproiect
@@ -389,6 +400,7 @@ Terminals	Borne
 Text	Text
 Text to find	Text de căutat
 The identifier must not be empty	Identificatorul nu poate fi gol
+The long side of the modules along the rows	Latura lungă a modulelor de-a lungul rândurilor
 The page is released	Pagina este aprobată
 There is a connection symbol at this point already	Există deja un simbol de conexiune în acest punct
 Thermal	Termic
@@ -436,6 +448,7 @@ access denied	acces refuzat
 approved	avizat
 bonded	legat
 file or folder not found	fișierul sau folderul nu a fost găsit
+landscape	vedere
 left	spre stânga
 mm	mm
 normal	normală

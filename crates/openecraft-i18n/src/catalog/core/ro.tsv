@@ -7,6 +7,7 @@
 13 · Transformer-rated metering with PV and grid protection	13 · Măsurare indirectă cu PV și protecție de rețea
 14 · Main low-voltage distribution of an industrial plant	14 · Tablou general de joasă tensiune al unei fabrici
 15 · Plant with buildings, levels and a shaft	15 · Instalație cu clădiri, niveluri și un puț
+16 · Office building with roof, stair and installation	16 · Clădire de birouri cu acoperiș, scară și instalație
 2 · Relay with self-holding contact	2 · Releu cu automenținere
 3 · Star-delta motor starter	3 · Pornire stea-triunghi
 3/2 directional valve	Distribuitor 3/2
@@ -182,6 +183,7 @@ Capacitive sensor, 3-wire	Senzor capacitiv, 3 fire
 Capacitor	Condensator
 Capacitor, polarized	Condensator, polarizat
 Ceiling	Tavan
+Cell temperatures: {} °C (U max), {} °C (U mean), {} °C (U min)	Temperaturile celulelor: {} °C (U max.), {} °C (U medie), {} °C (U min.)
 Centre horizontally	Centrare pe orizontală
 Centre vertically	Centrare pe verticală
 Centrifugal pump	Pompă centrifugă
@@ -433,6 +435,7 @@ ERP item master and bill of materials (CSV)	Date de bază ale articolelor ERP ș
 ERP number	Număr ERP
 ETIM class	Clasă ETIM
 Earth electrode	Electrod de pământare
+East-west on a flat roof	Est-vest pe acoperiș plat
 Edit pages	Editare pagini
 Edit project data	Editare date proiect
 Editor	Editor
@@ -520,6 +523,7 @@ Fitting	Racord
 Fittings	Racorduri
 Flame retardant	Ignifug
 Flat cable {} has {} cores, the IDC connector {} has {} pins	Cablul plat {} are {} conductori, conectorul IDC {} are {} pini
+Flat roof	Acoperiș terasă
 Float switch NC	Comutator cu flotor NÎ
 Float switch NO	Comutator cu plutitor ND
 Float switch NO (NFPA)	Comutator cu flotor ND (NFPA)
@@ -538,6 +542,8 @@ Fluid power (ISO 1219)	Acționări hidraulice și pneumatice (ISO 1219)
 Fluid power and electrics in one project: pneumatic circuit with service unit, valve terminal, 5/2 valves, flow control valves and cylinders; solenoid coils and position switches are linked to the valves and cylinders.	Fluidică și electrică într-un singur proiect: schemă pneumatică cu unitate de preparare a aerului, terminal de supape, supape 5/2, regulatoare de debit și cilindri; bobinele și limitatoarele de cursă sunt legate de supape și cilindri.
 Fluid power and process	Tehnică fluidică și de proces
 Fluid power settings	Setări acționări hidraulice și pneumatice
+Flush-mounted in the floor	Îngropat în pardoseală
+Flush-mounted in the wall	Îngropat în perete
 Foot switch NC	Comutator de picior NÎ
 Foot switch NO	Comutator de picior ND
 Foot switch NO (NFPA)	Comutator de picior ND (NFPA)
@@ -590,6 +596,7 @@ Fuse, LV HBC, 3-pole	Siguranță fuzibilă MPR, tripolară
 GB (GB/T 4728)	GB (GB/T 4728)
 GOST (ESKD)	GOST (ESKD)
 GTIN	GTIN
+Gable roof	Acoperiș în două ape
 Galvanometer	Galvanometru
 Gas	Gaz
 Gas flow switch NC	Comutator de debit de gaz NÎ
@@ -615,6 +622,7 @@ Grid and system protection relay (voltage and frequency)	Releu de protecție a r
 Grounded conductors must be white or grey (NFPA 79, 13.2.3)	Conductoarele legate la pământ trebuie să fie albe sau gri (NFPA 79, 13.2.3)
 HMI	HMI
 HTML document for printing	Document HTML pentru tipărire
+Half landing (two flights)	Cu podest intermediar (două rampe)
 Hall 1	Hala 1
 Halogen free	Fără halogeni
 Hand	Manual
@@ -628,8 +636,15 @@ Heating element	Element de încălzire
 Higher-level product (-)	Produs de nivel superior (-)
 Higher-level product of the page	Produsul de nivel superior al paginii
 Highest (°C)	Maxim (°C)
+Hinged left, opens inwards	Balamale în stânga, se deschide spre interior
+Hinged left, opens outwards	Balamale în stânga, se deschide spre exterior
+Hinged right, opens inwards	Balamale în dreapta, se deschide spre interior
+Hinged right, opens outwards	Balamale în dreapta, se deschide spre exterior
+Hip roof	Acoperiș în patru ape
 Hold-up time	Timp de menținere la căderea rețelei
 Holding power	Putere de menținere
+Horizontal, above the floor	Orizontală, deasupra pardoselii
+Horizontal, below the ceiling	Orizontală, sub tavan
 Horn (NFPA)	Claxon (NFPA)
 Horn / buzzer	Claxon / sonerie
 Horn / buzzer HA (GB)	Claxon / buzer HA (GB)
@@ -654,6 +669,8 @@ Hydraulic oil	Ulei hidraulic
 Hydraulic power unit	Agregat hidraulic
 Hydraulic pump	Pompă hidraulică
 Hysteresis	Histerezis
+I mpp (A)	I mpp (A)
+I sc max (A)	I sc max. (A)
 IEC 60204-1 (machinery: phases BK, DC control BU)	IEC 60204-1 (mașini: faze BK, comandă DC BU)
 IEC 60445 (phases BN, BK, GY)	IEC 60445 (faze BN, BK, GY)
 IEC 61131-3 (%IX0.0 / %QX0.0)	IEC 61131-3 (%IX0.0 / %QX0.0)
@@ -665,6 +682,8 @@ Ik1 min (A)	Ik1 min (A)
 Impact protection (IK)	Rezistență la impact (IK)
 In engineering	În proiectare
 In production	În producție
+In the ceiling, along the walls	În tavan, de-a lungul pereților
+In the floor, along the walls	În pardoseală, de-a lungul pereților
 Incoming supply	Alimentare
 Indicator lamp	Lampă de semnalizare
 Indicator lamp HL (GB)	Lampă de semnalizare HL (GB)
@@ -764,6 +783,7 @@ MAC address	Adresă MAC
 MCAD	MCAD
 MCAD device placement (CSV)	Plasarea dispozitivelor MCAD (CSV)
 MOSFET N-channel	MOSFET cu canal N
+MPPT	MPPT
 MTTFd	MTTFd
 Machine (example identifiers)	Mașină (identificatori exemplu)
 Machine frame	Cadrul mașinii
@@ -827,6 +847,8 @@ Minimum operating temperature	Temperatură minimă de funcționare
 Mirror contacts	Contacte oglindă
 Mirrored	Oglindit
 Mission time	Durată de misiune
+Module	Modul
+Modules	Module
 Moisture	Umiditate
 Moment of inertia	Moment de inerție
 Motion detector	Detector de mișcare
@@ -918,6 +940,7 @@ No plugs	Niciun conector
 No report block {}	Niciun bloc de raport {}
 No segment template named {}	Niciun șablon de segment cu numele {}
 No subproject {}	Nu există subproiectul {}
+No such PV array	Nu există un astfel de câmp fotovoltaic
 No such object: {}	Nu există obiectul: {}
 No surge protective device at the supply (IEC 60364-4-44)	Niciun dispozitiv de protecție la supratensiune la alimentare (IEC 60364-4-44)
 No terminal {}	Nicio bornă {}
@@ -1054,6 +1077,7 @@ PLC tags for Rockwell Studio 5000 (CSV)	Taguri PLC pentru Rockwell Studio 5000 (
 PLC variables for Schneider Control Expert (XSY)	Variabile PLC pentru Schneider Control Expert (XSY)
 PLM	PLM
 PLM engineering BOM (JSON)	Listă de materiale de proiectare PLM (JSON)
+PV strings	Șiruri fotovoltaice
 PVC (70 °C)	PVC (70 °C)
 Page / column (3.4.1)	Pagină / coloană (3.4.1)
 Page name	Nume pagină
@@ -1079,6 +1103,7 @@ Panel layout in 3D (STEP)	Amplasare în tablou în 3D (STEP)
 Panel layout in 3D (glTF)	Amplasare în tablou în 3D (glTF)
 Panel layout settings	Setări amplasare în tablou
 Panel legend	Legendă tablou
+Parallel to the roof on roof hooks	Paralel cu acoperișul pe cârlige de acoperiș
 Part accessories	Accesorii ale articolelor
 Part data is maintained in the parts management	Datele articolelor sunt gestionate în administrarea articolelor
 Part description	Descriere articol
@@ -1162,6 +1187,7 @@ Potential {} defined {} times	Potențialul {} este definit de {} ori
 Potentials / Connectors	Potențiale / conectori
 Potentials, interruption points	Potențiale, puncte de întrerupere
 Potentiometer	Potențiometru
+Power (kWp)	Putere (kWp)
 Power and control circuit on several pages: main switch, motor protection, three contactors with interlocks, on-delay timer, interruption points, potentials with wire colours, motor cable and cable reports.	Circuit de forță și de comandă pe mai multe pagini: întrerupător general, protecția motorului, trei contactoare cu interblocări, releu de timp cu întârziere la anclanșare, puncte de întrerupere, potențiale cu culori de fire, cablul motorului și rapoarte de cabluri.
 Power factor	Factor de putere
 Power factor meter	Cosfimetru
@@ -1249,6 +1275,7 @@ Push button with key NC, latching	Buton cu cheie NÎ, cu reținere
 Push button with key NO, latching	Buton cu cheie ND, cu reținere
 Pushbutton NC	Buton NÎ
 Pushbutton NO	Buton ND
+Pyramid roof	Acoperiș piramidal
 Qty	Cant.
 RCD {} mA	RCD {} mA
 Radiation	Radiație
@@ -1401,6 +1428,7 @@ Setpoint	Valoare prescrisă
 Setting range	Domeniu de reglaj
 Sheath colour	Culoarea mantalei
 Sheath material	Materialul mantalei
+Shed roof	Acoperiș într-o apă
 Sheet number	Număr foaie
 Sheet steel	Tablă de oțel
 Shield clamp	Clemă de ecran
@@ -1429,6 +1457,8 @@ Siren	Sirenă
 Site address	Adresa amplasamentului
 Size (mm)	Dimensiune (mm)
 Skipped	Omis
+Sliding to the left	Glisant spre stânga
+Sliding to the right	Glisant spre dreapta
 Socket outlet	Priză
 Socket side (female)	Partea mufelor (mamă)
 Soft starter	Demaror progresiv
@@ -1447,6 +1477,7 @@ Spare	Rezervă
 Spare part	Piesă de schimb
 Spare terminal	Bornă de rezervă
 Speed	Turație
+Spiral	În spirală
 Stainless steel	Oțel inoxidabil
 Standard	Standard
 Start / stop circuit with a relay: coil and contacts form one device with cross references and contact image, terminal strip, wire numbers, terminal diagram and connection list.	Circuit pornire / oprire cu un releu: bobina și contactele formează un aparat cu referințe încrucișate și imaginea contactelor, șir de cleme, numere de fire, schema șirului de cleme și lista conexiunilor.
@@ -1462,6 +1493,7 @@ Steam	Abur
 Stock	Stoc
 Stop category	Categorie de oprire
 Storage temperature range	Domeniu de temperatură de depozitare
+Straight	Dreaptă
 Straight through from {} to {}, across from {} to {} and from {} to {}	Drept înainte de la {} la {}, transversal de la {} la {} și de la {} la {}
 Strain relief	Detensionare
 Stretched	Întins
@@ -1489,6 +1521,7 @@ Suppliers	Furnizori
 Supply network	Tip de rețea
 Supply voltage	Tensiune de alimentare
 Surface (m²)	Suprafață (m²)
+Surface-mounted	Aparent
 Surge protection type	Tip de protecție la supratensiune
 Surge protective device	Dispozitiv de protecție la supratensiune
 Surge suppressor	Limitator de supratensiune
@@ -1597,6 +1630,7 @@ Through-beam sensor, 4-wire	Senzor barieră unidirecțională, 4 fire
 Through-beam transmitter	Emițător barieră unidirecțională
 Thyristor	Tiristor
 Tightening torque	Cuplu de strângere
+Tilted on a flat roof	Înclinat pe acoperiș plat
 Time function	Funcție de temporizare
 Time range	Domeniu de timp
 Time relay coil KT (GB)	Bobină de releu de timp KT (GB)
@@ -1649,9 +1683,14 @@ Trunking	Canal de cablu
 Tube	Tub
 Tubes	Tuburi
 Tubing / piping list	Listă de tuburi / conducte
+Turned once (quarter landing)	Cu o întoarcere (podest de colț)
+Turned twice (two quarter landings)	Cu două întoarceri (două podeste de colț)
 Two connection symbols on page {} lie on the same point	Două simboluri de conexiune de pe pagina {} se află în același punct
 Two-way switch (installation)	Comutator cap-scară (instalații)
 Type numbers	Numere de tip
+U max (V)	U max. (V)
+U mean (V)	U medie (V)
+U min (V)	U min. (V)
 UL listed	Listat UL
 UV resistant	Rezistent la UV
 Unbalance {} %	Dezechilibru {} %
@@ -1680,6 +1719,9 @@ Varistor	Varistor
 Varmeter	Varmetru
 Vector group	Grupă de conexiuni
 Ventilation clearance	Distanță de ventilație
+Vertical, beside the corners	Verticală, lângă colțuri
+Vertical, beside the doors	Verticală, lângă uși
+Vertical, beside the windows	Verticală, lângă ferestre
 Vessel	Recipient
 Vibration	Vibrație
 Vibration resistance	Rezistență la vibrații
@@ -1798,7 +1840,6 @@ is none of	nu este niciunul dintre
 is not	nu este
 is not empty	nu este gol
 is one of	este unul dintre
-landscape	vedere
 leakage	scurgere
 low	scăzută
 measuring	măsurare
@@ -1807,6 +1848,7 @@ no header	niciun antet
 no list	nicio listă
 no path through the route network	niciun traseu prin rețeaua de trasee
 no way through the enclosure	nicio cale prin carcasă
+no way through the installation zones	niciun traseu prin zonele de instalare
 not in the panel layout	nu este în amplasarea în tablou
 not in the same line-up or room	nu sunt în același rând de carcase sau aceeași încăpere
 not reached	neatins
@@ -1859,6 +1901,7 @@ yellow	galben
 {} fits none of the parts of {}	{} nu se potrivește cu niciun articol al {}
 {} frozen routes changed their length	{} trasee fixate și-au modificat lungimea
 {} has no MTTFd, B10d, PL or PFHd	{} nu are MTTFd, B10d, PL sau PFHd
+{} has no door or window {}	{} nu are ușa sau fereastra {}
 {} has nothing to manufacture	{} nu are nimic de fabricat
 {} is a built-in function definition	{} este o definiție de funcție integrată
 {} is a built-in property	{} este o proprietate integrată
@@ -1894,7 +1937,16 @@ yellow	galben
 {} {} is routed to the cable entries of its enclosures: they stand in no common room, the way between them is not part of the layout	{} {} este pozat până la intrările de cabluri ale carcaselor sale: acestea nu se află într-o încăpere comună, traseul dintre ele nu face parte din amplasare
 {} {}: bends closer than the bend radius ({} mm)	{} {}: curburi mai strânse decât raza de curbură ({} mm)
 {} – {}: connected in the single-line diagram but not in the schematic	{} – {}: conectat în schema monofilară, dar nu și în schemă
+{}, MPP tracker {}: its strings differ in voltage ({} V and {} V)	{}, urmăritor MPP {}: șirurile sale diferă ca tensiune ({} V și {} V)
+{}, MPP tracker {}: the strings deliver {} A, more than the {} A it uses (the power is limited)	{}, urmăritor MPP {}: șirurile furnizează {} A, mai mult decât cei {} A pe care îi folosește (puterea este limitată)
+{}, MPP tracker {}: the strings reach a short-circuit current of {} A, more than the {} A it takes	{}, urmăritor MPP {}: șirurile ating un curent de scurtcircuit de {} A, mai mult decât cei {} A pe care îi suportă
 {}: MTTFd {} years is below 3 years	{}: MTTFd de {} ani este sub 3 ani
+{}: PV array {} covers a roof window	{}: câmpul fotovoltaic {} acoperă o fereastră de acoperiș
+{}: PV array {} has {} modules, its device {} has {}	{}: câmpul fotovoltaic {} are {} module, dispozitivul său {} are {}
+{}: PV array {} is mounted tilted on a pitched roof	{}: câmpul fotovoltaic {} este montat înclinat pe un acoperiș înclinat
+{}: PV array {} of roof {} lies across a ridge, a hip or the edge of the roof	{}: câmpul fotovoltaic {} al acoperișului {} trece peste o coamă, o muchie sau marginea acoperișului
+{}: PV array {} of roof {} lies outside the roof	{}: câmpul fotovoltaic {} al acoperișului {} se află în afara acoperișului
+{}: PV arrays {} and {} lie over each other	{}: câmpurile fotovoltaice {} și {} se suprapun
 {}: \"{}\" is not one of {}	{}: \"{}\" nu este una dintre {}
 {}: a TT system needs a residual current device	{}: un sistem TT necesită un dispozitiv diferențial rezidual
 {}: accessory {} fits none of the device's parts	{}: accesoriul {} nu se potrivește cu niciun articol al aparatului
@@ -1964,11 +2016,21 @@ yellow	galben
 {}: slot {} of rack {} is used by {} and {}	{}: slotul {} al rack-ului {} este folosit de {} și {}
 {}: solenoid coil not linked to a valve	{}: bobină nelegată de o supapă
 {}: solenoid valve without linked solenoid coil (Fluid and process › Synchronize)	{}: electrovalvă fără bobină legată (Fluide și procese › Sincronizare)
+{}: string {} of PV array {} drops to {} V at {} °C, below the MPP range of {} ({} - {} V)	{}: șirul {} al câmpului fotovoltaic {} scade la {} V la {} °C, sub domeniul MPP al {} ({} - {} V)
+{}: string {} of PV array {} is connected to no inverter	{}: șirul {} al câmpului fotovoltaic {} nu este conectat la niciun invertor
+{}: string {} of PV array {} reaches {} V at maximum power at {} °C, above the MPP range of {} ({} - {} V)	{}: șirul {} al câmpului fotovoltaic {} atinge {} V la putere maximă la {} °C, peste domeniul MPP al {} ({} - {} V)
+{}: string {} of PV array {} reaches {} V at {} °C, more than the {} V system voltage of its modules	{}: șirul {} al câmpului fotovoltaic {} atinge {} V la {} °C, mai mult decât tensiunea de sistem de {} V a modulelor sale
+{}: string {} of PV array {} reaches {} V at {} °C, more than the {} V {} takes	{}: șirul {} al câmpului fotovoltaic {} atinge {} V la {} °C, mai mult decât cei {} V pe care îi suportă {}
+{}: string {} of PV array {}: {} has only {} MPP trackers	{}: șirul {} al câmpului fotovoltaic {}: {} are doar {} urmăritoare MPP
+{}: string {} of PV array {}: {} is no device with PV input data	{}: șirul {} al câmpului fotovoltaic {}: {} nu este un dispozitiv cu date de intrare fotovoltaică
 {}: terminal {} is on level {}, but no terminal block is before it	{}: borna {} se află pe nivelul {}, dar înaintea ei nu există niciun bloc de borne
 {}: terminal {} uses {} levels, its part {} has {}	{}: borna {} folosește {} niveluri, articolul său {} are {}
 {}: terminals {} are {} mm above the floor, at least {} mm required	{}: bornele {} sunt la {} mm deasupra podelei, sunt necesari cel puțin {} mm
 {}: the busbar system with {} bars joins {} conductors ({}): short circuit	{}: sistemul de bare cu {} bare unește {} conductoare ({}): scurtcircuit
+{}: the device {} of PV array {} does not exist	{}: dispozitivul {} al câmpului fotovoltaic {} nu există
+{}: the module {} of PV array {} has no electrical data	{}: modulul {} al câmpului fotovoltaic {} nu are date electrice
 {}: the station has no port {}	{}: stația nu are portul {}
+{}: the strings of PV array {} connect {} modules, the array has {}	{}: șirurile câmpului fotovoltaic {} conectează {} module, câmpul are {}
 {}: the {} ({} x {} mm) is larger than the working area of {}	{}: {} ({} x {} mm) este mai mare decât zona de lucru a {}
 {}: the {} is {} mm thick, {} takes at most {} mm	{}: {} are grosimea de {} mm, {} acceptă cel mult {} mm
 {}: voltage drop {} V ({} %) above {} %	{}: cădere de tensiune {} V ({} %) peste {} %
@@ -1994,6 +2056,7 @@ yellow	galben
 {}: {} is not made for wall mounting, mount it on a rail	{}: {} nu este destinat montajului pe perete, montați-l pe o șină
 {}: {} is {} … {} mm above the floor, allowed {} … {} mm	{}: {} este la {} … {} mm deasupra podelei, permis {} … {} mm
 {}: {} kg on the {} exceed its load of {} kg	{}: {} kg pe {} depășesc sarcina sa de {} kg
+{}: {} modules of PV array {} are not connected to a string	{}: {} module ale câmpului fotovoltaic {} nu sunt conectate la un șir
 {}: {} modules, the head has {} slots	{}: {} module, capul are {} sloturi
 {}: {} of {} mm is longer than the stock length of {} mm and has to be joined	{}: {} de {} mm este mai lung decât lungimea de stoc de {} mm și trebuie îmbinat
 {}: {} of {} mm is shorter than {} mm and hard to cut	{}: {} de {} mm este mai scurt de {} mm și greu de tăiat
@@ -2005,6 +2068,7 @@ yellow	galben
 {}: {} solenoid coils linked, the valve has {}	{}: {} bobine legate, supapa are {}
 {}: {} stands in an inner wall	{}: {} stă într-un perete interior
 {}: {} stands in the swing of the door in wall {}	{}: {} stă în zona de deschidere a ușii din peretele {}
+{}: {} stands in the way of the sliding door in wall {}	{}: {} stă în calea ușii glisante din peretele {}
 {}: {} stands outside the room	{}: {} se află în afara încăperii
 {}: {} stands where {} stands	{}: {} stă acolo unde stă {}
 {}: {} threads on the {} are cut by hand	{}: {} filete pe {} sunt executate manual

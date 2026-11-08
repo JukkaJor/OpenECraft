@@ -7,6 +7,7 @@
 13 · Transformer-rated metering with PV and grid protection	13 · Трансформаторний облік із СЕС і захистом мережі
 14 · Main low-voltage distribution of an industrial plant	14 · Головний розподільний щит НН промислового підприємства
 15 · Plant with buildings, levels and a shaft	15 · Установка з будівлями, поверхами та шахтою
+16 · Office building with roof, stair and installation	16 · Офісна будівля з дахом, сходами та інсталяцією
 2 · Relay with self-holding contact	2 · Реле із самоутриманням
 3 · Star-delta motor starter	3 · Пуск зірка-трикутник
 3/2 directional valve	Розподільник 3/2
@@ -182,6 +183,7 @@ Capacitive sensor, 3-wire	Ємнісний датчик, 3-провідний
 Capacitor	Конденсатор
 Capacitor, polarized	Конденсатор, полярний
 Ceiling	Стеля
+Cell temperatures: {} °C (U max), {} °C (U mean), {} °C (U min)	Температури елементів: {} °C (U макс.), {} °C (U середн.), {} °C (U мін.)
 Centre horizontally	Центрувати по горизонталі
 Centre vertically	Центрувати по вертикалі
 Centrifugal pump	Відцентровий насос
@@ -433,6 +435,7 @@ ERP item master and bill of materials (CSV)	Довідник номенклат�
 ERP number	Номер ERP
 ETIM class	Клас ETIM
 Earth electrode	Заземлювач
+East-west on a flat roof	Схід-захід на плоскому даху
 Edit pages	Редагувати сторінки
 Edit project data	Редагувати дані проєкту
 Editor	Редактор
@@ -520,6 +523,7 @@ Fitting	Фітинг
 Fittings	Фітинги
 Flame retardant	Не поширює горіння
 Flat cable {} has {} cores, the IDC connector {} has {} pins	Плоский кабель {} має {} жил, роз'єм IDC {} має {} контактів
+Flat roof	Плаский дах
 Float switch NC	Поплавковий вимикач, розмикальний
 Float switch NO	Поплавковий вимикач, замикальний
 Float switch NO (NFPA)	Поплавковий вимикач, замикальний (NFPA)
@@ -538,6 +542,8 @@ Fluid power (ISO 1219)	Гідро- та пневмотехніка (ISO 1219)
 Fluid power and electrics in one project: pneumatic circuit with service unit, valve terminal, 5/2 valves, flow control valves and cylinders; solenoid coils and position switches are linked to the valves and cylinders.	Гідропневматика та електрика в одному проєкті: пневмосхема з блоком підготовки повітря, пневмоострівцем, розподільниками 5/2, дроселями зі зворотним клапаном і циліндрами; котушки та кінцеві вимикачі пов'язані з розподільниками та циліндрами.
 Fluid power and process	Гідропневматика і технологія процесів
 Fluid power settings	Параметри гідро- та пневмотехніки
+Flush-mounted in the floor	Приховане в підлозі
+Flush-mounted in the wall	Приховане в стіні
 Foot switch NC	Педальний вимикач, розмикальний
 Foot switch NO	Педальний вимикач, замикальний
 Foot switch NO (NFPA)	Педальний вимикач, замикальний (NFPA)
@@ -590,6 +596,7 @@ Fuse, LV HBC, 3-pole	Запобіжник ножовий (NH), 3-полюсни�
 GB (GB/T 4728)	GB (GB/T 4728)
 GOST (ESKD)	ГОСТ (ЄСКД)
 GTIN	GTIN
+Gable roof	Двосхилий дах
 Galvanometer	Гальванометр
 Gas	Газ
 Gas flow switch NC	Реле потоку газу, розмикальне
@@ -615,6 +622,7 @@ Grid and system protection relay (voltage and frequency)	Реле захисту
 Grounded conductors must be white or grey (NFPA 79, 13.2.3)	Заземлені провідники мають бути білими або сірими (NFPA 79, 13.2.3)
 HMI	HMI
 HTML document for printing	Документ HTML для друку
+Half landing (two flights)	З проміжним майданчиком (два марші)
 Hall 1	Цех 1
 Halogen free	Безгалогенний
 Hand	Ручне
@@ -628,8 +636,15 @@ Heating element	Нагрівальний елемент
 Higher-level product (-)	Виріб вищого рівня (-)
 Higher-level product of the page	Виріб вищого рівня сторінки
 Highest (°C)	Максимум (°C)
+Hinged left, opens inwards	Петлі зліва, відчиняється всередину
+Hinged left, opens outwards	Петлі зліва, відчиняється назовні
+Hinged right, opens inwards	Петлі справа, відчиняється всередину
+Hinged right, opens outwards	Петлі справа, відчиняється назовні
+Hip roof	Вальмовий дах
 Hold-up time	Час утримання при збої мережі
 Holding power	Потужність утримання
+Horizontal, above the floor	Горизонтальна, над підлогою
+Horizontal, below the ceiling	Горизонтальна, під стелею
 Horn (NFPA)	Сирена (NFPA)
 Horn / buzzer	Сирена / зумер
 Horn / buzzer HA (GB)	Сирена / зумер HA (GB)
@@ -654,6 +669,8 @@ Hydraulic oil	Гідравлічна олива
 Hydraulic power unit	Гідравлічна станція
 Hydraulic pump	Гідронасос
 Hysteresis	Гістерезис
+I mpp (A)	I mpp (А)
+I sc max (A)	I кз макс. (А)
 IEC 60204-1 (machinery: phases BK, DC control BU)	IEC 60204-1 (машини: фази BK, керування DC BU)
 IEC 60445 (phases BN, BK, GY)	IEC 60445 (фази BN, BK, GY)
 IEC 61131-3 (%IX0.0 / %QX0.0)	IEC 61131-3 (%IX0.0 / %QX0.0)
@@ -665,6 +682,8 @@ Ik1 min (A)	Ik1 min (A)
 Impact protection (IK)	Ударостійкість (IK)
 In engineering	У проєктуванні
 In production	У виробництві
+In the ceiling, along the walls	У стелі, вздовж стін
+In the floor, along the walls	У підлозі, вздовж стін
 Incoming supply	Ввід живлення
 Indicator lamp	Сигнальна лампа
 Indicator lamp HL (GB)	Сигнальна лампа HL (GB)
@@ -764,6 +783,7 @@ MAC address	MAC-адреса
 MCAD	MCAD
 MCAD device placement (CSV)	Розміщення пристроїв MCAD (CSV)
 MOSFET N-channel	MOSFET N-канальний
+MPPT	MPPT
 MTTFd	MTTFd
 Machine (example identifiers)	Машина (приклади позначень)
 Machine frame	Рама машини
@@ -827,6 +847,8 @@ Minimum operating temperature	Мінімальна робоча температ
 Mirror contacts	Дзеркальні контакти
 Mirrored	Віддзеркалено
 Mission time	Тривалість експлуатації
+Module	Модуль
+Modules	Модулі
 Moisture	Вологість
 Moment of inertia	Момент інерції
 Motion detector	Датчик руху
@@ -918,6 +940,7 @@ No plugs	Немає роз'ємів
 No report block {}	Немає блоку звітів {}
 No segment template named {}	Немає шаблону сегмента з назвою {}
 No subproject {}	Немає підпроєкту {}
+No such PV array	Немає такого фотоелектричного поля
 No such object: {}	Немає такого об’єкта: {}
 No surge protective device at the supply (IEC 60364-4-44)	На вводі живлення немає пристрою захисту від перенапруг (IEC 60364-4-44)
 No terminal {}	Немає клеми {}
@@ -1054,6 +1077,7 @@ PLC tags for Rockwell Studio 5000 (CSV)	Теги ПЛК для Rockwell Studio 5
 PLC variables for Schneider Control Expert (XSY)	Змінні ПЛК для Schneider Control Expert (XSY)
 PLM	PLM
 PLM engineering BOM (JSON)	Конструкторська специфікація PLM (JSON)
+PV strings	Фотоелектричні ланцюжки
 PVC (70 °C)	ПВХ (70 °C)
 Page / column (3.4.1)	Сторінка / стовпець (3.4.1)
 Page name	Назва сторінки
@@ -1079,6 +1103,7 @@ Panel layout in 3D (STEP)	Компонування шафи в 3D (STEP)
 Panel layout in 3D (glTF)	Компонування шафи в 3D (glTF)
 Panel layout settings	Параметри компонування шафи
 Panel legend	Легенда шафи
+Parallel to the roof on roof hooks	Паралельно даху на покрівельних гаках
 Part accessories	Приладдя виробів
 Part data is maintained in the parts management	Дані виробів ведуться в керуванні виробами
 Part description	Опис виробу
@@ -1162,6 +1187,7 @@ Potential {} defined {} times	Потенціал {} визначено {} раз
 Potentials / Connectors	Потенціали / роз’єми
 Potentials, interruption points	Потенціали, точки розриву
 Potentiometer	Потенціометр
+Power (kWp)	Потужність (кВт пік)
 Power and control circuit on several pages: main switch, motor protection, three contactors with interlocks, on-delay timer, interruption points, potentials with wire colours, motor cable and cable reports.	Силове коло та коло керування на кількох сторінках: головний вимикач, захист двигуна, три контактори з блокуваннями, реле часу із затримкою ввімкнення, точки розриву, потенціали з кольорами проводів, кабель двигуна та звіти щодо кабелів.
 Power factor	Коефіцієнт потужності
 Power factor meter	Вимірювач коефіцієнта потужності
@@ -1249,6 +1275,7 @@ Push button with key NC, latching	Кнопка з ключем, розмикал
 Push button with key NO, latching	Кнопка з ключем, замикальна, з фіксацією
 Pushbutton NC	Кнопка, розмикальна
 Pushbutton NO	Кнопка, замикальна
+Pyramid roof	Шатровий дах
 Qty	К-сть
 RCD {} mA	ПЗВ {} mA
 Radiation	Випромінювання
@@ -1401,6 +1428,7 @@ Setpoint	Задане значення
 Setting range	Діапазон налаштування
 Sheath colour	Колір оболонки
 Sheath material	Матеріал оболонки
+Shed roof	Односхилий дах
 Sheet number	Номер аркуша
 Sheet steel	Листова сталь
 Shield clamp	Затискач екрана
@@ -1429,6 +1457,8 @@ Siren	Сирена
 Site address	Адреса місця встановлення
 Size (mm)	Розмір (мм)
 Skipped	Пропущено
+Sliding to the left	Розсувна вліво
+Sliding to the right	Розсувна вправо
 Socket outlet	Штепсельна розетка
 Socket side (female)	Бік гнізд (розетка)
 Soft starter	Пристрій плавного пуску
@@ -1447,6 +1477,7 @@ Spare	Резерв
 Spare part	Запасна частина
 Spare terminal	Резервна клема
 Speed	Швидкість обертання
+Spiral	Гвинтові
 Stainless steel	Нержавна сталь
 Standard	Стандарт
 Start / stop circuit with a relay: coil and contacts form one device with cross references and contact image, terminal strip, wire numbers, terminal diagram and connection list.	Схема пуску / зупинки з реле: котушка та контакти утворюють один пристрій із перехресними посиланнями та дзеркалом контактів, клемник, номери проводів, схема клемника та перелік з'єднань.
@@ -1462,6 +1493,7 @@ Steam	Пара
 Stock	Запас
 Stop category	Категорія зупинки
 Storage temperature range	Діапазон температури зберігання
+Straight	Прямі
 Straight through from {} to {}, across from {} to {} and from {} to {}	Прямо від {} до {}, упоперек від {} до {} і від {} до {}
 Strain relief	Розвантаження від натягу
 Stretched	Розтягнуто
@@ -1489,6 +1521,7 @@ Suppliers	Постачальники
 Supply network	Тип мережі
 Supply voltage	Напруга живлення
 Surface (m²)	Поверхня (м²)
+Surface-mounted	Відкрите прокладання
 Surge protection type	Тип захисту від перенапруги
 Surge protective device	Пристрій захисту від перенапруг
 Surge suppressor	Обмежувач перенапруги
@@ -1597,6 +1630,7 @@ Through-beam sensor, 4-wire	Однопроменевий датчик, 4-про�
 Through-beam transmitter	Однопроменевий датчик, передавач
 Thyristor	Тиристор
 Tightening torque	Момент затягування
+Tilted on a flat roof	З нахилом на плоскому даху
 Time function	Функція часу
 Time range	Діапазон часу
 Time relay coil KT (GB)	Котушка реле часу KT (GB)
@@ -1649,9 +1683,14 @@ Trunking	Кабельний короб
 Tube	Трубка
 Tubes	Шланги
 Tubing / piping list	Перелік труб / шлангів
+Turned once (quarter landing)	З одним поворотом (кутовий майданчик)
+Turned twice (two quarter landings)	З двома поворотами (два кутові майданчики)
 Two connection symbols on page {} lie on the same point	Два символи з'єднань на сторінці {} лежать в одній точці
 Two-way switch (installation)	Прохідний вимикач (електроустановка)
 Type numbers	Номери типів
+U max (V)	U макс. (В)
+U mean (V)	U середн. (В)
+U min (V)	U мін. (В)
 UL listed	Внесено до списку UL
 UV resistant	Стійкий до УФ
 Unbalance {} %	Несиметрія {} %
@@ -1680,6 +1719,9 @@ Varistor	Варистор
 Varmeter	Варметр
 Vector group	Група з’єднань обмоток
 Ventilation clearance	Відстань для вентиляції
+Vertical, beside the corners	Вертикальна, біля кутів
+Vertical, beside the doors	Вертикальна, біля дверей
+Vertical, beside the windows	Вертикальна, біля вікон
 Vessel	Ємність
 Vibration	Вібрація
 Vibration resistance	Вібростійкість
@@ -1798,7 +1840,6 @@ is none of	не є жодним із
 is not	не дорівнює
 is not empty	не порожнє
 is one of	є одним із
-landscape	альбомна
 leakage	витік
 low	низький
 measuring	вимірювання
@@ -1807,6 +1848,7 @@ no header	немає заголовка
 no list	немає списку
 no path through the route network	немає шляху через мережу трас
 no way through the enclosure	немає шляху через корпус
+no way through the installation zones	немає шляху через монтажні зони
 not in the panel layout	немає в компонуванні шафи
 not in the same line-up or room	не в одному ряду чи приміщенні
 not reached	не досягнуто
@@ -1859,6 +1901,7 @@ yellow	жовтий
 {} fits none of the parts of {}	{} не підходить до жодного виробу {}
 {} frozen routes changed their length	Зафіксованих трас, довжина яких змінилася: {}
 {} has no MTTFd, B10d, PL or PFHd	{} не має MTTFd, B10d, PL або PFHd
+{} has no door or window {}	{} не має дверей чи вікна {}
 {} has nothing to manufacture	{} не має що виготовляти
 {} is a built-in function definition	{} – вбудоване визначення функції
 {} is a built-in property	{} – вбудована властивість
@@ -1894,7 +1937,16 @@ yellow	жовтий
 {} {} is routed to the cable entries of its enclosures: they stand in no common room, the way between them is not part of the layout	{} {} прокладено до кабельних вводів своїх корпусів: вони не стоять у спільному приміщенні, шлях між ними не входить до компонування
 {} {}: bends closer than the bend radius ({} mm)	{} {}: згини менші за радіус згину ({} мм)
 {} – {}: connected in the single-line diagram but not in the schematic	{} – {}: з’єднано в однолінійній схемі, але не на схемі
+{}, MPP tracker {}: its strings differ in voltage ({} V and {} V)	{}, MPP-трекер {}: його ланцюжки відрізняються напругою ({} В і {} В)
+{}, MPP tracker {}: the strings deliver {} A, more than the {} A it uses (the power is limited)	{}, MPP-трекер {}: ланцюжки дають {} А, більше за {} А, які він використовує (потужність обмежується)
+{}, MPP tracker {}: the strings reach a short-circuit current of {} A, more than the {} A it takes	{}, MPP-трекер {}: ланцюжки досягають струму короткого замикання {} А, більше за допустимі {} А
 {}: MTTFd {} years is below 3 years	{}: MTTFd {} років менше 3 років
+{}: PV array {} covers a roof window	{}: фотоелектричне поле {} закриває мансардне вікно
+{}: PV array {} has {} modules, its device {} has {}	{}: фотоелектричне поле {} має {} модулів, його пристрій {} — {}
+{}: PV array {} is mounted tilted on a pitched roof	{}: фотоелектричне поле {} змонтоване з нахилом на скатному даху
+{}: PV array {} of roof {} lies across a ridge, a hip or the edge of the roof	{}: фотоелектричне поле {} даху {} лежить поперек гребеня, ребра або краю даху
+{}: PV array {} of roof {} lies outside the roof	{}: фотоелектричне поле {} даху {} лежить поза дахом
+{}: PV arrays {} and {} lie over each other	{}: фотоелектричні поля {} і {} перекриваються
 {}: \"{}\" is not one of {}	{}: «{}» не входить до {}
 {}: a TT system needs a residual current device	{}: система TT потребує пристрою захисного вимкнення
 {}: accessory {} fits none of the device's parts	{}: приладдя {} не підходить до жодного виробу пристрою
@@ -1964,11 +2016,21 @@ yellow	жовтий
 {}: slot {} of rack {} is used by {} and {}	{}: слот {} монтажного каркаса {} зайнятий {} і {}
 {}: solenoid coil not linked to a valve	{}: котушку не пов’язано з клапаном
 {}: solenoid valve without linked solenoid coil (Fluid and process › Synchronize)	{}: електромагнітний клапан без пов’язаної котушки (Гідро-, пневмотехніка та технологія › Синхронізувати)
+{}: string {} of PV array {} drops to {} V at {} °C, below the MPP range of {} ({} - {} V)	{}: ланцюжок {} фотоелектричного поля {} падає до {} В за {} °C, нижче діапазону MPP {} ({} - {} В)
+{}: string {} of PV array {} is connected to no inverter	{}: ланцюжок {} фотоелектричного поля {} не підключено до жодного інвертора
+{}: string {} of PV array {} reaches {} V at maximum power at {} °C, above the MPP range of {} ({} - {} V)	{}: ланцюжок {} фотоелектричного поля {} досягає {} В за максимальної потужності за {} °C, вище діапазону MPP {} ({} - {} В)
+{}: string {} of PV array {} reaches {} V at {} °C, more than the {} V system voltage of its modules	{}: ланцюжок {} фотоелектричного поля {} досягає {} В за {} °C, більше за системну напругу {} В його модулів
+{}: string {} of PV array {} reaches {} V at {} °C, more than the {} V {} takes	{}: ланцюжок {} фотоелектричного поля {} досягає {} В за {} °C, більше за {} В, допустимі для {}
+{}: string {} of PV array {}: {} has only {} MPP trackers	{}: ланцюжок {} фотоелектричного поля {}: {} має лише {} MPP-трекери
+{}: string {} of PV array {}: {} is no device with PV input data	{}: ланцюжок {} фотоелектричного поля {}: {} не є пристроєм з даними входу ФЕ
 {}: terminal {} is on level {}, but no terminal block is before it	{}: клема {} розташована на ярусі {}, але перед нею немає клемного блока
 {}: terminal {} uses {} levels, its part {} has {}	{}: клема {} використовує ярусів: {}, її виріб {} має {}
 {}: terminals {} are {} mm above the floor, at least {} mm required	{}: клеми {} розташовано на {} мм над підлогою, потрібно щонайменше {} мм
 {}: the busbar system with {} bars joins {} conductors ({}): short circuit	{}: система збірних шин з {} шинами з'єднує {} провідники ({}): коротке замикання
+{}: the device {} of PV array {} does not exist	{}: пристрій {} фотоелектричного поля {} не існує
+{}: the module {} of PV array {} has no electrical data	{}: модуль {} фотоелектричного поля {} не має електричних даних
 {}: the station has no port {}	{}: станція не має порту {}
+{}: the strings of PV array {} connect {} modules, the array has {}	{}: ланцюжки фотоелектричного поля {} з'єднують {} модулів, у полі {}
 {}: the {} ({} x {} mm) is larger than the working area of {}	{}: {} ({} x {} мм) більше за робочу зону {}
 {}: the {} is {} mm thick, {} takes at most {} mm	{}: {} має товщину {} мм, {} обробляє щонайбільше {} мм
 {}: voltage drop {} V ({} %) above {} %	{}: спад напруги {} V ({} %) понад {} %
@@ -1994,6 +2056,7 @@ yellow	жовтий
 {}: {} is not made for wall mounting, mount it on a rail	{}: {} не призначений для настінного монтажу, встановіть його на рейку
 {}: {} is {} … {} mm above the floor, allowed {} … {} mm	{}: {} розташовано на {} … {} мм над підлогою, допустимо {} … {} мм
 {}: {} kg on the {} exceed its load of {} kg	{}: {} кг на {} перевищують його допустиме навантаження {} кг
+{}: {} modules of PV array {} are not connected to a string	{}: {} модулів фотоелектричного поля {} не підключено до ланцюжка
 {}: {} modules, the head has {} slots	{}: модулів – {}, головний модуль має {} слотів
 {}: {} of {} mm is longer than the stock length of {} mm and has to be joined	{}: {} довжиною {} мм довше за складську довжину {} мм, його потрібно стикувати
 {}: {} of {} mm is shorter than {} mm and hard to cut	{}: {} довжиною {} мм коротше за {} мм, його важко відрізати
@@ -2005,6 +2068,7 @@ yellow	жовтий
 {}: {} solenoid coils linked, the valve has {}	{}: пов’язано котушок – {}, клапан має {}
 {}: {} stands in an inner wall	{}: {} стоїть у внутрішній стіні
 {}: {} stands in the swing of the door in wall {}	{}: {} стоїть у зоні відчинення дверей у стіні {}
+{}: {} stands in the way of the sliding door in wall {}	{}: {} заважає розсувним дверям у стіні {}
 {}: {} stands outside the room	{}: {} стоїть поза приміщенням
 {}: {} stands where {} stands	{}: {} стоїть на місці {}
 {}: {} threads on the {} are cut by hand	{}: {} різьб на {} нарізаються вручну

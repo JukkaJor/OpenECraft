@@ -7,6 +7,7 @@
 13 · Transformer-rated metering with PV and grid protection	13 · Transformatormätning med solceller och nätskydd
 14 · Main low-voltage distribution of an industrial plant	14 · Huvudcentral för lågspänning i en industrianläggning
 15 · Plant with buildings, levels and a shaft	15 · Anläggning med byggnader, våningar och ett schakt
+16 · Office building with roof, stair and installation	16 · Kontorsbyggnad med tak, trappa och installation
 2 · Relay with self-holding contact	2 · Relä med självhållning
 3 · Star-delta motor starter	3 · Y/D-start
 3/2 directional valve	3/2-riktningsventil
@@ -182,6 +183,7 @@ Capacitive sensor, 3-wire	Kapacitiv givare, 3-tråds
 Capacitor	Kondensator
 Capacitor, polarized	Kondensator, polariserad
 Ceiling	Tak
+Cell temperatures: {} °C (U max), {} °C (U mean), {} °C (U min)	Celltemperaturer: {} °C (U max), {} °C (U medel), {} °C (U min)
 Centre horizontally	Centrera horisontellt
 Centre vertically	Centrera vertikalt
 Centrifugal pump	Centrifugalpump
@@ -433,6 +435,7 @@ ERP item master and bill of materials (CSV)	ERP-artikelregister och stycklista (
 ERP number	ERP-nummer
 ETIM class	ETIM-klass
 Earth electrode	Jordelektrod
+East-west on a flat roof	Öst-väst på platt tak
 Edit pages	Redigera sidor
 Edit project data	Redigera projektdata
 Editor	Redigerare
@@ -520,6 +523,7 @@ Fitting	Koppling
 Fittings	Kopplingar
 Flame retardant	Flamskyddad
 Flat cable {} has {} cores, the IDC connector {} has {} pins	Flatkabeln {} har {} ledare, IDC-kontakten {} har {} stift
+Flat roof	Platt tak
 Float switch NC	Flottörbrytare, brytande
 Float switch NO	Nivåvippa slutande
 Float switch NO (NFPA)	Flottörbrytare, slutande (NFPA)
@@ -538,6 +542,8 @@ Fluid power (ISO 1219)	Fluidteknik (ISO 1219)
 Fluid power and electrics in one project: pneumatic circuit with service unit, valve terminal, 5/2 valves, flow control valves and cylinders; solenoid coils and position switches are linked to the valves and cylinders.	Fluidteknik och elteknik i ett projekt: pneumatikschema med luftberedningsenhet, ventilterminal, 5/2-ventiler, strypbackventiler och cylindrar; magnetspolar och lägesbrytare är kopplade till ventilerna och cylindrarna.
 Fluid power and process	Fluidteknik och process
 Fluid power settings	Inställningar för fluidteknik
+Flush-mounted in the floor	Infälld i golvet
+Flush-mounted in the wall	Infälld i väggen
 Foot switch NC	Fotbrytare, brytande
 Foot switch NO	Fotbrytare, slutande
 Foot switch NO (NFPA)	Fotbrytare, slutande (NFPA)
@@ -590,6 +596,7 @@ Fuse, LV HBC, 3-pole	Knivsäkring 3-polig
 GB (GB/T 4728)	GB (GB/T 4728)
 GOST (ESKD)	GOST (ESKD)
 GTIN	GTIN
+Gable roof	Sadeltak
 Galvanometer	Galvanometer
 Gas	Gas
 Gas flow switch NC	Gasflödesvakt, brytande
@@ -615,6 +622,7 @@ Grid and system protection relay (voltage and frequency)	Nät- och anläggningss
 Grounded conductors must be white or grey (NFPA 79, 13.2.3)	Jordade ledare måste vara vita eller grå (NFPA 79, 13.2.3)
 HMI	HMI
 HTML document for printing	HTML-dokument för utskrift
+Half landing (two flights)	Med halvvilplan (två lopp)
 Hall 1	Hall 1
 Halogen free	Halogenfri
 Hand	Hand
@@ -628,8 +636,15 @@ Heating element	Värmeelement
 Higher-level product (-)	Överordnad produkt (-)
 Higher-level product of the page	Sidans överordnade produkt
 Highest (°C)	Högst (°C)
+Hinged left, opens inwards	Gångjärn till vänster, öppnas inåt
+Hinged left, opens outwards	Gångjärn till vänster, öppnas utåt
+Hinged right, opens inwards	Gångjärn till höger, öppnas inåt
+Hinged right, opens outwards	Gångjärn till höger, öppnas utåt
+Hip roof	Valmat tak
 Hold-up time	Hålltid vid nätbortfall
 Holding power	Hålleffekt
+Horizontal, above the floor	Horisontell, över golvet
+Horizontal, below the ceiling	Horisontell, under taket
 Horn (NFPA)	Signalhorn (NFPA)
 Horn / buzzer	Signalhorn / summer
 Horn / buzzer HA (GB)	Signalhorn / summer HA (GB)
@@ -654,6 +669,8 @@ Hydraulic oil	Hydraulolja
 Hydraulic power unit	Hydraulaggregat
 Hydraulic pump	Hydraulpump
 Hysteresis	Hysteres
+I mpp (A)	I mpp (A)
+I sc max (A)	I sc max (A)
 IEC 60204-1 (machinery: phases BK, DC control BU)	IEC 60204-1 (maskiner: fasledare BK, DC-styrning BU)
 IEC 60445 (phases BN, BK, GY)	IEC 60445 (fasledare BN, BK, GY)
 IEC 61131-3 (%IX0.0 / %QX0.0)	IEC 61131-3 (%IX0.0 / %QX0.0)
@@ -665,6 +682,8 @@ Ik1 min (A)	Ik1 min (A)
 Impact protection (IK)	Slagtålighet (IK)
 In engineering	Under projektering
 In production	I produktion
+In the ceiling, along the walls	I taket, längs väggarna
+In the floor, along the walls	I golvet, längs väggarna
 Incoming supply	Inkommande matning
 Indicator lamp	Signallampa
 Indicator lamp HL (GB)	Signallampa HL (GB)
@@ -764,6 +783,7 @@ MAC address	MAC-adress
 MCAD	MCAD
 MCAD device placement (CSV)	MCAD-apparatplacering (CSV)
 MOSFET N-channel	MOSFET N-kanal
+MPPT	MPPT
 MTTFd	MTTFd
 Machine (example identifiers)	Maskin (exempelbeteckningar)
 Machine frame	Maskinstativ
@@ -827,6 +847,8 @@ Minimum operating temperature	Lägsta drifttemperatur
 Mirror contacts	Spegelkontakter
 Mirrored	Speglad
 Mission time	Uppdragstid
+Module	Modul
+Modules	Moduler
 Moisture	Fukt
 Moment of inertia	Tröghetsmoment
 Motion detector	Rörelsedetektor
@@ -918,6 +940,7 @@ No plugs	Inga kontakter
 No report block {}	Inget rapportblock {}
 No segment template named {}	Ingen segmentmall med namnet {}
 No subproject {}	Inget delprojekt {}
+No such PV array	Inget sådant solcellsfält
 No such object: {}	Inget sådant objekt: {}
 No surge protective device at the supply (IEC 60364-4-44)	Inget överspänningsskydd vid matningen (IEC 60364-4-44)
 No terminal {}	Ingen plint {}
@@ -1054,6 +1077,7 @@ PLC tags for Rockwell Studio 5000 (CSV)	PLC-taggar för Rockwell Studio 5000 (CS
 PLC variables for Schneider Control Expert (XSY)	PLC-variabler för Schneider Control Expert (XSY)
 PLM	PLM
 PLM engineering BOM (JSON)	PLM-konstruktionsstycklista (JSON)
+PV strings	Solcellssträngar
 PVC (70 °C)	PVC (70 °C)
 Page / column (3.4.1)	Sida / kolumn (3.4.1)
 Page name	Sidnamn
@@ -1079,6 +1103,7 @@ Panel layout in 3D (STEP)	Skåplayout i 3D (STEP)
 Panel layout in 3D (glTF)	Skåplayout i 3D (glTF)
 Panel layout settings	Inställningar för skåplayout
 Panel legend	Teckenförklaring för skåp
+Parallel to the roof on roof hooks	Parallellt med taket på takkrokar
 Part accessories	Artikeltillbehör
 Part data is maintained in the parts management	Artikeldata underhålls i artikelhanteringen
 Part description	Artikelbeskrivning
@@ -1162,6 +1187,7 @@ Potential {} defined {} times	Potential {} definierad {} gånger
 Potentials / Connectors	Potentialer / kontaktdon
 Potentials, interruption points	Potentialer, brytpunkter
 Potentiometer	Potentiometer
+Power (kWp)	Effekt (kWp)
 Power and control circuit on several pages: main switch, motor protection, three contactors with interlocks, on-delay timer, interruption points, potentials with wire colours, motor cable and cable reports.	Huvud- och manöverkrets på flera sidor: huvudbrytare, motorskydd, tre kontaktorer med förreglingar, tillslagsfördröjt tidrelä, avbrottspunkter, potentialer med ledarfärger, motorkabel och kabelrapporter.
 Power factor	Effektfaktor
 Power factor meter	Effektfaktormätare
@@ -1249,6 +1275,7 @@ Push button with key NC, latching	Tryckknapp med nyckel, brytande, låsande
 Push button with key NO, latching	Tryckknapp med nyckel, slutande, låsande
 Pushbutton NC	Tryckknapp brytande
 Pushbutton NO	Tryckknapp slutande
+Pyramid roof	Tälttak
 Qty	Antal
 RCD {} mA	RCD {} mA
 Radiation	Strålning
@@ -1401,6 +1428,7 @@ Setpoint	Börvärde
 Setting range	Inställningsområde
 Sheath colour	Mantelfärg
 Sheath material	Mantelmaterial
+Shed roof	Pulpettak
 Sheet number	Bladnummer
 Sheet steel	Stålplåt
 Shield clamp	Skärmklämma
@@ -1429,6 +1457,8 @@ Siren	Siren
 Site address	Uppställningsplatsens adress
 Size (mm)	Storlek (mm)
 Skipped	Överhoppad
+Sliding to the left	Skjutbar åt vänster
+Sliding to the right	Skjutbar åt höger
 Socket outlet	Vägguttag
 Socket side (female)	Hylssida (hona)
 Soft starter	Mjukstartare
@@ -1447,6 +1477,7 @@ Spare	Reserv
 Spare part	Reservdel
 Spare terminal	Reservplint
 Speed	Varvtal
+Spiral	Spiraltrappa
 Stainless steel	Rostfritt stål
 Standard	Standard
 Start / stop circuit with a relay: coil and contacts form one device with cross references and contact image, terminal strip, wire numbers, terminal diagram and connection list.	Start-/stoppkrets med ett relä: spole och kontakter bildar en apparat med korsreferenser och kontaktbild, plint, ledningsnummer, plintschema och förbindningslista.
@@ -1462,6 +1493,7 @@ Steam	Ånga
 Stock	Lager
 Stop category	Stoppkategori
 Storage temperature range	Lagringstemperaturområde
+Straight	Rak
 Straight through from {} to {}, across from {} to {} and from {} to {}	Rakt fram från {} till {}, tvärs över från {} till {} och från {} till {}
 Strain relief	Dragavlastning
 Stretched	Utsträckt
@@ -1489,6 +1521,7 @@ Suppliers	Leverantörer
 Supply network	Nätsystem
 Supply voltage	Matningsspänning
 Surface (m²)	Yta (m²)
+Surface-mounted	Utanpåliggande
 Surge protection type	Typ av överspänningsskydd
 Surge protective device	Överspänningsskydd
 Surge suppressor	Överspänningsbegränsare
@@ -1597,6 +1630,7 @@ Through-beam sensor, 4-wire	Envägsfotocell, 4-tråds
 Through-beam transmitter	Envägsfotocell, sändare
 Thyristor	Tyristor
 Tightening torque	Åtdragningsmoment
+Tilted on a flat roof	Lutat på platt tak
 Time function	Tidsfunktion
 Time range	Tidsområde
 Time relay coil KT (GB)	Tidreläspole KT (GB)
@@ -1649,9 +1683,14 @@ Trunking	Kabelkanal
 Tube	Rör
 Tubes	Slangar
 Tubing / piping list	Rör- / slanglista
+Turned once (quarter landing)	Svängd en gång (kvartsvilplan)
+Turned twice (two quarter landings)	Svängd två gånger (två kvartsvilplan)
 Two connection symbols on page {} lie on the same point	Två förbindelsesymboler på sida {} ligger i samma punkt
 Two-way switch (installation)	Trappströmställare (installation)
 Type numbers	Typnummer
+U max (V)	U max (V)
+U mean (V)	U medel (V)
+U min (V)	U min (V)
 UL listed	UL-listad
 UV resistant	UV-beständig
 Unbalance {} %	Obalans {} %
@@ -1680,6 +1719,9 @@ Varistor	Varistor
 Varmeter	Varmeter
 Vector group	Kopplingsgrupp
 Ventilation clearance	Ventilationsavstånd
+Vertical, beside the corners	Vertikal, intill hörnen
+Vertical, beside the doors	Vertikal, intill dörrarna
+Vertical, beside the windows	Vertikal, intill fönstren
 Vessel	Kärl
 Vibration	Vibration
 Vibration resistance	Vibrationstålighet
@@ -1798,7 +1840,6 @@ is none of	är ingen av
 is not	är inte
 is not empty	är inte tom
 is one of	är en av
-landscape	liggande
 leakage	läckage
 low	låg
 measuring	mät
@@ -1807,6 +1848,7 @@ no header	ingen rubrikrad
 no list	ingen lista
 no path through the route network	ingen väg genom kabelvägsnätet
 no way through the enclosure	ingen väg genom kapslingen
+no way through the installation zones	ingen väg genom installationszonerna
 not in the panel layout	inte i skåplayouten
 not in the same line-up or room	inte i samma skåprad eller rum
 not reached	inte uppnådd
@@ -1859,6 +1901,7 @@ yellow	gul
 {} fits none of the parts of {}	{} passar inte till någon artikel i {}
 {} frozen routes changed their length	{} frysta dragningar har ändrat längd
 {} has no MTTFd, B10d, PL or PFHd	{} har varken MTTFd, B10d, PL eller PFHd
+{} has no door or window {}	{} har ingen dörr eller fönster {}
 {} has nothing to manufacture	{} har inget att tillverka
 {} is a built-in function definition	{} är en inbyggd funktionsdefinition
 {} is a built-in property	{} är en inbyggd egenskap
@@ -1894,7 +1937,16 @@ yellow	gul
 {} {} is routed to the cable entries of its enclosures: they stand in no common room, the way between them is not part of the layout	{} {} är förlagd till kabelinföringarna i sina kapslingar: de står inte i ett gemensamt rum, vägen mellan dem ingår inte i layouten
 {} {}: bends closer than the bend radius ({} mm)	{} {}: böjar snävare än böjradien ({} mm)
 {} – {}: connected in the single-line diagram but not in the schematic	{} – {}: förbundna i enlinjeschemat men inte i kretsschemat
+{}, MPP tracker {}: its strings differ in voltage ({} V and {} V)	{}, MPP-spårare {}: dess strängar skiljer sig i spänning ({} V och {} V)
+{}, MPP tracker {}: the strings deliver {} A, more than the {} A it uses (the power is limited)	{}, MPP-spårare {}: strängarna levererar {} A, mer än de {} A den använder (effekten begränsas)
+{}, MPP tracker {}: the strings reach a short-circuit current of {} A, more than the {} A it takes	{}, MPP-spårare {}: strängarna når en kortslutningsström på {} A, mer än de {} A den tål
 {}: MTTFd {} years is below 3 years	{}: MTTFd {} år är under 3 år
+{}: PV array {} covers a roof window	{}: solcellsfält {} täcker ett takfönster
+{}: PV array {} has {} modules, its device {} has {}	{}: solcellsfält {} har {} moduler, dess enhet {} har {}
+{}: PV array {} is mounted tilted on a pitched roof	{}: solcellsfält {} är monterat lutat på ett lutande tak
+{}: PV array {} of roof {} lies across a ridge, a hip or the edge of the roof	{}: solcellsfält {} på tak {} ligger över en nock, en valmkant eller takkanten
+{}: PV array {} of roof {} lies outside the roof	{}: solcellsfält {} på tak {} ligger utanför taket
+{}: PV arrays {} and {} lie over each other	{}: solcellsfälten {} och {} ligger över varandra
 {}: \"{}\" is not one of {}	{}: \"{}\" är inte ett av {}
 {}: a TT system needs a residual current device	{}: ett TT-system kräver en jordfelsbrytare
 {}: accessory {} fits none of the device's parts	{}: tillbehöret {} passar inte till någon av enhetens artiklar
@@ -1964,11 +2016,21 @@ yellow	gul
 {}: slot {} of rack {} is used by {} and {}	{}: kortplats {} i rack {} används av {} och {}
 {}: solenoid coil not linked to a valve	{}: magnetspolen är inte länkad till en ventil
 {}: solenoid valve without linked solenoid coil (Fluid and process › Synchronize)	{}: magnetventil utan länkad magnetspole (Fluid och process › Synkronisera)
+{}: string {} of PV array {} drops to {} V at {} °C, below the MPP range of {} ({} - {} V)	{}: sträng {} i solcellsfält {} sjunker till {} V vid {} °C, under MPP-området för {} ({} - {} V)
+{}: string {} of PV array {} is connected to no inverter	{}: sträng {} i solcellsfält {} är inte ansluten till någon växelriktare
+{}: string {} of PV array {} reaches {} V at maximum power at {} °C, above the MPP range of {} ({} - {} V)	{}: sträng {} i solcellsfält {} når {} V vid maximal effekt vid {} °C, över MPP-området för {} ({} - {} V)
+{}: string {} of PV array {} reaches {} V at {} °C, more than the {} V system voltage of its modules	{}: sträng {} i solcellsfält {} når {} V vid {} °C, mer än systemspänningen {} V för dess moduler
+{}: string {} of PV array {} reaches {} V at {} °C, more than the {} V {} takes	{}: sträng {} i solcellsfält {} når {} V vid {} °C, mer än de {} V som {} tål
+{}: string {} of PV array {}: {} has only {} MPP trackers	{}: sträng {} i solcellsfält {}: {} har bara {} MPP-spårare
+{}: string {} of PV array {}: {} is no device with PV input data	{}: sträng {} i solcellsfält {}: {} är ingen enhet med PV-ingångsdata
 {}: terminal {} is on level {}, but no terminal block is before it	{}: plint {} ligger på våning {}, men det finns inget plintblock före den
 {}: terminal {} uses {} levels, its part {} has {}	{}: plint {} använder {} våningar, dess artikel {} har {}
 {}: terminals {} are {} mm above the floor, at least {} mm required	{}: plintarna {} ligger {} mm över golvet, minst {} mm krävs
 {}: the busbar system with {} bars joins {} conductors ({}): short circuit	{}: skensystemet med {} skenor förbinder {} ledare ({}): kortslutning
+{}: the device {} of PV array {} does not exist	{}: enheten {} för solcellsfält {} finns inte
+{}: the module {} of PV array {} has no electrical data	{}: modulen {} i solcellsfält {} har inga elektriska data
 {}: the station has no port {}	{}: stationen har ingen port {}
+{}: the strings of PV array {} connect {} modules, the array has {}	{}: strängarna i solcellsfält {} kopplar {} moduler, fältet har {}
 {}: the {} ({} x {} mm) is larger than the working area of {}	{}: {} ({} x {} mm) är större än arbetsområdet för {}
 {}: the {} is {} mm thick, {} takes at most {} mm	{}: {} är {} mm tjock, {} klarar högst {} mm
 {}: voltage drop {} V ({} %) above {} %	{}: spänningsfall {} V ({} %) över {} %
@@ -1994,6 +2056,7 @@ yellow	gul
 {}: {} is not made for wall mounting, mount it on a rail	{}: {} är inte avsedd för väggmontage, montera den på en skena
 {}: {} is {} … {} mm above the floor, allowed {} … {} mm	{}: {} ligger {} … {} mm över golvet, tillåtet {} … {} mm
 {}: {} kg on the {} exceed its load of {} kg	{}: {} kg på {} överskrider dess bärförmåga på {} kg
+{}: {} modules of PV array {} are not connected to a string	{}: {} moduler i solcellsfält {} är inte anslutna till någon sträng
 {}: {} modules, the head has {} slots	{}: {} moduler, huvudenheten har {} kortplatser
 {}: {} of {} mm is longer than the stock length of {} mm and has to be joined	{}: {} på {} mm är längre än lagerlängden på {} mm och måste skarvas
 {}: {} of {} mm is shorter than {} mm and hard to cut	{}: {} på {} mm är kortare än {} mm och svår att kapa
@@ -2005,6 +2068,7 @@ yellow	gul
 {}: {} solenoid coils linked, the valve has {}	{}: {} magnetspolar länkade, ventilen har {}
 {}: {} stands in an inner wall	{}: {} står i en innervägg
 {}: {} stands in the swing of the door in wall {}	{}: {} står i dörrens svängområde i vägg {}
+{}: {} stands in the way of the sliding door in wall {}	{}: {} står i vägen för skjutdörren i vägg {}
 {}: {} stands outside the room	{}: {} står utanför rummet
 {}: {} stands where {} stands	{}: {} står där {} står
 {}: {} threads on the {} are cut by hand	{}: {} gängor på {} skärs för hand

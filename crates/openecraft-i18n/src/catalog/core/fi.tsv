@@ -7,6 +7,7 @@
 13 · Transformer-rated metering with PV and grid protection	13 · Virtamuuntajamittaus aurinkovoimalla ja verkkosuojalla
 14 · Main low-voltage distribution of an industrial plant	14 · Teollisuuslaitoksen pienjännitepääkeskus
 15 · Plant with buildings, levels and a shaft	15 · Laitos, jossa rakennuksia, kerroksia ja kuilu
+16 · Office building with roof, stair and installation	16 · Toimistorakennus katolla, portailla ja asennuksilla
 2 · Relay with self-holding contact	2 · Itsepitävä rele
 3 · Star-delta motor starter	3 · Tähti-kolmiokäynnistin
 3/2 directional valve	3/2-suuntaventtiili
@@ -182,6 +183,7 @@ Capacitive sensor, 3-wire	Kapasitiivinen anturi, 3-johtiminen
 Capacitor	Kondensaattori
 Capacitor, polarized	Kondensaattori, polarisoitu
 Ceiling	Katto
+Cell temperatures: {} °C (U max), {} °C (U mean), {} °C (U min)	Kennolämpötilat: {} °C (U maks.), {} °C (U keski), {} °C (U min.)
 Centre horizontally	Keskitä vaakasuunnassa
 Centre vertically	Keskitä pystysuunnassa
 Centrifugal pump	Keskipakopumppu
@@ -433,6 +435,7 @@ ERP item master and bill of materials (CSV)	ERP-nimikerekisteri ja osaluettelo (
 ERP number	ERP-numero
 ETIM class	ETIM-luokka
 Earth electrode	Maadoituselektrodi
+East-west on a flat roof	Itä-länsi tasakatolla
 Edit pages	Muokkaa sivuja
 Edit project data	Muokkaa projektitietoja
 Editor	Muokkaaja
@@ -520,6 +523,7 @@ Fitting	Putkiliitin
 Fittings	Putkiliittimet
 Flame retardant	Paloa hidastava
 Flat cable {} has {} cores, the IDC connector {} has {} pins	Lattakaapelissa {} on {} johdinta, IDC-liittimessä {} on {} nastaa
+Flat roof	Tasakatto
 Float switch NC	Uimurikytkin, avautuva
 Float switch NO	Uimurikytkin sulkeutuva
 Float switch NO (NFPA)	Uimurikytkin, sulkeutuva (NFPA)
@@ -538,6 +542,8 @@ Fluid power (ISO 1219)	Fluidivoimatekniikka (ISO 1219)
 Fluid power and electrics in one project: pneumatic circuit with service unit, valve terminal, 5/2 valves, flow control valves and cylinders; solenoid coils and position switches are linked to the valves and cylinders.	Fluiditekniikka ja sähkö samassa projektissa: pneumatiikkakaavio huoltoyksikköineen, venttiiliterminaaleineen, 5/2-venttiileineen, virtauksensäätöventtiileineen ja sylintereineen; magneettikelat ja rajakytkimet on linkitetty venttiileihin ja sylintereihin.
 Fluid power and process	Fluidi- ja prosessitekniikka
 Fluid power settings	Fluidivoimatekniikan asetukset
+Flush-mounted in the floor	Uppoasennus lattiaan
+Flush-mounted in the wall	Uppoasennus seinään
 Foot switch NC	Jalkakytkin, avautuva
 Foot switch NO	Jalkakytkin, sulkeutuva
 Foot switch NO (NFPA)	Jalkakytkin, sulkeutuva (NFPA)
@@ -590,6 +596,7 @@ Fuse, LV HBC, 3-pole	Kahvasulake, 3-napainen
 GB (GB/T 4728)	GB (GB/T 4728)
 GOST (ESKD)	GOST (ESKD)
 GTIN	GTIN
+Gable roof	Harjakatto
 Galvanometer	Galvanometri
 Gas	Kaasu
 Gas flow switch NC	Kaasuvirtauskytkin, avautuva
@@ -615,6 +622,7 @@ Grid and system protection relay (voltage and frequency)	Verkko- ja laitossuojar
 Grounded conductors must be white or grey (NFPA 79, 13.2.3)	Maadoitettujen johtimien on oltava valkoisia tai harmaita (NFPA 79, 13.2.3)
 HMI	HMI
 HTML document for printing	HTML-asiakirja tulostusta varten
+Half landing (two flights)	Välitasanteelliset (kaksi syöksyä)
 Hall 1	Halli 1
 Halogen free	Halogeeniton
 Hand	Käsi
@@ -628,8 +636,15 @@ Heating element	Lämmitysvastus
 Higher-level product (-)	Ylemmän tason tuote (-)
 Higher-level product of the page	Sivun ylemmän tason tuote
 Highest (°C)	Enintään (°C)
+Hinged left, opens inwards	Saranat vasemmalla, aukeaa sisäänpäin
+Hinged left, opens outwards	Saranat vasemmalla, aukeaa ulospäin
+Hinged right, opens inwards	Saranat oikealla, aukeaa sisäänpäin
+Hinged right, opens outwards	Saranat oikealla, aukeaa ulospäin
+Hip roof	Aumakatto
 Hold-up time	Katkoksensietoaika
 Holding power	Pitoteho
+Horizontal, above the floor	Vaakasuora, lattian yläpuolella
+Horizontal, below the ceiling	Vaakasuora, katon alapuolella
 Horn (NFPA)	Torvi (NFPA)
 Horn / buzzer	Äänimerkinantolaite / summeri
 Horn / buzzer HA (GB)	Torvi / summeri HA (GB)
@@ -654,6 +669,8 @@ Hydraulic oil	Hydrauliöljy
 Hydraulic power unit	Hydraulikoneikko
 Hydraulic pump	Hydraulipumppu
 Hysteresis	Hystereesi
+I mpp (A)	I mpp (A)
+I sc max (A)	I sc maks. (A)
 IEC 60204-1 (machinery: phases BK, DC control BU)	IEC 60204-1 (koneet: vaiheet BK, DC-ohjaus BU)
 IEC 60445 (phases BN, BK, GY)	IEC 60445 (vaiheet BN, BK, GY)
 IEC 61131-3 (%IX0.0 / %QX0.0)	IEC 61131-3 (%IX0.0 / %QX0.0)
@@ -665,6 +682,8 @@ Ik1 min (A)	Ik1 min (A)
 Impact protection (IK)	Iskunkestävyys (IK)
 In engineering	Suunnittelussa
 In production	Tuotannossa
+In the ceiling, along the walls	Katossa, seinien vierellä
+In the floor, along the walls	Lattiassa, seinien vierellä
 Incoming supply	Syöttö
 Indicator lamp	Merkkivalo
 Indicator lamp HL (GB)	Merkkivalo HL (GB)
@@ -764,6 +783,7 @@ MAC address	MAC-osoite
 MCAD	MCAD
 MCAD device placement (CSV)	MCAD-laitesijoittelu (CSV)
 MOSFET N-channel	MOSFET, N-kanava
+MPPT	MPPT
 MTTFd	MTTFd
 Machine (example identifiers)	Kone (esimerkkitunnukset)
 Machine frame	Koneen runko
@@ -827,6 +847,8 @@ Minimum operating temperature	Pienin käyttölämpötila
 Mirror contacts	Peilikoskettimet
 Mirrored	Peilattu
 Mission time	Käyttöaika
+Module	Moduuli
+Modules	Moduulit
 Moisture	Kosteus
 Moment of inertia	Hitausmomentti
 Motion detector	Liiketunnistin
@@ -918,6 +940,7 @@ No plugs	Ei liittimiä
 No report block {}	Ei raporttilohkoa {}
 No segment template named {}	Segmenttimallia nimeltä {} ei ole
 No subproject {}	Aliprojektia {} ei ole
+No such PV array	Ei tällaista aurinkopaneelikenttää
 No such object: {}	Objektia ei ole: {}
 No surge protective device at the supply (IEC 60364-4-44)	Syötössä ei ole ylijännitesuojaa (IEC 60364-4-44)
 No terminal {}	Ei riviliitintä {}
@@ -1054,6 +1077,7 @@ PLC tags for Rockwell Studio 5000 (CSV)	PLC-tagit Rockwell Studio 5000:lle (CSV)
 PLC variables for Schneider Control Expert (XSY)	PLC-muuttujat Schneider Control Expertille (XSY)
 PLM	PLM
 PLM engineering BOM (JSON)	PLM-suunnitteluosaluettelo (JSON)
+PV strings	Aurinkopaneelien merkkijonot
 PVC (70 °C)	PVC (70 °C)
 Page / column (3.4.1)	Sivu / sarake (3.4.1)
 Page name	Sivun nimi
@@ -1079,6 +1103,7 @@ Panel layout in 3D (STEP)	Kaappiasennus 3D-muodossa (STEP)
 Panel layout in 3D (glTF)	Kaappiasennus 3D-muodossa (glTF)
 Panel layout settings	Kaappiasennuksen asetukset
 Panel legend	Kaapin selite
+Parallel to the roof on roof hooks	Katon suuntaisesti kattokoukuilla
 Part accessories	Osien lisävarusteet
 Part data is maintained in the parts management	Osien tietoja ylläpidetään osien hallinnassa
 Part description	Osan kuvaus
@@ -1162,6 +1187,7 @@ Potential {} defined {} times	Potentiaali {} määritetty {} kertaa
 Potentials / Connectors	Potentiaalit / liittimet
 Potentials, interruption points	Potentiaalit, katkoskohdat
 Potentiometer	Potentiometri
+Power (kWp)	Teho (kWp)
 Power and control circuit on several pages: main switch, motor protection, three contactors with interlocks, on-delay timer, interruption points, potentials with wire colours, motor cable and cable reports.	Pää- ja ohjauspiiri usealla sivulla: pääkytkin, moottorinsuoja, kolme kontaktoria lukituksineen, vetohidasteinen aikarele, katkaisukohdat, potentiaalit johdinväreineen, moottorikaapeli ja kaapeliraportit.
 Power factor	Tehokerroin
 Power factor meter	Tehokerroinmittari
@@ -1249,6 +1275,7 @@ Push button with key NC, latching	Avainpainike, avautuva, lukittuva
 Push button with key NO, latching	Avainpainike, sulkeutuva, lukittuva
 Pushbutton NC	Painike avautuva
 Pushbutton NO	Painike sulkeutuva
+Pyramid roof	Telttakatto
 Qty	Määrä
 RCD {} mA	Vikavirtasuoja {} mA
 Radiation	Säteily
@@ -1401,6 +1428,7 @@ Setpoint	Asetusarvo
 Setting range	Asettelualue
 Sheath colour	Vaipan väri
 Sheath material	Vaipan materiaali
+Shed roof	Pulpettikatto
 Sheet number	Arkin numero
 Sheet steel	Teräslevy
 Shield clamp	Suojavaippapuristin
@@ -1429,6 +1457,8 @@ Siren	Sireeni
 Site address	Asennuspaikan osoite
 Size (mm)	Koko (mm)
 Skipped	Ohitettu
+Sliding to the left	Liukuva vasemmalle
+Sliding to the right	Liukuva oikealle
 Socket outlet	Pistorasia
 Socket side (female)	Holkkipuoli (naaras)
 Soft starter	Pehmokäynnistin
@@ -1447,6 +1477,7 @@ Spare	Vara
 Spare part	Varaosa
 Spare terminal	Varariviliitin
 Speed	Pyörimisnopeus
+Spiral	Kierreportaat
 Stainless steel	Ruostumaton teräs
 Standard	Standardi
 Start / stop circuit with a relay: coil and contacts form one device with cross references and contact image, terminal strip, wire numbers, terminal diagram and connection list.	Käynnistys- / pysäytyspiiri releellä: kela ja koskettimet muodostavat yhden laitteen ristiviittauksineen ja kosketinkuvineen, riviliitin, johdinnumerot, riviliitinkaavio ja kytkentäluettelo.
@@ -1462,6 +1493,7 @@ Steam	Höyry
 Stock	Varasto
 Stop category	Pysäytysluokka
 Storage temperature range	Varastointilämpötila-alue
+Straight	Suorat
 Straight through from {} to {}, across from {} to {} and from {} to {}	Suoraan {} – {}, poikittain {} – {} ja {} – {}
 Strain relief	Vedonpoisto
 Stretched	Venytetty
@@ -1489,6 +1521,7 @@ Suppliers	Toimittajat
 Supply network	Jakelujärjestelmä
 Supply voltage	Syöttöjännite
 Surface (m²)	Pinta-ala (m²)
+Surface-mounted	Pinta-asennus
 Surge protection type	Ylijännitesuojan tyyppi
 Surge protective device	Ylijännitesuoja
 Surge suppressor	Ylijännitesuoja
@@ -1597,6 +1630,7 @@ Through-beam sensor, 4-wire	Läpisäteilyvalokenno, 4-johtiminen
 Through-beam transmitter	Läpisäteilyvalokennon lähetin
 Thyristor	Tyristori
 Tightening torque	Kiristysmomentti
+Tilted on a flat roof	Kallistettuna tasakatolla
 Time function	Aikatoiminto
 Time range	Aika-alue
 Time relay coil KT (GB)	Aikareleen kela KT (GB)
@@ -1649,9 +1683,14 @@ Trunking	Johtokouru
 Tube	Putki (letku)
 Tubes	Putket
 Tubing / piping list	Putki- / putkistoluettelo
+Turned once (quarter landing)	Kerran kääntyvät (kulmatasanne)
+Turned twice (two quarter landings)	Kahdesti kääntyvät (kaksi kulmatasannetta)
 Two connection symbols on page {} lie on the same point	Sivun {} kaksi liitossymbolia ovat samassa pisteessä
 Two-way switch (installation)	Vaihtokytkin (asennus)
 Type numbers	Tyyppinumerot
+U max (V)	U maks. (V)
+U mean (V)	U keski (V)
+U min (V)	U min. (V)
 UL listed	UL-listattu
 UV resistant	UV-kestävä
 Unbalance {} %	Epäsymmetria {} %
@@ -1680,6 +1719,9 @@ Varistor	Varistori
 Varmeter	Loistehomittari
 Vector group	Kytkentäryhmä
 Ventilation clearance	Tuuletusetäisyys
+Vertical, beside the corners	Pystysuora, kulmien vieressä
+Vertical, beside the doors	Pystysuora, ovien vieressä
+Vertical, beside the windows	Pystysuora, ikkunoiden vieressä
 Vessel	Säiliö
 Vibration	Värähtely
 Vibration resistance	Värähtelynkesto
@@ -1798,7 +1840,6 @@ is none of	ei ole mikään seuraavista
 is not	ei ole
 is not empty	ei ole tyhjä
 is one of	on jokin seuraavista
-landscape	vaaka
 leakage	vuoto
 low	matala
 measuring	mittaus
@@ -1807,6 +1848,7 @@ no header	ei otsikkoriviä
 no list	ei luetteloa
 no path through the route network	ei reittiä reittiverkon kautta
 no way through the enclosure	ei reittiä kotelon läpi
+no way through the installation zones	ei reittiä asennusvyöhykkeiden kautta
 not in the panel layout	ei kaappiasennuksessa
 not in the same line-up or room	ei samassa rivityksessä tai huoneessa
 not reached	ei saavutettu
@@ -1859,6 +1901,7 @@ yellow	keltainen
 {} fits none of the parts of {}	{} ei sovi mihinkään laitteen {} osaan
 {} frozen routes changed their length	{} lukittua reittiä muutti pituuttaan
 {} has no MTTFd, B10d, PL or PFHd	Kohteella {} ei ole MTTFd-, B10d-, PL- eikä PFHd-arvoa
+{} has no door or window {}	Kohteessa {} ei ole ovea tai ikkunaa {}
 {} has nothing to manufacture	Kohteella {} ei ole mitään valmistettavaa
 {} is a built-in function definition	{} on sisäinen toimintomäärittely
 {} is a built-in property	{} on sisäinen ominaisuus
@@ -1894,7 +1937,16 @@ yellow	keltainen
 {} {} is routed to the cable entries of its enclosures: they stand in no common room, the way between them is not part of the layout	{} {} on reititetty koteloidensa kaapeliläpivienteihin: ne eivät ole samassa huoneessa, niiden välinen reitti ei kuulu sijoitteluun
 {} {}: bends closer than the bend radius ({} mm)	{} {}: taivutukset tiukempia kuin taivutussäde ({} mm)
 {} – {}: connected in the single-line diagram but not in the schematic	{} – {}: yhdistetty yksinapaisessa kaaviossa mutta ei piirikaaviossa
+{}, MPP tracker {}: its strings differ in voltage ({} V and {} V)	{}, MPP-seurain {}: sen merkkijonojen jännitteet eroavat ({} V ja {} V)
+{}, MPP tracker {}: the strings deliver {} A, more than the {} A it uses (the power is limited)	{}, MPP-seurain {}: merkkijonot antavat {} A, enemmän kuin sen käyttämät {} A (teho rajoittuu)
+{}, MPP tracker {}: the strings reach a short-circuit current of {} A, more than the {} A it takes	{}, MPP-seurain {}: merkkijonojen oikosulkuvirta on {} A, enemmän kuin sen kestämät {} A
 {}: MTTFd {} years is below 3 years	{}: MTTFd {} vuotta on alle 3 vuotta
+{}: PV array {} covers a roof window	{}: aurinkopaneelikenttä {} peittää kattoikkunan
+{}: PV array {} has {} modules, its device {} has {}	{}: aurinkopaneelikentässä {} on {} moduulia, sen laitteessa {} on {}
+{}: PV array {} is mounted tilted on a pitched roof	{}: aurinkopaneelikenttä {} on asennettu kallistettuna harjakatolle
+{}: PV array {} of roof {} lies across a ridge, a hip or the edge of the roof	{0}: katon {2} aurinkopaneelikenttä {1} on harjan, aumaharjan tai katon reunan yli
+{}: PV array {} of roof {} lies outside the roof	{0}: katon {2} aurinkopaneelikenttä {1} on katon ulkopuolella
+{}: PV arrays {} and {} lie over each other	{}: aurinkopaneelikentät {} ja {} ovat päällekkäin
 {}: \"{}\" is not one of {}	{}: \"{}\" ei ole mikään arvoista {}
 {}: a TT system needs a residual current device	{}: TT-järjestelmä tarvitsee vikavirtasuojan
 {}: accessory {} fits none of the device's parts	{}: lisävaruste {} ei sovi mihinkään laitteen osaan
@@ -1964,11 +2016,21 @@ yellow	keltainen
 {}: slot {} of rack {} is used by {} and {}	{0}: telineen {2} korttipaikkaa {1} käyttävät {3} ja {4}
 {}: solenoid coil not linked to a valve	{}: magneettikelaa ei ole linkitetty venttiiliin
 {}: solenoid valve without linked solenoid coil (Fluid and process › Synchronize)	{}: magneettiventtiili ilman linkitettyä magneettikelaa (Fluidi ja prosessi › Synkronoi)
+{}: string {} of PV array {} drops to {} V at {} °C, below the MPP range of {} ({} - {} V)	{0}: aurinkopaneelikentän {2} merkkijono {1} laskee {4} °C:ssa {3} V:iin, alle laitteen {5} MPP-alueen ({6} - {7} V)
+{}: string {} of PV array {} is connected to no inverter	{0}: aurinkopaneelikentän {2} merkkijonoa {1} ei ole kytketty mihinkään vaihtosuuntaajaan
+{}: string {} of PV array {} reaches {} V at maximum power at {} °C, above the MPP range of {} ({} - {} V)	{0}: aurinkopaneelikentän {2} merkkijono {1} saavuttaa maksimiteholla {4} °C:ssa {3} V, yli laitteen {5} MPP-alueen ({6} - {7} V)
+{}: string {} of PV array {} reaches {} V at {} °C, more than the {} V system voltage of its modules	{0}: aurinkopaneelikentän {2} merkkijono {1} saavuttaa {4} °C:ssa {3} V, enemmän kuin sen moduulien {5} V järjestelmäjännite
+{}: string {} of PV array {} reaches {} V at {} °C, more than the {} V {} takes	{0}: aurinkopaneelikentän {2} merkkijono {1} saavuttaa {4} °C:ssa {3} V, enemmän kuin laitteen {6} kestämät {5} V
+{}: string {} of PV array {}: {} has only {} MPP trackers	{0}: aurinkopaneelikentän {2} merkkijono {1}: laitteessa {3} on vain {4} MPP-seurainta
+{}: string {} of PV array {}: {} is no device with PV input data	{0}: aurinkopaneelikentän {2} merkkijono {1}: {3} ei ole laite, jolla on aurinkosähkötulon tiedot
 {}: terminal {} is on level {}, but no terminal block is before it	{}: riviliitin {} on kerroksessa {}, mutta sitä ennen ei ole riviliitinlohkoa
 {}: terminal {} uses {} levels, its part {} has {}	{}: riviliitin {} käyttää {} kerrosta, sen osassa {} on {}
 {}: terminals {} are {} mm above the floor, at least {} mm required	{}: riviliittimet {} ovat {} mm lattian yläpuolella, vähintään {} mm vaaditaan
 {}: the busbar system with {} bars joins {} conductors ({}): short circuit	{}: kiskojärjestelmä, jossa on {} kiskoa, yhdistää {} johdinta ({}): oikosulku
+{}: the device {} of PV array {} does not exist	{0}: aurinkopaneelikentän {2} laitetta {1} ei ole
+{}: the module {} of PV array {} has no electrical data	{0}: aurinkopaneelikentän {2} moduulilla {1} ei ole sähkötietoja
 {}: the station has no port {}	{}: asemalla ei ole porttia {}
+{}: the strings of PV array {} connect {} modules, the array has {}	{}: aurinkopaneelikentän {} merkkijonot kytkevät {} moduulia, kentässä on {}
 {}: the {} ({} x {} mm) is larger than the working area of {}	{}: {} ({} x {} mm) on suurempi kuin koneen {} työalue
 {}: the {} is {} mm thick, {} takes at most {} mm	{}: {} on {} mm paksu, {} ottaa enintään {} mm
 {}: voltage drop {} V ({} %) above {} %	{}: jännitteenalenema {} V ({} %) yli {} %
@@ -1994,6 +2056,7 @@ yellow	keltainen
 {}: {} is not made for wall mounting, mount it on a rail	{}: {} ei ole tarkoitettu seinäasennukseen, asenna se kiskoon
 {}: {} is {} … {} mm above the floor, allowed {} … {} mm	{}: {} on {} … {} mm lattian yläpuolella, sallittu {} … {} mm
 {}: {} kg on the {} exceed its load of {} kg	{}: {} kg kohteessa {} ylittää sen kantavuuden {} kg
+{}: {} modules of PV array {} are not connected to a string	{0}: aurinkopaneelikentän {2} {1} moduulia ei ole kytketty merkkijonoon
 {}: {} modules, the head has {} slots	{}: {} moduulia, pääyksikössä on {} korttipaikkaa
 {}: {} of {} mm is longer than the stock length of {} mm and has to be joined	{}: {} ({} mm) on pidempi kuin varastopituus {} mm ja se on jatkettava
 {}: {} of {} mm is shorter than {} mm and hard to cut	{}: {} ({} mm) on lyhyempi kuin {} mm ja vaikea katkaista
@@ -2005,6 +2068,7 @@ yellow	keltainen
 {}: {} solenoid coils linked, the valve has {}	{}: {} magneettikelaa linkitetty, venttiilissä on {}
 {}: {} stands in an inner wall	{}: {} on väliseinän sisällä
 {}: {} stands in the swing of the door in wall {}	{}: {} on seinän {} oven kääntöalueella
+{}: {} stands in the way of the sliding door in wall {}	{0}: {1} on seinän {2} liukuoven tiellä
 {}: {} stands outside the room	{}: {} on tilan ulkopuolella
 {}: {} stands where {} stands	{}: {} seisoo samassa paikassa kuin {}
 {}: {} threads on the {} are cut by hand	{}: {} kierrettä kohteessa {} tehdään käsin

@@ -90,3 +90,106 @@ fn devices_on_the_facade_and_the_roof() {
     assert_eq!(r[0]["problems"], json!([]));
     assert!(run(&mut s, "mount_on_wall", json!({ "room": "+R1", "device": "-K2", "face": "outside9", "x": 0, "y": 0 })).unwrap_err().contains("Unknown face"));
 }
+
+#[test]
+fn stairs_roofs_and_roof_windows() {
+    let mut s = demo_session();
+    run(&mut s, "add_building", json!({ "name": "+H1", "x": 30000, "z": 0 })).unwrap();
+    run(&mut s, "add_level", json!({ "building": "+H1" })).unwrap();
+    run(&mut s, "add_room", json!({ "name": "+EG", "building": "+H1", "level": "L0", "x": 0, "z": 0, "width": 8000, "depth": 6000 })).unwrap();
+    run(&mut s, "add_room", json!({ "name": "+DG", "building": "+H1", "level": "L1", "x": 0, "z": 0, "width": 8000, "depth": 6000 })).unwrap();
+    // A stair turned once from the ground floor up.
+    let b = run(&mut s, "add_stair", json!({ "building": "+H1", "x": 1000, "z": 5000, "kind": "quarter_landing", "turn": "right" })).unwrap();
+    let st = &b["stairs"][0];
+    assert_eq!((st["name"].as_str(), st["kind"].as_str(), st["turn"].as_str()), (Some("ST1"), Some("quarter_landing"), Some("right")));
+    assert_eq!((st["bottom"].as_str(), st["top"].as_str(), st["risers"].as_u64()), (Some("L0"), Some("L1"), Some(17)));
+    assert!(run(&mut s, "add_stair", json!({ "building": "+H1", "x": 0, "z": 0, "kind": "ladder" })).unwrap_err().contains("ladder"));
+    assert!(run(&mut s, "add_stair", json!({ "building": "+H1", "x": 0, "z": 0, "bottom": "L1" })).is_err(), "nothing above L1");
+    let b = run(&mut s, "set_stair", json!({ "building": "+H1", "stair": "st1", "kind": "spiral", "width": 800 })).unwrap();
+    assert_eq!((b["stairs"][0]["kind"].as_str(), b["stairs"][0]["width"].as_f64()), (Some("spiral"), Some(800.0)));
+    // A gable roof low over the attic slopes its ceiling, not that of the ground floor.
+    let b = run(&mut s, "add_roof", json!({ "building": "+H1", "shape": "gable", "eaves": 4000, "pitch": 40 })).unwrap();
+    let r = &b["roofs"][0];
+    assert_eq!((r["name"].as_str(), r["shape"].as_str(), r["eaves"].as_f64()), (Some("R1"), Some("gable"), Some(4000.0)));
+    assert!(r["ridge"].as_f64().unwrap() > 6000.0);
+    assert!(b["levels"][0]["rooms"][0].get("ceiling").is_none());
+    let attic = &b["levels"][1]["rooms"][0]["ceiling"];
+    assert!((attic["lowest"].as_f64().unwrap() - 1000.0).abs() < 300.0 && (attic["highest"].as_f64().unwrap() - 2700.0).abs() < 0.5, "{attic}");
+    assert!(run(&mut s, "add_roof", json!({ "building": "+H1", "shape": "dome" })).unwrap_err().contains("dome"));
+    // Roof windows in its slope.
+    let b = run(&mut s, "add_roof_window", json!({ "building": "+H1", "roof": "R1" })).unwrap();
+    let id = b["roofs"][0]["windows"][0]["id"].as_u64().unwrap();
+    let b = run(&mut s, "set_roof_window", json!({ "building": "+H1", "roof": "R1", "window": id, "width": 1140 })).unwrap();
+    assert_eq!(b["roofs"][0]["windows"][0]["width"], 1140.0);
+    let list = run(&mut s, "list_buildings", json!({ "building": "+H1" })).unwrap();
+    assert_eq!(list["problems"], json!([]), "{}", list["problems"]);
+    let b = run(&mut s, "set_roof_window", json!({ "building": "+H1", "roof": "R1", "window": id, "remove": true })).unwrap();
+    assert_eq!(b["roofs"][0]["windows"], json!([]));
+    let b = run(&mut s, "set_roof", json!({ "building": "+H1", "roof": "R1", "shape": "flat", "eaves": 6000 })).unwrap();
+    assert!(b["levels"][1]["rooms"][0].get("ceiling").is_none(), "a high flat roof leaves the ceiling flat");
+    let b = run(&mut s, "set_roof", json!({ "building": "+H1", "roof": "R1", "remove": true })).unwrap();
+    assert_eq!(b["roofs"], json!([]));
+    let b = run(&mut s, "set_stair", json!({ "building": "+H1", "stair": "ST1", "remove": true })).unwrap();
+    assert_eq!(b["stairs"], json!([]));
+}
+
+#[test]
+fn pv_arrays_on_pitched_and_flat_roofs() {
+    let mut s = demo_session();
+    run(&mut s, "add_building", json!({ "name": "+H1", "x": 30000, "z": 0 })).unwrap();
+    run(&mut s, "add_room", json!({ "name": "+EG", "building": "+H1", "level": "L0", "x": 0, "z": 0, "width": 8000, "depth": 6000 })).unwrap();
+    run(&mut s, "add_roof", json!({ "building": "+H1", "shape": "gable", "pitch": 40 })).unwrap();
+    // On rails and roof hooks in the middle of the front slope.
+    let b = run(&mut s, "add_pv_array", json!({ "building": "+H1", "roof": "R1", "module": "GEN.PV-400W-FB" })).unwrap();
+    let a = &b["roofs"][0]["solar"][0];
+    assert_eq!((a["name"].as_str(), a["mounting"].as_str(), a["modules"].as_u64()), (Some("PV1"), Some("parallel"), Some(8)));
+    assert!((a["peak_kw"].as_f64().unwrap() - 3.2).abs() < 1e-4);
+    let parts: Vec<&str> = a["material"].as_array().unwrap().iter().map(|m| m["part"].as_str().unwrap()).collect();
+    assert_eq!(parts, ["GEN.PV-400W-FB", "GEN.PV-RAIL-40", "GEN.PV-RAIL-CONN", "GEN.PV-HOOK", "GEN.PV-CLAMP-END", "GEN.PV-CLAMP-MID"]);
+    let list = run(&mut s, "list_buildings", json!({ "building": "+H1" })).unwrap();
+    assert_eq!(list["problems"], json!([]), "{}", list["problems"]);
+    let b = run(&mut s, "set_pv_array", json!({ "building": "+H1", "roof": "R1", "array": "pv1", "columns": 5, "rows": 1, "landscape": true })).unwrap();
+    assert_eq!(b["roofs"][0]["solar"][0]["modules"], 5);
+    assert!(run(&mut s, "set_pv_array", json!({ "building": "+H1", "roof": "R1", "array": "PV1", "mounting": "wall" })).unwrap_err().contains("wall"));
+    assert!(run(&mut s, "set_pv_array", json!({ "building": "+H1", "roof": "R1", "array": "PV1", "module": "NOPE" })).unwrap_err().contains("NOPE"));
+    assert!(run(&mut s, "set_pv_array", json!({ "building": "+H1", "roof": "R1", "array": "PV9" })).unwrap_err().contains("PV9"));
+    // On a flat roof: east-west pairs on ballasted mounting bases.
+    run(&mut s, "set_roof", json!({ "building": "+H1", "roof": "R1", "shape": "flat" })).unwrap();
+    let b = run(&mut s, "set_pv_array", json!({ "building": "+H1", "roof": "R1", "array": "PV1", "mounting": "east-west", "columns": 2, "tilt": 10, "azimuth": 90 })).unwrap();
+    let a = &b["roofs"][0]["solar"][0];
+    assert_eq!((a["mounting"].as_str(), a["modules"].as_u64()), (Some("east_west"), Some(4)));
+    assert!(a["material"].as_array().unwrap().iter().any(|m| m["part"] == "GEN.PV-BASE-EW10" && m["qty"] == 3.0));
+    let list = run(&mut s, "list_buildings", json!({ "building": "+H1" })).unwrap();
+    assert_eq!(list["problems"], json!([]), "{}", list["problems"]);
+    let b = run(&mut s, "set_pv_array", json!({ "building": "+H1", "roof": "R1", "array": "PV1", "remove": true })).unwrap();
+    assert!(b["roofs"][0].get("solar").is_some_and(|v| v == &json!([])));
+}
+
+#[test]
+fn pv_strings_on_the_trackers_of_an_inverter() {
+    let mut s = new_session();
+    run(&mut s, "add_building", json!({ "name": "+H1", "x": 30000, "z": 0 })).unwrap();
+    run(&mut s, "add_room", json!({ "name": "+EG", "building": "+H1", "level": "L0", "x": 0, "z": 0, "width": 8000, "depth": 6000 })).unwrap();
+    run(&mut s, "add_roof", json!({ "building": "+H1", "shape": "gable", "pitch": 40 })).unwrap();
+    run(&mut s, "add_pv_array", json!({ "building": "+H1", "roof": "R1", "columns": 5 })).unwrap();
+    let inv = run(&mut s, "place_part", json!({ "page": "1", "part": "GEN.INV-PV-10KW", "x": 200, "y": 100 })).unwrap();
+    let tag = inv["tag"].as_str().unwrap().to_string();
+    // All ten modules in series on the inverter's first tracker.
+    let a = run(&mut s, "add_pv_string", json!({ "building": "+H1", "roof": "R1", "array": "PV1" })).unwrap();
+    let st = &a["strings"][0];
+    assert_eq!((st["name"].as_str(), st["series"].as_u64(), st["inverter"].as_str(), st["mppt"].as_u64()), (Some("S1"), Some(10), Some(tag.as_str()), Some(1)));
+    assert!((st["values"]["voltage_max"].as_f64().unwrap() - 426.3).abs() < 0.1, "{st}");
+    assert!((st["values"]["power"].as_f64().unwrap() - 4300.0).abs() < 0.1);
+    let list = run(&mut s, "pv_strings", json!({})).unwrap();
+    assert_eq!((list["strings"].as_array().unwrap().len(), list["problems"].clone()), (1, json!([])));
+    // Two strings of five in parallel; at -30 °C still below the input voltage.
+    let a = run(&mut s, "set_pv_string", json!({ "building": "+H1", "roof": "R1", "array": "PV1", "string": "s1", "series": 5, "parallel": 2 })).unwrap();
+    assert!((a["strings"][0]["values"]["current"].as_f64().unwrap() - 26.4).abs() < 0.01);
+    let list = run(&mut s, "pv_strings", json!({ "t_min": -30 })).unwrap();
+    let problems: Vec<&str> = list["problems"].as_array().unwrap().iter().map(|p| p.as_str().unwrap()).collect();
+    assert!(problems.iter().any(|p| p.contains("short-circuit current of 28.4 A")), "{problems:?}");
+    assert!(run(&mut s, "pv_strings", json!({ "t_min": 30, "t_mean": 25 })).is_err());
+    assert!(run(&mut s, "set_pv_string", json!({ "building": "+H1", "roof": "R1", "array": "PV1", "string": "S9" })).unwrap_err().contains("S9"));
+    let a = run(&mut s, "set_pv_string", json!({ "building": "+H1", "roof": "R1", "array": "PV1", "string": "S1", "remove": true })).unwrap();
+    assert_eq!(a["strings"], json!([]));
+}

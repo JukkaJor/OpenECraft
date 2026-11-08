@@ -4,6 +4,7 @@
 1 · First circuit: push buttons and lamps	1 · 最初の回路：押しボタンと表示灯
 10 · Pump room	10 · ポンプ室
 12 · Connectors, pin-outs and ribbon cables	12 · コネクタ、ピン配置、フラットケーブル
+16 · Office building with roof, stair and installation	16 · 屋根、階段、設備のあるオフィスビル
 2 · Relay with self-holding contact	2 · 保持回路付きリレー
 3 · Star-delta motor starter	3 · スターデルタ始動器
 3/2 directional valve	3/2 方向制御弁
@@ -175,6 +176,7 @@ Capacitive sensor, 3-wire	静電容量形センサー (3 線式)
 Capacitor	コンデンサー
 Capacitor, polarized	有極性コンデンサー
 Ceiling	天井
+Cell temperatures: {} °C (U max), {} °C (U mean), {} °C (U min)	セル温度：{} °C（U 最大）、{} °C（U 平均）、{} °C（U 最小）
 Centre horizontally	左右中央揃え
 Centre vertically	上下中央揃え
 Centrifugal pump	遠心ポンプ
@@ -426,6 +428,7 @@ ERP item master and bill of materials (CSV)	ERP 品目マスターと部品表 (
 ERP number	ERP 番号
 ETIM class	ETIM クラス
 Earth electrode	接地極
+East-west on a flat roof	陸屋根に東西向き
 Edit pages	ページの編集
 Edit project data	プロジェクトデータの編集
 Editor	編集者
@@ -513,6 +516,7 @@ Fitting	継手
 Fittings	継手
 Flame retardant	難燃性
 Flat cable {} has {} cores, the IDC connector {} has {} pins	フラットケーブル {} は {} 心、IDC コネクタ {} は {} ピンです
+Flat roof	陸屋根
 Float switch NC	フロートスイッチ b接点
 Float switch NO	フロートスイッチ a接点
 Float switch NO (NFPA)	フロートスイッチ a接点 (NFPA)
@@ -531,6 +535,8 @@ Fluid power (ISO 1219)	流体動力 (ISO 1219)
 Fluid power and electrics in one project: pneumatic circuit with service unit, valve terminal, 5/2 valves, flow control valves and cylinders; solenoid coils and position switches are linked to the valves and cylinders.	流体と電気を1つのプロジェクトで：エアサービスユニット、バルブターミナル、5/2 弁、流量制御弁、シリンダを含む空圧回路。ソレノイドコイルと位置スイッチは弁とシリンダに関連付けられています。
 Fluid power and process	流体技術とプロセス
 Fluid power settings	流体動力の設定
+Flush-mounted in the floor	床内隠ぺい
+Flush-mounted in the wall	壁内隠ぺい
 Foot switch NC	フットスイッチ b接点
 Foot switch NO	フットスイッチ a接点
 Foot switch NO (NFPA)	フットスイッチ a接点 (NFPA)
@@ -583,6 +589,7 @@ Fuse, LV HBC, 3-pole	低圧限流ヒューズ (NH) 3 極
 GB (GB/T 4728)	GB (GB/T 4728)
 GOST (ESKD)	GOST (ESKD)
 GTIN	GTIN
+Gable roof	切妻屋根
 Galvanometer	検流計
 Gas	ガス
 Gas flow switch NC	ガスフロースイッチ b接点
@@ -607,6 +614,7 @@ Greenline	グリーンライン
 Grounded conductors must be white or grey (NFPA 79, 13.2.3)	接地側導体は白または灰である必要があります (NFPA 79、13.2.3)
 HMI	HMI
 HTML document for printing	印刷用 HTML ドキュメント
+Half landing (two flights)	折り返し (2 つの階段)
 Hall 1	ホール 1
 Halogen free	ハロゲンフリー
 Hand	手動
@@ -620,8 +628,15 @@ Heating element	ヒーター素子
 Higher-level product (-)	上位製品 (-)
 Higher-level product of the page	ページの上位製品
 Highest (°C)	最高 (°C)
+Hinged left, opens inwards	左吊り元、内開き
+Hinged left, opens outwards	左吊り元、外開き
+Hinged right, opens inwards	右吊り元、内開き
+Hinged right, opens outwards	右吊り元、外開き
+Hip roof	寄棟屋根
 Hold-up time	停電保持時間
 Holding power	保持電力
+Horizontal, above the floor	水平、床上
+Horizontal, below the ceiling	水平、天井下
 Horn (NFPA)	ホーン (NFPA)
 Horn / buzzer	ホーン / ブザー
 Horn / buzzer HA (GB)	ホーン / ブザー HA (GB)
@@ -646,6 +661,8 @@ Hydraulic oil	作動油
 Hydraulic power unit	油圧ユニット
 Hydraulic pump	油圧ポンプ
 Hysteresis	ヒステリシス
+I mpp (A)	I mpp (A)
+I sc max (A)	I sc 最大 (A)
 IEC 60204-1 (machinery: phases BK, DC control BU)	IEC 60204-1 (機械: 相導体 BK、DC 制御 BU)
 IEC 60445 (phases BN, BK, GY)	IEC 60445 (相導体 BN、BK、GY)
 IEC 61131-3 (%IX0.0 / %QX0.0)	IEC 61131-3 (%IX0.0 / %QX0.0)
@@ -657,6 +674,8 @@ Ik1 min (A)	Ik1 min (A)
 Impact protection (IK)	耐衝撃性 (IK)
 In engineering	設計中
 In production	製造中
+In the ceiling, along the walls	天井内、壁沿い
+In the floor, along the walls	床内、壁沿い
 Incoming supply	受電
 Indicator lamp	表示灯
 Indicator lamp HL (GB)	表示灯 HL (GB)
@@ -756,6 +775,7 @@ MAC address	MAC アドレス
 MCAD	MCAD
 MCAD device placement (CSV)	MCAD デバイス配置 (CSV)
 MOSFET N-channel	N チャネル MOSFET
+MPPT	MPPT
 MTTFd	MTTFd
 Machine (example identifiers)	機械 (識別子の例)
 Machine frame	機械フレーム
@@ -819,6 +839,8 @@ Minimum operating temperature	最低動作温度
 Mirror contacts	ミラー接点
 Mirrored	反転
 Mission time	ミッションタイム
+Module	モジュール
+Modules	モジュール
 Moisture	湿度
 Moment of inertia	慣性モーメント
 Motion detector	人感センサー
@@ -909,6 +931,7 @@ No plugs	プラグがありません
 No report block {}	レポートブロック {} はありません
 No segment template named {}	{} という名前のセグメントテンプレートはありません
 No subproject {}	サブプロジェクト {} がありません
+No such PV array	そのPVアレイはありません
 No such object: {}	該当するオブジェクトがありません: {}
 No surge protective device at the supply (IEC 60364-4-44)	電源供給部にサージ防護デバイスがありません (IEC 60364-4-44)
 No terminal {}	端子 {} はありません
@@ -1043,6 +1066,7 @@ PLC tags for Rockwell Studio 5000 (CSV)	Rockwell Studio 5000 用 PLC タグ (CSV
 PLC variables for Schneider Control Expert (XSY)	Schneider Control Expert 用 PLC 変数 (XSY)
 PLM	PLM
 PLM engineering BOM (JSON)	PLM 設計部品表 (JSON)
+PV strings	PVストリング
 PVC (70 °C)	PVC (70 °C)
 Page / column (3.4.1)	ページ / 列 (3.4.1)
 Page name	ページ名
@@ -1068,6 +1092,7 @@ Panel layout in 3D (STEP)	盤レイアウト 3D (STEP)
 Panel layout in 3D (glTF)	盤レイアウト 3D (glTF)
 Panel layout settings	盤レイアウトの設定
 Panel legend	盤凡例
+Parallel to the roof on roof hooks	屋根フックで屋根と平行
 Part accessories	部品アクセサリ
 Part data is maintained in the parts management	部品データは部品管理で管理されます
 Part description	部品の説明
@@ -1151,6 +1176,7 @@ Potential {} defined {} times	電位 {} が {} 回定義されています
 Potentials / Connectors	電位 / コネクター
 Potentials, interruption points	電位、中断ポイント
 Potentiometer	ポテンショメーター
+Power (kWp)	出力 (kWp)
 Power and control circuit on several pages: main switch, motor protection, three contactors with interlocks, on-delay timer, interruption points, potentials with wire colours, motor cable and cable reports.	複数ページにわたる主回路と制御回路：主開閉器、モータ保護、インターロック付きの3つの電磁接触器、オンディレイタイマ、中断点、線色付きの電位、モータケーブル、ケーブルレポート。
 Power factor	力率
 Power factor meter	力率計
@@ -1238,6 +1264,7 @@ Push button with key NC, latching	キー付き押しボタン b接点 (保持形
 Push button with key NO, latching	キー付き押しボタン a接点 (保持形)
 Pushbutton NC	押しボタン b接点
 Pushbutton NO	押しボタン a接点
+Pyramid roof	方形屋根
 Qty	数量
 RCD {} mA	RCD {} mA
 Radiation	放射線
@@ -1389,6 +1416,7 @@ Setpoint	設定値
 Setting range	設定範囲
 Sheath colour	シースの色
 Sheath material	シースの材質
+Shed roof	片流れ屋根
 Sheet number	シート番号
 Sheet steel	鋼板
 Shield clamp	シールドクランプ
@@ -1417,6 +1445,8 @@ Siren	サイレン
 Site address	設置場所の住所
 Size (mm)	サイズ (mm)
 Skipped	スキップ
+Sliding to the left	左引き（引き戸）
+Sliding to the right	右引き（引き戸）
 Socket outlet	コンセント
 Socket side (female)	ソケット側 (メス)
 Soft starter	ソフトスターター
@@ -1435,6 +1465,7 @@ Spare	予備
 Spare part	予備品
 Spare terminal	予備端子
 Speed	速度
+Spiral	らせん
 Stainless steel	ステンレス鋼
 Standard	規格
 Start / stop circuit with a relay: coil and contacts form one device with cross references and contact image, terminal strip, wire numbers, terminal diagram and connection list.	リレーによる起動 / 停止回路：コイルと接点は相互参照と接点イメージを持つ1つの機器を構成します。端子台、線番号、端子図、接続リスト。
@@ -1450,6 +1481,7 @@ Steam	蒸気
 Stock	在庫
 Stop category	停止カテゴリ
 Storage temperature range	保管温度範囲
+Straight	直進
 Straight through from {} to {}, across from {} to {} and from {} to {}	直進：{}から{}へ。横方向：{}から{}へ、{}から{}へ
 Strain relief	ストレインリリーフ
 Stretched	伸縮
@@ -1477,6 +1509,7 @@ Suppliers	仕入先
 Supply network	系統接地方式
 Supply voltage	供給電圧
 Surface (m²)	表面積 (m²)
+Surface-mounted	露出配線
 Surge protection type	サージ保護タイプ
 Surge protective device	サージ防護デバイス
 Surge suppressor	サージサプレッサー
@@ -1585,6 +1618,7 @@ Through-beam sensor, 4-wire	透過形光電センサー (4 線式)
 Through-beam transmitter	透過形投光器
 Thyristor	サイリスター
 Tightening torque	締付トルク
+Tilted on a flat roof	陸屋根に傾斜設置
 Time function	時間機能
 Time range	時間範囲
 Time relay coil KT (GB)	タイマーリレーコイル KT (GB)
@@ -1637,9 +1671,14 @@ Trunking	配線ダクト
 Tube	チューブ
 Tubes	チューブ
 Tubing / piping list	チューブ / 配管リスト
+Turned once (quarter landing)	1 回曲がり (踊り場)
+Turned twice (two quarter landings)	2 回曲がり (2 つの踊り場)
 Two connection symbols on page {} lie on the same point	ページ {} の2つの接続シンボルが同じ点にあります
 Two-way switch (installation)	3 路スイッチ (屋内配線)
 Type numbers	型番
+U max (V)	U 最大 (V)
+U mean (V)	U 平均 (V)
+U min (V)	U 最小 (V)
 UL listed	UL 認定
 UV resistant	耐紫外線
 Unbalance {} %	不平衡 {} %
@@ -1668,6 +1707,9 @@ Varistor	バリスター
 Varmeter	無効電力計
 Vector group	結線記号
 Ventilation clearance	換気クリアランス
+Vertical, beside the corners	垂直、角の横
+Vertical, beside the doors	垂直、ドアの横
+Vertical, beside the windows	垂直、窓の横
 Vessel	容器
 Vibration	振動
 Vibration resistance	耐振動性
@@ -1786,7 +1828,6 @@ is none of	のいずれでもない
 is not	と等しくない
 is not empty	が空でない
 is one of	のいずれか
-landscape	横
 leakage	ドレン
 low	低
 measuring	測定
@@ -1795,6 +1836,7 @@ no header	ヘッダーなし
 no list	リストなし
 no path through the route network	ルートネットワークを通る経路がありません
 no way through the enclosure	エンクロージャーを通る経路がありません
+no way through the installation zones	設置ゾーンを通る経路がありません
 not in the panel layout	盤レイアウトにありません
 not in the same line-up or room	同じ列盤または部屋にありません
 not reached	未達
@@ -1847,6 +1889,7 @@ yellow	黄
 {} fits none of the parts of {}	{0} は {1} のどの部品にも適合しません
 {} frozen routes changed their length	{} 件の固定されたルートの長さが変わりました
 {} has no MTTFd, B10d, PL or PFHd	{} には MTTFd、B10d、PL、PFHd のいずれもありません
+{} has no door or window {}	{0} にドアまたは窓 {1} はありません
 {} has nothing to manufacture	{} には製造するものがありません
 {} is a built-in function definition	{} は組み込みの機能定義です
 {} is a built-in property	{} は組み込みのプロパティです
@@ -1882,7 +1925,16 @@ yellow	黄
 {} {} is routed to the cable entries of its enclosures: they stand in no common room, the way between them is not part of the layout	{} {} は各エンクロージャーのケーブル引込口まで配線されています。共通の部屋にないため、その間の経路はレイアウトに含まれません
 {} {}: bends closer than the bend radius ({} mm)	{} {}: 曲げが曲げ半径 ({} mm) より小さくなっています
 {} – {}: connected in the single-line diagram but not in the schematic	{} – {}: 単線結線図では接続されていますが、回路図では接続されていません
+{}, MPP tracker {}: its strings differ in voltage ({} V and {} V)	{}、MPPトラッカー {}：ストリングの電圧が異なります（{} V と {} V）
+{}, MPP tracker {}: the strings deliver {} A, more than the {} A it uses (the power is limited)	{}、MPPトラッカー {}：ストリングは {} A を供給し、使用できる {} A を超えています（出力が制限されます）
+{}, MPP tracker {}: the strings reach a short-circuit current of {} A, more than the {} A it takes	{}、MPPトラッカー {}：ストリングの短絡電流は {} A に達し、許容値 {} A を超えています
 {}: MTTFd {} years is below 3 years	{}: MTTFd {} 年が 3 年を下回っています
+{}: PV array {} covers a roof window	{}：PVアレイ {} が天窓を覆っています
+{}: PV array {} has {} modules, its device {} has {}	{}：PVアレイ {} のモジュールは {} 枚、その機器 {} では {} 枚
+{}: PV array {} is mounted tilted on a pitched roof	{}：PVアレイ {} が勾配屋根に傾斜設置されています
+{}: PV array {} of roof {} lies across a ridge, a hip or the edge of the roof	{0}：屋根 {2} のPVアレイ {1} が棟、隅棟または屋根の端にかかっています
+{}: PV array {} of roof {} lies outside the roof	{0}：屋根 {2} のPVアレイ {1} が屋根の外にあります
+{}: PV arrays {} and {} lie over each other	{}：PVアレイ {} と {} が重なっています
 {}: \"{}\" is not one of {}	{}: 「{}」は {} のいずれでもありません
 {}: a TT system needs a residual current device	{}: TT 系統には漏電遮断器が必要です
 {}: accessory {} fits none of the device's parts	{}: アクセサリ {} は機器のどの部品にも適合しません
@@ -1952,10 +2004,20 @@ yellow	黄
 {}: slot {} of rack {} is used by {} and {}	{0}: ラック {2} のスロット {1} が {3} と {4} で使用されています
 {}: solenoid coil not linked to a valve	{}: ソレノイドコイルがバルブにリンクされていません
 {}: solenoid valve without linked solenoid coil (Fluid and process › Synchronize)	{}: ソレノイドコイルがリンクされていない電磁弁 (流体とプロセス › 同期)
+{}: string {} of PV array {} drops to {} V at {} °C, below the MPP range of {} ({} - {} V)	{0}：PVアレイ {2} のストリング {1} は {4} °C で {3} V に下がり、{5} のMPP範囲（{6} - {7} V）を下回ります
+{}: string {} of PV array {} is connected to no inverter	{0}：PVアレイ {2} のストリング {1} はどのインバーターにも接続されていません
+{}: string {} of PV array {} reaches {} V at maximum power at {} °C, above the MPP range of {} ({} - {} V)	{0}：PVアレイ {2} のストリング {1} は {4} °C の最大出力時に {3} V に達し、{5} のMPP範囲（{6} - {7} V）を上回ります
+{}: string {} of PV array {} reaches {} V at {} °C, more than the {} V system voltage of its modules	{0}：PVアレイ {2} のストリング {1} は {4} °C で {3} V に達し、モジュールのシステム電圧 {5} V を超えます
+{}: string {} of PV array {} reaches {} V at {} °C, more than the {} V {} takes	{0}：PVアレイ {2} のストリング {1} は {4} °C で {3} V に達し、{6} の許容値 {5} V を超えます
+{}: string {} of PV array {}: {} has only {} MPP trackers	{0}：PVアレイ {2} のストリング {1}：{3} のMPPトラッカーは {4} 個だけです
+{}: string {} of PV array {}: {} is no device with PV input data	{0}：PVアレイ {2} のストリング {1}：{3} はPV入力データのある機器ではありません
 {}: terminal {} is on level {}, but no terminal block is before it	{}: 端子 {} は {} 段目にありますが、その前に端子ブロックがありません
 {}: terminal {} uses {} levels, its part {} has {}	{}: 端子 {} は {} 段を使用していますが、その部品 {} は {} 段です
 {}: terminals {} are {} mm above the floor, at least {} mm required	{}: 端子 {} は床面から {} mm です。{} mm 以上必要です
+{}: the device {} of PV array {} does not exist	{0}：PVアレイ {2} の機器 {1} は存在しません
+{}: the module {} of PV array {} has no electrical data	{0}：PVアレイ {2} のモジュール {1} には電気データがありません
 {}: the station has no port {}	{}: ステーションにポート {} がありません
+{}: the strings of PV array {} connect {} modules, the array has {}	{}：PVアレイ {} のストリングは {} 枚のモジュールを接続していますが、アレイには {} 枚です
 {}: the {} ({} x {} mm) is larger than the working area of {}	{}: {} ({} x {} mm) は {} の加工範囲より大きいです
 {}: the {} is {} mm thick, {} takes at most {} mm	{}: {} の厚さは {} mm ですが、{} は最大 {} mm までです
 {}: voltage drop {} V ({} %) above {} %	{}: 電圧降下 {} V ({} %) が {} % を超えています
@@ -1981,6 +2043,7 @@ yellow	黄
 {}: {} is not made for wall mounting, mount it on a rail	{}: {} は壁取付用ではありません。レールに取り付けてください
 {}: {} is {} … {} mm above the floor, allowed {} … {} mm	{}: {} は床面から {} … {} mm です (許容 {} … {} mm)
 {}: {} kg on the {} exceed its load of {} kg	{0}: {2} 上の {1} kg は耐荷重 {3} kg を超えています
+{}: {} modules of PV array {} are not connected to a string	{0}：PVアレイ {2} の {1} 枚のモジュールはストリングに接続されていません
 {}: {} modules, the head has {} slots	{}: モジュールが {} 個ありますが、ヘッドのスロットは {} 個です
 {}: {} of {} mm is longer than the stock length of {} mm and has to be joined	{}: {} ({} mm) は定尺長 {} mm より長いため、継ぎ足す必要があります
 {}: {} of {} mm is shorter than {} mm and hard to cut	{}: {} ({} mm) は {} mm より短いため、切断が困難です
@@ -1992,6 +2055,7 @@ yellow	黄
 {}: {} solenoid coils linked, the valve has {}	{}: {} 個のソレノイドコイルがリンクされていますが、バルブのソレノイドは {} 個です
 {}: {} stands in an inner wall	{}: {} が内壁の中にあります
 {}: {} stands in the swing of the door in wall {}	{}: {} が壁 {} のドアの開閉範囲にあります
+{}: {} stands in the way of the sliding door in wall {}	{0}: {1} が壁 {2} の引き戸の動線をふさいでいます
 {}: {} stands outside the room	{}: {} は部屋の外にあります
 {}: {} stands where {} stands	{}: {} は {} と同じ場所にあります
 {}: {} threads on the {} are cut by hand	{0}: {2} のねじ {1} 個は手作業で加工します

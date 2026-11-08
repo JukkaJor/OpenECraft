@@ -89,6 +89,7 @@ Descending	내림차순
 Description	설명
 Designation	명칭
 Device	장치
+Device (PV generator) the modules belong to; its parts then count them in the bill of materials	모듈이 속한 장치(태양광 발전기); 그 부품이 자재 명세서에서 모듈을 셉니다
 Device description	장치 설명
 Device tag	장치 태그
 Device {}	장치 {}
@@ -159,6 +160,7 @@ Integration	통합
 Internal (bottom)	내부(아래)
 Interruption point	중단점
 Italic	기울임꼴
+Its MPP tracker (input), from 1	해당 MPP 트래커 (입력), 1부터
 Job	작업
 Jumper	점퍼
 Key	키
@@ -168,6 +170,7 @@ Languages	언어
 Last change	마지막 변경
 Layers	레이어
 Leave out stored baselines and wiring marks	저장된 기준선과 배선 표시 제외
+Left	왼쪽
 Length	길이
 Level	레벨
 Lifecycle	수명 주기
@@ -193,6 +196,8 @@ Minimum digits of the counter (leading zeros)	카운터의 최소 자릿수(앞�
 Missing parameter: {}	매개 변수 누락: {}
 Missing value for --{}	--{}의 값 누락
 Model import failed: {}	모델 가져오기 실패: {}
+Modules in series	직렬 모듈
+Modules side by side in a row	한 열에 나란히 놓인 모듈
 Mounted	장착됨
 Mounting	장착
 Mounting data	장착 데이터
@@ -215,6 +220,7 @@ No machine {}	기계 {}이(가) 없습니다
 No page named {}	이름이 {}인 페이지 없음
 No page template named {}	이름이 {}인 페이지 템플릿 없음
 No page {}	{} 페이지가 없습니다
+No part {} in the project	프로젝트에 부품 {}이(가) 없습니다
 No parts found	부품을 찾을 수 없습니다
 No plot frame named {}	이름이 {}인 플롯 프레임 없음
 No plug {}	플러그 {} 없음
@@ -245,6 +251,7 @@ PCT loop overview	PCT 루프 개요
 PL	PL
 PLC	PLC
 PLC card	PLC 카드
+PV array	태양광 어레이
 Packaging quantity	포장 수량
 Page	페이지
 Page description	페이지 설명
@@ -327,10 +334,12 @@ Reserve	예비
 Revision	개정
 Revision {}	개정 {}
 Rework	재작업
+Right	오른쪽
 Role	역할
 Rooms	방
 Route	경로 설정
 Routing	배선 경로
+Rows of modules (east-west: rows of pairs)	모듈 열 (동서 방향: 쌍의 열)
 Rule	규칙
 Rule set	규칙 세트
 Safety function	안전 기능
@@ -366,6 +375,7 @@ Sort by	정렬 기준
 Source	원본
 State	상태
 Status	상태
+String	스트링
 Strip	피복 제거
 Structure	구조
 Subproject name	하위 프로젝트 이름
@@ -388,6 +398,7 @@ Terminals	단자
 Text	텍스트
 Text to find	찾을 텍스트
 The identifier must not be empty	식별자는 비워 둘 수 없습니다
+The long side of the modules along the rows	모듈의 긴 변을 열 방향으로
 The page is released	페이지가 릴리스되었습니다
 There is a connection symbol at this point already	이 지점에는 이미 연결 기호가 있습니다
 Thermal	열
@@ -435,6 +446,7 @@ access denied	액세스가 거부되었습니다
 approved	승인됨
 bonded	본딩됨
 file or folder not found	파일 또는 폴더를 찾을 수 없습니다
+landscape	가로
 left	왼쪽
 mm	mm
 normal	보통

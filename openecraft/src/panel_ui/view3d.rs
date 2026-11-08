@@ -38,15 +38,29 @@ impl PanelUi {
     /// y up, z towards the door): all of them at their places in the room, a room with
     /// the cabinets standing in it, or the current one or its whole line-up from the
     /// left with the first one's bottom at y 0.
+    /// The 3D view shows all of the plant: all enclosures, or the site is shown.
+    pub(super) fn whole_site(&self) -> bool {
+        self.show_site || self.site
+    }
+
     pub(super) fn shown_3d(&self, prj: &Project, ei: usize) -> Vec<(usize, SitePose)> {
-        if self.show_site {
+        if self.whole_site() {
             return panel::site_poses(prj).into_iter().enumerate().collect();
         }
         if prj.layout.enclosures[ei].is_room() {
             let poses = panel::site_poses(prj);
             let room = poses[ei];
             let local = |p: SitePose| SitePose { at: room.local(p.at), angle: p.angle - room.angle };
-            return std::iter::once(ei).chain(panel::cabinets_in(&prj.layout, ei)).map(|k| (k, local(poses[k]))).collect();
+            // The whole building: its rooms with the cabinets in them.
+            let rooms = match panel::buildings::building_of(&prj.layout, ei).filter(|_| self.show_building) {
+                Some(bi) => {
+                    let mut v = vec![ei];
+                    v.extend(panel::buildings::building_rooms(&prj.layout, bi).into_iter().filter(|&r| r != ei));
+                    v
+                }
+                None => vec![ei],
+            };
+            return rooms.into_iter().flat_map(|r| std::iter::once(r).chain(panel::cabinets_in(&prj.layout, r))).map(|k| (k, local(poses[k]))).collect();
         }
         let lu = if self.show_lineup { panel::lineup_of(&prj.layout, ei) } else { vec![ei] };
         let pos = panel::positions(&prj.layout);
@@ -59,6 +73,21 @@ impl PanelUi {
                 (k, SitePose { at: [o[0] - base[0], bottom - o[1] - prj.layout.enclosures[k].height, o[2] - base[2]], angle: 0.0 })
             })
             .collect()
+    }
+
+    /// The pose of the room the 3D view is drawn in the coordinates of (the plant
+    /// points `q` are at `local(q)`), `None` when it is drawn in the plant's.
+    pub(super) fn view_frame(&self, prj: &Project, ei: usize) -> Option<SitePose> {
+        (!self.whole_site() && prj.layout.enclosures.get(ei).is_some_and(|e| e.is_room())).then(|| panel::site_poses(prj)[ei])
+    }
+
+    /// The buildings whose floor slabs, stairs and roofs the 3D view shows: all of them
+    /// with all enclosures, the room's own with its building.
+    pub(super) fn buildings_3d(&self, prj: &Project, ei: usize) -> Vec<usize> {
+        if self.whole_site() {
+            return (0..prj.layout.buildings.len()).collect();
+        }
+        panel::buildings::building_of(&prj.layout, ei).filter(|_| self.show_building).into_iter().collect()
     }
 
     pub(super) fn view_3d(&mut self, ui: &mut egui::Ui, prj: &mut Project, ei: usize, an: &Analysis) {
@@ -399,7 +428,8 @@ pub(super) fn project(scene: &Scene3d, camera: &Camera, rect: Rect, opacity: f32
         if !seen {
             continue;
         }
-        let color = if layer == OUTER_WALLS { face.color.gamma_multiply(opacity) } else { face.color };
+        let glass = face.side.is_some_and(|s| scene.sides[s].glass);
+        let color = if glass { face.color.gamma_multiply(super::scene3d::GLASS_ALPHA) } else if layer == OUTER_WALLS { face.color.gamma_multiply(opacity) } else { face.color };
         let k = key(layer, face.obj.map(|o| (o, 1)), depth / n as f32);
         push(&mut prims, k, Prim::Face { pts, z: zs, n: face.n, color, item: face.item, outline: face.outline });
     }

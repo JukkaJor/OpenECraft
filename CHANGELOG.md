@@ -5,6 +5,59 @@ its GitHub release ([docs/releasing.md](docs/releasing.md)).
 
 ## [0.1.1] - unreleased
 
+- **PV arrays on roofs:** rows of solar modules on every roof shape, parallel to a slope
+  on rails and roof hooks or on a flat roof tilted or east-west on ballasted mounting
+  bases. The mounting material (rails, connectors, roof hooks, end and middle clamps,
+  mounting bases, ballast, wind deflectors) follows from the modules and goes into the
+  bill of materials with them; it comes from a mounting system of the parts database
+  or from generic parts. New shipped catalogs `longi` and `jinko` with PV modules; the
+  check reports arrays across a ridge or off the roof, over roof windows or each other.
+  Commands `add_pv_array`, `set_pv_array` ([panel layout](docs/features/panel-layout.md)).
+- **PV strings:** the modules of a PV array in series and in parallel as strings on the
+  MPP trackers of inverters and charge controllers, with their highest, mean and lowest
+  voltage, currents and power at the design cell temperatures; the report *PV strings*
+  lists them, the check reports strings above the input voltage of their inverter or the
+  system voltage of their modules, outside the MPP range, beyond the trackers or their
+  currents. Commands `add_pv_string`, `set_pv_string`, `pv_strings`
+  ([panel layout](docs/features/panel-layout.md)).
+- **Doors and windows open either way or slide:** hinges at the left or right, opening
+  into or out of the room, or a sliding leaf; drawn so in the floor plan and the wall
+  view, the check keeps the way of sliding doors free. Command `set_wall_opening`,
+  `opens` for `add_wall_opening`.
+- **Site in the navigator:** the site at the root above the buildings shows the site
+  plan of all buildings or the whole plant in 3D; a click on a room keeps the 3D view or
+  shows its floor plan; new buildings and levels from the context menus.
+
+- **Flush-mounted cables, wires and tubes in rooms:** each line is laid surface-mounted,
+  flush-mounted in the walls or in the floor (a project default in the routing rules,
+  set per line in its properties or with `set_laying`). Flush-mounted lines run in slots
+  of a configurable depth along the installation zones, preset to those of DIN 18015-3
+  and editable (`installation_zones`), or down into the floor and along its zone.
+  *Show › Installation zones* shows the zones see-through, *Show › Open walls and
+  floors* sees through walls and floor slabs to the lines in them
+  ([panel layout](docs/features/panel-layout.md)).
+
+- **Stairs and roofs of buildings:** stairs from level to level, straight, turned once
+  or twice at quarter landings, with a half landing or spiral, their steps from the
+  difference in height; flat, shed, gable, hip and pyramid roofs with roof windows. A
+  roof lower than the ceilings below it slopes them, also on several levels: rooms get
+  different heights at different places, their walls end under the slope, and the
+  check reports cabinets and wall items above it. *Show › Whole building* shows a
+  building in 3D with its floor slabs, stairs and roofs. Commands `add_stair`,
+  `set_stair`, `add_roof`, `set_roof`, `add_roof_window`, `set_roof_window`
+  ([panel layout](docs/features/panel-layout.md)).
+- **Outlets, switches and heating circuit manifolds in rooms:** *Insert › Outlets,
+  switches, heating* places socket outlets, data and antenna outlets, switches, push
+  buttons and room thermostats at their mounting heights, heating circuit manifolds
+  (2 - 12 circuits) and single-room control boxes; generic parts and the new shipped
+  catalogs `gira` and `cosmo`, more KNX push buttons in `mdt`. Example 16
+  (`office_building`) shows them with a stair and a roof.
+
+- **Rooms onto levels in the navigator:** in *Enclosures and rooms* rooms are dragged
+  onto a level of a building to stand on it; a selected level takes the rooms made with
+  *New room*, and the context menu of a level offers *New room on this level*
+  ([panel layout](docs/features/panel-layout.md)).
+
 - **Updates in the editor:** when it starts, the editor looks for a new release on
   GitHub in the background, downloads it, checks it against `SHA256SUMS` and installs
   it: the Windows setup runs silently when the editor is closed (*Restart and update*

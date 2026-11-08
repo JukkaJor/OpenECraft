@@ -1,5 +1,112 @@
 use super::*;
+use openecraft_core::panel::buildings as bld;
 use openecraft_core::parts::vec3;
+
+/// A building with two levels and a room outside it.
+fn building_and_room() -> (Project, [u64; 2], usize) {
+    let mut prj = Project::default();
+    let bi = bld::add_building(&mut prj, "+B1").unwrap();
+    bld::add_level(&mut prj, bi, None, None, None).unwrap();
+    let levels = [0, 1].map(|k| prj.layout.buildings[bi].levels[k].id);
+    let free = bld::add_room(&mut prj, "+ROOM1", None).unwrap();
+    (prj, levels, free)
+}
+
+#[test]
+fn new_rooms_go_onto_the_level_selected_in_the_navigator() {
+    let (mut prj, [l0, l1], free) = building_and_room();
+    let mut ui = PanelUi::default();
+    ui.new_room(&mut prj);
+    assert_eq!(bld::building_of(&prj.layout, ui.enclosure), None, "no level selected");
+    ui.nav_action(&mut prj, NavAction::Level(l1));
+    ui.new_room(&mut prj);
+    assert_eq!(bld::rooms_on(&prj.layout, l1), vec![ui.enclosure]);
+    assert_eq!(ui.nav_level, Some(l1), "the level stays selected for more rooms");
+    ui.nav_action(&mut prj, NavAction::Level(l1));
+    assert_eq!(ui.nav_level, None, "a second click unselects it");
+    ui.nav_action(&mut prj, NavAction::NewRoomOn(l0));
+    assert_eq!(bld::rooms_on(&prj.layout, l0), vec![ui.enclosure], "context menu of a level");
+    assert!(bld::rooms_on(&prj.layout, l0).iter().all(|&r| r != free));
+    // A removed level is forgotten.
+    ui.nav_level = Some(999_999);
+    ui.new_room(&mut prj);
+    assert_eq!((ui.nav_level, bld::building_of(&prj.layout, ui.enclosure)), (None, None));
+}
+
+#[test]
+fn rooms_dropped_onto_a_level_stand_on_it() {
+    let (mut prj, [l0, l1], free) = building_and_room();
+    let mut ui = PanelUi::default();
+    ui.nav_action(&mut prj, NavAction::Put(free, l0));
+    assert_eq!(bld::rooms_on(&prj.layout, l0), vec![free]);
+    assert!(!ui.status.is_empty());
+    ui.nav_action(&mut prj, NavAction::Put(free, l1));
+    assert_eq!((bld::rooms_on(&prj.layout, l0), bld::rooms_on(&prj.layout, l1)), (vec![], vec![free]), "moved to another level");
+    ui.nav_action(&mut prj, NavAction::TakeOut(free));
+    assert_eq!(bld::building_of(&prj.layout, free), None);
+    prj.layout.enclosures.push(panel::Enclosure { name: "+CAB1".into(), ..Default::default() });
+    let cabinet = prj.layout.enclosures.len() - 1;
+    ui.nav_action(&mut prj, NavAction::Put(cabinet, l0));
+    assert!(bld::rooms_on(&prj.layout, l0).is_empty(), "only rooms stand on levels: {}", ui.status);
+}
+
+#[test]
+fn a_room_clicked_in_the_navigator_keeps_3d_or_shows_its_floor_plan() {
+    let (mut prj, [l0, _], free) = building_and_room();
+    let on_level = bld::add_room(&mut prj, "+ROOM2", Some(l0)).unwrap();
+    let mut ui = PanelUi { view: View::ThreeD, ..Default::default() };
+    ui.nav_action(&mut prj, NavAction::Open(on_level));
+    assert_eq!((ui.enclosure, ui.view), (on_level, View::ThreeD));
+    for view in [View::Front, View::Plan] {
+        ui.view = view;
+        ui.nav_action(&mut prj, NavAction::Open(free));
+        assert_eq!((ui.enclosure, ui.view, ui.in_room), (free, View::Plan, true), "{view:?}");
+    }
+    // From the site too.
+    ui.nav_action(&mut prj, NavAction::Site(None));
+    ui.nav_action(&mut prj, NavAction::Open(on_level));
+    assert_eq!((ui.site, ui.enclosure, ui.view), (false, on_level, View::Plan));
+}
+
+#[test]
+fn the_site_shows_the_site_plan_or_the_whole_plant_in_3d() {
+    let (mut prj, [l0, _], free) = building_and_room();
+    let on_level = bld::add_room(&mut prj, "+ROOM2", Some(l0)).unwrap();
+    let mut ui = PanelUi { view: View::Front, ..Default::default() };
+    ui.nav_action(&mut prj, NavAction::Site(None));
+    assert_eq!((ui.site, ui.view), (true, View::Plan), "a 2D view becomes the site plan");
+    ui.view = View::ThreeD;
+    ui.enclosure = free;
+    let shown: Vec<usize> = ui.shown_3d(&prj, free).into_iter().map(|s| s.0).collect();
+    assert_eq!(shown, (0..prj.layout.enclosures.len()).collect::<Vec<_>>(), "every room of the plant");
+    assert_eq!((ui.buildings_3d(&prj, free), ui.view_frame(&prj, free)), (vec![0], None));
+    // A building clicked is highlighted in it; the 3D view stays.
+    ui.nav_action(&mut prj, NavAction::Site(Some(0)));
+    assert_eq!((ui.site_plan.building, ui.view), (Some(0), View::ThreeD));
+    // A wall view or a drawing tool leaves the site.
+    ui.front_face(Face::Wall(0), false);
+    assert!(!ui.site);
+    ui.nav_action(&mut prj, NavAction::Site(None));
+    ui.choose_tool(Tool::Walls);
+    assert!(!ui.site);
+    assert!(on_level != free);
+}
+
+#[test]
+fn buildings_get_new_levels_and_the_site_new_buildings_from_their_menus() {
+    let (mut prj, _, _) = building_and_room();
+    let mut ui = PanelUi::default();
+    ui.nav_action(&mut prj, NavAction::NewLevel(0, false));
+    let b = &prj.layout.buildings[0];
+    let top = b.levels.last().unwrap();
+    assert_eq!((b.levels.len(), top.elevation, ui.nav_level), (3, 6000.0, Some(top.id)), "on top, selected for new rooms");
+    ui.nav_action(&mut prj, NavAction::NewLevel(0, true));
+    let b = &prj.layout.buildings[0];
+    assert_eq!((b.levels.len(), b.levels[0].elevation), (4, -bld::LEVEL_HEIGHT), "a basement");
+    ui.nav_action(&mut prj, NavAction::NewBuilding);
+    assert_eq!(prj.layout.buildings.iter().map(|b| b.name.as_str()).collect::<Vec<_>>(), vec!["+B1", "+B2"]);
+    assert_eq!((ui.site, ui.site_plan.building), (true, Some(1)));
+}
 
 #[test]
 fn fill_colours_follow_the_limit() {
@@ -1361,4 +1468,102 @@ fn tubes_drawn_in_3d_keep_their_bend_radius_where_they_do_not_cross() {
         let (all, tight) = tight_in_3d(&openecraft_core::sample::example(key).unwrap());
         assert!(all > 50 && (tight.len() as f32) <= most * all as f32, "{key}: {} of {all}:\n{}", tight.len(), tight.join("\n"));
     }
+}
+
+/// A house: two levels, a room on each, a stair between them and a gable roof low over
+/// the attic with a roof window; the index of the attic.
+fn house() -> (Project, usize) {
+    let mut prj = Project::default();
+    let bi = bld::add_building(&mut prj, "+H1").unwrap();
+    bld::add_level(&mut prj, bi, None, None, None).unwrap();
+    let levels = [0, 1].map(|k| prj.layout.buildings[bi].levels[k].id);
+    let mut rooms = [0; 2];
+    for (k, level) in levels.into_iter().enumerate() {
+        rooms[k] = bld::add_room(&mut prj, &format!("+R{k}"), Some(level)).unwrap();
+        let e = &mut prj.layout.enclosures[rooms[k]];
+        (e.width, e.depth) = (8000.0, 6000.0);
+        e.site = Some(SitePlace::default());
+    }
+    panel::stairs::add_stair(&mut prj, bi, panel::StairKind::QuarterLanding, 1000.0, 5000.0, levels[0], None).unwrap();
+    let roof = panel::roofs::add_roof(&mut prj, bi, panel::RoofShape::Gable).unwrap();
+    let r = prj.layout.buildings[bi].roofs.iter_mut().find(|r| r.id == roof).unwrap();
+    r.eaves = 4000.0;
+    panel::roofs::add_window(&mut prj, bi, 0, None).unwrap();
+    (prj, rooms[1])
+}
+
+#[test]
+fn the_3d_view_shows_the_whole_building_with_stairs_and_roof() {
+    let (prj, attic) = house();
+    let an = Analysis::build(&prj);
+    let mut ui = PanelUi { in_room: true, ..Default::default() };
+    // The room alone: its walls cut by the slope, the roof window seen from inside.
+    let shown = ui.shown_3d(&prj, attic);
+    assert_eq!(shown.len(), 1);
+    let alone = ui.scene_3d(&egui::Context::default(), &prj, &an, attic, &shown);
+    assert!(alone.faces.iter().any(|f| f.decal && f.layer == 1), "the roof window inside");
+    // The whole building: both rooms, the slabs, the stair and the roof above the attic.
+    ui.toggle_building();
+    let shown = ui.shown_3d(&prj, attic);
+    assert_eq!(shown.len(), 2);
+    let all = ui.scene_3d(&egui::Context::default(), &prj, &an, attic, &shown);
+    assert!(all.faces.len() > alone.faces.len() + 50, "{} / {}", all.faces.len(), alone.faces.len());
+    let ridge = panel::roofs::ridge_height(&prj.layout.buildings[0].roofs[0]) - 3000.0;
+    assert!(all.bounds.1[1] > ridge, "the roof over the attic: {:?}", all.bounds);
+    assert!(all.bounds.0[1] < -2900.0, "the ground floor below it");
+    // Without ceilings and roofs: no roof faces any more.
+    ui.hide_ceiling = true;
+    let open = ui.scene_3d(&egui::Context::default(), &prj, &an, attic, &shown);
+    assert!(open.bounds.1[1] < ridge, "{:?}", open.bounds);
+    // All enclosures of the plant: the building in the plant's coordinates.
+    ui.hide_ceiling = false;
+    ui.show_site = true;
+    let shown = ui.shown_3d(&prj, attic);
+    let site = ui.scene_3d(&egui::Context::default(), &prj, &an, attic, &shown);
+    assert!(site.bounds.1[1] > ridge + 3000.0 - 1.0 && site.bounds.0[1] > -400.0, "{:?}", site.bounds);
+}
+
+#[test]
+fn pv_arrays_lie_on_the_roof_of_the_whole_building() {
+    let (mut prj, attic) = house();
+    let mut ui = PanelUi { in_room: true, ..Default::default() };
+    ui.toggle_building();
+    let faces = |ui: &mut PanelUi, prj: &Project| {
+        let an = Analysis::build(prj);
+        let shown = ui.shown_3d(prj, attic);
+        ui.scene_3d(&egui::Context::default(), prj, &an, attic, &shown).faces.len()
+    };
+    let before = faces(&mut ui, &prj);
+    // Two rows of four modules on the rear slope: each module ten faces, each rail four.
+    panel::solar::add_array(&mut prj, 0, 0, Some([4000.0, 1500.0])).unwrap();
+    assert!(panel::solar::problems(&prj).is_empty());
+    assert_eq!(faces(&mut ui, &prj), before + 8 * 10 + 4 * 4);
+    // Hidden with the roof.
+    ui.hide_ceiling = true;
+    let (mut bare, _) = house();
+    bare.layout.buildings[0].roofs[0].solar.clear();
+    let hidden = faces(&mut ui, &prj);
+    assert_eq!(hidden, faces(&mut ui, &bare));
+}
+
+#[test]
+fn installation_zones_and_opened_walls_are_seen_through() {
+    let (prj, attic) = house();
+    let an = Analysis::build(&prj);
+    let mut ui = PanelUi { in_room: true, ..Default::default() };
+    let shown = ui.shown_3d(&prj, attic);
+    let plain = ui.scene_3d(&egui::Context::default(), &prj, &an, attic, &shown);
+    assert!(!plain.sides.iter().any(|s| s.glass));
+    ui.show_zones = true;
+    let zones = ui.scene_3d(&egui::Context::default(), &prj, &an, attic, &shown);
+    let bands = openecraft_core::routing3d::flush::bands(&prj, attic, &prj.layout.routing).len();
+    assert_eq!(zones.sides.iter().filter(|s| s.glass).count(), bands);
+    // Opened: the walls of the room are glass too, seen from inside and outside.
+    ui.show_zones = false;
+    ui.open_walls = true;
+    let open = ui.scene_3d(&egui::Context::default(), &prj, &an, attic, &shown);
+    let walls = open.sides.iter().filter(|s| s.glass).count();
+    assert!(walls >= 4, "{walls}");
+    let eye = [100_000.0, 100_000.0, 100_000.0];
+    assert!(open.sides.iter().filter(|s| s.glass).all(|s| s.layer(eye, true) == Some(OUTER_WALLS)));
 }

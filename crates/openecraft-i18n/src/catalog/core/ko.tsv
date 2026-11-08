@@ -4,6 +4,7 @@
 1 · First circuit: push buttons and lamps	1 · 첫 번째 회로: 푸시 버튼과 표시등
 10 · Pump room	10 · 펌프실
 12 · Connectors, pin-outs and ribbon cables	12 · 커넥터, 핀 배치와 리본 케이블
+16 · Office building with roof, stair and installation	16 · 지붕, 계단, 설비가 있는 사무실 건물
 2 · Relay with self-holding contact	2 · 자기 유지 접점 릴레이
 3 · Star-delta motor starter	3 · 스타-델타 기동기
 3/2 directional valve	3/2 방향 제어 밸브
@@ -175,6 +176,7 @@ Capacitive sensor, 3-wire	정전용량형 센서, 3선식
 Capacitor	커패시터
 Capacitor, polarized	커패시터, 유극
 Ceiling	천장
+Cell temperatures: {} °C (U max), {} °C (U mean), {} °C (U min)	셀 온도: {} °C (U 최대), {} °C (U 평균), {} °C (U 최소)
 Centre horizontally	가로 가운데 맞춤
 Centre vertically	세로 가운데 맞춤
 Centrifugal pump	원심 펌프
@@ -426,6 +428,7 @@ ERP item master and bill of materials (CSV)	ERP 품목 마스터 및 부품 목�
 ERP number	ERP 번호
 ETIM class	ETIM 클래스
 Earth electrode	접지극
+East-west on a flat roof	평지붕에 동서 방향
 Edit pages	페이지 편집
 Edit project data	프로젝트 데이터 편집
 Editor	편집자
@@ -513,6 +516,7 @@ Fitting	피팅
 Fittings	피팅
 Flame retardant	난연성
 Flat cable {} has {} cores, the IDC connector {} has {} pins	리본 케이블 {}은(는) {}심, IDC 커넥터 {}은(는) {}핀입니다
+Flat roof	평지붕
 Float switch NC	플로트 스위치 b접점
 Float switch NO	플로트 스위치 a접점
 Float switch NO (NFPA)	플로트 스위치 a접점(NFPA)
@@ -531,6 +535,8 @@ Fluid power (ISO 1219)	유체 동력(ISO 1219)
 Fluid power and electrics in one project: pneumatic circuit with service unit, valve terminal, 5/2 valves, flow control valves and cylinders; solenoid coils and position switches are linked to the valves and cylinders.	유체 동력과 전기를 하나의 프로젝트에서: 서비스 유닛, 밸브 터미널, 5/2 밸브, 유량 제어 밸브 및 실린더가 있는 공압 회로; 솔레노이드 코일과 위치 스위치는 밸브 및 실린더와 연결됩니다.
 Fluid power and process	유체 동력 및 프로세스
 Fluid power settings	유체 동력 설정
+Flush-mounted in the floor	바닥 매입
+Flush-mounted in the wall	벽 매입
 Foot switch NC	풋 스위치 b접점
 Foot switch NO	풋 스위치 a접점
 Foot switch NO (NFPA)	풋 스위치 a접점(NFPA)
@@ -583,6 +589,7 @@ Fuse, LV HBC, 3-pole	퓨즈, 저압 고차단 용량(NH), 3극
 GB (GB/T 4728)	GB(GB/T 4728)
 GOST (ESKD)	GOST(ESKD)
 GTIN	GTIN
+Gable roof	박공지붕
 Galvanometer	검류계
 Gas	가스
 Gas flow switch NC	가스 유량 스위치 b접점
@@ -607,6 +614,7 @@ Greenline	그린라인
 Grounded conductors must be white or grey (NFPA 79, 13.2.3)	접지된 도체는 흰색 또는 회색이어야 합니다(NFPA 79, 13.2.3)
 HMI	HMI
 HTML document for printing	인쇄용 HTML 문서
+Half landing (two flights)	중간 참 (두 계단)
 Hall 1	홀 1
 Halogen free	무할로겐
 Hand	수동
@@ -620,8 +628,15 @@ Heating element	발열체
 Higher-level product (-)	상위 제품 (-)
 Higher-level product of the page	페이지의 상위 제품
 Highest (°C)	최고(°C)
+Hinged left, opens inwards	왼쪽 경첩, 안쪽으로 열림
+Hinged left, opens outwards	왼쪽 경첩, 바깥쪽으로 열림
+Hinged right, opens inwards	오른쪽 경첩, 안쪽으로 열림
+Hinged right, opens outwards	오른쪽 경첩, 바깥쪽으로 열림
+Hip roof	모임지붕
 Hold-up time	정전 유지 시간
 Holding power	유지 전력
+Horizontal, above the floor	수평, 바닥 위
+Horizontal, below the ceiling	수평, 천장 아래
 Horn (NFPA)	경음기(NFPA)
 Horn / buzzer	경음기 / 부저
 Horn / buzzer HA (GB)	경음기 / 부저 HA(GB)
@@ -646,6 +661,8 @@ Hydraulic oil	유압유
 Hydraulic power unit	유압 파워 유닛
 Hydraulic pump	유압 펌프
 Hysteresis	히스테리시스
+I mpp (A)	I mpp (A)
+I sc max (A)	I sc 최대 (A)
 IEC 60204-1 (machinery: phases BK, DC control BU)	IEC 60204-1(기계: 선도체 BK, DC 제어 BU)
 IEC 60445 (phases BN, BK, GY)	IEC 60445(선도체 BN, BK, GY)
 IEC 61131-3 (%IX0.0 / %QX0.0)	IEC 61131-3 (%IX0.0 / %QX0.0)
@@ -657,6 +674,8 @@ Ik1 min (A)	Ik1 min (A)
 Impact protection (IK)	내충격성(IK)
 In engineering	설계 중
 In production	생산 중
+In the ceiling, along the walls	천장 안, 벽을 따라
+In the floor, along the walls	바닥 안, 벽을 따라
 Incoming supply	인입 전원
 Indicator lamp	표시등
 Indicator lamp HL (GB)	표시등 HL(GB)
@@ -756,6 +775,7 @@ MAC address	MAC 주소
 MCAD	MCAD
 MCAD device placement (CSV)	MCAD 장치 배치(CSV)
 MOSFET N-channel	MOSFET N 채널
+MPPT	MPPT
 MTTFd	MTTFd
 Machine (example identifiers)	기계(예제 식별자)
 Machine frame	기계 프레임
@@ -819,6 +839,8 @@ Minimum operating temperature	최소 작동 온도
 Mirror contacts	미러 접점
 Mirrored	대칭됨
 Mission time	사용 기간
+Module	모듈
+Modules	모듈
 Moisture	습도
 Moment of inertia	관성 모멘트
 Motion detector	동작 감지기
@@ -909,6 +931,7 @@ No plugs	플러그 없음
 No report block {}	보고서 블록 {} 없음
 No segment template named {}	이름이 {}인 세그먼트 템플릿이 없습니다
 No subproject {}	하위 프로젝트 {}이(가) 없습니다
+No such PV array	해당 태양광 어레이 없음
 No such object: {}	해당 개체가 없습니다: {}
 No surge protective device at the supply (IEC 60364-4-44)	전원 공급부에 서지 보호 장치가 없습니다(IEC 60364-4-44)
 No terminal {}	단자 {} 없음
@@ -1043,6 +1066,7 @@ PLC tags for Rockwell Studio 5000 (CSV)	Rockwell Studio 5000용 PLC 태그(CSV)
 PLC variables for Schneider Control Expert (XSY)	Schneider Control Expert용 PLC 변수(XSY)
 PLM	PLM
 PLM engineering BOM (JSON)	PLM 엔지니어링 BOM(JSON)
+PV strings	태양광 스트링
 PVC (70 °C)	PVC(70 °C)
 Page / column (3.4.1)	페이지 / 열(3.4.1)
 Page name	페이지 이름
@@ -1068,6 +1092,7 @@ Panel layout in 3D (STEP)	3D 패널 레이아웃(STEP)
 Panel layout in 3D (glTF)	3D 패널 레이아웃(glTF)
 Panel layout settings	패널 레이아웃 설정
 Panel legend	패널 범례
+Parallel to the roof on roof hooks	지붕 후크 위에 지붕과 평행
 Part accessories	부품 액세서리
 Part data is maintained in the parts management	부품 데이터는 부품 관리에서 관리됩니다
 Part description	부품 설명
@@ -1151,6 +1176,7 @@ Potential {} defined {} times	전위 {}이(가) {}번 정의됨
 Potentials / Connectors	전위 / 커넥터
 Potentials, interruption points	전위, 중단점
 Potentiometer	전위차계
+Power (kWp)	출력 (kWp)
 Power and control circuit on several pages: main switch, motor protection, three contactors with interlocks, on-delay timer, interruption points, potentials with wire colours, motor cable and cable reports.	여러 페이지의 주회로와 제어 회로: 메인 스위치, 모터 보호, 인터록이 있는 접촉기 3개, 온 딜레이 타이머, 중단점, 전선 색상이 있는 전위, 모터 케이블 및 케이블 보고서.
 Power factor	역률
 Power factor meter	역률계
@@ -1238,6 +1264,7 @@ Push button with key NC, latching	키 푸시버튼 b접점, 래칭
 Push button with key NO, latching	키 푸시버튼 a접점, 래칭
 Pushbutton NC	푸시 버튼 b접점
 Pushbutton NO	푸시 버튼 a접점
+Pyramid roof	피라미드 지붕
 Qty	수량
 RCD {} mA	RCD {} mA
 Radiation	방사선
@@ -1389,6 +1416,7 @@ Setpoint	설정값
 Setting range	설정 범위
 Sheath colour	시스 색상
 Sheath material	시스 재질
+Shed roof	외쪽지붕
 Sheet number	시트 번호
 Sheet steel	강판
 Shield clamp	차폐 클램프
@@ -1417,6 +1445,8 @@ Siren	사이렌
 Site address	설치 장소 주소
 Size (mm)	크기(mm)
 Skipped	건너뜀
+Sliding to the left	왼쪽으로 미닫이
+Sliding to the right	오른쪽으로 미닫이
 Socket outlet	콘센트
 Socket side (female)	소켓 측 (암)
 Soft starter	소프트 스타터
@@ -1435,6 +1465,7 @@ Spare	예비
 Spare part	예비 부품
 Spare terminal	예비 단자
 Speed	속도
+Spiral	나선형
 Stainless steel	스테인리스강
 Standard	표준
 Start / stop circuit with a relay: coil and contacts form one device with cross references and contact image, terminal strip, wire numbers, terminal diagram and connection list.	릴레이를 이용한 시작 / 정지 회로: 코일과 접점이 상호 참조 및 접점 이미지와 함께 하나의 장치를 구성; 단자대, 전선 번호, 단자도 및 연결 목록.
@@ -1450,6 +1481,7 @@ Steam	증기
 Stock	재고
 Stop category	정지 범주
 Storage temperature range	보관 온도 범위
+Straight	직선
 Straight through from {} to {}, across from {} to {} and from {} to {}	직진: {}에서 {}로. 가로: {}에서 {}로, {}에서 {}로
 Strain relief	장력 완화
 Stretched	늘이기
@@ -1477,6 +1509,7 @@ Suppliers	공급업체
 Supply network	배전 계통
 Supply voltage	공급 전압
 Surface (m²)	표면적(m²)
+Surface-mounted	노출 배선
 Surge protection type	서지 보호 유형
 Surge protective device	서지 보호 장치
 Surge suppressor	서지 억제기
@@ -1585,6 +1618,7 @@ Through-beam sensor, 4-wire	투과형 센서, 4선식
 Through-beam transmitter	투과형 투광기
 Thyristor	사이리스터
 Tightening torque	조임 토크
+Tilted on a flat roof	평지붕에 기울여 설치
 Time function	타이머 기능
 Time range	시간 범위
 Time relay coil KT (GB)	타이머 릴레이 코일 KT(GB)
@@ -1637,9 +1671,14 @@ Trunking	케이블 덕트
 Tube	튜브
 Tubes	튜브
 Tubing / piping list	튜브 / 배관 목록
+Turned once (quarter landing)	한 번 꺾임 (모서리 참)
+Turned twice (two quarter landings)	두 번 꺾임 (모서리 참 두 개)
 Two connection symbols on page {} lie on the same point	페이지 {}의 두 연결 기호가 같은 지점에 있습니다
 Two-way switch (installation)	3로 스위치(옥내 배선)
 Type numbers	유형 번호
+U max (V)	U 최대 (V)
+U mean (V)	U 평균 (V)
+U min (V)	U 최소 (V)
 UL listed	UL 등록
 UV resistant	내자외선성
 Unbalance {} %	불평형 {} %
@@ -1668,6 +1707,9 @@ Varistor	배리스터
 Varmeter	무효 전력계
 Vector group	벡터 그룹
 Ventilation clearance	환기 이격 거리
+Vertical, beside the corners	수직, 모서리 옆
+Vertical, beside the doors	수직, 문 옆
+Vertical, beside the windows	수직, 창문 옆
 Vessel	용기
 Vibration	진동
 Vibration resistance	내진동성
@@ -1786,7 +1828,6 @@ is none of	다음 중 어느 것도 아님
 is not	같지 않음
 is not empty	비어 있지 않음
 is one of	다음 중 하나임
-landscape	가로
 leakage	누유
 low	낮음
 measuring	측정
@@ -1795,6 +1836,7 @@ no header	머리글 없음
 no list	목록 없음
 no path through the route network	경로 네트워크를 통과하는 경로가 없음
 no way through the enclosure	외함을 통과하는 경로 없음
+no way through the installation zones	설치 구역을 지나는 경로가 없습니다
 not in the panel layout	패널 레이아웃에 없음
 not in the same line-up or room	같은 열 배치 또는 방에 있지 않음
 not reached	도달하지 못함
@@ -1847,6 +1889,7 @@ yellow	노랑
 {} fits none of the parts of {}	{0}은(는) {1}의 어떤 부품에도 맞지 않습니다
 {} frozen routes changed their length	고정된 경로 {}개의 길이가 변경됨
 {} has no MTTFd, B10d, PL or PFHd	{}에 MTTFd, B10d, PL 또는 PFHd가 없습니다
+{} has no door or window {}	{0}에 문 또는 창 {1}이(가) 없습니다
 {} has nothing to manufacture	{}에는 제작할 항목이 없습니다
 {} is a built-in function definition	{}은(는) 기본 제공 기능 정의입니다
 {} is a built-in property	{}은(는) 기본 제공 속성입니다
@@ -1882,7 +1925,16 @@ yellow	노랑
 {} {} is routed to the cable entries of its enclosures: they stand in no common room, the way between them is not part of the layout	{} {}은(는) 각 외함의 케이블 인입구까지 배선됨: 공통된 방에 있지 않아 그 사이의 경로는 배치에 포함되지 않음
 {} {}: bends closer than the bend radius ({} mm)	{} {}: 굽힘이 굽힘 반경({} mm)보다 작음
 {} – {}: connected in the single-line diagram but not in the schematic	{} – {}: 단선도에서는 연결되어 있지만 회로도에서는 연결되어 있지 않습니다
+{}, MPP tracker {}: its strings differ in voltage ({} V and {} V)	{}, MPP 트래커 {}: 스트링 전압이 다릅니다 ({} V 및 {} V)
+{}, MPP tracker {}: the strings deliver {} A, more than the {} A it uses (the power is limited)	{}, MPP 트래커 {}: 스트링이 {} A를 공급하여 사용 가능한 {} A를 초과합니다 (출력 제한)
+{}, MPP tracker {}: the strings reach a short-circuit current of {} A, more than the {} A it takes	{}, MPP 트래커 {}: 스트링 단락 전류가 {} A로 허용치 {} A를 초과합니다
 {}: MTTFd {} years is below 3 years	{0}: MTTFd {1}년이 3년 미만입니다
+{}: PV array {} covers a roof window	{}: 태양광 어레이 {}이(가) 지붕창을 덮습니다
+{}: PV array {} has {} modules, its device {} has {}	{}: 태양광 어레이 {}의 모듈은 {}개, 그 장치 {}의 모듈은 {}개
+{}: PV array {} is mounted tilted on a pitched roof	{}: 태양광 어레이 {}이(가) 경사 지붕에 기울여 설치되어 있습니다
+{}: PV array {} of roof {} lies across a ridge, a hip or the edge of the roof	{0}: 지붕 {2}의 태양광 어레이 {1}이(가) 용마루, 추녀마루 또는 지붕 가장자리에 걸쳐 있습니다
+{}: PV array {} of roof {} lies outside the roof	{0}: 지붕 {2}의 태양광 어레이 {1}이(가) 지붕 밖에 있습니다
+{}: PV arrays {} and {} lie over each other	{}: 태양광 어레이 {}와(과) {}이(가) 겹칩니다
 {}: \"{}\" is not one of {}	{}: \"{}\"은(는) {} 중 하나가 아닙니다
 {}: a TT system needs a residual current device	{}: TT 계통에는 누전 차단기가 필요합니다
 {}: accessory {} fits none of the device's parts	{}: 액세서리 {}은(는) 장치의 어떤 부품에도 맞지 않습니다
@@ -1952,10 +2004,20 @@ yellow	노랑
 {}: slot {} of rack {} is used by {} and {}	{0}: 랙 {2}의 슬롯 {1}을(를) {3}와(과) {4}이(가) 사용합니다
 {}: solenoid coil not linked to a valve	{}: 밸브에 연결되지 않은 솔레노이드 코일
 {}: solenoid valve without linked solenoid coil (Fluid and process › Synchronize)	{}: 연결된 솔레노이드 코일이 없는 솔레노이드 밸브(유체 및 공정 › 동기화)
+{}: string {} of PV array {} drops to {} V at {} °C, below the MPP range of {} ({} - {} V)	{0}: 태양광 어레이 {2}의 스트링 {1}이(가) {4} °C에서 {3} V로 떨어져 {5}의 MPP 범위({6} - {7} V)보다 낮습니다
+{}: string {} of PV array {} is connected to no inverter	{0}: 태양광 어레이 {2}의 스트링 {1}이(가) 어떤 인버터에도 연결되어 있지 않습니다
+{}: string {} of PV array {} reaches {} V at maximum power at {} °C, above the MPP range of {} ({} - {} V)	{0}: 태양광 어레이 {2}의 스트링 {1}이(가) {4} °C 최대 출력 시 {3} V에 도달하여 {5}의 MPP 범위({6} - {7} V)를 넘습니다
+{}: string {} of PV array {} reaches {} V at {} °C, more than the {} V system voltage of its modules	{0}: 태양광 어레이 {2}의 스트링 {1}이(가) {4} °C에서 {3} V에 도달하여 모듈의 시스템 전압 {5} V를 초과합니다
+{}: string {} of PV array {} reaches {} V at {} °C, more than the {} V {} takes	{0}: 태양광 어레이 {2}의 스트링 {1}이(가) {4} °C에서 {3} V에 도달하여 {6}의 허용치 {5} V를 초과합니다
+{}: string {} of PV array {}: {} has only {} MPP trackers	{0}: 태양광 어레이 {2}의 스트링 {1}: {3}의 MPP 트래커는 {4}개뿐입니다
+{}: string {} of PV array {}: {} is no device with PV input data	{0}: 태양광 어레이 {2}의 스트링 {1}: {3}은(는) 태양광 입력 데이터가 있는 장치가 아닙니다
 {}: terminal {} is on level {}, but no terminal block is before it	{}: 단자 {}이(가) {}단에 있지만 그 앞에 단자 블록이 없습니다
 {}: terminal {} uses {} levels, its part {} has {}	{}: 단자 {}은(는) {}단을 사용하지만 해당 부품 {}은(는) {}단입니다
 {}: terminals {} are {} mm above the floor, at least {} mm required	{}: 단자 {}이(가) 바닥에서 {} mm 높이에 있습니다. 최소 {} mm가 필요합니다
+{}: the device {} of PV array {} does not exist	{0}: 태양광 어레이 {2}의 장치 {1}이(가) 없습니다
+{}: the module {} of PV array {} has no electrical data	{0}: 태양광 어레이 {2}의 모듈 {1}에 전기 데이터가 없습니다
 {}: the station has no port {}	{0}: 스테이션에 포트 {1}이(가) 없습니다
+{}: the strings of PV array {} connect {} modules, the array has {}	{}: 태양광 어레이 {}의 스트링이 모듈 {}개를 연결하지만 어레이에는 {}개가 있습니다
 {}: the {} ({} x {} mm) is larger than the working area of {}	{}: {}({} x {} mm)이(가) {}의 작업 영역보다 큽니다
 {}: the {} is {} mm thick, {} takes at most {} mm	{}: {}의 두께는 {} mm이며, {}은(는) 최대 {} mm까지 가공합니다
 {}: voltage drop {} V ({} %) above {} %	{0}: 전압 강하 {1} V({2} %)가 {3} %를 초과함
@@ -1980,6 +2042,7 @@ yellow	노랑
 {}: {} is made for a mounting rail but sits directly on the plate	{}: {}은(는) 장착 레일용이지만 플레이트에 직접 장착되어 있습니다
 {}: {} is {} … {} mm above the floor, allowed {} … {} mm	{}: {}이(가) 바닥에서 {} … {} mm 높이에 있습니다. 허용 {} … {} mm
 {}: {} kg on the {} exceed its load of {} kg	{}: {} kg이(가) {}의 허용 하중 {} kg을 초과합니다
+{}: {} modules of PV array {} are not connected to a string	{0}: 태양광 어레이 {2}의 모듈 {1}개가 스트링에 연결되어 있지 않습니다
 {}: {} modules, the head has {} slots	{0}: 모듈 {1}개, 헤드의 슬롯은 {2}개
 {}: {} of {} mm is longer than the stock length of {} mm and has to be joined	{}: {}({} mm)이(가) 재고 길이 {} mm보다 길어 이어 붙여야 합니다
 {}: {} of {} mm is shorter than {} mm and hard to cut	{}: {}({} mm)이(가) {} mm보다 짧아 절단하기 어렵습니다
@@ -1991,6 +2054,7 @@ yellow	노랑
 {}: {} solenoid coils linked, the valve has {}	{0}: 솔레노이드 코일 {1}개 연결됨, 밸브의 솔레노이드는 {2}개
 {}: {} stands in an inner wall	{}: {}이(가) 내벽 안에 있습니다
 {}: {} stands in the swing of the door in wall {}	{}: {}이(가) 벽 {} 문의 개폐 범위에 있습니다
+{}: {} stands in the way of the sliding door in wall {}	{0}: {1}이(가) 벽 {2}의 미닫이문 경로를 막고 있습니다
 {}: {} stands outside the room	{}: {}이(가) 방 밖에 있습니다
 {}: {} stands where {} stands	{}: {}이(가) {}와(과) 같은 자리에 있습니다
 {}: {} threads on the {} are cut by hand	{0}: {2}의 나사 {1}개는 수동으로 가공합니다

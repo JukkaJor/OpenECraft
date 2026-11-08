@@ -7,6 +7,7 @@
 13 · Transformer-rated metering with PV and grid protection	13 · PV ve şebeke korumalı akım trafolu ölçüm
 14 · Main low-voltage distribution of an industrial plant	14 · Bir sanayi tesisinin alçak gerilim ana dağıtım panosu
 15 · Plant with buildings, levels and a shaft	15 · Binalar, katlar ve şaftlı tesis
+16 · Office building with roof, stair and installation	16 · Çatılı, merdivenli ve tesisatlı ofis binası
 2 · Relay with self-holding contact	2 · Mühürleme kontaklı röle
 3 · Star-delta motor starter	3 · Yıldız-üçgen yol verici
 3/2 directional valve	3/2 yön kontrol valfi
@@ -182,6 +183,7 @@ Capacitive sensor, 3-wire	Kapasitif sensör, 3 telli
 Capacitor	Kondansatör
 Capacitor, polarized	Kondansatör, polarize
 Ceiling	Tavan
+Cell temperatures: {} °C (U max), {} °C (U mean), {} °C (U min)	Hücre sıcaklıkları: {} °C (U maks.), {} °C (U ort.), {} °C (U min.)
 Centre horizontally	Yatay ortala
 Centre vertically	Dikey ortala
 Centrifugal pump	Santrifüj pompa
@@ -433,6 +435,7 @@ ERP item master and bill of materials (CSV)	ERP malzeme ana verileri ve malzeme 
 ERP number	ERP numarası
 ETIM class	ETIM sınıfı
 Earth electrode	Topraklama elektrodu
+East-west on a flat roof	Düz çatıda doğu-batı
 Edit pages	Sayfaları düzenle
 Edit project data	Proje verilerini düzenle
 Editor	Düzenleyici
@@ -520,6 +523,7 @@ Fitting	Rakor
 Fittings	Rakorlar
 Flame retardant	Alev geciktirici
 Flat cable {} has {} cores, the IDC connector {} has {} pins	Yassı kablo {}: {} damar, IDC konnektör {}: {} pin
+Flat roof	Düz çatı
 Float switch NC	Şamandıra şalteri NK
 Float switch NO	Şamandıra şalteri NA
 Float switch NO (NFPA)	Şamandıra şalteri NA (NFPA)
@@ -538,6 +542,8 @@ Fluid power (ISO 1219)	Akışkan gücü (ISO 1219)
 Fluid power and electrics in one project: pneumatic circuit with service unit, valve terminal, 5/2 valves, flow control valves and cylinders; solenoid coils and position switches are linked to the valves and cylinders.	Akışkan gücü ve elektrik tek projede: şartlandırıcı, valf adası, 5/2 valfler, akış kontrol valfleri ve silindirlerle pnömatik devre; bobinler ve konum şalterleri valflere ve silindirlere bağlıdır.
 Fluid power and process	Akışkan gücü ve proses
 Fluid power settings	Akışkan gücü ayarları
+Flush-mounted in the floor	Zeminde sıva altı
+Flush-mounted in the wall	Duvarda sıva altı
 Foot switch NC	Ayak şalteri NK
 Foot switch NO	Ayak şalteri NA
 Foot switch NO (NFPA)	Ayak şalteri NA (NFPA)
@@ -590,6 +596,7 @@ Fuse, LV HBC, 3-pole	Sigorta, NH (AG HRC), 3 kutuplu
 GB (GB/T 4728)	GB (GB/T 4728)
 GOST (ESKD)	GOST (ESKD)
 GTIN	GTIN
+Gable roof	Beşik çatı
 Galvanometer	Galvanometre
 Gas	Gaz
 Gas flow switch NC	Gaz akış şalteri NK
@@ -615,6 +622,7 @@ Grid and system protection relay (voltage and frequency)	Şebeke ve tesis koruma
 Grounded conductors must be white or grey (NFPA 79, 13.2.3)	Topraklanmış iletkenler beyaz veya gri olmalıdır (NFPA 79, 13.2.3)
 HMI	HMI
 HTML document for printing	Yazdırma için HTML belgesi
+Half landing (two flights)	Ara sahanlıklı (iki kol)
 Hall 1	Salon 1
 Halogen free	Halojensiz
 Hand	Manuel
@@ -628,8 +636,15 @@ Heating element	Isıtıcı eleman
 Higher-level product (-)	Üst düzey ürün (-)
 Higher-level product of the page	Sayfanın üst düzey ürünü
 Highest (°C)	En yüksek (°C)
+Hinged left, opens inwards	Menteşe solda, içe açılır
+Hinged left, opens outwards	Menteşe solda, dışa açılır
+Hinged right, opens inwards	Menteşe sağda, içe açılır
+Hinged right, opens outwards	Menteşe sağda, dışa açılır
+Hip roof	Kırma çatı
 Hold-up time	Şebeke kesintisi köprüleme süresi
 Holding power	Tutma gücü
+Horizontal, above the floor	Yatay, zeminin üstünde
+Horizontal, below the ceiling	Yatay, tavanın altında
 Horn (NFPA)	Korna (NFPA)
 Horn / buzzer	Korna / buzzer
 Horn / buzzer HA (GB)	Korna / buzzer HA (GB)
@@ -654,6 +669,8 @@ Hydraulic oil	Hidrolik yağ
 Hydraulic power unit	Hidrolik güç ünitesi
 Hydraulic pump	Hidrolik pompa
 Hysteresis	Histerezis
+I mpp (A)	I mpp (A)
+I sc max (A)	I sc maks. (A)
 IEC 60204-1 (machinery: phases BK, DC control BU)	IEC 60204-1 (makineler: fazlar BK, DC kumanda BU)
 IEC 60445 (phases BN, BK, GY)	IEC 60445 (fazlar BN, BK, GY)
 IEC 61131-3 (%IX0.0 / %QX0.0)	IEC 61131-3 (%IX0.0 / %QX0.0)
@@ -665,6 +682,8 @@ Ik1 min (A)	Ik1 min (A)
 Impact protection (IK)	Darbe dayanımı (IK)
 In engineering	Projelendiriliyor
 In production	Üretimde
+In the ceiling, along the walls	Tavanda, duvarlar boyunca
+In the floor, along the walls	Zeminde, duvarlar boyunca
 Incoming supply	Besleme girişi
 Indicator lamp	Sinyal lambası
 Indicator lamp HL (GB)	Sinyal lambası HL (GB)
@@ -764,6 +783,7 @@ MAC address	MAC adresi
 MCAD	MCAD
 MCAD device placement (CSV)	MCAD cihaz yerleşimi (CSV)
 MOSFET N-channel	MOSFET N kanallı
+MPPT	MPPT
 MTTFd	MTTFd
 Machine (example identifiers)	Makine (örnek tanımlayıcılar)
 Machine frame	Makine şasisi
@@ -827,6 +847,8 @@ Minimum operating temperature	Minimum çalışma sıcaklığı
 Mirror contacts	Ayna kontaklar
 Mirrored	Yansıtılmış
 Mission time	Görev süresi
+Module	Modül
+Modules	Modüller
 Moisture	Nem
 Moment of inertia	Atalet momenti
 Motion detector	Hareket dedektörü
@@ -918,6 +940,7 @@ No plugs	Konnektör yok
 No report block {}	{} rapor bloğu yok
 No segment template named {}	{} adlı segment şablonu yok
 No subproject {}	{} alt projesi yok
+No such PV array	Böyle bir PV dizisi yok
 No such object: {}	Böyle bir nesne yok: {}
 No surge protective device at the supply (IEC 60364-4-44)	Beslemede aşırı gerilim koruma cihazı yok (IEC 60364-4-44)
 No terminal {}	{} klemensi yok
@@ -1054,6 +1077,7 @@ PLC tags for Rockwell Studio 5000 (CSV)	Rockwell Studio 5000 için PLC etiketler
 PLC variables for Schneider Control Expert (XSY)	Schneider Control Expert için PLC değişkenleri (XSY)
 PLM	PLM
 PLM engineering BOM (JSON)	PLM mühendislik malzeme listesi (JSON)
+PV strings	PV dizileri
 PVC (70 °C)	PVC (70 °C)
 Page / column (3.4.1)	Sayfa / sütun (3.4.1)
 Page name	Sayfa adı
@@ -1079,6 +1103,7 @@ Panel layout in 3D (STEP)	3D pano yerleşimi (STEP)
 Panel layout in 3D (glTF)	3D pano yerleşimi (glTF)
 Panel layout settings	Pano yerleşimi ayarları
 Panel legend	Pano lejantı
+Parallel to the roof on roof hooks	Çatı kancaları üzerinde çatıya paralel
 Part accessories	Parça aksesuarları
 Part data is maintained in the parts management	Parça verileri parça yönetiminde tutulur
 Part description	Parça açıklaması
@@ -1162,6 +1187,7 @@ Potential {} defined {} times	Potansiyel {} {} kez tanımlandı
 Potentials / Connectors	Potansiyeller / Konnektörler
 Potentials, interruption points	Potansiyeller, kesme noktaları
 Potentiometer	Potansiyometre
+Power (kWp)	Güç (kWp)
 Power and control circuit on several pages: main switch, motor protection, three contactors with interlocks, on-delay timer, interruption points, potentials with wire colours, motor cable and cable reports.	Birkaç sayfada güç ve kumanda devresi: ana şalter, motor koruma, kilitlemeli üç kontaktör, çekmede gecikmeli zaman rölesi, kesinti noktaları, kablo renkli potansiyeller, motor kablosu ve kablo raporları.
 Power factor	Güç faktörü
 Power factor meter	Güç faktörü ölçer
@@ -1249,6 +1275,7 @@ Push button with key NC, latching	Anahtarlı buton NK, kalıcı
 Push button with key NO, latching	Anahtarlı buton NA, kalıcı
 Pushbutton NC	Buton NK
 Pushbutton NO	Buton NA
+Pyramid roof	Piramit çatı
 Qty	Miktar
 RCD {} mA	RCD {} mA
 Radiation	Radyasyon
@@ -1401,6 +1428,7 @@ Setpoint	Ayar değeri
 Setting range	Ayar aralığı
 Sheath colour	Kılıf rengi
 Sheath material	Kılıf malzemesi
+Shed roof	Tek eğimli çatı
 Sheet number	Pafta numarası
 Sheet steel	Sac
 Shield clamp	Ekran kelepçesi
@@ -1429,6 +1457,8 @@ Siren	Siren
 Site address	Kurulum yeri adresi
 Size (mm)	Boyut (mm)
 Skipped	Atlandı
+Sliding to the left	Sola sürgülü
+Sliding to the right	Sağa sürgülü
 Socket outlet	Priz
 Socket side (female)	Soket tarafı (dişi)
 Soft starter	Yumuşak yolverici
@@ -1447,6 +1477,7 @@ Spare	Yedek
 Spare part	Yedek parça
 Spare terminal	Yedek klemens
 Speed	Hız
+Spiral	Döner
 Stainless steel	Paslanmaz çelik
 Standard	Standart
 Start / stop circuit with a relay: coil and contacts form one device with cross references and contact image, terminal strip, wire numbers, terminal diagram and connection list.	Röleli başlat / durdur devresi: bobin ve kontaklar çapraz referanslar ve kontak görüntüsüyle tek bir cihaz oluşturur; klemens dizisi, kablo numaraları, klemens şeması ve bağlantı listesi.
@@ -1462,6 +1493,7 @@ Steam	Buhar
 Stock	Stok
 Stop category	Durdurma kategorisi
 Storage temperature range	Depolama sıcaklığı aralığı
+Straight	Düz
 Straight through from {} to {}, across from {} to {} and from {} to {}	Düz {} ile {} arasında, enine {} ile {} ve {} ile {} arasında
 Strain relief	Çekme kuvveti giderici
 Stretched	Uzatılmış
@@ -1489,6 +1521,7 @@ Suppliers	Tedarikçiler
 Supply network	Şebeke tipi
 Supply voltage	Besleme gerilimi
 Surface (m²)	Yüzey (m²)
+Surface-mounted	Sıva üstü
 Surge protection type	Aşırı gerilim koruma tipi
 Surge protective device	Aşırı gerilim koruma cihazı
 Surge suppressor	Aşırı gerilim sınırlayıcı
@@ -1597,6 +1630,7 @@ Through-beam sensor, 4-wire	Karşılıklı tip sensör, 4 telli
 Through-beam transmitter	Karşılıklı tip verici
 Thyristor	Tristör
 Tightening torque	Sıkma torku
+Tilted on a flat roof	Düz çatıda eğimli
 Time function	Zaman fonksiyonu
 Time range	Zaman aralığı
 Time relay coil KT (GB)	Zaman rölesi bobini KT (GB)
@@ -1649,9 +1683,14 @@ Trunking	Kablo kanalı
 Tube	Tüp
 Tubes	Tüpler
 Tubing / piping list	Tüp / boru listesi
+Turned once (quarter landing)	Bir kez dönen (köşe sahanlığı)
+Turned twice (two quarter landings)	İki kez dönen (iki köşe sahanlığı)
 Two connection symbols on page {} lie on the same point	Sayfa {} üzerinde iki bağlantı sembolü aynı noktada
 Two-way switch (installation)	Vaviyen anahtar (tesisat)
 Type numbers	Tip numaraları
+U max (V)	U maks. (V)
+U mean (V)	U ort. (V)
+U min (V)	U min. (V)
 UL listed	UL listeli
 UV resistant	UV dayanımlı
 Unbalance {} %	Dengesizlik %{}
@@ -1680,6 +1719,9 @@ Varistor	Varistör
 Varmeter	Varmetre
 Vector group	Bağlantı grubu
 Ventilation clearance	Havalandırma mesafesi
+Vertical, beside the corners	Dikey, köşelerin yanında
+Vertical, beside the doors	Dikey, kapıların yanında
+Vertical, beside the windows	Dikey, pencerelerin yanında
 Vessel	Kap
 Vibration	Titreşim
 Vibration resistance	Titreşim dayanımı
@@ -1798,7 +1840,6 @@ is none of	şunların hiçbiri değildir
 is not	eşit değildir
 is not empty	boş değildir
 is one of	şunlardan biridir
-landscape	yatay
 leakage	kaçak
 low	düşük
 measuring	ölçüm
@@ -1807,6 +1848,7 @@ no header	başlık yok
 no list	liste yok
 no path through the route network	güzergâh ağında yol yok
 no way through the enclosure	pano içinden yol yok
+no way through the installation zones	tesisat bölgelerinden geçen yol yok
 not in the panel layout	pano yerleşiminde değil
 not in the same line-up or room	aynı dizilimde veya odada değil
 not reached	ulaşılmadı
@@ -1859,6 +1901,7 @@ yellow	sarı
 {} fits none of the parts of {}	{0}, {1} cihazının hiçbir parçasına uymuyor
 {} frozen routes changed their length	{} dondurulmuş güzergâhın uzunluğu değişti
 {} has no MTTFd, B10d, PL or PFHd	{} için MTTFd, B10d, PL veya PFHd yok
+{} has no door or window {}	{0} içinde {1} kapısı veya penceresi yok
 {} has nothing to manufacture	{} için üretilecek bir şey yok
 {} is a built-in function definition	{} yerleşik bir fonksiyon tanımıdır
 {} is a built-in property	{} yerleşik bir özelliktir
@@ -1894,7 +1937,16 @@ yellow	sarı
 {} {} is routed to the cable entries of its enclosures: they stand in no common room, the way between them is not part of the layout	{} {} panolarının kablo girişlerine kadar döşendi: ortak bir odada durmuyorlar, aralarındaki yol yerleşimin parçası değil
 {} {}: bends closer than the bend radius ({} mm)	{} {}: bükümler bükme yarıçapından ({} mm) daha dar
 {} – {}: connected in the single-line diagram but not in the schematic	{} – {}: tek hat şemasında bağlı, ancak şemada bağlı değil
+{}, MPP tracker {}: its strings differ in voltage ({} V and {} V)	{}, MPP izleyici {}: dizilerinin gerilimleri farklı ({} V ve {} V)
+{}, MPP tracker {}: the strings deliver {} A, more than the {} A it uses (the power is limited)	{}, MPP izleyici {}: diziler {} A veriyor, kullandığı {} A'dan fazla (güç sınırlanır)
+{}, MPP tracker {}: the strings reach a short-circuit current of {} A, more than the {} A it takes	{}, MPP izleyici {}: diziler {} A kısa devre akımına ulaşıyor, kaldırabildiği {} A'dan fazla
 {}: MTTFd {} years is below 3 years	{}: MTTFd {} yıl, 3 yılın altında
+{}: PV array {} covers a roof window	{}: PV dizisi {} bir çatı penceresini örtüyor
+{}: PV array {} has {} modules, its device {} has {}	{}: PV dizisi {} {} modüle sahip, cihazı {} ise {}
+{}: PV array {} is mounted tilted on a pitched roof	{}: PV dizisi {} eğimli bir çatıya eğik monte edilmiş
+{}: PV array {} of roof {} lies across a ridge, a hip or the edge of the roof	{0}: {2} çatısının PV dizisi {1} bir mahya, kırma veya çatı kenarı üzerinden geçiyor
+{}: PV array {} of roof {} lies outside the roof	{0}: {2} çatısının PV dizisi {1} çatının dışında
+{}: PV arrays {} and {} lie over each other	{}: PV dizileri {} ve {} üst üste biniyor
 {}: \"{}\" is not one of {}	{}: \"{}\", {} değerlerinden biri değil
 {}: a TT system needs a residual current device	{}: TT sistemi bir kaçak akım koruma cihazı gerektirir
 {}: accessory {} fits none of the device's parts	{}: {} aksesuarı cihazın hiçbir parçasına uymuyor
@@ -1964,11 +2016,21 @@ yellow	sarı
 {}: slot {} of rack {} is used by {} and {}	{}: slot {} (raf {}), {} ve {} tarafından kullanılıyor
 {}: solenoid coil not linked to a valve	{}: solenoid bobini bir valfle ilişkilendirilmemiş
 {}: solenoid valve without linked solenoid coil (Fluid and process › Synchronize)	{}: ilişkilendirilmiş solenoid bobini olmayan solenoid valf (Akışkan ve proses › Eşitle)
+{}: string {} of PV array {} drops to {} V at {} °C, below the MPP range of {} ({} - {} V)	{0}: PV dizisi {2} içindeki {1} dizisi {4} °C'de {3} V'a düşüyor, {5} MPP aralığının ({6} - {7} V) altında
+{}: string {} of PV array {} is connected to no inverter	{0}: PV dizisi {2} içindeki {1} dizisi hiçbir invertöre bağlı değil
+{}: string {} of PV array {} reaches {} V at maximum power at {} °C, above the MPP range of {} ({} - {} V)	{0}: PV dizisi {2} içindeki {1} dizisi {4} °C'de maksimum güçte {3} V'a ulaşıyor, {5} MPP aralığının ({6} - {7} V) üstünde
+{}: string {} of PV array {} reaches {} V at {} °C, more than the {} V system voltage of its modules	{0}: PV dizisi {2} içindeki {1} dizisi {4} °C'de {3} V'a ulaşıyor, modüllerinin {5} V sistem geriliminden fazla
+{}: string {} of PV array {} reaches {} V at {} °C, more than the {} V {} takes	{0}: PV dizisi {2} içindeki {1} dizisi {4} °C'de {3} V'a ulaşıyor, {6} cihazının kaldırabildiği {5} V'tan fazla
+{}: string {} of PV array {}: {} has only {} MPP trackers	{0}: PV dizisi {2} içindeki {1} dizisi: {3} yalnızca {4} MPP izleyiciye sahip
+{}: string {} of PV array {}: {} is no device with PV input data	{0}: PV dizisi {2} içindeki {1} dizisi: {3} PV giriş verisi olan bir cihaz değil
 {}: terminal {} is on level {}, but no terminal block is before it	{}: {} klemensi {} katında, ancak önünde klemens bloğu yok
 {}: terminal {} uses {} levels, its part {} has {}	{}: {} klemensi {} kat kullanıyor, {} parçasında {} var
 {}: terminals {} are {} mm above the floor, at least {} mm required	{0}: {1} klemensleri zeminden {2} mm yukarıda, en az {3} mm gerekli
 {}: the busbar system with {} bars joins {} conductors ({}): short circuit	{}: {} baralı bara sistemi {} iletkeni birleştiriyor ({}): kısa devre
+{}: the device {} of PV array {} does not exist	{0}: PV dizisi {2} için {1} cihazı mevcut değil
+{}: the module {} of PV array {} has no electrical data	{0}: PV dizisi {2} içindeki {1} modülünün elektrik verisi yok
 {}: the station has no port {}	{}: istasyonda {} portu yok
+{}: the strings of PV array {} connect {} modules, the array has {}	{}: PV dizisi {} içindeki diziler {} modül bağlıyor, dizide {} var
 {}: the {} ({} x {} mm) is larger than the working area of {}	{0}: {1} ({2} x {3} mm), {4} çalışma alanından büyük
 {}: the {} is {} mm thick, {} takes at most {} mm	{0}: {1} {2} mm kalınlığında, {3} en fazla {4} mm alır
 {}: voltage drop {} V ({} %) above {} %	{}: gerilim düşümü {} V (%{}), %{} sınırının üzerinde
@@ -1994,6 +2056,7 @@ yellow	sarı
 {}: {} is not made for wall mounting, mount it on a rail	{}: {} duvara montaj için uygun değil, bir raya monte edin
 {}: {} is {} … {} mm above the floor, allowed {} … {} mm	{}: {} zeminden {} … {} mm yukarıda, izin verilen {} … {} mm
 {}: {} kg on the {} exceed its load of {} kg	{0}: {2} üzerindeki {1} kg, {3} kg taşıma yükünü aşıyor
+{}: {} modules of PV array {} are not connected to a string	{0}: PV dizisi {2} içindeki {1} modül bir diziye bağlı değil
 {}: {} modules, the head has {} slots	{}: {} modül, kafa modülünde {} slot var
 {}: {} of {} mm is longer than the stock length of {} mm and has to be joined	{}: {} ({} mm) {} mm stok uzunluğundan uzun ve eklenmesi gerekiyor
 {}: {} of {} mm is shorter than {} mm and hard to cut	{}: {} ({} mm) {} mm'den kısa ve kesilmesi zor
@@ -2005,6 +2068,7 @@ yellow	sarı
 {}: {} solenoid coils linked, the valve has {}	{}: {} solenoid bobini ilişkilendirilmiş, valfte {} var
 {}: {} stands in an inner wall	{}: {} bir iç duvarın içinde duruyor
 {}: {} stands in the swing of the door in wall {}	{}: {}, {} numaralı duvardaki kapının açılma alanında
+{}: {} stands in the way of the sliding door in wall {}	{0}: {1}, {2}. duvardaki sürgülü kapının yolunda duruyor
 {}: {} stands outside the room	{}: {} odanın dışında duruyor
 {}: {} stands where {} stands	{}: {}, {} ile aynı yerde duruyor
 {}: {} threads on the {} are cut by hand	{0}: {2} üzerindeki {1} diş elle açılır

@@ -79,6 +79,7 @@ A cutout of the same size at the same place in the neighbour's side wall: togeth
 A file of the same name in the folder gets a new version (checked out and in), otherwise the file is added	Eine gleichnamige Datei im Ordner erhält eine neue Version (aus- und eingecheckt), sonst wird die Datei hinzugefügt	Un fichier du même nom dans le dossier reçoit une nouvelle version (extrait puis archivé), sinon le fichier est ajouté	Un archivo con el mismo nombre en la carpeta recibe una nueva versión (desprotegido y protegido), si no el archivo se añade
 A hidden or locked layer cannot take new items	Eine ausgeblendete oder gesperrte Ebene nimmt keine neuen Elemente auf	Un calque masqué ou verrouillé ne peut pas recevoir de nouveaux éléments	Una capa oculta o bloqueada no puede recibir elementos nuevos
 A level below the lowest one	Eine Ebene unter der untersten	Un niveau sous le plus bas	Un nivel bajo el más bajo
+A level on top of the highest one	Eine Ebene über der höchsten	Un niveau au-dessus du plus haut	Un nivel encima del más alto
 A link joins two building entries: add building entries to the outer walls of rooms in different buildings (Layout space › Building entry).	Eine Verbindung verbindet zwei Gebäudeeinführungen: Gebäudeeinführungen in Außenwände von Räumen verschiedener Gebäude setzen (Layoutraum › Gebäudeeinführung).	Une liaison relie deux entrées de bâtiment : ajoutez des entrées de bâtiment aux murs extérieurs de pièces de bâtiments différents (Espace de montage › Entrée de bâtiment).	Un enlace une dos entradas de edificio: añada entradas de edificio a los muros exteriores de salas de distintos edificios (Espacio de montaje › Entrada de edificio).
 A new project	Ein neues Projekt	Un nouveau projet	Un proyecto nuevo
 A new release is downloaded in the background and installed when you close OpenECraft.	Eine neue Version wird im Hintergrund heruntergeladen und beim Schließen von OpenECraft installiert.	Une nouvelle version est téléchargée en arrière-plan et installée à la fermeture d'OpenECraft.	Una nueva versión se descarga en segundo plano y se instala al cerrar OpenECraft.
@@ -188,6 +189,7 @@ Archive and version	Archiv und Version	Archive et version	Archivo y versión
 Archive project…	Projekt archivieren…	Archiver le projet…	Archivar proyecto…
 Arms	Arme	Bras	Brazos
 As defined by the check	Wie von der Prüfung festgelegt	Comme défini par la vérification	Como lo define la comprobación
+As the rules say ({})	Wie die Regeln sagen ({})	Selon les règles ({})	Según las reglas ({})
 Aspects of the pages	Aspekte der Seiten	Aspects des pages	Aspectos de las páginas
 Aspects, identifiers and work areas as a file for other projects	Aspekte, Kennzeichen und Arbeitsbereiche als Datei für andere Projekte	Aspects, identificateurs et zones de travail dans un fichier pour d'autres projets	Aspectos, identificadores y áreas de trabajo como archivo para otros proyectos
 Assembly {}	Baugruppe {}	Ensemble {}	Conjunto {}
@@ -220,6 +222,8 @@ Back to a rectangle of the room's width and depth	Zurück zu einem Rechteck aus 
 Back to the project (Esc)	Zurück zum Projekt (Esc)	Retour au projet (Échap)	Volver al proyecto (Esc)
 Back-up up to (kA)	Back-up bis (kA)	Accompagnement jusqu'à (kA)	Respaldo hasta (kA)
 Background	Hintergrund	Arrière-plan	Fondo
+Ballast	Ballast	Lest	Lastre
+Ballast per module	Ballast je Modul	Lest par module	Lastre por módulo
 Baseline {}	Baseline {}	Référence {}	Línea base {}
 Baseline {} created	Baseline {} angelegt	Référence {} créée	Línea base {} creada
 Baseline {} {}	Baseline {} {}	Référence {} {}	Línea base {} {}
@@ -245,8 +249,8 @@ Bottom edges	Untere Kanten	Bords inférieurs	Bordes inferiores
 Bottom of the enclosure (without plinth) above the floor; heights are checked when it is known or the enclosure stands on a plinth	Unterkante des Gehäuses (ohne Sockel) über dem Boden; die Höhen werden geprüft, wenn sie bekannt ist oder das Gehäuse auf einem Sockel steht	Bas de l'armoire (sans socle) au-dessus du sol ; les hauteurs sont contrôlées si elle est connue ou si l'armoire repose sur un socle	Parte inferior del armario (sin zócalo) sobre el suelo; las alturas se comprueban si se conoce o si el armario está sobre un zócalo
 Breaking capacity against the short-circuit current at each protective device of the mains, disconnection at the lowest fault current at the end of its circuit, short-circuit withstand of the cables and selectivity with the device upstream.	Schaltvermögen gegen den Kurzschlussstrom an jedem Schutzorgan des Netzes, Abschaltung beim kleinsten Fehlerstrom am Ende seines Stromkreises, Kurzschlussfestigkeit der Leitungen und Selektivität zum vorgeschalteten Schutzorgan.	Pouvoir de coupure face au courant de court-circuit à chaque appareil de protection du réseau, coupure au courant de défaut minimal en bout de circuit, tenue au court-circuit des câbles et sélectivité avec l'appareil amont.	Poder de corte frente a la corriente de cortocircuito en cada dispositivo de protección de la red, desconexión con la corriente de defecto mínima al final de su circuito, resistencia al cortocircuito de los cables y selectividad con el dispositivo aguas arriba.
 Bridge: four wires; the connection comes in at one side and goes to the three others, the opposite side first	Brücke: vier Verbindungslinien; die Verbindung kommt an einer Seite an und geht zu den drei anderen, zuerst zur gegenüberliegenden	Pont : quatre fils ; la liaison arrive d'un côté et va vers les trois autres, le côté opposé d'abord	Puente: cuatro cables; la conexión entra por un lado y va a los otros tres, primero al lado opuesto
-Building	Gebäude	Bâtiment	Edificio
 Building entry: the supply cable, the water main and other lines from outside come into the building through it; click on an outer wall in the floor plan or in the view of the wall	Hauseinführung: Versorgungskabel, Wasserleitung und andere Leitungen von außen kommen durch sie ins Gebäude; im Grundriss oder in der Ansicht der Wand auf eine Außenwand klicken	Entrée de bâtiment : le câble d'alimentation, la conduite d'eau et d'autres lignes venant de l'extérieur entrent par elle dans le bâtiment ; cliquez sur un mur extérieur dans le plan ou dans la vue du mur	Entrada al edificio: el cable de acometida, la tubería de agua y otras líneas del exterior entran por ella al edificio; haga clic en una pared exterior en la planta o en la vista de la pared
+Building {} added with a level at ground level	Gebäude {} mit einer Ebene auf Geländehöhe hinzugefügt	Bâtiment {} ajouté avec un niveau au niveau du sol	Edificio {} añadido con un nivel a nivel del suelo
 Buildings of the plant: levels with their rooms, shafts through the levels, links between buildings and the site plan	Gebäude der Anlage: Ebenen mit ihren Räumen, Schächte durch die Ebenen, Verbindungen zwischen Gebäuden und der Lageplan	Bâtiments de l'installation : niveaux avec leurs pièces, gaines à travers les niveaux, liaisons entre bâtiments et plan de masse	Edificios de la instalación: niveles con sus salas, patinillos a través de los niveles, enlaces entre edificios y el plano de situación
 Built-in frames cannot be changed; copy one to adapt it.	Eingebaute Rahmen sind nicht änderbar; zum Anpassen kopieren.	Les cadres intégrés ne sont pas modifiables ; copiez-en un pour l'adapter.	Los marcos integrados no se pueden cambiar; copie uno para adaptarlo.
 Built-in scheme: copy it to change it.	Mitgeliefertes Schema: zum Ändern kopieren.	Schéma intégré : copiez-le pour le modifier.	Esquema integrado: cópielo para cambiarlo.
@@ -278,6 +282,7 @@ Cancel / select tool / clear selection	Abbrechen / Werkzeug wählen / Auswahl au
 Card	Karte	Carte	Tarjeta
 Cards without station: {}	Karten ohne Station: {}	Cartes sans station : {}	Tarjetas sin estación: {}
 Cavity plug	Blindstopfen	Bouchon d'alvéole	Tapón de cavidad
+Cell temperatures of the strings	Zelltemperaturen der Strings	Températures de cellule des chaînes	Temperaturas de célula de los strings
 Centre	Mitte	Centre	Centro
 Centre curve	Mittellinie	Ligne médiane	Línea central
 Change project properties of the selected projects	Projekteigenschaften der ausgewählten Projekte ändern	Modifier les propriétés de projet des projets sélectionnés	Cambiar las propiedades de proyecto de los proyectos seleccionados
@@ -315,14 +320,17 @@ Checks switched off and message levels as a file for other projects	Abgeschaltet
 Checks the project data (ids, references, device data, options, subprojects) together with the engineering checks.	Prüft die Projektdaten (IDs, Verweise, Gerätedaten, Optionen, Teilprojekte) zusammen mit den Engineering-Prüfungen.	Vérifie les données du projet (ID, références, données d'appareil, options, sous-projets) avec les contrôles d'ingénierie.	Verifica los datos del proyecto (ID, referencias, datos de dispositivo, opciones, subproyectos) junto con las comprobaciones de ingeniería.
 Choices	Auswahlwerte	Choix	Opciones
 Choices (separated by commas)	Auswahlwerte (durch Kommas getrennt)	Choix (séparés par des virgules)	Opciones (separadas por comas)
+Choose	Wählen	Choisir	Elegir
 Choose a 19-inch rack first: 19-inch parts go on its rails.	Zuerst ein 19-Zoll-Rack wählen: 19-Zoll-Teile kommen auf seine Profilschienen.	Choisissez d'abord une baie 19 pouces : les pièces 19 pouces se montent sur ses montants.	Elija primero un rack de 19 pulgadas: las piezas de 19 pulgadas van en sus perfiles.
 Choose a baseline, a revision or a project file to compare the project with.	Wählen Sie eine Baseline, eine Revision oder eine Projektdatei zum Vergleich.	Choisissez une référence, une révision ou un fichier de projet à comparer.	Elija una línea base, una revisión o un archivo de proyecto para comparar.
 Choose a room first: floor-standing parts go on its floor.	Zuerst einen Raum wählen: bodenstehende Artikel kommen auf seinen Boden.	Choisissez d'abord une salle : les articles posés au sol vont sur son sol.	Elija primero una sala: los artículos de pie sobre el suelo van en su suelo.
+Choose a room first: outlets, switches and heating circuit manifolds go on its walls.	Zuerst einen Raum wählen: Dosen, Schalter und Heizkreisverteiler kommen an seine Wände.	Choisissez d'abord une salle : prises, interrupteurs et collecteurs de chauffage se posent sur ses murs.	Elija primero una sala: tomas, interruptores y colectores de calefacción van en sus paredes.
 Choose a room first: wall-mounted parts go on its walls and ceiling.	Zuerst einen Raum wählen: Wandmontage-Artikel kommen an seine Wände und Decke.	Choisissez d'abord une salle : les articles à montage mural vont sur ses murs et son plafond.	Elija primero una sala: los artículos de montaje mural van en sus paredes y techo.
 Choose file…	Datei wählen…	Choisir un fichier…	Elegir archivo…
 Choose pages	Seiten wählen	Choisir les pages	Elegir páginas
 Chooses the pages whose structure starts with this	Wählt die Seiten, deren Struktur damit beginnt	Choisit les pages dont la structure commence par ceci	Elige las páginas cuya estructura empieza por esto
 Circle	Kreis	Cercle	Círculo
+Circuits of a generic manifold	Heizkreise eines generischen Verteilers	Circuits d'un collecteur générique	Circuitos de un colector genérico
 Clear	Leeren	Effacer	Borrar
 Clearance	Abstand	Distance	Distancia
 Clearances	Abstände	Distances	Distancias
@@ -338,6 +346,7 @@ Click on a wire: the point defines number, colour, cross-section and cable core 
 Click on an outer wall where the building entry goes; cables and pipes from outside the building come in through it. Size and height in the properties.	Auf eine Außenwand klicken, wo die Hauseinführung hinkommt; Kabel und Rohre von außerhalb des Gebäudes kommen durch sie herein. Größe und Höhe in den Eigenschaften.	Cliquez sur un mur extérieur à l'endroit de l'entrée de bâtiment ; câbles et tuyaux venant de l'extérieur du bâtiment entrent par elle. Taille et hauteur dans les propriétés.	Haga clic en una pared exterior donde va la entrada al edificio; cables y tuberías del exterior del edificio entran por ella. Tamaño y altura en las propiedades.
 Click on an outer wall where the wall penetration goes; cables, tubes and pipes pass through it into the room behind the wall. Size and height in the properties.	Auf eine Außenwand klicken, wo der Wanddurchbruch hinkommt; Kabel, Schläuche und Rohre führen durch ihn in den Raum hinter der Wand. Größe und Höhe in den Eigenschaften.	Cliquez sur un mur extérieur à l'endroit de la traversée de mur ; câbles, flexibles et tuyaux la traversent vers la salle derrière le mur. Taille et hauteur dans les propriétés.	Haga clic en una pared exterior donde va el pasamuros; cables, mangueras y tuberías pasan por él a la sala detrás de la pared. Tamaño y altura en las propiedades.
 Click on the 4 mm grid	Klicken Sie auf das 4-mm-Raster	Cliquez sur la grille de 4 mm	Haz clic en la cuadrícula de 4 mm
+Click on the wall: the part goes there at its mounting height	Auf die Wand klicken: das Teil sitzt dort auf seiner Montagehöhe	Cliquez sur le mur : l'article s'y place à sa hauteur de pose	Haga clic en la pared: el artículo se coloca allí a su altura de montaje
 Click start and corner points · {} toggles corner direction · {} toggles routing around symbols · ends automatically on a connection · {} or double click ends the wire · Esc or right click to finish	Start- und Eckpunkte klicken · {} wechselt die Eckrichtung · {} schaltet das Führen um Symbole herum um · endet automatisch an einem Anschluss · {} oder Doppelklick beendet die Verbindung · Esc oder Rechtsklick beendet	Cliquer le point de départ et les angles · {} change le sens de l'angle · {} active le routage autour des symboles · se termine automatiquement sur une connexion · {} ou double-clic termine le fil · Échap ou clic droit pour terminer	Haga clic en el inicio y las esquinas · {} cambia la dirección de la esquina · {} activa el trazado alrededor de los símbolos · termina automáticamente en una conexión · {} o doble clic termina el cable · Esc o clic derecho para terminar
 Click start and end point	Klicken Sie auf Start- und Endpunkt	Cliquez sur le point de départ et le point d'arrivée	Haz clic en el punto inicial y el final
 Click start point, click end point · Esc or right click to finish	Klicken Sie auf den Startpunkt, dann auf den Endpunkt · Esc oder Rechtsklick beendet	Cliquez sur le point de départ, puis sur le point d'arrivée · Échap ou clic droit pour terminer	Haz clic en el punto inicial y luego en el final · Esc o clic derecho para terminar
@@ -358,8 +367,11 @@ Click to place for device {} · {} rotate · {} mirror · Esc or right click to 
 Click to place the markup text	Klicken, um den Markierungstext zu setzen	Cliquer pour placer le texte d'annotation	Haga clic para colocar el texto de la marca
 Click to place the text from the field below	Klicken Sie, um den Text aus dem Feld unten zu platzieren	Cliquez pour placer le texte du champ ci-dessous	Haz clic para colocar el texto del campo inferior
 Click to place · {} rotate · {} mirror · Esc or right click to finish	Klicken zum Platzieren · {} drehen · {} spiegeln · Esc oder Rechtsklick beendet	Cliquez pour placer · {} pivoter · {} miroir · Échap ou clic droit pour terminer	Clic para colocar · {} girar · {} reflejar · Esc o clic derecho para terminar
+Click to put new rooms on this level; drop rooms onto it to move them here	Klicken, um neue Räume auf diese Ebene zu stellen; Räume hierauf ziehen, um sie auf diese Ebene zu verschieben	Cliquez pour placer les nouvelles salles sur ce niveau ; déposez-y des salles pour les y déplacer	Haga clic para poner las salas nuevas en este nivel; suelte salas sobre él para moverlas aquí
 Click to select, drag to move, drag on empty space for window selection (from right to left: crossing). Drag the tag or a property text of a selected symbol to place it. Right/middle drag pans, wheel zooms.	Klicken zum Auswählen, Ziehen zum Verschieben, Ziehen auf freier Fläche für Fensterauswahl (von rechts nach links: kreuzend). Kennzeichen oder Eigenschaftstext eines markierten Symbols ziehen, um es zu platzieren. Rechts-/Mittelziehen verschiebt die Ansicht, Mausrad zoomt.	Cliquer pour sélectionner, glisser pour déplacer, glisser sur une zone vide pour une sélection par fenêtre (de droite à gauche : sélection par capture). Glisser le repère ou un texte de propriété d'un symbole sélectionné pour le placer. Glisser avec le bouton droit/central pour déplacer la vue, molette pour zoomer.	Haga clic para seleccionar, arrastre para mover, arrastre en un espacio vacío para seleccionar por ventana (de derecha a izquierda: por cruce). Arrastre la identificación o un texto de propiedad de un símbolo seleccionado para colocarlo. Arrastre con el botón derecho/central para desplazar, rueda para hacer zoom.
 Click to show	Klicken zum Anzeigen	Cliquez pour afficher	Haz clic para mostrar
+Click to show the building in the site plan; right-click for new levels	Klicken zeigt das Gebäude im Lageplan; Rechtsklick für neue Ebenen	Cliquer pour afficher le bâtiment dans le plan de masse ; clic droit pour de nouveaux niveaux	Haga clic para mostrar el edificio en el plano de situación; clic derecho para nuevos niveles
+Click to show the site plan of the buildings, or all of the plant in the 3D view	Klicken zeigt den Lageplan der Gebäude oder in der 3D-Ansicht die ganze Anlage	Cliquer pour afficher le plan de masse des bâtiments, ou toute l'installation dans la vue 3D	Haga clic para mostrar el plano de situación de los edificios, o toda la instalación en la vista 3D
 Click to show, right click for more	Klicken zum Anzeigen, Rechtsklick für mehr	Cliquer pour afficher, clic droit pour plus	Clic para mostrar, clic derecho para más
 Click two corners	Klicken Sie auf zwei Ecken	Cliquez sur deux coins	Haz clic en dos esquinas
 Click two nodes to connect them	Zwei Knoten anklicken, um sie zu verbinden	Cliquer sur deux nœuds pour les relier	Haga clic en dos nodos para unirlos
@@ -442,6 +454,7 @@ Core designations separated by blanks	Aderbezeichnungen, durch Leerzeichen getre
 Cores 1, 2, 3 … for the wires crossed, plus GNYE	Adern 1, 2, 3 … für die gekreuzten Verbindungen, dazu GNYE	Conducteurs 1, 2, 3 … pour les fils croisés, plus GNYE	Conductores 1, 2, 3 … para los cables cruzados, más GNYE
 Corner: two wires at a right angle; with Auto-connect on, connection points facing its arms are wired to it	Ecke: zwei Verbindungslinien im rechten Winkel; bei eingeschaltetem Auto-Connect werden Anschlusspunkte, die ihren Armen gegenüberliegen, mit ihr verdrahtet	Coin : deux fils à angle droit ; avec l'auto-connexion activée, les points de connexion face à ses bras y sont reliés	Esquina: dos cables en ángulo recto; con la autoconexión activada, los puntos de conexión enfrentados a sus brazos se cablean a ella
 Cover sheet, overview, graphics, report, mounting layout or a page template	Deckblatt, Übersicht, Grafik, Bericht, Montageaufbau oder eine Seitenvorlage	Page de garde, vue d'ensemble, graphique, rapport, implantation ou modèle de page	Portada, vista general, gráficos, informe, montaje o una plantilla de página
+Covers	Überdeckt	Couvre	Cubre
 Covers what is behind the text	Deckt ab, was hinter dem Text liegt	Couvre ce qui se trouve derrière le texte	Cubre lo que hay detrás del texto
 Create	Anlegen	Créer	Crear
 Create an enclosure in the panel layout first.	Legen Sie zuerst im Schaltschrank-Layout ein Gehäuse an.	Créez d'abord une enveloppe dans l'implantation de l'armoire.	Crea primero una envolvente en la distribución del armario.
@@ -485,6 +498,7 @@ Define all used	Alle verwendeten definieren	Définir tous les utilisés	Definir 
 Defined potentials	Definierte Potenziale	Potentiels définis	Potenciales definidos
 Del	Entf	Suppr	Supr
 Delete	Löschen	Supprimer	Eliminar
+Delete PV array	PV-Anlage löschen	Supprimer le champ photovoltaïque	Eliminar campo fotovoltaico
 Delete building; its rooms stay where they stand	Gebäude löschen; seine Räume bleiben, wo sie stehen	Supprimer le bâtiment ; ses pièces restent où elles sont	Eliminar el edificio; sus salas quedan donde están
 Delete cable (its wires are removed from it)	Kabel löschen (seine Leitungen werden entfernt)	Supprimer le câble (ses fils en sont retirés)	Eliminar cable (sus hilos se quitan de él)
 Delete comment	Kommentar löschen	Supprimer le commentaire	Eliminar comentario
@@ -503,10 +517,14 @@ Delete page	Seite löschen	Supprimer la page	Eliminar página
 Delete page {}? It holds 1 item.	Seite {} löschen? Sie enthält 1 Element.	Supprimer la page {} ? Elle contient 1 élément.	¿Eliminar la página {}? Contiene 1 elemento.
 Delete page {}? It holds {} items.	Seite {} löschen? Sie enthält {} Elemente.	Supprimer la page {} ? Elle contient {} éléments.	¿Eliminar la página {}? Contiene {} elementos.
 Delete request	Antrag löschen	Supprimer la demande	Eliminar solicitud
+Delete roof	Dach löschen	Supprimer le toit	Eliminar cubierta
+Delete roof window	Dachfenster löschen	Supprimer la fenêtre de toit	Eliminar ventana de tejado
 Delete room	Raum löschen	Supprimer la salle	Eliminar sala
 Delete room {} with everything on its walls? The cabinets standing in it stay, without a room.	Raum {} mit allem an seinen Wänden löschen? Die Schaltschränke darin bleiben, ohne Raum.	Supprimer la salle {} avec tout ce qui est sur ses murs ? Les armoires qui s'y trouvent restent, sans salle.	¿Eliminar la sala {} con todo lo que hay en sus paredes? Los armarios que contiene se quedan, sin sala.
 Delete section	Abschnitt löschen	Supprimer la section	Eliminar sección
 Delete shaft	Schacht löschen	Supprimer la gaine	Eliminar patinillo
+Delete stair	Treppe löschen	Supprimer l'escalier	Eliminar escalera
+Delete string	String löschen	Supprimer la chaîne	Eliminar string
 Delete the group	Gruppe löschen	Supprimer le groupe	Eliminar el grupo
 Delete the group {}?	Gruppe {} löschen?	Supprimer le groupe {} ?	¿Eliminar el grupo {}?
 Delete the layer; its items move to the default layer	Ebene löschen; ihre Objekte kommen auf die Standardebene	Supprimer le calque ; ses éléments passent sur le calque par défaut	Eliminar la capa; sus elementos pasan a la capa predeterminada
@@ -514,9 +532,13 @@ Delete the property and all its values	Eigenschaft mit allen Werten löschen	Sup
 Delete the workspace {}?	Arbeitsbereich {} löschen?	Supprimer l'espace de travail {} ?	¿Eliminar el espacio de trabajo {}?
 Delete this workspace	Diesen Arbeitsbereich löschen	Supprimer cet espace de travail	Eliminar este espacio de trabajo
 Delete variant	Variante löschen	Supprimer la variante	Eliminar variante
+Delete zone	Zone löschen	Supprimer la zone	Eliminar zona
 Deny	Verweigern	Refuser	Denegar
 Depth / mounted at	Tiefe / Montage bei	Profondeur / montage à	Profundidad / montaje a
 Depth from / to	Tiefe von / bis	Profondeur de / à	Profundidad de / a
+Depth in the floor	Tiefe im Fußboden	Profondeur dans le sol	Profundidad en el suelo
+Depth of the lines in the floor below its surface (in the screed or on the raw floor)	Tiefe der Leitungen im Fußboden unter seiner Oberfläche (im Estrich oder auf der Rohdecke)	Profondeur des lignes dans le sol sous sa surface (dans la chape ou sur la dalle brute)	Profundidad de las líneas en el suelo bajo su superficie (en el recrecido o sobre el forjado)
+Depth of the slots in the walls: flush-mounted lines lie this deep behind the surface	Tiefe der Schlitze in den Wänden: Unterputzleitungen liegen so tief hinter der Oberfläche	Profondeur des saignées dans les murs : les lignes encastrées se trouvent à cette profondeur derrière la surface	Profundidad de las rozas en las paredes: las líneas empotradas quedan a esta profundidad detrás de la superficie
 Derive again	Neu ableiten	Déduire à nouveau	Derivar de nuevo
 Derive project definition	Projektdefinition ableiten	Dériver une définition de projet	Derivar definición de proyecto
 Derived from the routes of the panel layout	Aus den Verlegewegen des Aufbaus abgeleitet	Déduite des cheminements de l'implantation	Derivada de los recorridos del montaje
@@ -553,6 +575,7 @@ Digits	Stellen	Chiffres	Dígitos
 Dimension	Bemaßung	Cotation	Cota
 Directed T-junction: where three wires meet, names the device the two wires of the connection start from and the order of their targets	Gerichtetes T-Stück: wo drei Verbindungslinien zusammentreffen, benennt es das Gerät, von dem die beiden Drähte der Verbindung ausgehen, und die Reihenfolge ihrer Ziele	Pièce en T dirigée : là où trois fils se rejoignent, elle nomme l'appareil d'où partent les deux fils de la liaison et l'ordre de leurs cibles	Pieza en T dirigida: donde se unen tres cables, indica el dispositivo del que parten los dos hilos de la conexión y el orden de sus destinos
 Directed crossing: connects the two wires crossing there; each end of its line is wired straight on first and across second	Gerichtete Kreuzung: verbindet die beiden sich dort kreuzenden Verbindungslinien; jedes Ende ihrer Linie wird zuerst geradeaus und dann quer verdrahtet	Croisement dirigé : relie les deux fils qui s'y croisent ; chaque extrémité de sa ligne est câblée tout droit d'abord, puis en travers	Cruce dirigido: conecta los dos cables que se cruzan allí; cada extremo de su línea se cablea primero en línea recta y después transversalmente
+Direction the modules face, counter-clockwise seen from above (0: towards the front)	Richtung, in die die Module zeigen, von oben gesehen gegen den Uhrzeigersinn (0: nach vorn)	Direction vers laquelle les modules sont orientés, dans le sens antihoraire vu de dessus (0 : vers l'avant)	Dirección hacia la que miran los módulos, en sentido antihorario visto desde arriba (0: hacia delante)
 Discard changes	Änderungen verwerfen	Abandonner les modifications	Descartar los cambios
 Discard draft	Entwurf verwerfen	Abandonner le brouillon	Descartar borrador
 Disconnection of distribution circuits	Abschaltung von Verteilerstromkreisen	Coupure des circuits de distribution	Desconexión de circuitos de distribución
@@ -628,6 +651,7 @@ Drilling list of this face (CSV)	Bohrliste dieser Fläche (CSV)	Liste de perçag
 Drilling pattern of the face shown as DXF, DWG or CSV	Bohrbild der angezeigten Fläche als DXF, DWG oder CSV	Plan de perçage de la face affichée en DXF, DWG ou CSV	Patrón de taladrado de la cara mostrada como DXF, DWG o CSV
 Drop between the pages	Zwischen den Seiten ablegen	Déposer entre les pages	Soltar entre las páginas
 Drop between the rows or onto a section	Zwischen den Zeilen oder auf einem Abschnitt ablegen	Déposer entre les lignes ou sur une section	Soltar entre las filas o sobre una sección
+Drop onto a level to put the room on it	Auf eine Ebene ziehen, um den Raum darauf zu stellen	Déposez sur un niveau pour y placer la salle	Suelte sobre un nivel para poner la sala en él
 Drops the stored topology	Verwirft die gespeicherte Topologie	Abandonne la topologie enregistrée	Descarta la topología guardada
 Duct fill	Kanalfüllung	Remplissage goulottes	Llenado de canaletas
 Duct fill limit	Grenzwert Kanalfüllung	Limite de remplissage des goulottes	Límite de llenado de canaletas
@@ -635,6 +659,7 @@ Duplicate	Duplizieren	Dupliquer	Duplicar
 Each example builds on the one before and shows more of the features.	Jedes Beispiel baut auf dem vorigen auf und zeigt mehr der Funktionen.	Chaque exemple s'appuie sur le précédent et montre davantage de fonctions.	Cada ejemplo se basa en el anterior y muestra más funciones.
 Each point-to-point connection can belong to a harness	Jede Punkt-zu-Punkt-Verbindung kann zu einem Kabelbaum gehören	Chaque liaison point à point peut appartenir à un faisceau	Cada conexión punto a punto puede pertenecer a un mazo
 Earthing system	Netzform	Schéma de liaison à la terre	Esquema de conexión a tierra
+Eaves	Traufe	Égout	Alero
 Edge length of the routing grid: smaller is finer and slower	Kantenlänge des Verlegerasters: kleiner ist feiner und langsamer	Longueur d'arête de la grille de routage : plus petit est plus fin et plus lent	Longitud de arista de la rejilla de tendido: más pequeña es más fina y más lenta
 Edit	Bearbeiten	Édition	Edición
 Edit in table	In Tabelle bearbeiten	Modifier dans un tableau	Editar en tabla
@@ -697,6 +722,7 @@ Exporting {}	Exportiere {}	Exportation de {}	Exportando {}
 Export…	Exportieren…	Exporter…	Exportar…
 Extent of the floor plan; change it by its walls	Ausdehnung des Grundrisses; über seine Wände ändern	Étendue du plan ; à modifier par ses murs	Extensión del plano; se cambia mediante sus paredes
 Extras	Extras	Extras	Extras
+Facing	Ausrichtung	Orientation	Orientación
 Fans, filters, cable glands, lights, handles: choose one, then click where it goes	Lüfter, Filter, Kabelverschraubungen, Leuchten, Griffe: eins wählen, dann an die Einbaustelle klicken	Ventilateurs, filtres, presse-étoupes, éclairages, poignées : en choisir un, puis cliquer à son emplacement	Ventiladores, filtros, prensaestopas, luces, manetas: elija uno y haga clic donde va
 Fastening hardware in the bill of materials	Befestigungsmaterial in der Stückliste	Visserie de fixation dans la nomenclature	Tornillería de fijación en la lista de materiales
 Favorite	Favorit	Favori	Favorito
@@ -740,7 +766,9 @@ Floor plan of the room: drag walls to move them, drag cabinets to their places	G
 Floor plan with {} walls	Grundriss mit {} Wänden	Plan avec {} murs	Plano con {} paredes
 Floor-standing part	Bodenstehender Artikel	Article posé au sol	Artículo de pie sobre el suelo
 Fluid and process	Fluid und Verfahrenstechnik	Fluide et procédé	Fluidos y proceso
+Flush-mounted lines run in slots in the walls along the installation zones, or down into the floor and along its zone	Unterputzleitungen verlaufen in Schlitzen der Wände entlang der Installationszonen oder hinab in den Fußboden und entlang seiner Zone	Les lignes encastrées passent dans des saignées des murs le long des zones d'installation, ou descendent dans le sol et suivent sa zone	Las líneas empotradas van en rozas de las paredes a lo largo de las zonas de instalación, o bajan al suelo y siguen su zona
 Follows its condition: use Apply conditions	Folgt ihrer Bedingung: Verwenden Sie Bedingungen anwenden	Suit sa condition : utilisez Appliquer les conditions	Sigue su condición: use Aplicar condiciones
+Foot	Antritt	Départ	Arranque
 For	Für	Pour	Para
 For parts without Stock length; longer profiles have to be joined	Für Artikel ohne Stock length; längere Profile müssen gestoßen werden	Pour les articles sans Stock length ; les profilés plus longs doivent être raboutés	Para artículos sin Stock length; los perfiles más largos deben empalmarse
 For parts without temperature data (Max temperature, Operating temperature); 0: not checked	Für Artikel ohne Temperaturangaben (Max temperature, Operating temperature); 0: nicht geprüft	Pour les articles sans données de température (Max temperature, Operating temperature) ; 0 : non contrôlé	Para artículos sin datos de temperatura (Max temperature, Operating temperature); 0: no se comprueba
@@ -762,8 +790,11 @@ Freeze route	Verlegung einfrieren	Figer le tracé	Congelar el recorrido
 Frequency	Frequenz	Fréquence	Frecuencia
 From / to	Von / nach	De / à	De / a
 From a template file…	Aus einer Vorlagendatei…	À partir d'un fichier modèle…	Desde un archivo de plantilla…
+From row to row; 0: free of shade in winter	Von Reihe zu Reihe; 0: im Winter verschattungsfrei	D'une rangée à l'autre ; 0 : sans ombrage en hiver	De fila a fila; 0: sin sombras en invierno
 From the function definition	Aus der Funktionsdefinition	De la définition de fonction	De la definición de función
 From the left end	Vom linken Ende	Depuis l'extrémité gauche	Desde el extremo izquierdo
+From the lowest level up to the next one; move it to its place in the building's floor plan	Von der untersten Ebene hinauf zur nächsten; an ihren Platz im Grundriss des Gebäudes verschieben	Du niveau le plus bas au suivant ; déplacez-le à sa place dans le plan du bâtiment	Desde el nivel más bajo hasta el siguiente; muévala a su lugar en la planta del edificio
+From – to	Von – bis	De – à	De – a
 Front	Vorne	Avant	Frente
 Fullest stretch	Vollster Abschnitt	Tronçon le plus rempli	Tramo más lleno
 Function definitions	Funktionsdefinitionen	Définitions de fonction	Definiciones de función
@@ -790,12 +821,14 @@ Generates the pages of all report blocks again	Erzeugt die Seiten aller Auswertu
 Generates {} pages	Erzeugt {} Seiten	Génère {} pages	Genera {} páginas
 Generation failed: {}	Erzeugen fehlgeschlagen: {}	Échec de la génération : {}	Error al generar: {}
 Generic	Generisch	Générique	Genérico
+German zones (DIN 18015-3)	Deutsche Zonen (DIN 18015-3)	Zones allemandes (DIN 18015-3)	Zonas alemanas (DIN 18015-3)
 Getting started	Erste Schritte	Premiers pas	Primeros pasos
 Global variable list with direct addresses for CODESYS, TwinCAT and others	Globale Variablenliste mit direkten Adressen für CODESYS, TwinCAT und andere	Liste de variables globales avec adresses directes pour CODESYS, TwinCAT et autres	Lista de variables globales con direcciones directas para CODESYS, TwinCAT y otros
 Go to page	Zur Seite	Aller à la page	Ir a la página
 Graphic line	Grafische Linie	Ligne graphique	Línea gráfica
 Graphic rectangle	Grafisches Rechteck	Rectangle graphique	Rectángulo gráfico
 Graphical form	Grafisches Formular	Formulaire graphique	Formulario gráfico
+Greatest distance of the roof hooks along a rail	Größter Abstand der Dachhaken entlang einer Schiene	Plus grande distance des crochets de toit le long d'un rail	Mayor distancia de los ganchos de tejado a lo largo de un perfil
 Grid	Raster	Grille	Cuadrícula
 Grid off	Raster aus	Grille désactivée	Rejilla desactivada
 Grid size	Rastergröße	Taille de la grille	Tamaño de rejilla
@@ -806,17 +839,20 @@ Group in the symbol list, e.g. your company	Gruppe in der Symbolliste, z. B. Ihr
 Group the pages by structure	Seiten nach Struktur gruppieren	Grouper les pages par structure	Agrupar las páginas por estructura
 Groups shown	Angezeigte Gruppen	Groupes affichés	Grupos mostrados
 HEATER=yes	HEIZUNG=ja	CHAUFFAGE=oui	CALEFACCION=si
+Halfway up the front or right slope; move it to its place	Auf halber Höhe der vorderen oder rechten Dachfläche; an seinen Platz verschieben	À mi-hauteur du versant avant ou droit ; déplacez-la à sa place	A media altura del faldón delantero o derecho; muévala a su lugar
 Hardware configuration and PLC tags for TIA Portal and other PLC tools	Hardwarekonfiguration und SPS-Variablen für TIA Portal und andere SPS-Werkzeuge	Configuration matérielle et variables automate pour TIA Portal et d'autres outils automate	Configuración de hardware y variables PLC para TIA Portal y otras herramientas PLC
 Head (CPU / coupler)	Kopf (CPU / Koppler)	Tête (CPU / coupleur)	Cabecera (CPU / acoplador)
 Header row	Kopfzeile	Ligne d'en-tête	Fila de encabezado
 Heat map	Wärmebild	Carte thermique	Mapa térmico
 Heating	Heizung	Chauffage	Calefacción
+Heating circuit manifolds and control boxes	Heizkreisverteiler und Regelboxen	Collecteurs de chauffage et boîtiers de régulation	Colectores de calefacción y cajas de regulación
 Height (mm)	Höhe (mm)	Hauteur (mm)	Altura (mm)
 Height above the floor	Höhe über dem Boden	Hauteur au-dessus du sol	Altura sobre el suelo
 Height above the mounting plate	Höhe über der Montageplatte	Hauteur au-dessus de la plaque de montage	Altura sobre la placa de montaje
 Height above the plate	Höhe über der Platte	Hauteur au-dessus de la plaque	Altura sobre la placa
 Height of the plinth, 0 without plinth	Höhe des Sockels, 0 ohne Sockel	Hauteur du socle, 0 sans socle	Altura del zócalo, 0 sin zócalo
 Height of the sill (bottom edge) above the floor	Höhe der Brüstung (Unterkante) über dem Boden	Hauteur de l'allège (bord inférieur) au-dessus du sol	Altura del alféizar (borde inferior) sobre el suelo
+Height of the underside of the roof over the walls above the ground level of the building; below the ceiling of a level it slopes the ceilings of the rooms there	Höhe der Dachunterseite über den Wänden über dem Bodenniveau des Gebäudes; unterhalb der Decke einer Ebene macht es die Decken der Räume dort schräg	Hauteur de la sous-face du toit au droit des murs au-dessus du niveau du sol du bâtiment ; sous le plafond d'un niveau, il rend rampants les plafonds des salles de ce niveau	Altura de la cara inferior de la cubierta sobre los muros por encima del nivel del suelo del edificio; por debajo del techo de un nivel inclina los techos de las salas de ese nivel
 Heights above floor (IEC 60204-1)	Höhen über Boden (IEC 60204-1)	Hauteurs au-dessus du sol (CEI 60204-1)	Alturas sobre el suelo (IEC 60204-1)
 Help	Hilfe	Aide	Ayuda
 Hide ceiling	Decke ausblenden	Masquer le plafond	Ocultar el techo
@@ -825,10 +861,14 @@ Hide walls in front	Wände davor ausblenden	Masquer les murs de devant	Ocultar l
 Higher than its level ({} mm)	Höher als seine Ebene ({} mm)	Plus haute que son niveau ({} mm)	Más alta que su nivel ({} mm)
 Highest phase unbalance	Größte Phasenunsymmetrie	Déséquilibre des phases maximal	Desequilibrio de fases máximo
 Highest short-circuit current	Größter Kurzschlussstrom	Courant de court-circuit maximal	Corriente de cortocircuito máxima
+Highest voltage (open circuit at the lowest temperature), mean and lowest voltage (at maximum power at the mean and the highest temperature), current at maximum power, peak power	Höchste Spannung (Leerlauf bei der niedrigsten Temperatur), mittlere und niedrigste Spannung (bei maximaler Leistung bei der mittleren und der höchsten Temperatur), Strom bei maximaler Leistung, Spitzenleistung	Tension la plus haute (à vide à la température la plus basse), tension moyenne et la plus basse (à puissance maximale à la température moyenne et la plus haute), courant à puissance maximale, puissance crête	Tensión más alta (circuito abierto a la temperatura más baja), tensión media y más baja (a máxima potencia a la temperatura media y la más alta), corriente a máxima potencia, potencia pico
+Highest: the lowest voltage	Höchste: die niedrigste Spannung	La plus haute : la tension la plus basse	Más alta: la tensión más baja
 Hole to sheet edge	Bohrung zum Blechrand	Perçage au bord de la tôle	Taladro al borde de la chapa
 Home	Start	Accueil	Inicio
+Hook distance	Hakenabstand	Distance des crochets	Distancia de ganchos
 Horizontal	Horizontal	Horizontale	Horizontal
 Horizontal (mm)	Horizontal (mm)	Horizontal (mm)	Horizontal (mm)
+Horizontal 15 - 45 cm above the floor and below the ceiling, the middle zone of kitchens 100 - 130 cm (off), vertical 10 - 30 cm beside doors, windows and corners, the ceiling and the floor 20 - 50 cm from the walls	Waagerecht 15 - 45 cm über dem Fußboden und unter der Decke, die mittlere Zone für Küchen 100 - 130 cm (aus), senkrecht 10 - 30 cm neben Türen, Fenstern und Ecken, Decke und Fußboden 20 - 50 cm von den Wänden	Horizontales à 15 - 45 cm au-dessus du sol et sous le plafond, la zone médiane des cuisines à 100 - 130 cm (désactivée), verticales à 10 - 30 cm à côté des portes, fenêtres et angles, plafond et sol à 20 - 50 cm des murs	Horizontales a 15 - 45 cm sobre el suelo y bajo el techo, la zona media de cocinas a 100 - 130 cm (desactivada), verticales a 10 - 30 cm junto a puertas, ventanas y esquinas, techo y suelo a 20 - 50 cm de las paredes
 Horizontal centres	Horizontale Mitten	Centres horizontaux	Centros horizontales
 Horizontal position	Horizontale Lage	Position horizontale	Posición horizontal
 Horizontally	Horizontal	Horizontalement	Horizontalmente
@@ -838,6 +878,7 @@ Hose defaults and PCT loops of the pre-planning	Schlauch-Standardwerte und PLT-S
 Hose number	Schlauchnummer	Numéro de flexible	Número de manguera
 Hoses and pipes	Schläuche und Rohre	Flexibles et tuyaux	Mangueras y tuberías
 Hoses rated below it are errors; 0 = not checked	Schläuche mit geringerer Druckstufe sind Fehler; 0 = nicht geprüft	Les flexibles prévus pour moins sont des erreurs ; 0 = non vérifié	Las mangueras aptas para menos son errores; 0 = no se comprueba
+How the leaf opens: hinged at its left or right edge (seen from inside the room), into or out of the room, or sliding along the wall	Wie der Flügel öffnet: Anschlag an der linken oder rechten Kante (vom Raum aus gesehen), in den Raum hinein oder aus ihm heraus, oder schiebend an der Wand entlang	Comment le vantail s'ouvre : paumelles sur le bord gauche ou droit (vu de l'intérieur de la pièce), vers l'intérieur ou l'extérieur de la pièce, ou coulissant le long du mur	Cómo abre la hoja: con bisagras en el borde izquierdo o derecho (visto desde dentro del recinto), hacia dentro o hacia fuera del recinto, o corredera a lo largo de la pared
 IP / bus address	IP- / Busadresse	Adresse IP / de bus	Dirección IP / de bus
 ISO 639-1 language code	Sprachcode nach ISO 639-1	Code de langue ISO 639-1	Código de idioma ISO 639-1
 Identifiers	Kennzeichen	Identificateurs	Identificadores
@@ -882,6 +923,7 @@ In every section counting starts again after the section number (2.3.1).	In jede
 In strip order; PE and other non-numeric terminals keep their designation	In Leistenreihenfolge; PE und andere nicht numerische Klemmen behalten ihre Bezeichnung	Dans l'ordre du bornier ; PE et les autres bornes non numériques conservent leur désignation	En el orden de la regleta; PE y otros bornes no numéricos conservan su designación
 In the filtered rows	In den gefilterten Zeilen	Dans les lignes filtrées	En las filas filtradas
 In the middle of the first wire	In der Mitte des ersten Verbindungsstücks	Au milieu du premier fil	En el centro del primer cable
+In the middle of the front or right slope, on a flat roof tilted towards the front; move it to its place	In der Mitte der vorderen oder rechten Dachfläche, auf einem Flachdach nach vorn aufgeständert; an seinen Platz verschieben	Au milieu du pan avant ou droit, sur un toit plat incliné vers l'avant ; déplacez-le à sa place	En el centro del faldón delantero o derecho, en una cubierta plana inclinado hacia delante; muévalo a su sitio
 In the project	Im Projekt	Dans le projet	En el proyecto
 In the structure of the current page	In der Struktur der aktuellen Seite	Dans la structure de la page actuelle	En la estructura de la página actual
 Include manually set numbers	Manuell gesetzte Nummern einbeziehen	Inclure les numéros définis manuellement	Incluir los números definidos manualmente
@@ -904,6 +946,7 @@ Inside temperature	Innentemperatur	Température intérieure	Temperatura interior
 Inside without cooling	Innen ohne Kühlung	Intérieur sans refroidissement	Interior sin refrigeración
 Installation	Aufstellung	Installation	Instalación
 Installation conditions of the conductors	Verlegebedingungen der Leiter	Conditions de pose des conducteurs	Condiciones de instalación de los conductores
+Installation zones	Installationszonen	Zones d'installation	Zonas de instalación
 Installed plugins	Installierte Plugins	Plugins installés	Plugins instalados
 Instead of user name and password	Statt Benutzername und Passwort	Au lieu du nom d'utilisateur et du mot de passe	En lugar de nombre de usuario y contraseña
 Instruments in the P&ID carry function letters and loop number in their label (TIC 101); their device tag links them with the schematic.	Instrumente im R&I-Fließschema tragen Kennbuchstaben und Stellennummer in ihrer Bezeichnung (TIC 101); ihr BMK verbindet sie mit dem Schaltplan.	Les instruments du P&ID portent les lettres de fonction et le numéro de boucle dans leur libellé (TIC 101) ; leur repère les relie au schéma.	Los instrumentos del P&ID llevan las letras de función y el número de lazo en su etiqueta (TIC 101); su identificador los vincula con el esquema.
@@ -911,6 +954,7 @@ Insulation	Isolierung	Isolant	Aislamiento
 Interruption points refer to	Unterbrechungspunkte verweisen auf	Les points d'interruption renvoient à	Los puntos de interrupción remiten a
 Introduction	Einführung	Introduction	Introducción
 Invalid value	Ungültiger Wert	Valeur invalide	Valor no válido
+Inverter or charge controller (devices with PV input data)	Wechselrichter oder Laderegler (Betriebsmittel mit PV-Eingangsdaten)	Onduleur ou régulateur de charge (appareils avec des données d'entrée PV)	Inversor o regulador de carga (dispositivos con datos de entrada FV)
 Isometric	Isometrisch	Isométrique	Isométrica
 Items on the layer	Objekte auf der Ebene	Éléments sur le calque	Elementos en la capa
 Items with an anchor keep it; the others are inserted relative to the click.	Elemente mit Verankerung behalten sie; die anderen werden relativ zum Klick eingefügt.	Les éléments ancrés gardent leur ancrage ; les autres sont insérés par rapport au clic.	Los elementos anclados lo conservan; los demás se insertan respecto al clic.
@@ -942,16 +986,17 @@ Layer	Ebene	Calque	Capa
 Layer {}	Ebene {}	Calque {}	Capa {}
 Layer: {}	Ebene: {}	Calque : {}	Capa: {}
 Layers of graphics, texts, dimensions and images	Ebenen für Grafik, Texte, Bemaßungen und Bilder	Calques des graphiques, textes, cotes et images	Capas de gráficos, textos, cotas e imágenes
+Laying in rooms	Verlegeart in Räumen	Pose dans les salles	Tendido en las salas
 Laying out the wires, cables and tubes…	Drähte, Kabel und Schläuche werden verlegt…	Disposition des fils, câbles et tuyaux…	Colocando cables, mangueras y tubos…
 Layout checks	Aufbauprüfungen	Contrôles d'implantation	Comprobaciones de disposición
 Layout properties	Layout-Eigenschaften	Propriétés de l'implantation	Propiedades del montaje
 Layout space	Layoutbereich	Espace de montage	Espacio de montaje
 Layout spaces	Layoutbereiche	Espaces de montage	Espacios de montaje
+Leave out the ceilings of the rooms and the roofs in the 3D view	Die Decken der Räume und die Dächer in der 3D-Ansicht weglassen	Masquer les plafonds des salles et les toits dans la vue 3D	Omitir los techos de las salas y las cubiertas en la vista 3D
 Leave out the ceilings of the rooms in the 3D view	In der 3D-Ansicht die Decken der Räume weglassen	Dans la vue 3D, omettre les plafonds des salles	En la vista 3D, omitir los techos de las salas
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	In der 3D-Ansicht die Deckel aller Kabelkanäle weglassen: die Verbindungen darin werden sichtbar	Dans la vue 3D, omettre les couvercles de toutes les goulottes : les fils qu'elles contiennent sont visibles	En la vista 3D, omitir las tapas de todas las canaletas: se ven los cables que contienen
 Leave out the walls between the eye and the inside of the room or enclosure in the 3D view	In der 3D-Ansicht die Wände zwischen Betrachter und dem Inneren des Raums oder Gehäuses weglassen	Dans la vue 3D, omettre les murs entre l'œil et l'intérieur de la salle ou de l'armoire	En la vista 3D, omitir las paredes entre el ojo y el interior de la sala o del armario
 Leave repeated values of the first column blank	Wiederholte Werte der ersten Spalte leer lassen	Laisser vides les valeurs répétées de la première colonne	Dejar en blanco los valores repetidos de la primera columna
-Left	Links	Gauche	Izquierda
 Left edges	Linke Kanten	Bords gauches	Bordes izquierdos
 Legend plates (door devices)	Bezeichnungsschilder (Türgeräte)	Plaques de repérage (appareils de porte)	Placas de leyenda (equipos de puerta)
 Length from the node to the device	Länge vom Knoten bis zum Gerät	Longueur du nœud à l'appareil	Longitud del nodo al aparato
@@ -965,6 +1010,7 @@ Letters, digits, space, - _ . (up to 64 characters)	Buchstaben, Ziffern, Leerzei
 Level of a multi-level terminal: upper levels sit on the block of the terminal before	Etage einer Etagenklemme: obere Etagen sitzen auf dem Block der Klemme davor	Étage d'une borne à étages : les étages supérieurs sont sur le bloc de la borne précédente	Piso de un borne de varios pisos: los pisos superiores están en el bloque del borne anterior
 Level of this kind of message	Stufe dieser Meldungsart	Niveau de ce type de message	Nivel de este tipo de mensaje
 Level on top	Ebene oben	Niveau au-dessus	Nivel encima
+Level {} added to building {}; new rooms go onto it	Ebene {} zu Gebäude {} hinzugefügt; neue Räume kommen auf sie	Niveau {} ajouté au bâtiment {} ; les nouvelles pièces y vont	Nivel {} añadido al edificio {}; los nuevos recintos van en él
 Levels	Ebenen	Niveaux	Niveles
 Library	Bibliothek	Bibliothèque	Biblioteca
 Limits	Grenzwerte	Limites	Límites
@@ -1004,6 +1050,7 @@ Looking for updates…	Suche nach Updates…	Recherche de mises à jour…	Busca
 Looks for a new release of OpenECraft on GitHub and installs it in the background	Sucht auf GitHub nach einer neuen Version von OpenECraft und installiert sie im Hintergrund	Recherche une nouvelle version d'OpenECraft sur GitHub et l'installe en arrière-plan	Busca una nueva versión de OpenECraft en GitHub y la instala en segundo plano
 Loop	Stelle	Boucle	Lazo
 Lowest fault current	Kleinster Fehlerstrom	Courant de défaut minimal	Corriente de defecto mínima
+Lowest: the highest open-circuit voltage	Niedrigste: die höchste Leerlaufspannung	La plus basse : la tension à vide la plus haute	Más baja: la tensión de circuito abierto más alta
 Macro boxes	Makrokästen	Boîtes de macro	Cajas de macro
 Macro boxes ({})	Makrokästen ({})	Boîtes de macro ({})	Cajas de macro ({})
 Macro saved to the library	Makro in der Bibliothek gespeichert	Macro enregistrée dans la bibliothèque	Macro guardada en la biblioteca
@@ -1034,6 +1081,7 @@ Master data	Stammdaten	Données de base	Datos maestros
 Max. pressure	Max. Druck	Pression max.	Presión máx.
 Max. width	Max. Breite	Largeur max.	Ancho máx.
 Maximum fill of a carrier	Maximale Füllung eines Kabelträgers	Remplissage maximal d'un support	Llenado máximo de un soporte
+Mean: typical operation	Mittlere: typischer Betrieb	Moyenne : fonctionnement typique	Media: funcionamiento típico
 Measured	Gemessen	Mesuré	Medido
 Measures against common cause failure (at least 65 points)	Maßnahmen gegen Ausfälle gemeinsamer Ursache (mindestens 65 Punkte)	Mesures contre les défaillances de cause commune (au moins 65 points)	Medidas contra fallos de causa común (al menos 65 puntos)
 Merge a symbol library file	Eine Symbolbibliotheksdatei zusammenführen	Fusionner un fichier de bibliothèque de symboles	Combinar un archivo de biblioteca de símbolos
@@ -1042,17 +1090,22 @@ Messages	Meldungen	Messages	Mensajes
 Messages ({})	Meldungen ({})	Messages ({})	Mensajes ({})
 Messages of this session	Meldungen dieser Sitzung	Messages de cette session	Mensajes de esta sesión
 Middle	Mitte	Milieu	Centro
+Middle of the PV array in the floor plan of the building	Mitte der PV-Anlage im Grundriss des Gebäudes	Milieu du champ photovoltaïque dans le plan du bâtiment	Centro del campo fotovoltaico en la planta del edificio
+Middle of the front edge of the lowest step in the building's floor plan, and the direction of the first flight	Mitte der Vorderkante der untersten Stufe im Grundriss des Gebäudes und die Richtung des ersten Laufs	Milieu du nez de la marche la plus basse dans le plan du bâtiment, et la direction de la première volée	Centro del borde delantero del peldaño más bajo en la planta del edificio, y la dirección del primer tramo
 Min. bend radius	Min. Biegeradius	Rayon de courbure min.	Radio de curvatura mín.
 Minimize the ribbon	Menüband minimieren	Réduire le ruban	Minimizar la cinta de opciones
 Mirror	Spiegeln	Miroir	Reflejar
 Mirror (selection or symbol being placed)	Spiegeln (Auswahl oder zu platzierendes Symbol)	Miroir (sélection ou symbole en cours de placement)	Reflejar (selección o símbolo que se coloca)
 Mode	Modus	Mode	Modo
 Model of a part (2D / 3D)	Modell eines Artikels (2D / 3D)	Modèle d'un article (2D / 3D)	Modelo de un artículo (2D / 3D)
+Module part; its size comes from the part	Modulartikel; seine Größe kommt vom Artikel	Article du module ; sa taille vient de l'article	Artículo del módulo; su tamaño viene del artículo
 Motors feed the short circuit	Motoren speisen den Kurzschluss	Les moteurs alimentent le court-circuit	Los motores alimentan el cortocircuito
 Mounted on	Montiert auf	Monté sur	Montado en
 Mounting assistant: the panel items in mounting order with their place and part	Montageassistent: die Teile des Schaltschranks in Montagereihenfolge mit Platz und Artikel	Assistant de montage : les éléments de l'armoire dans l'ordre de montage avec leur position et leur article	Asistente de montaje: los elementos del armario en orden de montaje con su posición y artículo
 Mounting clearance side by side; parts add theirs (Clearance left / right)	Montageabstand nebeneinander; Artikel ergänzen ihren eigenen (Clearance left / right)	Distance de montage côte à côte ; les articles ajoutent la leur (Clearance left / right)	Distancia de montaje lado a lado; los artículos añaden la suya (Clearance left / right)
+Mounting height: {}	Montagehöhe: {}	Hauteur de pose : {}	Altura de montaje: {}
 Mounting plate: {} holes, {} cutouts	Montageplatte: {} Bohrungen, {} Ausschnitte	Plaque de montage : {} perçages, {} découpes	Placa de montaje: {} taladros, {} recortes
+Mounting system	Montagesystem	Système de montage	Sistema de montaje
 Move	Verschieben	Déplacer	Mover
 Move down	Nach unten	Descendre	Bajar
 Move left	Nach links	Déplacer à gauche	Mover a la izquierda
@@ -1119,15 +1172,18 @@ New report page	Neue Berichtsseite	Nouvelle page de rapport	Nueva página de inf
 New request	Neuer Antrag	Nouvelle demande	Nueva solicitud
 New revision	Neue Revision	Nouvelle révision	Nueva revisión
 New revisions start as drafts, are submitted for review and can be released once approved.	Neue Revisionen beginnen als Entwurf, werden zur Prüfung eingereicht und können nach der Genehmigung freigegeben werden.	Les nouvelles révisions commencent comme brouillons, sont soumises à vérification et peuvent être diffusées une fois approuvées.	Las nuevas revisiones empiezan como borradores, se envían a revisión y pueden liberarse una vez aprobadas.
+New roof	Neues Dach	Nouveau toit	Nueva cubierta
 New room	Neuer Raum	Nouvelle salle	Nueva sala
 New room on this level	Neuer Raum auf dieser Ebene	Nouvelle pièce sur ce niveau	Nueva sala en este nivel
 New schematic page	Neue Schaltplanseite	Nouvelle page de schéma	Nueva página de esquema
 New scheme	Neues Schema	Nouveau schéma	Nuevo esquema
 New section	Neuer Abschnitt	Nouvelle section	Nueva sección
 New shaft	Neuer Schacht	Nouvelle gaine	Nuevo patinillo
+New stair	Neue Treppe	Nouvel escalier	Nueva escalera
 New sub-page	Neue Unterseite	Nouvelle sous-page	Nueva subpágina
 New subsection	Neuer Unterabschnitt	Nouvelle sous-section	Nueva subsección
 New tag for {}	Neues Kennzeichen für {}	Nouveau repère pour {}	Nueva identificación para {}
+New zone	Neue Zone	Nouvelle zone	Nueva zona
 New, empty placement scheme	Neues, leeres Platzierungsschema	Nouveau schéma de placement vide	Nuevo esquema de colocación vacío
 Next free contact numbers on this device	Nächste freie Kontaktnummern an diesem Betriebsmittel	Prochains numéros de contact libres sur cet appareil	Próximos números de contacto libres en este dispositivo
 Next item	Nächstes Teil	Élément suivant	Elemento siguiente
@@ -1158,6 +1214,7 @@ No field cables: place the enclosures and field devices at nodes of the route ne
 No filter fans: an air/air heat exchanger or a cooling unit	Keine Filterlüfter: ein Luft/Luft-Wärmetauscher oder ein Kühlgerät	Pas de ventilateurs à filtre : un échangeur thermique air/air ou un climatiseur	Sin ventiladores con filtro: un intercambiador de calor aire/aire o un equipo de refrigeración
 No harnesses defined.	Keine Kabelbäume definiert.	Aucun faisceau défini.	No hay mazos definidos.
 No harnesses yet – Connections › Harnesses	Noch keine Kabelbäume – Verbindungen › Kabelbäume	Pas encore de faisceaux – Liaisons › Faisceaux	Aún no hay mazos – Conexiones › Mazos
+No inverter	Kein Wechselrichter	Pas d'onduleur	Sin inversor
 No longer reported	Wird nicht mehr gemeldet	N'est plus signalé	Ya no se notifica
 No macros yet. Select items in a schematic and save them as a macro.	Noch keine Makros. Wählen Sie Elemente in einem Schaltplan und speichern Sie sie als Makro.	Aucune macro pour l'instant. Sélectionnez des éléments dans un schéma et enregistrez-les comme macro.	Aún no hay macros. Selecciona elementos en un esquema y guárdalos como macro.
 No modules: plug in PLC cards of the schematic.	Keine Baugruppen: Stecken Sie SPS-Karten des Schaltplans.	Aucun module : insérez des cartes automate du schéma.	No hay módulos: inserte tarjetas PLC del esquema.
@@ -1174,6 +1231,7 @@ No problems found	Keine Probleme gefunden	Aucun problème trouvé	No se encontra
 No projects. Add a folder with project files.	Keine Projekte. Fügen Sie einen Ordner mit Projektdateien hinzu.	Aucun projet. Ajoutez un dossier contenant des fichiers de projet.	No hay proyectos. Añada una carpeta con archivos de proyecto.
 No report pages to output	Keine Auswertungsseiten zum Ausgeben	Aucune page de rapport à sortir	No hay páginas de informe para emitir
 No revision yet. Changes are tracked from the first revision on.	Noch keine Revision. Änderungen werden ab der ersten Revision verfolgt.	Aucune révision pour l'instant. Les modifications sont suivies à partir de la première révision.	Aún no hay revisión. Los cambios se registran a partir de la primera revisión.
+No roof yet: a roof lower than the ceilings of the rooms below it slopes their ceilings, also through several levels.	Noch kein Dach: ein Dach unterhalb der Decken der Räume darunter macht deren Decken schräg, auch über mehrere Ebenen.	Pas encore de toit : un toit plus bas que les plafonds des salles en dessous rend leurs plafonds rampants, aussi sur plusieurs niveaux.	Aún no hay cubierta: una cubierta más baja que los techos de las salas inferiores inclina sus techos, también a través de varios niveles.
 No rooms in the plant yet	Noch keine Räume in der Anlage	Aucune pièce dans l'installation	Aún no hay salas en la instalación
 No routed wires: place the devices in the panel layout.	Keine verlegten Drähte: Platzieren Sie die Geräte im Schaltschrankaufbau.	Aucun fil acheminé : placez les appareils dans l'implantation d'armoire.	No hay cables enrutados: coloque los equipos en la disposición del armario.
 No saved workspaces yet.	Noch keine gespeicherten Arbeitsbereiche.	Aucun espace de travail enregistré.	Aún no hay espacios de trabajo guardados.
@@ -1182,6 +1240,7 @@ No segments yet: draw them in the plant layout.	Noch keine Abschnitte: im Anlage
 No shaft yet: cables, tubes and pipes run through shafts from level to level.	Noch kein Schacht: Kabel, Schläuche und Rohre laufen durch Schächte von Ebene zu Ebene.	Aucune gaine : câbles, flexibles et tuyaux passent d'un niveau à l'autre par les gaines.	Aún no hay patinillos: cables, mangueras y tuberías pasan de nivel a nivel por los patinillos.
 No shortcut	Kein Tastenkürzel	Aucun raccourci	Sin atajo
 No single-line symbols and no power devices in the schematic.	Keine einpoligen Symbole und keine Leistungsgeräte im Stromlaufplan.	Aucun symbole unifilaire et aucun appareil de puissance dans le schéma développé.	No hay símbolos unifilares ni equipos de potencia en el esquema desarrollado.
+No stair yet: stairs lead from the floor of one level up to the floor of another.	Noch keine Treppe: Treppen führen vom Boden einer Ebene hinauf zum Boden einer anderen.	Pas encore d'escalier : les escaliers mènent du sol d'un niveau au sol d'un autre.	Aún no hay escalera: las escaleras llevan del suelo de un nivel al suelo de otro.
 No stations: add one or use the automatic configuration.	Keine Stationen: Legen Sie eine an oder verwenden Sie die automatische Konfiguration.	Aucune station : ajoutez-en une ou utilisez la configuration automatique.	No hay estaciones: añada una o use la configuración automática.
 No subprojects were taken out of this project.	Aus diesem Projekt wurden keine Teilprojekte ausgelagert.	Aucun sous-projet n'a été extrait de ce projet.	No se ha extraído ningún subproyecto de este proyecto.
 No terminal strips: place terminals in a schematic first.	Keine Klemmenleisten: Platzieren Sie zuerst Klemmen in einem Schaltplan.	Aucun bornier : placez d'abord des bornes dans un schéma.	No hay regletas de bornes: coloca primero bornes en un esquema.
@@ -1238,6 +1297,7 @@ Open project	Projekt öffnen	Ouvrir le projet	Abrir proyecto
 Open projects and files from Autodesk Vault, put the project, exports and 3D models into the vault	Projekte und Dateien aus Autodesk Vault öffnen, das Projekt, Exporte und 3D-Modelle im Vault ablegen	Ouvrir des projets et fichiers depuis Autodesk Vault, placer le projet, les exports et les modèles 3D dans le Vault	Abrir proyectos y archivos de Autodesk Vault, colocar el proyecto, las exportaciones y los modelos 3D en el Vault
 Open the project	Projekt öffnen	Ouvrir le projet	Abrir el proyecto
 Open to {}: wires cross beside the mounting plates	Offen zu {}: Drähte laufen neben den Montageplatten hinüber	Ouverte vers {} : les fils passent à côté des plaques de montage	Abierto hacia {}: los cables pasan junto a las placas de montaje
+Open walls and floors	Wände und Böden öffnen	Ouvrir murs et sols	Abrir paredes y suelos
 Open, save, import, export, print and the settings	Öffnen, Speichern, Importieren, Exportieren, Drucken und die Einstellungen	Ouvrir, enregistrer, importer, exporter, imprimer et les paramètres	Abrir, guardar, importar, exportar, imprimir y los ajustes
 OpenECraft page templates	OpenECraft-Seitenvorlagen	Modèles de page OpenECraft	Plantillas de página de OpenECraft
 OpenECraft page templates (JSON)	OpenECraft-Seitenvorlagen (JSON)	Modèles de page OpenECraft (JSON)	Plantillas de página de OpenECraft (JSON)
@@ -1265,6 +1325,7 @@ Opening	Öffnung	Ouverture	Abertura
 Opening in the mounting plate / door: click two corners (round: in the properties)	Öffnung in Montageplatte / Tür: Zwei Ecken anklicken (rund: in den Eigenschaften)	Ouverture dans la plaque de montage / la porte : cliquez sur deux coins (rond : dans les propriétés)	Abertura en la placa de montaje / puerta: haz clic en dos esquinas (redonda: en las propiedades)
 Opening the project	Projekt wird geöffnet	Ouverture du projet	Abriendo el proyecto
 Opening {}…	{} wird geöffnet…	Ouverture de {}…	Abriendo {}…
+Opens	Öffnet	Ouverture	Apertura
 Opens the page of the release	Öffnet die Seite der Version	Ouvre la page de la version	Abre la página de la versión
 Opens the pages for printing in the browser with its print dialog	Öffnet die Seiten zum Drucken im Browser mit dessen Druckdialog	Ouvre les pages pour l'impression dans le navigateur avec sa boîte de dialogue d'impression	Abre las páginas para imprimir en el navegador con su diálogo de impresión
 Open…	Öffnen…	Ouvrir…	Abrir…
@@ -1280,6 +1341,7 @@ Otherwise along its way from entry to entry	Sonst entlang ihres Wegs von Einfüh
 Otherwise from the plant layout, or next to the other line-ups	Sonst aus dem Anlagenlayout oder neben den anderen Anreihungen	Sinon d'après le plan d'installation, ou à côté des autres juxtapositions	Si no, según el plano de la instalación o junto a las demás alineaciones
 Out since {} (pages locked)	Ausgelagert seit {} (Seiten gesperrt)	Extrait depuis le {} (pages verrouillées)	Extraído desde {} (páginas bloqueadas)
 Outer diameter (e.g. 8 mm) or DN	Außendurchmesser (z. B. 8 mm) oder DN	Diamètre extérieur (p. ex. 8 mm) ou DN	Diámetro exterior (p. ej. 8 mm) o DN
+Outlets, switches, heating	Dosen, Schalter, Heizung	Prises, interrupteurs, chauffage	Tomas, interruptores, calefacción
 Outline	Kontur	Contour	Contorno
 Outlines	Konturen	Contours	Contornos
 Output bytes	Ausgangsbytes	Octets de sortie	Bytes de salida
@@ -1287,6 +1349,8 @@ Output failed: {}	Ausgabe fehlgeschlagen: {}	Échec de la sortie : {}	La emisió
 Output to another project	Ausgabe in ein anderes Projekt	Sortie dans un autre projet	Emitir a otro proyecto
 Output to project…	In Projekt ausgeben…	Sortir dans un projet…	Emitir al proyecto…
 Outputs	Ausgänge	Sorties	Salidas
+Over the rooms of the building with its eaves on top of the highest level	Über den Räumen des Gebäudes mit der Traufe auf der obersten Ebene	Au-dessus des salles du bâtiment, l'égout sur le niveau le plus haut	Sobre las salas del edificio con el alero sobre el nivel más alto
+Overhang	Überstand	Débord	Vuelo
 Own colour	Eigene Farbe	Couleur propre	Color propio
 Own drawn form	Eigenes gezeichnetes Formular	Formulaire dessiné personnalisé	Formulario dibujado propio
 Own groups	Eigene Gruppen	Groupes personnels	Grupos propios
@@ -1297,6 +1361,7 @@ PLC channels	SPS-Kanäle	Canaux API	Canales PLC
 PLC hardware and bus topology	SPS-Hardware und Bustopologie	Matériel automate et topologie de bus	Hardware PLC y topología de bus
 PLC overview	SPS-Übersicht	Vue d'ensemble API	Resumen PLC
 PNG or JPEG bitmap, e.g. a logo or a photo	PNG- oder JPEG-Bitmap, z. B. ein Logo oder ein Foto	Image PNG ou JPEG, p. ex. un logo ou une photo	Mapa de bits PNG o JPEG, p. ej. un logotipo o una foto
+PV arrays	PV-Anlagen	Champs photovoltaïques	Campos fotovoltaicos
 Page graphics	Seitengrafik	Graphique de page	Gráficos de página
 Page heading	Seitenüberschrift	Titre de la page	Encabezado de la página
 Page list, devices, parts, panel layout and settings	Seitenliste, Geräte, Artikel, Schaltschrankaufbau und Einstellungen	Liste des pages, appareils, articles, implantation d'armoire et paramètres	Lista de páginas, dispositivos, artículos, montaje del armario y ajustes
@@ -1347,6 +1412,7 @@ Pin-out	Pinbelegung	Brochage	Asignación de pines
 Pipe run	Rohrtrasse	Chemin de tuyauterie	Recorrido de tuberías
 Pipe run on a wall, the ceiling or the floor of the room, along which hoses, tubes and pipes are routed: click the corners, double-click or Enter to finish	Rohrtrasse an einer Wand, der Decke oder dem Boden des Raums, entlang der Schläuche, Rohre und Rohrleitungen verlegt werden: Eckpunkte anklicken, Doppelklick oder Enter zum Abschließen	Chemin de tuyauterie sur un mur, le plafond ou le sol de la salle, le long duquel sont posés flexibles, tubes et tuyaux : cliquer les coins, double-clic ou Entrée pour terminer	Recorrido de tuberías en una pared, el techo o el suelo de la sala, a lo largo del cual se tienden mangueras, tubos y tuberías: haga clic en las esquinas, doble clic o Intro para terminar
 Pipe run {} mm – double-click or Enter to finish	Rohrtrasse {} mm – Doppelklick oder Enter zum Abschließen	Chemin de tuyauterie {} mm – double-clic ou Entrée pour terminer	Recorrido de tuberías {} mm – doble clic o Intro para terminar
+Pitch	Neigung	Pente	Pendiente
 Pitch X / Y	Raster X / Y	Pas X / Y	Paso X / Y
 Place a comment on the page	Einen Kommentar auf die Seite setzen	Placer un commentaire sur la page	Colocar un comentario en la página
 Place again at all symbols using it	An allen Symbolen, die es verwenden, neu platzieren	Replacer sur tous les symboles qui l'utilisent	Volver a colocar en todos los símbolos que lo usan
@@ -1462,6 +1528,7 @@ Reading {}	Lese {}	Lecture de {}	Leyendo {}
 Real length per millimetre on the page, e.g. 10 for a 1:10 drawing	Reale Länge je Millimeter auf der Seite, z. B. 10 für eine Zeichnung 1:10	Longueur réelle par millimètre sur la page, p. ex. 10 pour un dessin au 1:10	Longitud real por milímetro en la página, p. ej. 10 para un dibujo 1:10
 Real size on a 96 dpi screen	Reale Größe auf einem 96-dpi-Bildschirm	Taille réelle sur un écran de 96 dpi	Tamaño real en una pantalla de 96 ppp
 Rear	Hinten	Arrière	Atrás
+Rear left corner and size of the rectangle it covers (the outer walls) in the building's floor plan	Hintere linke Ecke und Größe des überdeckten Rechtecks (der Außenwände) im Grundriss des Gebäudes	Coin arrière gauche et dimensions du rectangle couvert (les murs extérieurs) dans le plan du bâtiment	Esquina trasera izquierda y tamaño del rectángulo cubierto (los muros exteriores) en la planta del edificio
 Rear left corner of the line-up on the floor, as in the 3D view with all enclosures	Hintere linke Ecke der Anreihung auf dem Boden, wie in der 3D-Ansicht mit allen Gehäusen	Coin arrière gauche de la juxtaposition au sol, comme dans la vue 3D avec toutes les armoires	Esquina trasera izquierda de la alineación en el suelo, como en la vista 3D con todos los armarios
 Rear left corner of the room on the floor, as in the 3D view with all enclosures; the cabinets in it move with it	Hintere linke Ecke des Raums auf dem Boden, wie in der 3D-Ansicht mit allen Gehäusen; die Schaltschränke darin bewegen sich mit	Coin arrière gauche de la salle au sol, comme dans la vue 3D de toutes les enveloppes ; les armoires qu'elle contient suivent	Esquina trasera izquierda de la sala en el suelo, como en la vista 3D con todas las envolventes; los armarios que contiene se mueven con ella
 Recent projects	Zuletzt verwendete Projekte	Projets récents	Proyectos recientes
@@ -1577,15 +1644,22 @@ Revisions, approval and release	Revisionen, Genehmigung und Freigabe	Révisions,
 Ribbon	Menüband	Ruban	Cinta de opciones
 Ribbon (JSON)	Menüband (JSON)	Ruban (JSON)	Cinta de opciones (JSON)
 Ribbon imported	Menüband importiert	Ruban importé	Cinta de opciones importada
-Right	Rechts	Droite	Derecha
 Right click a message in the Messages pane to change its level.	Rechtsklick auf eine Meldung im Bereich Meldungen ändert ihre Stufe.	Clic droit sur un message dans le volet Messages pour changer son niveau.	Haga clic derecho en un mensaje del panel Mensajes para cambiar su nivel.
 Right click for more	Rechtsklick für mehr	Clic droit pour plus	Clic derecho para más
 Right edges	Rechte Kanten	Bords droits	Bordes derechos
 Right neighbour	Rechter Nachbar	Voisine de droite	Vecino derecho
 Rights	Rechte	Droits	Derechos
+Risers	Steigungen	Contremarches	Contrahuellas
+Roof window	Dachfenster	Fenêtre de toit	Ventana de tejado
+Roof windows	Dachfenster	Fenêtres de toit	Ventanas de tejado
+Roofs	Dächer	Toits	Cubiertas
 Room	Raum	Salle	Sala
+Room added on level {}: drag its walls or draw new ones in the floor plan, put cabinets into it in their properties	Raum auf Ebene {} hinzugefügt: im Grundriss seine Wände ziehen oder neue zeichnen, Schaltschränke in ihren Eigenschaften hineinstellen	Salle ajoutée au niveau {} : faites glisser ses murs ou dessinez-en de nouveaux dans le plan, placez-y des armoires dans leurs propriétés	Sala añadida en el nivel {}: arrastre sus paredes o dibuje otras nuevas en el plano, coloque armarios en ella desde sus propiedades
 Room added: drag its walls or draw new ones in the floor plan, put cabinets into it in their properties	Raum hinzugefügt: im Grundriss seine Wände ziehen oder neue zeichnen, Schaltschränke in ihren Eigenschaften hineinstellen	Salle ajoutée : faites glisser ses murs ou dessinez-en de nouveaux dans le plan, placez-y des armoires dans leurs propriétés	Sala añadida: arrastre sus paredes o dibuje otras nuevas en el plano, coloque armarios en ella desde sus propiedades
+Room {} now stands on level {}	Raum {} steht jetzt auf Ebene {}	La salle {} est maintenant au niveau {}	La sala {} está ahora en el nivel {}
+Room {} taken out of the building; it stays where it stands	Raum {} aus dem Gebäude genommen; er bleibt, wo er steht	Salle {} retirée du bâtiment ; elle reste où elle est	Sala {} sacada del edificio; queda donde está
 Rooms stand on the levels of a building; shafts join rooms on different levels, links join the building entries of different buildings.	Räume stehen auf den Ebenen eines Gebäudes; Schächte verbinden Räume verschiedener Ebenen, Verbindungen die Gebäudeeinführungen verschiedener Gebäude.	Les pièces se trouvent sur les niveaux d'un bâtiment ; les gaines relient les pièces de niveaux différents, les liaisons les entrées de bâtiments différents.	Las salas están en los niveles de un edificio; los patinillos unen salas de distintos niveles, los enlaces las entradas de distintos edificios.
+Rooms under sloped ceilings (lowest – highest ceiling)	Räume unter Dachschrägen (niedrigste – höchste Decke)	Salles sous plafonds rampants (plafond le plus bas – le plus haut)	Salas bajo techos inclinados (techo más bajo – más alto)
 Rotate	Drehen	Pivoter	Girar
 Rotate (selection or symbol being placed)	Drehen (Auswahl oder zu platzierendes Symbol)	Pivoter (sélection ou symbole en cours de placement)	Girar (selección o símbolo que se coloca)
 Rotate left	Nach links drehen	Tourner à gauche	Girar a la izquierda
@@ -1602,6 +1676,7 @@ Routing path {} mm – double-click or Enter to finish	Verlegeweg {} mm – Dopp
 Routing paths	Verlegewege	Chemins de routage	Rutas de tendido
 Routing rules	Verlegeregeln	Règles de routage	Reglas de tendido
 Row	Zeile	Ligne	Fila
+Row distance	Reihenabstand	Distance entre rangées	Distancia entre filas
 Row drawing	Zeilenzeichnung	Dessin de ligne	Dibujo de fila
 Row labels	Zeilenbeschriftung	Repères de lignes	Rótulos de filas
 Rows on released pages cannot be changed. A line break in a text is written as \\n.	Zeilen auf freigegebenen Seiten können nicht geändert werden. Ein Zeilenumbruch in einem Text wird als \\n geschrieben.	Les lignes sur des pages validées ne peuvent pas être modifiées. Un saut de ligne dans un texte s'écrit \\n.	Las filas en páginas liberadas no se pueden cambiar. Un salto de línea en un texto se escribe como \\n.
@@ -1663,6 +1738,7 @@ Second channel	Zweiter Kanal	Deuxième canal	Segundo canal
 Section properties	Abschnittseigenschaften	Propriétés de la section	Propiedades de la sección
 Section properties…	Abschnittseigenschaften…	Propriétés de la section…	Propiedades de la sección…
 Section {} is now section {}	Abschnitt {} ist jetzt Abschnitt {}	La section {} est maintenant la section {}	La sección {} ahora es la sección {}
+See through the walls and floors of the rooms in the 3D view: the flush-mounted lines in them are seen	Durch die Wände und Böden der Räume in der 3D-Ansicht sehen: die Unterputzleitungen darin werden sichtbar	Voir à travers les murs et les sols des salles dans la vue 3D : les lignes encastrées y sont visibles	Ver a través de las paredes y suelos de las salas en la vista 3D: se ven las líneas empotradas en ellos
 Seen on the mating faces; the colours are those of the wires and cable cores at the pins.	Ansicht auf die Steckseiten; die Farben sind die der Adern und Kabeladern an den Pins.	Vue sur les faces d'accouplement ; les couleurs sont celles des fils et des conducteurs de câble aux broches.	Vista de las caras de acoplamiento; los colores son los de los cables y conductores en los pines.
 Segment ids of a derived topology may change: store the topology before placing parts on single segments.	Segment-IDs einer abgeleiteten Topologie können sich ändern: Topologie speichern, bevor Teile auf einzelne Segmente gesetzt werden.	Les identifiants de segment d'une topologie déduite peuvent changer : enregistrer la topologie avant de placer des éléments sur des segments.	Los ID de segmento de una topología derivada pueden cambiar: guarde la topología antes de colocar piezas en segmentos concretos.
 Segment {}	Segment {}	Segment {}	Segmento {}
@@ -1741,10 +1817,12 @@ Show on the pages	Auf den Seiten zeigen	Afficher sur les pages	Mostrar en las p�
 Show or hide panes; drag a tab to dock it elsewhere	Fenster ein- oder ausblenden; eine Registerkarte ziehen, um sie woanders anzudocken	Afficher ou masquer des panneaux ; faire glisser un onglet pour l'ancrer ailleurs	Mostrar u ocultar paneles; arrastre una pestaña para acoplarla en otro lugar
 Show the enclosures bayed to this one as well	Auch die an diesen angereihten Schränke zeigen	Afficher aussi les armoires juxtaposées à celle-ci	Mostrar también los armarios alineados con este
 Show the frame time and the frames per second	Bildzeit und Bilder pro Sekunde anzeigen	Afficher le temps par image et les images par seconde	Mostrar el tiempo por fotograma y los fotogramas por segundo
+Show the installation zones of the rooms see-through: on the walls in the 3D view and the views of the walls, in the floor in the floor plan	Die Installationszonen der Räume durchsichtig zeigen: an den Wänden in der 3D-Ansicht und den Wandansichten, im Fußboden im Grundriss	Afficher les zones d'installation des salles en transparence : sur les murs dans la vue 3D et les vues des murs, dans le sol dans le plan	Mostrar las zonas de instalación de las salas en transparencia: en las paredes en la vista 3D y las vistas de las paredes, en el suelo en la planta
 Show the messages accepted as checked	Als geprüft akzeptierte Meldungen anzeigen	Afficher les messages acceptés comme vérifiés	Mostrar los mensajes aceptados como revisados
 Show the other wires	Andere Drähte anzeigen	Afficher les autres fils	Mostrar los demás cables
 Show the pane as a window	Das Fenster frei schwebend anzeigen	Afficher le panneau dans une fenêtre	Mostrar el panel como ventana
 Show the ribbon	Menüband anzeigen	Afficher le ruban	Mostrar la cinta de opciones
+Show the whole building of the room in the 3D view: all its levels and rooms, the floor slabs, stairs and roofs	Das ganze Gebäude des Raums in der 3D-Ansicht zeigen: alle Ebenen und Räume, die Geschossdecken, Treppen und Dächer	Afficher le bâtiment entier de la salle dans la vue 3D : tous ses niveaux et salles, les dalles, escaliers et toits	Mostrar el edificio completo de la sala en la vista 3D: todos sus niveles y salas, los forjados, escaleras y cubiertas
 Show this cabinet; its place in the room is in its properties	Diesen Schaltschrank zeigen; sein Platz im Raum steht in seinen Eigenschaften	Afficher cette armoire ; son emplacement dans la salle se trouve dans ses propriétés	Mostrar este armario; su ubicación en la sala está en sus propiedades
 Show this wire	Diese Leitung anzeigen	Afficher ce fil	Mostrar este hilo
 Show who may use the project	Anzeigen, wer das Projekt nutzen darf	Afficher qui peut utiliser le projet	Mostrar quién puede usar el proyecto
@@ -1757,12 +1835,17 @@ Signed in to {} as {}	Bei {} angemeldet als {}	Connecté à {} en tant que {}	Se
 Signed out of Vault	Von Vault abgemeldet	Déconnecté de Vault	Sesión de Vault cerrada
 Single-line	Einpolig	Unifilaire	Unifilar
 Single-line symbols for the power devices of the schematic that have none yet, on a new overview page	Einpolige Symbole für die Leistungsgeräte des Stromlaufplans, die noch keine haben, auf einer neuen Übersichtsseite	Symboles unifilaires pour les appareils de puissance du schéma développé qui n'en ont pas encore, sur une nouvelle page de synoptique	Símbolos unifilares para los equipos de potencia del esquema desarrollado que aún no los tienen, en una nueva página de vista general
+Site	Grundstück	Terrain	Parcela
 Site plan	Lageplan	Plan de masse	Plano de situación
+Site plan, building {}	Lageplan, Gebäude {}	Plan de masse, bâtiment {}	Plano de situación, edificio {}
 Size {} × {} mm	Größe {} × {} mm	Taille {} × {} mm	Tamaño {} × {} mm
 Slot	Schlitz	Fente	Ranura
+Slot depth	Einschlitztiefe	Profondeur de saignée	Profundidad de roza
 Slots	Steckplätze	Emplacements	Slots
 Smallest cross-section of control circuits	Kleinster Querschnitt von Steuerstromkreisen	Section minimale des circuits de commande	Sección mínima de los circuitos de mando
 Smallest cross-section of power circuits	Kleinster Querschnitt von Hauptstromkreisen	Section minimale des circuits de puissance	Sección mínima de los circuitos de potencia
+Socket outlets, data and antenna outlets	Steckdosen, Daten- und Antennendosen	Prises de courant, prises réseau et d'antenne	Tomas de corriente, de datos y de antena
+Socket outlets, data and antenna outlets, switches, push buttons and room thermostats, heating circuit manifolds and control boxes: generic ones or from the catalogs (Gira, MDT, COSMO, …); choose one, then click on the wall: it goes at its mounting height	Steckdosen, Daten- und Antennendosen, Schalter, Taster und Raumthermostate, Heizkreisverteiler und Regelboxen: generisch oder aus den Katalogen (Gira, MDT, COSMO, …); eines wählen, dann auf die Wand klicken: es sitzt auf seiner Montagehöhe	Prises de courant, prises réseau et d'antenne, interrupteurs, boutons-poussoirs et thermostats d'ambiance, collecteurs de chauffage et boîtiers de régulation : génériques ou des catalogues (Gira, MDT, COSMO, …) ; choisissez-en un, puis cliquez sur le mur : il se place à sa hauteur de pose	Tomas de corriente, de datos y de antena, interruptores, pulsadores y termostatos de ambiente, colectores de calefacción y cajas de regulación: genéricos o de los catálogos (Gira, MDT, COSMO, …); elija uno y haga clic en la pared: se coloca a su altura de montaje
 Some wires have no length: place their devices in the panel layout or set the field length.	Einige Leitungen haben keine Länge: Platzieren Sie ihre Betriebsmittel im Schaltschrank-Layout oder setzen Sie die Feldlänge.	Certains fils n'ont pas de longueur : placez leurs appareils dans l'implantation de l'armoire ou définissez la longueur sur site.	Algunos hilos no tienen longitud: coloca sus dispositivos en la distribución del armario o define la longitud en campo.
 Sort by designation	Nach Bezeichnung sortieren	Trier par désignation	Ordenar por designación
 Sort order	Sortierung	Ordre de tri	Orden
@@ -1773,6 +1856,7 @@ Space kept free of routes, or for one class only: click two corners	Raum, der fr
 Spare terminals	Reserveklemmen	Bornes de réserve	Bornes de reserva
 Special text	Sondertext	Texte spécial	Texto especial
 Special text: project and page properties such as {page} or {prop:Name} are filled in when the page is drawn	Sondertext: Projekt- und Seiteneigenschaften wie {page} oder {prop:Name} werden beim Zeichnen der Seite eingesetzt	Texte spécial : les propriétés du projet et de la page telles que {page} ou {prop:Name} sont remplies au dessin de la page	Texto especial: las propiedades del proyecto y de la página como {page} o {prop:Name} se rellenan al dibujar la página
+Stairs	Treppen	Escaliers	Escaleras
 Standard form of the report	Standardformular der Auswertung	Formulaire standard du rapport	Formulario estándar del informe
 Standard size	Standardgröße	Taille standard	Tamaño estándar
 Standard workspaces	Standard-Arbeitsbereiche	Espaces de travail standard	Espacios de trabajo estándar
@@ -1798,6 +1882,8 @@ Store for editing	Zum Bearbeiten speichern	Enregistrer pour modifier	Guardar par
 Stored and edited in the harness	Im Kabelbaum gespeichert und bearbeitet	Enregistrée et modifiée dans le faisceau	Guardada y editada en el mazo
 Stores the derived topology in the harness, so nodes and segments can be edited	Speichert die abgeleitete Topologie im Kabelbaum, damit Knoten und Segmente bearbeitet werden können	Enregistre la topologie déduite dans le faisceau pour pouvoir modifier nœuds et segments	Guarda la topología derivada en el mazo para poder editar nodos y segmentos
 Stratification (factor c)	Schichtung (Faktor c)	Stratification (facteur c)	Estratificación (factor c)
+Strings	Strings	Chaînes	Strings
+Strings of this kind in parallel	Strings dieser Art parallel	Chaînes de ce type en parallèle	Strings de este tipo en paralelo
 Strip on the rail	Leiste auf der Tragschiene	Bornier sur le rail	Regleta en el carril
 Strip {} mm	Abisolieren {} mm	Dénuder {} mm	Pelar {} mm
 Strips / plugs	Klemmleisten / Stecker	Borniers / connecteurs	Regletas / conectores
@@ -1822,6 +1908,7 @@ Switch off the check \"{}\"	Prüfung \"{}\" abschalten	Désactiver la vérificat
 Switched off on this computer ({})	Auf diesem Computer abgeschaltet ({})	Désactivé sur cet ordinateur ({})	Desactivado en este equipo ({})
 Switches the options with a condition by the configurator options	Schaltet die Optionen mit Bedingung nach den Konfigurator-Optionen	Commute les options avec condition selon les options du configurateur	Conmuta las opciones con condición según las opciones del configurador
 Switches to this workspace with its panes at their default places	Wechselt in diesen Arbeitsbereich und setzt seine Fenster an ihre Standardplätze	Passe à cet espace de travail avec ses panneaux à leur place par défaut	Cambia a este espacio de trabajo con sus paneles en su lugar predeterminado
+Switches, push buttons and room thermostats	Schalter, Taster und Raumthermostate	Interrupteurs, boutons-poussoirs et thermostats d'ambiance	Interruptores, pulsadores y termostatos de ambiente
 Symbol editor	Symboleditor	Éditeur de symboles	Editor de símbolos
 Symbol library (JSON, EMA, EDZ)	Symbolbibliothek (JSON, EMA, EDZ)	Bibliothèque de symboles (JSON, EMA, EDZ)	Biblioteca de símbolos (JSON, EMA, EDZ)
 Symbol table import failed: {}	Import der Symboltabelle fehlgeschlagen: {}	Échec de l'import de la table de symboles : {}	Error al importar la tabla de símbolos: {}
@@ -1841,6 +1928,7 @@ Tag	Kennzeichen	Repère	Identificador
 Tag field	Kennzeichenfeld	Champ de repère	Campo de designación
 Tag placed by hand	Kennzeichen von Hand platziert	Repère placé manuellement	Identificación colocada a mano
 Take out a subproject	Teilprojekt auslagern	Extraire un sous-projet	Extraer un subproyecto
+Take out of the building	Aus dem Gebäude nehmen	Retirer du bâtiment	Sacar del edificio
 Take out {} pages…	{} Seiten auslagern…	Extraire {} pages…	Extraer {} páginas…
 Take over cut lengths	Schnittlängen übernehmen	Reprendre les longueurs de coupe	Adoptar longitudes de corte
 Take over selected ({})	Ausgewählte übernehmen ({})	Reprendre la sélection ({})	Adoptar seleccionadas ({})
@@ -1888,7 +1976,9 @@ The file could not be opened as an OpenECraft project.	Die Datei konnte nicht al
 The first hour	Die erste Stunde	La première heure	La primera hora
 The items are selected and moved together	Die Elemente werden gemeinsam ausgewählt und verschoben	Les éléments sont sélectionnés et déplacés ensemble	Los elementos se seleccionan y se mueven juntos
 The level of a building the room is on (Layout space › Buildings); it moves with the building and its level	Die Ebene eines Gebäudes, auf der der Raum liegt (Layoutraum › Gebäude); er bewegt sich mit dem Gebäude und seiner Ebene	Le niveau d'un bâtiment sur lequel se trouve la pièce (Espace de montage › Bâtiments) ; elle suit le bâtiment et son niveau	El nivel de un edificio en el que está la sala (Espacio de montaje › Edificios); se mueve con el edificio y su nivel
+The low eaves at the rear or left instead of the front or right	Die niedrige Traufe hinten oder links statt vorne oder rechts	L'égout bas à l'arrière ou à gauche au lieu de l'avant ou de la droite	El alero bajo detrás o a la izquierda en lugar de delante o a la derecha
 The macro library has no page macros (Macros › Save page as macro…).	Die Makrobibliothek hat keine Seitenmakros (Makros › Seite als Makro speichern…).	La bibliothèque de macros n'a pas de macros de page (Macros › Enregistrer la page comme macro…).	La biblioteca de macros no tiene macros de página (Macros › Guardar página como macro…).
+The modules no string takes yet in series, on the first inverter	Die Module, die noch kein String nimmt, in Reihe, am ersten Wechselrichter	Les modules qu'aucune chaîne ne prend encore, en série, sur le premier onduleur	Los módulos que ningún string toma aún, en serie, en el primer inversor
 The names of its pages follow	Die Namen seiner Seiten ändern sich mit	Les noms de ses pages suivent	Los nombres de sus páginas cambian con ella
 The page is read only	Die Seite ist schreibgeschützt	La page est en lecture seule	La página es de solo lectura
 The page name gets the section number	Der Seitenname erhält die Abschnittsnummer	Le nom de la page reçoit le numéro de la section	El nombre de la página recibe el número de la sección
@@ -1903,6 +1993,7 @@ The project's own page templates as a file	Die eigenen Seitenvorlagen des Projek
 The project's own title blocks	Die eigenen Schriftfelder des Projekts	Les cartouches propres au projet	Los cajetines propios del proyecto
 The project's own title blocks and report schemes	Die eigenen Schriftfelder und Auswertungsschemata des Projekts	Les cartouches et schémas de rapport propres au projet	Los cajetines y esquemas de informe propios del proyecto
 The properties of the selection in a window beside the page	Die Eigenschaften der Auswahl in einem Fenster neben der Seite	Les propriétés de la sélection dans une fenêtre à côté de la page	Las propiedades de la selección en una ventana junto a la página
+The rail or mounting base; its accessories are the hooks, clamps and ballast	Die Schiene oder Unterkonstruktion; ihr Zubehör sind Haken, Klemmen und Ballast	Le rail ou le support ; ses accessoires sont les crochets, les brides et le lest	El perfil o soporte; sus accesorios son los ganchos, las grapas y el lastre
 The recalculation keeps frozen routes as long as they are still possible	Die Neuberechnung behält eingefrorene Verlegungen bei, solange sie möglich sind	Le recalcul conserve les tracés figés tant qu'ils restent possibles	El recálculo mantiene los recorridos congelados mientras sigan siendo posibles
 The ribbon with the File tab replaces the menus; Ctrl+Shift+P finds any command.	Das Menüband mit der Registerkarte Datei ersetzt die Menüs; Strg+Umschalt+P findet jeden Befehl.	Le ruban avec l'onglet Fichier remplace les menus ; Ctrl+Maj+P trouve n'importe quelle commande.	La cinta de opciones con la pestaña Archivo sustituye a los menús; Ctrl+Mayús+P encuentra cualquier comando.
 The ribbon: File opens, saves, imports, exports and prints; the tabs hold the commands by topic. Alt shows the key tips, Ctrl+Shift+P finds any command, F6 moves between the panes, F1 opens the help of the pane in use.	Das Menüband: Datei öffnet, speichert, importiert, exportiert und druckt; die Registerkarten enthalten die Befehle nach Thema. Alt zeigt die Tastentipps, Strg+Umschalt+P findet jeden Befehl, F6 wechselt zwischen den Bereichen, F1 öffnet die Hilfe des verwendeten Bereichs.	Le ruban : Fichier ouvre, enregistre, importe, exporte et imprime ; les onglets regroupent les commandes par thème. Alt affiche les infobulles de touches, Ctrl+Maj+P trouve n'importe quelle commande, F6 passe d'un volet à l'autre, F1 ouvre l'aide du volet utilisé.	La cinta: Archivo abre, guarda, importa, exporta e imprime; las pestañas agrupan los comandos por tema. Alt muestra las sugerencias de teclas, Ctrl+Mayús+P encuentra cualquier comando, F6 cambia entre paneles, F1 abre la ayuda del panel en uso.
@@ -1932,6 +2023,7 @@ This project is subproject {} of {} (taken out {}). Save it and insert it into t
 Three wires must meet here: one in its direction and two across. Until then the connection is chained in schematic order.	Hier müssen drei Verbindungslinien zusammentreffen: eine in seiner Richtung und zwei quer dazu. Bis dahin wird die Verbindung in der Reihenfolge des Schaltplans verkettet.	Trois fils doivent se rejoindre ici : un dans sa direction et deux en travers. Jusque-là, la liaison est chaînée dans l'ordre du schéma.	Aquí deben unirse tres cables: uno en su dirección y dos transversales. Hasta entonces la conexión se encadena en el orden del esquema.
 Three-phase short-circuit current at the supply point	Dreipoliger Kurzschlussstrom am Einspeisepunkt	Courant de court-circuit triphasé au point d'alimentation	Corriente de cortocircuito trifásica en el punto de alimentación
 Through all levels; move it to its place in the building's floor plan	Durch alle Ebenen; an seinen Platz im Gebäudegrundriss schieben	À travers tous les niveaux ; déplacez-la à sa position dans le plan du bâtiment	A través de todos los niveles; muévalo a su posición en la planta del edificio
+Tilt	Neigung	Inclinaison	Inclinación
 Title	Titel	Titre	Título
 Title bar	Titelleiste	Barre de titre	Barra de título
 Title blocks	Schriftfelder	Cartouches	Cajetines
@@ -1950,6 +2042,7 @@ Tutorial: {}	Tutorial: {}	Tutoriel : {}	Tutorial: {}
 Two wires must meet here at a right angle. With Auto-connect on, connection points facing its arms are wired to it.	Hier müssen zwei Verbindungslinien im rechten Winkel zusammentreffen. Bei eingeschaltetem Auto-Connect werden Anschlusspunkte, die ihren Armen gegenüberliegen, mit ihr verdrahtet.	Deux fils doivent se rejoindre ici à angle droit. Avec l'auto-connexion activée, les points de connexion face à ses bras y sont reliés.	Aquí deben unirse dos cables en ángulo recto. Con la autoconexión activada, los puntos de conexión enfrentados a sus brazos se cablean a ella.
 Type a point	Punkt eingeben	Saisir un point	Introducir un punto
 Type a point and press Enter: x y in mm, or @dx dy relative to the last point; it acts like a click of the current tool	Punkt eingeben und Enter drücken: x y in mm oder @dx dy relativ zum letzten Punkt; wirkt wie ein Klick des aktuellen Werkzeugs	Saisir un point puis Entrée : x y en mm, ou @dx dy relatif au dernier point ; agit comme un clic de l'outil courant	Escriba un punto y pulse Intro: x y en mm, o @dx dy relativo al último punto; actúa como un clic de la herramienta actual
+U {} / {} / {} V, I {} A, {} kWp	U {} / {} / {} V, I {} A, {} kWp	U {} / {} / {} V, I {} A, {} kWc	U {} / {} / {} V, I {} A, {} kWp
 UI scale	Skalierung der Oberfläche	Échelle de l'interface	Escala de la interfaz
 Undo	Rückgängig	Annuler	Deshacer
 Undo brings it back.	Rückgängig holt es zurück.	Annuler le rétablit.	Deshacer lo recupera.
@@ -2033,11 +2126,16 @@ Welcome to OpenECraft	Willkommen bei OpenECraft	Bienvenue dans OpenECraft	Bienve
 What is new	Neuigkeiten	Nouveautés	Novedades
 What should be checked or changed?	Was soll geprüft oder geändert werden?	Que faut-il vérifier ou modifier ?	¿Qué hay que comprobar o cambiar?
 Wheel / right or middle drag	Mausrad / Rechts- oder Mittelklick-Ziehen	Molette / glisser avec clic droit ou milieu	Rueda / arrastrar con botón derecho o central
+Wheel: zoom · drag: move · click on a room: its floor plan	Mausrad: Zoom · Ziehen: verschieben · Klick auf einen Raum: sein Grundriss	Molette : zoom · glisser : déplacer · clic sur une pièce : son plan	Rueda: zoom · arrastrar: mover · clic en un recinto: su planta
 Wheel: zoom · right click: cancel · graphics snap to 0.5 mm, connection points to the 4 mm grid	Mausrad: Zoom · Rechtsklick: abbrechen · Grafik rastet auf 0,5 mm ein, Anschlusspunkte auf das 4-mm-Raster	Molette : zoom · clic droit : annuler · les graphiques s'alignent sur 0,5 mm, les points de connexion sur la grille de 4 mm	Rueda: zoom · clic derecho: cancelar · los gráficos se ajustan a 0,5 mm, los puntos de conexión a la cuadrícula de 4 mm
 When it differs from the page	Wenn sie von der Seite abweicht	Si elle diffère de la page	Si difiere de la página
+Where	Lage	Emplacement	Ubicación
 Where the wire starts and ends: a connection point from the part data, one generated from the function template, or the device centre if no connection point matches	Wo die Verbindung beginnt und endet: ein Anschluss aus den Artikeldaten, ein aus der Funktionsschablone erzeugter oder die Gerätemitte, wenn kein Anschluss passt	Où le fil commence et se termine : un point de connexion des données de l'article, un point généré à partir du modèle de fonctions ou le centre de l'appareil si aucun point ne correspond	Dónde empieza y termina el cable: un punto de conexión de los datos del artículo, uno generado a partir de la plantilla de funciones o el centro del equipo si no coincide ningún punto
+Whole building	Ganzes Gebäude	Bâtiment entier	Edificio completo
 Whole words	Ganze Wörter	Mots entiers	Palabras completas
+Width / going	Breite / Auftritt	Largeur / giron	Ancho / huella
 Width / height (mm)	Breite / Höhe (mm)	Largeur / hauteur (mm)	Ancho / alto (mm)
+Width along the eaves and length up the slope	Breite entlang der Traufe und Länge in Neigungsrichtung	Largeur le long de l'égout et longueur dans le sens de la pente	Ancho a lo largo del alero y longitud en el sentido de la pendiente
 Width × depth	Breite × Tiefe	Largeur × profondeur	Ancho × profundidad
 Width × height	Breite × Höhe	Largeur × hauteur	Ancho × alto
 Width × height (mm)	Breite × Höhe (mm)	Largeur × hauteur (mm)	Ancho × alto (mm)
@@ -2102,6 +2200,7 @@ all cards	alle Karten	toutes les cartes	todas las tarjetas
 all lines	alle Zeilen	toutes les lignes	todas las líneas
 all, or e.g. -X*, -W1	alle, oder z. B. -X*, -W1	tous, ou p. ex. -X*, -W1	todos, o p. ej. -X*, -W1
 all, or e.g. K, Q	alle, oder z. B. K, Q	toutes, ou p. ex. K, Q	todas, o p. ej. K, Q
+along z	entlang z	le long de z	a lo largo de z
 both ends	beide Enden	les deux extrémités	ambos extremos
 built-in	eingebaut	intégrée	integrada
 by hand	von Hand	à la main	a mano
@@ -2136,6 +2235,7 @@ given	vorgegeben	imposée	fijada
 horizontal	waagerecht	horizontale	horizontal
 if	wenn	si	si
 kW	kW	kW	kW
+low side at the rear	niedrige Seite hinten	côté bas à l'arrière	lado bajo detrás
 male	Stift	mâle	macho
 manual	manuell	manuel	manual
 max. {} °C	max. {} °C	max. {} °C	máx. {} °C
@@ -2145,7 +2245,9 @@ model	Modell	modèle	modelo
 name	Name	nom	nombre
 no	nein	non	no
 no answer	keine Antwort	pas de réponse	sin respuesta
+no electrical data of the module	keine elektrischen Daten des Moduls	pas de données électriques du module	sin datos eléctricos del módulo
 no rooms	keine Räume	aucune pièce	ninguna sala
+no valid levels	keine gültigen Ebenen	pas de niveaux valides	sin niveles válidos
 no wires	keine Verbindungen	aucun fil	sin cables
 none	keins	aucun	ninguno
 not available, drawn by the processor	nicht verfügbar, Zeichnen durch den Prozessor	non disponible, dessinée par le processeur	no disponible, la dibuja el procesador
@@ -2165,6 +2267,8 @@ pin and socket	Stift und Buchse	broche et douille	macho y hembra
 placed / provided by the parts	platziert / von den Artikeln bereitgestellt	placé / fourni par les articles	colocado / proporcionado por los artículos
 reached: PL {}	erreicht: PL {}	atteint : PL {}	alcanzado: PL {}
 review round {}	Prüfrunde {}	tour de vérification {}	ronda de revisión {}
+ridge {} m	First {} m	faîtage {} m	cumbrera {} m
+sloped ceiling from {} m	Dachschräge ab {} m	plafond rampant dès {} m	techo inclinado desde {} m
 some	einige	certaines	algunas
 taken over	übernommen	reprise	adoptada
 the project data (page list, devices, settings)	die Projektdaten (Seitenliste, Geräte, Einstellungen)	les données du projet (liste des pages, appareils, paramètres)	los datos del proyecto (lista de páginas, dispositivos, ajustes)
@@ -2275,6 +2379,8 @@ x {} mm, z {} mm	x {} mm, z {} mm	x {} mm, z {} mm	x {} mm, z {} mm
 {} mm on the plate + {} mm reserve; the rest is the way from the connection points to the plate.	{} mm auf der Platte + {} mm Reserve; der Rest ist der Weg von den Anschlüssen zur Platte.	{} mm sur la plaque + {} mm de réserve ; le reste est le chemin des points de connexion à la plaque.	{} mm en la placa + {} mm de reserva; el resto es el recorrido desde los puntos de conexión hasta la placa.
 {} mm, now {} mm	{} mm, jetzt {} mm	{} mm, maintenant {} mm	{} mm, ahora {} mm
 {} mm, removed	{} mm, entfernt	{} mm, supprimé	{} mm, eliminado
+{} modules	{} Module	{} modules	{} módulos
+{} modules, {} kWp	{} Module, {} kWp	{} modules, {} kWc	{} módulos, {} kWp
 {} mounted in the rack	{} im Rack montiert	{} monté dans la baie	{} montado en el rack
 {} new texts in the dictionary	{} neue Texte im Wörterbuch	{} nouveaux textes dans le dictionnaire	{} textos nuevos en el diccionario
 {} nodes, {} segments, {} m bundle	{} Knoten, {} Segmente, {} m Bündel	{} nœuds, {} segments, {} m de faisceau	{} nodos, {} segmentos, {} m de mazo
@@ -2342,10 +2448,12 @@ x {} mm, z {} mm	x {} mm, z {} mm	x {} mm, z {} mm	x {} mm, z {} mm
 {} wires, {} – {} mm	{} Verbindungen, {} – {} mm	{} fils, {} – {} mm	{} cables, {} – {} mm
 {} °C (max. {} °C)	{} °C (max. {} °C)	{} °C (max. {} °C)	{} °C (máx. {} °C)
 {} °C (max.)	{} °C (max.)	{} °C (max.)	{} °C (máx.)
+{} × {} mm	{} × {} mm	{} × {} mm	{} × {} mm
 {} × {} mm, {} walls	{} × {} mm, {} Wände	{} × {} mm, {} murs	{} × {} mm, {} paredes
 {} × {} pixels, {}	{} × {} Pixel, {}	{} × {} pixels, {}	{} × {} píxeles, {}
 {} – {} ({} pages)	{} – {} ({} Seiten)	{} – {} ({} pages)	{} – {} ({} páginas)
 {}: a double-click opens its floor plan	{}: ein Doppelklick öffnet seinen Grundriss	{} : un double-clic ouvre son plan	{}: un doble clic abre su planta
+{}: click to show its floor plan	{}: Klicken zeigt seinen Grundriss	{} : cliquer pour afficher son plan	{}: haga clic para mostrar su planta
 {}: drag to move it, R turns it, a double-click opens it	{}: ziehen zum Verschieben, R dreht, Doppelklick öffnet	{} : faire glisser pour déplacer, R pour tourner, double-clic pour ouvrir	{}: arrastre para mover, R para girar, doble clic para abrir
 {}: drag to move it, a double-click shows the floor	{}: ziehen zum Verschieben, Doppelklick zeigt den Boden	{} : faire glisser pour déplacer, double-clic pour afficher le sol	{}: arrastre para mover, doble clic para mostrar el suelo
 {}: nothing to change	{}: nichts zu ändern	{} : rien à modifier	{}: nada que cambiar
@@ -2358,6 +2466,7 @@ x {} mm, z {} mm	x {} mm, z {} mm	x {} mm, z {} mm	x {} mm, z {} mm
 {}: {} slots, ports {}	{}: {} Steckplätze, Ports {}	{} : {} emplacements, ports {}	{}: {} slots, puertos {}
 {}: {} terminals renumbered	{}: {} Klemmen neu nummeriert	{} : {} bornes renumérotées	{}: {} bornes renumerados
 {}: {} wires, {} m wire in total	{}: {} Leitungen, insgesamt {} m Leitung	{} : {} fils, {} m de fil au total	{}: {} hilos, {} m de hilo en total
+{}: {} – {} m	{}: {} – {} m	{} : {} – {} m	{}: {} – {} m
 — Line	— Linie	— Ligne	— Línea
 • Connection point	• Anschlusspunkt	• Point de connexion	• Punto de conexión
 ○ Circle	○ Kreis	○ Cercle	○ Círculo

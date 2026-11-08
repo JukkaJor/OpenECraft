@@ -22,6 +22,7 @@ Bottom	Dno
 Bottom with removable gland plate	Dno s odnímatelnou přírubovou deskou
 Breaking capacity	Vypínací schopnost
 Bridge	Most
+Building	Budova
 Buildings	Budovy
 Bundles	Svazky
 Busbar	Přípojnice
@@ -90,6 +91,7 @@ Descending	Sestupně
 Description	Popis
 Designation	Označení
 Device	Přístroj
+Device (PV generator) the modules belong to; its parts then count them in the bill of materials	Zařízení (FV generátor), ke kterému moduly patří; jeho díly je pak počítají v kusovníku
 Device description	Popis zařízení
 Device tag	Označení přístroje
 Device {}	Přístroj {}
@@ -160,6 +162,7 @@ Integration	Integrace
 Internal (bottom)	Interní (dole)
 Interruption point	Bod přerušení
 Italic	Kurzíva
+Its MPP tracker (input), from 1	Jeho MPP tracker (vstup), od 1
 Job	Zakázka
 Jumper	Propojka
 Key	Klíč
@@ -169,6 +172,7 @@ Languages	Jazyky
 Last change	Poslední změna
 Layers	Vrstvy
 Leave out stored baselines and wiring marks	Vynechat uložené základní verze a značky zapojení
+Left	Vlevo
 Length	Délka
 Level	Hladina
 Lifecycle	Životní cyklus
@@ -194,6 +198,8 @@ Minimum digits of the counter (leading zeros)	Minimální počet číslic číta
 Missing parameter: {}	Chybí parametr: {}
 Missing value for --{}	Chybí hodnota pro --{}
 Model import failed: {}	Import modelu se nezdařil: {}
+Modules in series	Moduly v sérii
+Modules side by side in a row	Moduly vedle sebe v řadě
 Mounted	Namontováno
 Mounting	Montáž
 Mounting data	Montážní data
@@ -216,6 +222,7 @@ No machine {}	Žádný stroj {}
 No page named {}	Žádná stránka s názvem {}
 No page template named {}	Žádná šablona stránky s názvem {}
 No page {}	Žádná stránka {}
+No part {} in the project	Žádný díl {} v projektu
 No parts found	Nebyly nalezeny žádné artikly
 No plot frame named {}	Žádný rámeček výkresu s názvem {}
 No plug {}	Žádný konektor {}
@@ -246,6 +253,7 @@ PCT loop overview	Přehled smyček MaR
 PL	PL
 PLC	PLC
 PLC card	Karta PLC
+PV array	FV pole
 Packaging quantity	Balicí jednotka
 Page	Stránka
 Page description	Popis stránky
@@ -328,10 +336,12 @@ Reserve	Rezerva
 Revision	Revize
 Revision {}	Revize {}
 Rework	Přepracování
+Right	Vpravo
 Role	Role
 Rooms	Místnosti
 Route	Vést
 Routing	Vedení
+Rows of modules (east-west: rows of pairs)	Řady modulů (východ-západ: řady dvojic)
 Rule	Pravidlo
 Rule set	Sada pravidel
 Safety function	Bezpečnostní funkce
@@ -367,6 +377,7 @@ Sort by	Seřadit podle
 Source	Zdroj
 State	Stav
 Status	Stav
+String	String
 Strip	Odizolování
 Structure	Struktura
 Subproject name	Název podprojektu
@@ -389,6 +400,7 @@ Terminals	Svorky
 Text	Text
 Text to find	Hledaný text
 The identifier must not be empty	Identifikátor nesmí být prázdný
+The long side of the modules along the rows	Delší strana modulů podél řad
 The page is released	Stránka je uvolněna
 There is a connection symbol at this point already	V tomto bodě už symbol spojení je
 Thermal	Tepelné poměry
@@ -436,6 +448,7 @@ access denied	přístup odepřen
 approved	schváleno
 bonded	pospojeno
 file or folder not found	soubor nebo složka nenalezeny
+landscape	na šířku
 left	doleva
 mm	mm
 normal	normální

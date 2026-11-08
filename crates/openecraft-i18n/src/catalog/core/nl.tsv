@@ -7,6 +7,7 @@
 13 · Transformer-rated metering with PV and grid protection	13 · Transformatormeting met PV en netbeveiliging
 14 · Main low-voltage distribution of an industrial plant	14 · Hoofdverdeler laagspanning van een industriebedrijf
 15 · Plant with buildings, levels and a shaft	15 · Installatie met gebouwen, verdiepingen en een schacht
+16 · Office building with roof, stair and installation	16 · Kantoorgebouw met dak, trap en installatie
 2 · Relay with self-holding contact	2 · Relais met zelfhouding
 3 · Star-delta motor starter	3 · Ster-driehoekstarter
 3/2 directional valve	3/2-wegventiel
@@ -182,6 +183,7 @@ Capacitive sensor, 3-wire	Capacitieve sensor, 3-draads
 Capacitor	Condensator
 Capacitor, polarized	Condensator, gepolariseerd
 Ceiling	Plafond
+Cell temperatures: {} °C (U max), {} °C (U mean), {} °C (U min)	Celtemperaturen: {} °C (U max), {} °C (U gem.), {} °C (U min)
 Centre horizontally	Horizontaal centreren
 Centre vertically	Verticaal centreren
 Centrifugal pump	Centrifugaalpomp
@@ -433,6 +435,7 @@ ERP item master and bill of materials (CSV)	ERP-artikelstamgegevens en stuklijst
 ERP number	ERP-nummer
 ETIM class	ETIM-klasse
 Earth electrode	Aardelektrode
+East-west on a flat roof	Oost-west op een plat dak
 Edit pages	Pagina's bewerken
 Edit project data	Projectgegevens bewerken
 Editor	Bewerker
@@ -520,6 +523,7 @@ Fitting	Fitting
 Fittings	Fittingen
 Flame retardant	Vlamvertragend
 Flat cable {} has {} cores, the IDC connector {} has {} pins	Platte kabel {} heeft {} aders, de IDC-connector {} heeft {} pinnen
+Flat roof	Plat dak
 Float switch NC	Vlotterschakelaar verbreekcontact
 Float switch NO	Vlotterschakelaar maakcontact
 Float switch NO (NFPA)	Vlotterschakelaar maakcontact (NFPA)
@@ -538,6 +542,8 @@ Fluid power (ISO 1219)	Vloeistoftechniek (ISO 1219)
 Fluid power and electrics in one project: pneumatic circuit with service unit, valve terminal, 5/2 valves, flow control valves and cylinders; solenoid coils and position switches are linked to the valves and cylinders.	Fluïdtechniek en elektrotechniek in één project: pneumatisch schema met verzorgingseenheid, ventieleiland, 5/2-ventielen, smoorterugslagventielen en cilinders; magneetspoelen en eindschakelaars zijn gekoppeld aan de ventielen en cilinders.
 Fluid power and process	Fluïdtechniek en procestechniek
 Fluid power settings	Instellingen vloeistoftechniek
+Flush-mounted in the floor	Inbouw in de vloer
+Flush-mounted in the wall	Inbouw in de wand
 Foot switch NC	Voetschakelaar verbreekcontact
 Foot switch NO	Voetschakelaar maakcontact
 Foot switch NO (NFPA)	Voetschakelaar maakcontact (NFPA)
@@ -590,6 +596,7 @@ Fuse, LV HBC, 3-pole	NH-zekering 3-polig
 GB (GB/T 4728)	GB (GB/T 4728)
 GOST (ESKD)	GOST (ESKD)
 GTIN	GTIN
+Gable roof	Zadeldak
 Galvanometer	Galvanometer
 Gas	Gas
 Gas flow switch NC	Gasstromingsschakelaar verbreekcontact
@@ -615,6 +622,7 @@ Grid and system protection relay (voltage and frequency)	Net- en installatiebeve
 Grounded conductors must be white or grey (NFPA 79, 13.2.3)	Geaarde geleiders moeten wit of grijs zijn (NFPA 79, 13.2.3)
 HMI	HMI
 HTML document for printing	HTML-document om af te drukken
+Half landing (two flights)	Met halfbordes (twee trappen)
 Hall 1	Hal 1
 Halogen free	Halogeenvrij
 Hand	Hand
@@ -628,8 +636,15 @@ Heating element	Verwarmingselement
 Higher-level product (-)	Bovenliggend product (-)
 Higher-level product of the page	Bovenliggend product van de pagina
 Highest (°C)	Maximaal (°C)
+Hinged left, opens inwards	Scharnieren links, draait naar binnen
+Hinged left, opens outwards	Scharnieren links, draait naar buiten
+Hinged right, opens inwards	Scharnieren rechts, draait naar binnen
+Hinged right, opens outwards	Scharnieren rechts, draait naar buiten
+Hip roof	Schilddak
 Hold-up time	Overbruggingstijd bij netuitval
 Holding power	Houdvermogen
+Horizontal, above the floor	Horizontaal, boven de vloer
+Horizontal, below the ceiling	Horizontaal, onder het plafond
 Horn (NFPA)	Claxon (NFPA)
 Horn / buzzer	Hoorn / zoemer
 Horn / buzzer HA (GB)	Claxon / zoemer HA (GB)
@@ -654,6 +669,8 @@ Hydraulic oil	Hydraulische olie
 Hydraulic power unit	Hydraulisch aggregaat
 Hydraulic pump	Hydraulische pomp
 Hysteresis	Hysterese
+I mpp (A)	I mpp (A)
+I sc max (A)	I sc max (A)
 IEC 60204-1 (machinery: phases BK, DC control BU)	IEC 60204-1 (machines: fasegeleiders BK, DC-besturing BU)
 IEC 60445 (phases BN, BK, GY)	IEC 60445 (fasegeleiders BN, BK, GY)
 IEC 61131-3 (%IX0.0 / %QX0.0)	IEC 61131-3 (%IX0.0 / %QX0.0)
@@ -665,6 +682,8 @@ Ik1 min (A)	Ik1 min (A)
 Impact protection (IK)	Slagvastheid (IK)
 In engineering	In engineering
 In production	In productie
+In the ceiling, along the walls	In het plafond, langs de wanden
+In the floor, along the walls	In de vloer, langs de wanden
 Incoming supply	Voeding
 Indicator lamp	Signaallamp
 Indicator lamp HL (GB)	Signaallamp HL (GB)
@@ -764,6 +783,7 @@ MAC address	MAC-adres
 MCAD	MCAD
 MCAD device placement (CSV)	MCAD-apparaatplaatsing (CSV)
 MOSFET N-channel	MOSFET N-kanaal
+MPPT	MPPT
 MTTFd	MTTFd
 Machine (example identifiers)	Machine (voorbeeldaanduidingen)
 Machine frame	Machineframe
@@ -827,6 +847,8 @@ Minimum operating temperature	Minimale bedrijfstemperatuur
 Mirror contacts	Spiegelcontacten
 Mirrored	Gespiegeld
 Mission time	Gebruiksduur
+Module	Module
+Modules	Modules
 Moisture	Vochtigheid
 Moment of inertia	Traagheidsmoment
 Motion detector	Bewegingsmelder
@@ -918,6 +940,7 @@ No plugs	Geen connectoren
 No report block {}	Geen rapportblok {}
 No segment template named {}	Geen segmentsjabloon met de naam {}
 No subproject {}	Geen deelproject {}
+No such PV array	Geen dergelijk PV-veld
 No such object: {}	Object bestaat niet: {}
 No surge protective device at the supply (IEC 60364-4-44)	Geen overspanningsbeveiliging bij de voeding (IEC 60364-4-44)
 No terminal {}	Geen klem {}
@@ -1054,6 +1077,7 @@ PLC tags for Rockwell Studio 5000 (CSV)	PLC-tags voor Rockwell Studio 5000 (CSV)
 PLC variables for Schneider Control Expert (XSY)	PLC-variabelen voor Schneider Control Expert (XSY)
 PLM	PLM
 PLM engineering BOM (JSON)	PLM-engineeringstuklijst (JSON)
+PV strings	PV-strings
 PVC (70 °C)	PVC (70 °C)
 Page / column (3.4.1)	Pagina / kolom (3.4.1)
 Page name	Paginanaam
@@ -1079,6 +1103,7 @@ Panel layout in 3D (STEP)	Kastlay-out in 3D (STEP)
 Panel layout in 3D (glTF)	Kastlay-out in 3D (glTF)
 Panel layout settings	Instellingen kastlay-out
 Panel legend	Kastlegenda
+Parallel to the roof on roof hooks	Parallel aan het dak op dakhaken
 Part accessories	Artikeltoebehoren
 Part data is maintained in the parts management	Artikelgegevens worden in het artikelbeheer onderhouden
 Part description	Artikelbeschrijving
@@ -1162,6 +1187,7 @@ Potential {} defined {} times	Potentiaal {} is {} keer gedefinieerd
 Potentials / Connectors	Potentialen / connectoren
 Potentials, interruption points	Potentialen, onderbrekingspunten
 Potentiometer	Potentiometer
+Power (kWp)	Vermogen (kWp)
 Power and control circuit on several pages: main switch, motor protection, three contactors with interlocks, on-delay timer, interruption points, potentials with wire colours, motor cable and cable reports.	Hoofd- en stuurstroomkring over meerdere pagina's: hoofdschakelaar, motorbeveiliging, drie magneetschakelaars met vergrendelingen, opkomvertraagd tijdrelais, onderbrekingspunten, potentialen met draadkleuren, motorkabel en kabeloverzichten.
 Power factor	Arbeidsfactor
 Power factor meter	Arbeidsfactormeter
@@ -1249,6 +1275,7 @@ Push button with key NC, latching	Drukknop met sleutel verbreekcontact, vergrend
 Push button with key NO, latching	Drukknop met sleutel maakcontact, vergrendelend
 Pushbutton NC	Drukknop verbreekcontact
 Pushbutton NO	Drukknop maakcontact
+Pyramid roof	Tentdak
 Qty	Aantal
 RCD {} mA	RCD {} mA
 Radiation	Straling
@@ -1401,6 +1428,7 @@ Setpoint	Setpoint
 Setting range	Instelbereik
 Sheath colour	Kleur mantel
 Sheath material	Materiaal mantel
+Shed roof	Lessenaarsdak
 Sheet number	Bladnummer
 Sheet steel	Plaatstaal
 Shield clamp	Afschermklem
@@ -1429,6 +1457,8 @@ Siren	Sirene
 Site address	Adres van de opstellingsplaats
 Size (mm)	Grootte (mm)
 Skipped	Overgeslagen
+Sliding to the left	Schuivend naar links
+Sliding to the right	Schuivend naar rechts
 Socket outlet	Wandcontactdoos
 Socket side (female)	Buszijde (vrouwelijk)
 Soft starter	Softstarter
@@ -1447,6 +1477,7 @@ Spare	Reserve
 Spare part	Reserveonderdeel
 Spare terminal	Reserveklem
 Speed	Toerental
+Spiral	Wenteltrap
 Stainless steel	Roestvrij staal
 Standard	Norm
 Start / stop circuit with a relay: coil and contacts form one device with cross references and contact image, terminal strip, wire numbers, terminal diagram and connection list.	Start-/stopschakeling met een relais: spoel en contacten vormen één apparaat met kruisverwijzingen en contactbeeld, klemmenstrook, draadnummers, klemmenschema en verbindingslijst.
@@ -1462,6 +1493,7 @@ Steam	Stoom
 Stock	Voorraad
 Stop category	Stopcategorie
 Storage temperature range	Opslagtemperatuurbereik
+Straight	Recht
 Straight through from {} to {}, across from {} to {} and from {} to {}	Rechtdoor van {} naar {}, dwars van {} naar {} en van {} naar {}
 Strain relief	Trekontlasting
 Stretched	Uitgerekt
@@ -1489,6 +1521,7 @@ Suppliers	Leveranciers
 Supply network	Netvorm
 Supply voltage	Voedingsspanning
 Surface (m²)	Oppervlak (m²)
+Surface-mounted	Opbouw
 Surge protection type	Type overspanningsbeveiliging
 Surge protective device	Overspanningsbeveiliging
 Surge suppressor	Overspanningsbegrenzer
@@ -1597,6 +1630,7 @@ Through-beam sensor, 4-wire	Eenrichtingslichtsluis, 4-draads
 Through-beam transmitter	Eenrichtingslichtsluis zender
 Thyristor	Thyristor
 Tightening torque	Aanhaalmoment
+Tilted on a flat roof	Schuin op een plat dak
 Time function	Tijdfunctie
 Time range	Tijdbereik
 Time relay coil KT (GB)	Spoel tijdrelais KT (GB)
@@ -1649,9 +1683,14 @@ Trunking	Kabelgoot
 Tube	Buis (flexibel)
 Tubes	Slangen
 Tubing / piping list	Buis- / leidinglijst
+Turned once (quarter landing)	Eenmaal gedraaid (kwartbordes)
+Turned twice (two quarter landings)	Tweemaal gedraaid (twee kwartbordessen)
 Two connection symbols on page {} lie on the same point	Twee verbindingssymbolen op pagina {} liggen op hetzelfde punt
 Two-way switch (installation)	Wisselschakelaar (installatie)
 Type numbers	Typenummers
+U max (V)	U max (V)
+U mean (V)	U gem. (V)
+U min (V)	U min (V)
 UL listed	UL-gecertificeerd
 UV resistant	UV-bestendig
 Unbalance {} %	Onbalans {} %
@@ -1680,6 +1719,9 @@ Varistor	Varistor
 Varmeter	Blindvermogensmeter
 Vector group	Schakelgroep
 Ventilation clearance	Ventilatieafstand
+Vertical, beside the corners	Verticaal, naast de hoeken
+Vertical, beside the doors	Verticaal, naast de deuren
+Vertical, beside the windows	Verticaal, naast de ramen
 Vessel	Vat
 Vibration	Trilling
 Vibration resistance	Trillingsbestendigheid
@@ -1798,7 +1840,6 @@ is none of	is geen van
 is not	is niet
 is not empty	is niet leeg
 is one of	is een van
-landscape	liggend
 leakage	lek
 low	laag
 measuring	meet
@@ -1807,6 +1848,7 @@ no header	geen koprij
 no list	geen lijst
 no path through the route network	geen weg door het tracénetwerk
 no way through the enclosure	geen weg door de behuizing
+no way through the installation zones	geen weg door de installatiezones
 not in the panel layout	niet in de kastlay-out
 not in the same line-up or room	niet in dezelfde koppeling of ruimte
 not reached	niet bereikt
@@ -1859,6 +1901,7 @@ yellow	geel
 {} fits none of the parts of {}	{} past op geen enkel artikel van {}
 {} frozen routes changed their length	{} bevroren routes hebben hun lengte gewijzigd
 {} has no MTTFd, B10d, PL or PFHd	{} heeft geen MTTFd, B10d, PL of PFHd
+{} has no door or window {}	{} heeft geen deur of raam {}
 {} has nothing to manufacture	{} heeft niets te produceren
 {} is a built-in function definition	{} is een ingebouwde functiedefinitie
 {} is a built-in property	{} is een ingebouwde eigenschap
@@ -1894,7 +1937,16 @@ yellow	geel
 {} {} is routed to the cable entries of its enclosures: they stand in no common room, the way between them is not part of the layout	{} {} is gelegd tot de kabelinvoeren van zijn behuizingen: ze staan niet in een gemeenschappelijke ruimte, de weg ertussen hoort niet bij de lay-out
 {} {}: bends closer than the bend radius ({} mm)	{} {}: bochten krapper dan de buigradius ({} mm)
 {} – {}: connected in the single-line diagram but not in the schematic	{} – {}: verbonden in het eenlijnschema, maar niet in het schema
+{}, MPP tracker {}: its strings differ in voltage ({} V and {} V)	{}, MPP-tracker {}: zijn strings verschillen in spanning ({} V en {} V)
+{}, MPP tracker {}: the strings deliver {} A, more than the {} A it uses (the power is limited)	{}, MPP-tracker {}: de strings leveren {} A, meer dan de {} A die hij gebruikt (het vermogen wordt begrensd)
+{}, MPP tracker {}: the strings reach a short-circuit current of {} A, more than the {} A it takes	{}, MPP-tracker {}: de strings bereiken een kortsluitstroom van {} A, meer dan de {} A die hij verdraagt
 {}: MTTFd {} years is below 3 years	{}: MTTFd {} jaar is minder dan 3 jaar
+{}: PV array {} covers a roof window	{}: PV-veld {} bedekt een dakraam
+{}: PV array {} has {} modules, its device {} has {}	{}: PV-veld {} heeft {} modules, zijn apparaat {} heeft er {}
+{}: PV array {} is mounted tilted on a pitched roof	{}: PV-veld {} is schuin gemonteerd op een hellend dak
+{}: PV array {} of roof {} lies across a ridge, a hip or the edge of the roof	{}: PV-veld {} van dak {} ligt over een nok, een hoekkeper of de dakrand
+{}: PV array {} of roof {} lies outside the roof	{}: PV-veld {} van dak {} ligt buiten het dak
+{}: PV arrays {} and {} lie over each other	{}: PV-velden {} en {} liggen over elkaar
 {}: \"{}\" is not one of {}	{}: \"{}\" is niet een van {}
 {}: a TT system needs a residual current device	{}: een TT-stelsel heeft een aardlekbeveiliging nodig
 {}: accessory {} fits none of the device's parts	{}: toebehoren {} past op geen enkel artikel van het apparaat
@@ -1964,11 +2016,21 @@ yellow	geel
 {}: slot {} of rack {} is used by {} and {}	{}: slot {} van rack {} wordt gebruikt door {} en {}
 {}: solenoid coil not linked to a valve	{}: magneetspoel niet aan een ventiel gekoppeld
 {}: solenoid valve without linked solenoid coil (Fluid and process › Synchronize)	{}: magneetventiel zonder gekoppelde magneetspoel (Fluïdum en proces › Synchroniseren)
+{}: string {} of PV array {} drops to {} V at {} °C, below the MPP range of {} ({} - {} V)	{}: string {} van PV-veld {} daalt tot {} V bij {} °C, onder het MPP-bereik van {} ({} - {} V)
+{}: string {} of PV array {} is connected to no inverter	{}: string {} van PV-veld {} is op geen omvormer aangesloten
+{}: string {} of PV array {} reaches {} V at maximum power at {} °C, above the MPP range of {} ({} - {} V)	{}: string {} van PV-veld {} bereikt {} V bij maximaal vermogen bij {} °C, boven het MPP-bereik van {} ({} - {} V)
+{}: string {} of PV array {} reaches {} V at {} °C, more than the {} V system voltage of its modules	{}: string {} van PV-veld {} bereikt {} V bij {} °C, meer dan de systeemspanning van {} V van zijn modules
+{}: string {} of PV array {} reaches {} V at {} °C, more than the {} V {} takes	{}: string {} van PV-veld {} bereikt {} V bij {} °C, meer dan de {} V die {} verdraagt
+{}: string {} of PV array {}: {} has only {} MPP trackers	{}: string {} van PV-veld {}: {} heeft maar {} MPP-trackers
+{}: string {} of PV array {}: {} is no device with PV input data	{}: string {} van PV-veld {}: {} is geen apparaat met PV-ingangsgegevens
 {}: terminal {} is on level {}, but no terminal block is before it	{}: klem {} ligt op etage {}, maar er staat geen klemblok voor
 {}: terminal {} uses {} levels, its part {} has {}	{}: klem {} gebruikt {} etages, het artikel {} ervan heeft er {}
 {}: terminals {} are {} mm above the floor, at least {} mm required	{}: klemmen {} liggen {} mm boven de vloer, minimaal {} mm vereist
 {}: the busbar system with {} bars joins {} conductors ({}): short circuit	{}: het railsysteem met {} rails verbindt {} geleiders ({}): kortsluiting
+{}: the device {} of PV array {} does not exist	{}: het apparaat {} van PV-veld {} bestaat niet
+{}: the module {} of PV array {} has no electrical data	{}: de module {} van PV-veld {} heeft geen elektrische gegevens
 {}: the station has no port {}	{}: het station heeft geen poort {}
+{}: the strings of PV array {} connect {} modules, the array has {}	{}: de strings van PV-veld {} verbinden {} modules, het veld heeft er {}
 {}: the {} ({} x {} mm) is larger than the working area of {}	{}: {} ({} x {} mm) is groter dan het werkbereik van {}
 {}: the {} is {} mm thick, {} takes at most {} mm	{}: {} is {} mm dik, {} verwerkt maximaal {} mm
 {}: voltage drop {} V ({} %) above {} %	{}: spanningsval {} V ({} %) boven {} %
@@ -1994,6 +2056,7 @@ yellow	geel
 {}: {} is not made for wall mounting, mount it on a rail	{}: {} is niet bedoeld voor wandmontage, monteer het op een rail
 {}: {} is {} … {} mm above the floor, allowed {} … {} mm	{}: {} ligt {} … {} mm boven de vloer, toegestaan {} … {} mm
 {}: {} kg on the {} exceed its load of {} kg	{}: {} kg op {} overschrijdt de draagkracht van {} kg
+{}: {} modules of PV array {} are not connected to a string	{}: {} modules van PV-veld {} zijn op geen string aangesloten
 {}: {} modules, the head has {} slots	{}: {} modules, de kop heeft {} slots
 {}: {} of {} mm is longer than the stock length of {} mm and has to be joined	{}: {} van {} mm is langer dan de voorraadlengte van {} mm en moet worden samengevoegd
 {}: {} of {} mm is shorter than {} mm and hard to cut	{}: {} van {} mm is korter dan {} mm en moeilijk op lengte te zagen
@@ -2005,6 +2068,7 @@ yellow	geel
 {}: {} solenoid coils linked, the valve has {}	{}: {} magneetspoelen gekoppeld, het ventiel heeft er {}
 {}: {} stands in an inner wall	{}: {} staat in een binnenwand
 {}: {} stands in the swing of the door in wall {}	{}: {} staat in het draaivlak van de deur in wand {}
+{}: {} stands in the way of the sliding door in wall {}	{}: {} staat in de weg van de schuifdeur in wand {}
 {}: {} stands outside the room	{}: {} staat buiten de ruimte
 {}: {} stands where {} stands	{}: {} staat waar {} staat
 {}: {} threads on the {} are cut by hand	{}: {} schroefdraden op {} worden handmatig getapt

@@ -7,6 +7,7 @@
 13 · Transformer-rated metering with PV and grid protection	13 · Áramváltós mérés napelemmel és hálózatvédelemmel
 14 · Main low-voltage distribution of an industrial plant	14 · Ipari üzem kisfeszültségű főelosztója
 15 · Plant with buildings, levels and a shaft	15 · Létesítmény épületekkel, szintekkel és aknával
+16 · Office building with roof, stair and installation	16 · Irodaépület tetővel, lépcsővel és szereléssel
 2 · Relay with self-holding contact	2 · Öntartó relé
 3 · Star-delta motor starter	3 · Csillag-delta indító
 3/2 directional valve	3/2-es útszelep
@@ -182,6 +183,7 @@ Capacitive sensor, 3-wire	Kapacitív érzékelő, 3 vezetékes
 Capacitor	Kondenzátor
 Capacitor, polarized	Kondenzátor, polarizált
 Ceiling	Mennyezet
+Cell temperatures: {} °C (U max), {} °C (U mean), {} °C (U min)	Cellahőmérsékletek: {} °C (U max.), {} °C (U átl.), {} °C (U min.)
 Centre horizontally	Vízszintes középre igazítás
 Centre vertically	Függőleges középre igazítás
 Centrifugal pump	Centrifugálszivattyú
@@ -433,6 +435,7 @@ ERP item master and bill of materials (CSV)	ERP-cikktörzs és anyagjegyzék (CS
 ERP number	ERP-szám
 ETIM class	ETIM-osztály
 Earth electrode	Földelő
+East-west on a flat roof	Kelet-nyugat lapostetőn
 Edit pages	Oldalak szerkesztése
 Edit project data	Projektadatok szerkesztése
 Editor	Szerkesztő
@@ -520,6 +523,7 @@ Fitting	Csatlakozószerelvény
 Fittings	Csatlakozószerelvények
 Flame retardant	Lángterjedésgátló
 Flat cable {} has {} cores, the IDC connector {} has {} pins	A(z) {} szalagkábelnek {} ere van, a(z) {} IDC csatlakozónak {} lába
+Flat roof	Lapostető
 Float switch NC	Úszókapcsoló, nyitóérintkező
 Float switch NO	Úszókapcsoló, záróérintkező
 Float switch NO (NFPA)	Úszókapcsoló, záróérintkező (NFPA)
@@ -538,6 +542,8 @@ Fluid power (ISO 1219)	Fluidtechnika (ISO 1219)
 Fluid power and electrics in one project: pneumatic circuit with service unit, valve terminal, 5/2 valves, flow control valves and cylinders; solenoid coils and position switches are linked to the valves and cylinders.	Folyadék- és gáztechnika és villamosság egy projektben: pneumatikus kapcsolás tápegységgel, szelepszigettel, 5/2-es szelepekkel, fojtó-visszacsapó szelepekkel és hengerekkel; a mágnestekercsek és a helyzetkapcsolók a szelepekhez és hengerekhez kapcsolódnak.
 Fluid power and process	Fluidtechnika és folyamattechnika
 Fluid power settings	Fluidtechnikai beállítások
+Flush-mounted in the floor	Padlóba süllyesztett
+Flush-mounted in the wall	Falba süllyesztett
 Foot switch NC	Lábkapcsoló, nyitóérintkező
 Foot switch NO	Lábkapcsoló, záróérintkező
 Foot switch NO (NFPA)	Lábkapcsoló, záróérintkező (NFPA)
@@ -590,6 +596,7 @@ Fuse, LV HBC, 3-pole	Késes biztosító (NH), 3 pólusú
 GB (GB/T 4728)	GB (GB/T 4728)
 GOST (ESKD)	GOST (ESKD)
 GTIN	GTIN
+Gable roof	Nyeregtető
 Galvanometer	Galvanométer
 Gas	Gáz
 Gas flow switch NC	Gázáramlás-kapcsoló, nyitóérintkező
@@ -615,6 +622,7 @@ Grid and system protection relay (voltage and frequency)	Hálózat- és rendszer
 Grounded conductors must be white or grey (NFPA 79, 13.2.3)	A földelt vezetőknek fehérnek vagy szürkének kell lenniük (NFPA 79, 13.2.3)
 HMI	HMI
 HTML document for printing	HTML-dokumentum nyomtatáshoz
+Half landing (two flights)	Félpihenős (két kar)
 Hall 1	1. csarnok
 Halogen free	Halogénmentes
 Hand	Kézi
@@ -628,8 +636,15 @@ Heating element	Fűtőelem
 Higher-level product (-)	Felettes termék (-)
 Higher-level product of the page	Az oldal felettes terméke
 Highest (°C)	Legfeljebb (°C)
+Hinged left, opens inwards	Zsanér balra, befelé nyílik
+Hinged left, opens outwards	Zsanér balra, kifelé nyílik
+Hinged right, opens inwards	Zsanér jobbra, befelé nyílik
+Hinged right, opens outwards	Zsanér jobbra, kifelé nyílik
+Hip roof	Kontytető
 Hold-up time	Áthidalási idő
 Holding power	Tartóteljesítmény
+Horizontal, above the floor	Vízszintes, a padló felett
+Horizontal, below the ceiling	Vízszintes, a mennyezet alatt
 Horn (NFPA)	Kürt (NFPA)
 Horn / buzzer	Kürt / berregő
 Horn / buzzer HA (GB)	Kürt / zümmer HA (GB)
@@ -654,6 +669,8 @@ Hydraulic oil	Hidraulikaolaj
 Hydraulic power unit	Hidraulikus tápegység
 Hydraulic pump	Hidraulikaszivattyú
 Hysteresis	Hiszterézis
+I mpp (A)	I mpp (A)
+I sc max (A)	I sc max. (A)
 IEC 60204-1 (machinery: phases BK, DC control BU)	IEC 60204-1 (gépek: fázisvezetők BK, DC-vezérlés BU)
 IEC 60445 (phases BN, BK, GY)	IEC 60445 (fázisvezetők BN, BK, GY)
 IEC 61131-3 (%IX0.0 / %QX0.0)	IEC 61131-3 (%IX0.0 / %QX0.0)
@@ -665,6 +682,8 @@ Ik1 min (A)	Ik1 min (A)
 Impact protection (IK)	Ütésállóság (IK)
 In engineering	Tervezés alatt
 In production	Gyártás alatt
+In the ceiling, along the walls	A mennyezetben, a falak mentén
+In the floor, along the walls	A padlóban, a falak mentén
 Incoming supply	Betáp
 Indicator lamp	Jelzőlámpa
 Indicator lamp HL (GB)	Jelzőlámpa HL (GB)
@@ -764,6 +783,7 @@ MAC address	MAC-cím
 MCAD	MCAD
 MCAD device placement (CSV)	MCAD készülékelhelyezés (CSV)
 MOSFET N-channel	N-csatornás MOSFET
+MPPT	MPPT
 MTTFd	MTTFd
 Machine (example identifiers)	Gép (példaazonosítók)
 Machine frame	Gépváz
@@ -827,6 +847,8 @@ Minimum operating temperature	Minimális üzemi hőmérséklet
 Mirror contacts	Tükörérintkezők
 Mirrored	Tükrözött
 Mission time	Használati idő
+Module	Modul
+Modules	Modulok
 Moisture	Nedvesség
 Moment of inertia	Tehetetlenségi nyomaték
 Motion detector	Mozgásérzékelő
@@ -918,6 +940,7 @@ No plugs	Nincsenek csatlakozók
 No report block {}	Nincs {} kimutatásblokk
 No segment template named {}	Nincs ilyen nevű szegmenssablon: {}
 No subproject {}	Nincs ilyen alprojekt: {}
+No such PV array	Nincs ilyen PV-mező
 No such object: {}	Nincs ilyen objektum: {}
 No surge protective device at the supply (IEC 60364-4-44)	Nincs túlfeszültség-védelmi eszköz a betáplálásnál (IEC 60364-4-44)
 No terminal {}	Nincs {} sorkapocs
@@ -1054,6 +1077,7 @@ PLC tags for Rockwell Studio 5000 (CSV)	PLC-tagek a Rockwell Studio 5000-hez (CS
 PLC variables for Schneider Control Expert (XSY)	PLC-változók a Schneider Control Experthez (XSY)
 PLM	PLM
 PLM engineering BOM (JSON)	PLM tervezési anyagjegyzék (JSON)
+PV strings	PV-stringek
 PVC (70 °C)	PVC (70 °C)
 Page / column (3.4.1)	Oldal / oszlop (3.4.1)
 Page name	Oldalnév
@@ -1079,6 +1103,7 @@ Panel layout in 3D (STEP)	Szekrényelrendezés 3D-ben (STEP)
 Panel layout in 3D (glTF)	Szekrényelrendezés 3D-ben (glTF)
 Panel layout settings	Szekrényelrendezés beállításai
 Panel legend	Szekrényjelmagyarázat
+Parallel to the roof on roof hooks	A tetővel párhuzamosan tetőkampókon
 Part accessories	Cikktartozékok
 Part data is maintained in the parts management	Az alkatrészadatok karbantartása az alkatrészkezelésben történik
 Part description	Alkatrészleírás
@@ -1162,6 +1187,7 @@ Potential {} defined {} times	A(z) {} potenciál {}-szor van definiálva
 Potentials / Connectors	Potenciálok / csatlakozók
 Potentials, interruption points	Potenciálok, megszakítási pontok
 Potentiometer	Potenciométer
+Power (kWp)	Teljesítmény (kWp)
 Power and control circuit on several pages: main switch, motor protection, three contactors with interlocks, on-delay timer, interruption points, potentials with wire colours, motor cable and cable reports.	Fő- és vezérlőáramkör több oldalon: főkapcsoló, motorvédelem, három mágneskapcsoló reteszeléssel, meghúzáskésleltetett időrelé, megszakítási pontok, potenciálok érszínekkel, motorkábel és kábelkimutatások.
 Power factor	Teljesítménytényező
 Power factor meter	Teljesítménytényező-mérő
@@ -1249,6 +1275,7 @@ Push button with key NC, latching	Kulcsos nyomógomb, nyitóérintkező, retesze
 Push button with key NO, latching	Kulcsos nyomógomb, záróérintkező, reteszelő
 Pushbutton NC	Nyomógomb, nyitóérintkező
 Pushbutton NO	Nyomógomb, záróérintkező
+Pyramid roof	Sátortető
 Qty	Menny.
 RCD {} mA	RCD {} mA
 Radiation	Sugárzás
@@ -1401,6 +1428,7 @@ Setpoint	Alapjel
 Setting range	Beállítási tartomány
 Sheath colour	Köpeny színe
 Sheath material	Köpeny anyaga
+Shed roof	Félnyeregtető
 Sheet number	Lapszám
 Sheet steel	Acéllemez
 Shield clamp	Árnyékolásbilincs
@@ -1429,6 +1457,8 @@ Siren	Sziréna
 Site address	Telephely címe
 Size (mm)	Méret (mm)
 Skipped	Kihagyva
+Sliding to the left	Balra toló
+Sliding to the right	Jobbra toló
 Socket outlet	Csatlakozóaljzat
 Socket side (female)	Hüvely oldal (anya)
 Soft starter	Lágyindító
@@ -1447,6 +1477,7 @@ Spare	Tartalék
 Spare part	Pótalkatrész
 Spare terminal	Tartalék sorkapocs
 Speed	Fordulatszám
+Spiral	Csigalépcső
 Stainless steel	Rozsdamentes acél
 Standard	Szabvány
 Start / stop circuit with a relay: coil and contacts form one device with cross references and contact image, terminal strip, wire numbers, terminal diagram and connection list.	Start / stop áramkör relével: a tekercs és az érintkezők egy eszközt alkotnak kereszthivatkozásokkal és érintkezőképpel; sorkapocs, vezetékszámok, sorkapocsrajz és kapcsolatlista.
@@ -1462,6 +1493,7 @@ Steam	Gőz
 Stock	Készlet
 Stop category	Leállítási kategória
 Storage temperature range	Tárolási hőmérséklet-tartomány
+Straight	Egyenes
 Straight through from {} to {}, across from {} to {} and from {} to {}	Egyenesen {} – {}, keresztben {} – {} és {} – {}
 Strain relief	Húzásmentesítő
 Stretched	Nyújtott
@@ -1489,6 +1521,7 @@ Suppliers	Szállítók
 Supply network	Hálózattípus
 Supply voltage	Tápfeszültség
 Surface (m²)	Felület (m²)
+Surface-mounted	Falon kívüli
 Surge protection type	Túlfeszültség-védelem típusa
 Surge protective device	Túlfeszültség-védelmi eszköz
 Surge suppressor	Túlfeszültség-korlátozó
@@ -1597,6 +1630,7 @@ Through-beam sensor, 4-wire	Egyutas fénysorompó, 4 vezetékes
 Through-beam transmitter	Egyutas fénysorompó adója
 Thyristor	Tirisztor
 Tightening torque	Meghúzási nyomaték
+Tilted on a flat roof	Döntve lapostetőn
 Time function	Időfunkció
 Time range	Időtartomány
 Time relay coil KT (GB)	Időrelé tekercse KT (GB)
@@ -1649,9 +1683,14 @@ Trunking	Kábelcsatorna
 Tube	Cső
 Tubes	Csövek
 Tubing / piping list	Cső- / tömlőanyag-lista
+Turned once (quarter landing)	Egyszer forduló (negyedpihenő)
+Turned twice (two quarter landings)	Kétszer forduló (két negyedpihenő)
 Two connection symbols on page {} lie on the same point	A(z) {}. lapon két kapcsolati szimbólum ugyanazon a ponton fekszik
 Two-way switch (installation)	Váltókapcsoló (installációs)
 Type numbers	Típusszámok
+U max (V)	U max. (V)
+U mean (V)	U átl. (V)
+U min (V)	U min. (V)
 UL listed	UL-listás
 UV resistant	UV-álló
 Unbalance {} %	Aszimmetria: {} %
@@ -1680,6 +1719,9 @@ Varistor	Varisztor
 Varmeter	Meddőteljesítmény-mérő
 Vector group	Kapcsolási csoport
 Ventilation clearance	Szellőzési szabad tér
+Vertical, beside the corners	Függőleges, a sarkok mellett
+Vertical, beside the doors	Függőleges, az ajtók mellett
+Vertical, beside the windows	Függőleges, az ablakok mellett
 Vessel	Tartály
 Vibration	Rezgés
 Vibration resistance	Rezgésállóság
@@ -1798,7 +1840,6 @@ is none of	egyike sem ezeknek
 is not	nem egyenlő
 is not empty	nem üres
 is one of	ezek egyike
-landscape	fekvő
 leakage	szivárgó
 low	alacsony
 measuring	mérő
@@ -1807,6 +1848,7 @@ no header	nincs fejléc
 no list	nincs lista
 no path through the route network	nincs útvonal a nyomvonalhálózaton át
 no way through the enclosure	nincs út a szekrényen át
+no way through the installation zones	nincs út a szerelési zónákon át
 not in the panel layout	nincs a szekrényelrendezésben
 not in the same line-up or room	nem ugyanabban a szekrénysorban vagy helyiségben
 not reached	nem teljesül
@@ -1859,6 +1901,7 @@ yellow	sárga
 {} fits none of the parts of {}	{0} nem illeszkedik a(z) {1} egyik cikkéhez sem
 {} frozen routes changed their length	{} rögzített nyomvonal hossza megváltozott
 {} has no MTTFd, B10d, PL or PFHd	{} esetén nincs MTTFd, B10d, PL vagy PFHd
+{} has no door or window {}	{0} nem tartalmaz {1} ajtót vagy ablakot
 {} has nothing to manufacture	{} esetén nincs mit gyártani
 {} is a built-in function definition	{} beépített funkciódefiníció
 {} is a built-in property	{} beépített tulajdonság
@@ -1894,7 +1937,16 @@ yellow	sárga
 {} {} is routed to the cable entries of its enclosures: they stand in no common room, the way between them is not part of the layout	{} {} a szekrényei kábelbevezetéseiig van vezetve: nem állnak közös helyiségben, a köztük lévő út nem része az elrendezésnek
 {} {}: bends closer than the bend radius ({} mm)	{} {}: a hajlítások szűkebbek a hajlítási sugárnál ({} mm)
 {} – {}: connected in the single-line diagram but not in the schematic	{} – {}: az egyvonalas rajzon összekötve, a kapcsolási rajzon nem
+{}, MPP tracker {}: its strings differ in voltage ({} V and {} V)	{}, {}. MPP-követő: stringjei feszültsége eltér ({} V és {} V)
+{}, MPP tracker {}: the strings deliver {} A, more than the {} A it uses (the power is limited)	{}, {}. MPP-követő: a stringek {} A-t adnak, többet az általa hasznosított {} A-nél (a teljesítmény korlátozódik)
+{}, MPP tracker {}: the strings reach a short-circuit current of {} A, more than the {} A it takes	{}, {}. MPP-követő: a stringek zárlati árama {} A, több az általa elviselt {} A-nél
 {}: MTTFd {} years is below 3 years	{}: az MTTFd {} év, ami kevesebb 3 évnél
+{}: PV array {} covers a roof window	{}: a(z) {} PV-mező eltakar egy tetőablakot
+{}: PV array {} has {} modules, its device {} has {}	{}: a(z) {} PV-mezőnek {} modulja van, a(z) {} eszközének {}
+{}: PV array {} is mounted tilted on a pitched roof	{}: a(z) {} PV-mező döntve van szerelve egy magastetőre
+{}: PV array {} of roof {} lies across a ridge, a hip or the edge of the roof	{0}: a(z) {2} tető {1} PV-mezője átnyúlik egy gerincen, élgerincen vagy a tető szélén
+{}: PV array {} of roof {} lies outside the roof	{0}: a(z) {2} tető {1} PV-mezője a tetőn kívül van
+{}: PV arrays {} and {} lie over each other	{}: a(z) {} és {} PV-mezők egymásra fekszenek
 {}: \"{}\" is not one of {}	{}: \"{}\" nem szerepel ezek között: {}
 {}: a TT system needs a residual current device	{}: a TT-rendszerhez áram-védőkapcsoló szükséges
 {}: accessory {} fits none of the device's parts	{}: a(z) {} tartozék a készülék egyik cikkéhez sem illeszkedik
@@ -1964,11 +2016,21 @@ yellow	sárga
 {}: slot {} of rack {} is used by {} and {}	{0}: a(z) {2} modultartó {1}. slotját {3} és {4} is foglalja
 {}: solenoid coil not linked to a valve	{}: a mágnestekercs nincs szelephez kapcsolva
 {}: solenoid valve without linked solenoid coil (Fluid and process › Synchronize)	{}: mágnesszelep kapcsolt mágnestekercs nélkül (Fluid- és folyamattechnika › Szinkronizálás)
+{}: string {} of PV array {} drops to {} V at {} °C, below the MPP range of {} ({} - {} V)	{0}: a(z) {2} PV-mező {1} stringje {4} °C-on {3} V-ra esik, a(z) {5} MPP-tartománya ({6} - {7} V) alá
+{}: string {} of PV array {} is connected to no inverter	{0}: a(z) {2} PV-mező {1} stringje nincs inverterhez csatlakoztatva
+{}: string {} of PV array {} reaches {} V at maximum power at {} °C, above the MPP range of {} ({} - {} V)	{0}: a(z) {2} PV-mező {1} stringje maximális teljesítménynél {4} °C-on {3} V-ot ér el, a(z) {5} MPP-tartománya ({6} - {7} V) felett
+{}: string {} of PV array {} reaches {} V at {} °C, more than the {} V system voltage of its modules	{0}: a(z) {2} PV-mező {1} stringje {4} °C-on {3} V-ot ér el, többet moduljai {5} V-os rendszerfeszültségénél
+{}: string {} of PV array {} reaches {} V at {} °C, more than the {} V {} takes	{0}: a(z) {2} PV-mező {1} stringje {4} °C-on {3} V-ot ér el, többet a(z) {6} által elviselt {5} V-nál
+{}: string {} of PV array {}: {} has only {} MPP trackers	{0}: a(z) {2} PV-mező {1} stringje: a(z) {3} csak {4} MPP-követővel rendelkezik
+{}: string {} of PV array {}: {} is no device with PV input data	{0}: a(z) {2} PV-mező {1} stringje: a(z) {3} nem PV-bemeneti adatokkal rendelkező eszköz
 {}: terminal {} is on level {}, but no terminal block is before it	{}: a(z) {} sorkapocs a(z) {}. szinten van, de nincs előtte sorkapocsblokk
 {}: terminal {} uses {} levels, its part {} has {}	{}: a(z) {} sorkapocs {} szintet használ, a(z) {} alkatrésze {} szintes
 {}: terminals {} are {} mm above the floor, at least {} mm required	{}: a(z) {} sorkapcsok {} mm-rel vannak a padló felett, legalább {} mm szükséges
 {}: the busbar system with {} bars joins {} conductors ({}): short circuit	{}: a(z) {} sínes gyűjtősín-rendszer {} vezetőt köt össze ({}): rövidzárlat
+{}: the device {} of PV array {} does not exist	{}: a(z) {} eszköz a(z) {} PV-mezőhöz nem létezik
+{}: the module {} of PV array {} has no electrical data	{0}: a(z) {2} PV-mező {1} moduljának nincsenek elektromos adatai
 {}: the station has no port {}	{}: az állomásnak nincs {} portja
+{}: the strings of PV array {} connect {} modules, the array has {}	{}: a(z) {} PV-mező stringjei {} modult kötnek be, a mezőnek {} van
 {}: the {} ({} x {} mm) is larger than the working area of {}	{}: a(z) {} ({} x {} mm) nagyobb a(z) {} munkaterületénél
 {}: the {} is {} mm thick, {} takes at most {} mm	{}: a(z) {} {} mm vastag, {} legfeljebb {} mm-t fogad
 {}: voltage drop {} V ({} %) above {} %	{}: feszültségesés {} V ({} %), több mint {} %
@@ -1994,6 +2056,7 @@ yellow	sárga
 {}: {} is not made for wall mounting, mount it on a rail	{}: {} nem falra szerelésre készült, szerelje sínre
 {}: {} is {} … {} mm above the floor, allowed {} … {} mm	{}: {} {} … {} mm-rel van a padló felett, megengedett {} … {} mm
 {}: {} kg on the {} exceed its load of {} kg	{}: {} kg ezen: {} meghaladja a(z) {} kg-os teherbírást
+{}: {} modules of PV array {} are not connected to a string	{0}: a(z) {2} PV-mező {1} modulja nincs stringhez csatlakoztatva
 {}: {} modules, the head has {} slots	{}: {} modul, a fejegységnek {} slotja van
 {}: {} of {} mm is longer than the stock length of {} mm and has to be joined	{}: {} ({} mm) hosszabb a(z) {} mm-es szálhossznál, ezért toldani kell
 {}: {} of {} mm is shorter than {} mm and hard to cut	{}: {} ({} mm) rövidebb, mint {} mm, és nehezen vágható
@@ -2005,6 +2068,7 @@ yellow	sárga
 {}: {} solenoid coils linked, the valve has {}	{}: {} mágnestekercs kapcsolva, a szelepnek {} van
 {}: {} stands in an inner wall	{}: {} egy belső falban áll
 {}: {} stands in the swing of the door in wall {}	{}: {} a(z) {}. fal ajtajának nyitási területén áll
+{}: {} stands in the way of the sliding door in wall {}	{0}: {1} útban van a(z) {2}. fal tolóajtajának
 {}: {} stands outside the room	{}: {} a helyiségen kívül áll
 {}: {} stands where {} stands	{}: {} ott áll, ahol {}
 {}: {} threads on the {} are cut by hand	{}: {} menetet ezen: {} kézzel kell vágni

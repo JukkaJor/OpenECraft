@@ -48,6 +48,7 @@ A baseline stores the whole project (pages, devices, parts, settings). Releasing
 A cable of the bus type for every connection without cable	Bustípusú kábel minden kábel nélküli kapcsolathoz
 A cutout of the same size at the same place in the neighbour's side wall: together they are a cable passage	Azonos méretű kivágás ugyanott a szomszéd oldalfalában: együtt kábelátvezetést alkotnak
 A file of the same name in the folder gets a new version (checked out and in), otherwise the file is added	A mappában lévő azonos nevű fájl új verziót kap (kivétel és beadás), különben a fájl hozzáadódik
+A level on top of the highest one	Egy szint a legfelső fölé
 A new project	Új projekt
 A new release is downloaded in the background and installed when you close OpenECraft.	Az új verzió a háttérben töltődik le, és az OpenECraft bezárásakor települ.
 A new release is downloaded in the background and replaces this installation; it is used from the next start.	Az új verzió a háttérben töltődik le, és lecseréli ezt a telepítést; a következő indítástól használatos.
@@ -146,6 +147,7 @@ Archive and version	Archívum és verzió
 Archive project…	Projekt archiválása…
 Arms	Karok
 As defined by the check	Ahogy az ellenőrzés meghatározza
+As the rules say ({})	A szabályok szerint ({})
 Aspects of the pages	Az oldalak aspektusai
 Aspects, identifiers and work areas as a file for other projects	Aspektusok, azonosítók és munkaterületek fájlként más projektek számára
 Assembly {}	{} szerelvény
@@ -177,6 +179,8 @@ Back	Vissza
 Back to the project (Esc)	Vissza a projekthez (Esc)
 Back-up up to (kA)	Tartalékvédelem eddig (kA)
 Background	Háttér
+Ballast	Ballaszt
+Ballast per module	Ballaszt modulonként
 Baseline {}	{} alapállapot
 Baseline {} created	A(z) {} alapállapot létrehozva
 Baseline {} {}	{} {} alapállapot
@@ -201,7 +205,7 @@ Bottom edges	Alsó élek
 Bottom of the enclosure (without plinth) above the floor; heights are checked when it is known or the enclosure stands on a plinth	A szekrény alsó éle (lábazat nélkül) a padló felett; a magasságokat akkor ellenőrzi, ha ez ismert, vagy ha a szekrény lábazaton áll
 Breaking capacity against the short-circuit current at each protective device of the mains, disconnection at the lowest fault current at the end of its circuit, short-circuit withstand of the cables and selectivity with the device upstream.	Megszakítóképesség a zárlati árammal szemben a hálózat minden védőkészülékénél, lekapcsolás a legkisebb hibaáramnál az áramkör végén, a kábelek zárlati szilárdsága és szelektivitás az előtte kapcsolt készülékkel.
 Bridge: four wires; the connection comes in at one side and goes to the three others, the opposite side first	Híd: négy vezeték; a kapcsolat egy oldalon érkezik, és a három másikhoz megy, először a szemköztihez
-Building	Épület
+Building {} added with a level at ground level	A(z) {} épület hozzáadva egy talajszinti szinttel
 Built-in frames cannot be changed; copy one to adapt it.	A beépített keretek nem módosíthatók; az átalakításhoz másoljon le egyet.
 Built-in scheme: copy it to change it.	Beépített séma: a módosításhoz másolja le.
 Built-in title blocks are read only – use “Copy as new” to make your own.	A beépített szövegmezők csak olvashatók – saját létrehozásához használja a „Másolás újként” parancsot.
@@ -230,6 +234,7 @@ Calculations	Számítások
 Cancel / select tool / clear selection	Mégse / eszköz kiválasztása / kijelölés megszüntetése
 Card	Kártya
 Cards without station: {}	Állomás nélküli kártyák: {}
+Cell temperatures of the strings	A stringek cellahőmérsékletei
 Centre	Közép
 Change project properties of the selected projects	A kijelölt projektek projekttulajdonságainak módosítása
 Change request	Módosítási kérelem
@@ -265,12 +270,14 @@ Checks switched off and message levels as a file for other projects	Kikapcsolt e
 Checks the project data (ids, references, device data, options, subprojects) together with the engineering checks.	Ellenőrzi a projektadatokat (azonosítók, hivatkozások, készülékadatok, opciók, alprojektek) a mérnöki ellenőrzésekkel együtt.
 Choices	Választható értékek
 Choices (separated by commas)	Választható értékek (vesszővel elválasztva)
+Choose	Kiválasztás
 Choose a baseline, a revision or a project file to compare the project with.	Válasszon egy alapállapotot, revíziót vagy projektfájlt, amellyel a projektet össze kívánja hasonlítani.
 Choose a room first: floor-standing parts go on its floor.	Először válasszon helyiséget: a padlón álló alkatrészek a padlójára kerülnek.
 Choose file…	Fájl kiválasztása…
 Choose pages	Oldalak kiválasztása
 Chooses the pages whose structure starts with this	Kiválasztja azokat az oldalakat, amelyek struktúrája ezzel kezdődik
 Circle	Kör
+Circuits of a generic manifold	Általános osztó körei
 Clear	Törlés
 Clearance	Szabad tér
 Clearances	Szabad terek
@@ -281,6 +288,7 @@ Click into the page to place {}	Kattintson az oldalra a(z) {} elhelyezéséhez
 Click on a wall	Kattintson egy falra
 Click on a wire to place the connection definition point	Kattintson egy vezetékre az összeköttetés-definíciós pont elhelyezéséhez
 Click on the 4 mm grid	Kattintson a 4 mm-es rácsra
+Click on the wall: the part goes there at its mounting height	Kattintson a falra: az alkatrész ott a szerelési magasságába kerül
 Click start and end point	Kattintson a kezdő- és a végpontra
 Click the corners of a machine or building, double-click to finish	Kattintson egy gép vagy épület sarkaira, a befejezéshez kattintson duplán
 Click the ends of the inner walls; every click starts the next one, ends near a wall snap onto it. Esc, Enter or a double-click ends the chain, Esc again the tool.	Kattintson a belső falak végeire; minden kattintás a következőt kezdi, a fal közelében lévő végek a falhoz illeszkednek. Esc, Enter vagy dupla kattintás befejezi a láncot, újabb Esc az eszközt.
@@ -290,7 +298,10 @@ Click to insert · Esc cancel	Kattintás: beszúrás · Esc: mégse
 Click to place a comment	Kattintson egy megjegyzés elhelyezéséhez
 Click to place the markup text	Kattintson a korrektúraszöveg elhelyezéséhez
 Click to place the text from the field below	Kattintson az alábbi mező szövegének elhelyezéséhez
+Click to put new rooms on this level; drop rooms onto it to move them here	Kattintson, hogy az új helyiségek erre a szintre kerüljenek; ejtsen ide helyiségeket, hogy áthelyezze őket
 Click to show	Kattintson a megjelenítéshez
+Click to show the building in the site plan; right-click for new levels	Kattintson az épület megjelenítéséhez a helyszínrajzon; jobb kattintás új szintekhez
+Click to show the site plan of the buildings, or all of the plant in the 3D view	Kattintson az épületek helyszínrajzának megjelenítéséhez, vagy a teljes létesítményhez a 3D nézetben
 Click to show, right click for more	Kattintás: megjelenítés, jobb kattintás: továbbiak
 Click two corners	Kattintson két sarokra
 Click two nodes to connect them	Kattintson két csomópontra az összekötésükhöz
@@ -370,6 +381,7 @@ Core designations separated by blanks	Érmegnevezések szóközzel elválasztva
 Cores 1, 2, 3 … for the wires crossed, plus GNYE	1, 2, 3 … erek a keresztezett vezetékekhez, továbbá GNYE
 Corner: two wires at a right angle; with Auto-connect on, connection points facing its arms are wired to it	Sarok: két vezeték derékszögben; bekapcsolt automatikus csatlakoztatással a karjaival szemközti csatlakozási pontok hozzá vezetékeződnek
 Cover sheet, overview, graphics, report, mounting layout or a page template	Fedőlap, áttekintés, grafika, kimutatás, szerelési elrendezés vagy oldalsablon
+Covers	Lefed
 Covers what is behind the text	Eltakarja, ami a szöveg mögött van
 Create	Létrehozás
 Create an enclosure in the panel layout first.	Először hozzon létre egy szekrényt a szekrényelrendezésben.
@@ -413,6 +425,7 @@ Define all used	Az összes használt definiálása
 Defined potentials	Definiált potenciálok
 Del	Del
 Delete	Törlés
+Delete PV array	PV-mező törlése
 Delete cable (its wires are removed from it)	Kábel törlése (a vezetékei lekerülnek róla)
 Delete comment	Megjegyzés törlése
 Delete connection point	Csatlakozási pont törlése
@@ -427,18 +440,24 @@ Delete macro	Makró törlése
 Delete node	Csomópont törlése
 Delete page	Oldal törlése
 Delete request	Kérelem törlése
+Delete roof	Tető törlése
+Delete roof window	Tetőablak törlése
 Delete room	Helyiség törlése
 Delete room {} with everything on its walls? The cabinets standing in it stay, without a room.	Törli a(z) {} helyiséget mindennel, ami a falain van? A benne álló szekrények megmaradnak, helyiség nélkül.
 Delete section	Szakasz törlése
 Delete shaft	Akna törlése
+Delete stair	Lépcső törlése
+Delete string	String törlése
 Delete the group	A csoport törlése
 Delete the layer; its items move to the default layer	A réteg törlése; elemei az alapértelmezett rétegre kerülnek
 Delete the property and all its values	Tulajdonság törlése az összes értékével együtt
 Delete this workspace	A munkaterület törlése
 Delete variant	Változat törlése
+Delete zone	Zóna törlése
 Deny	Megtagadás
 Depth / mounted at	Mélység / szerelve itt
 Depth from / to	Mélység ettől / eddig
+Depth in the floor	Mélység a padlóban
 Derive project definition	Projektdefiníció származtatása
 Descriptions	Leírások
 Deselect	Kijelölés megszüntetése
@@ -472,6 +491,7 @@ Digits	Számjegyek
 Dimension	Méretezés
 Directed T-junction: where three wires meet, names the device the two wires of the connection start from and the order of their targets	Irányított T-elem: ahol három vezeték találkozik, megadja, melyik készülékből indul a kapcsolat két vezetéke, és a céljaik sorrendjét
 Directed crossing: connects the two wires crossing there; each end of its line is wired straight on first and across second	Irányított kereszteződés: összeköti az ott keresztező két vezetéket; vonalának mindkét vége először egyenesen, majd keresztben vezetékeződik
+Direction the modules face, counter-clockwise seen from above (0: towards the front)	Az irány, amerre a modulok néznek, felülről nézve az óramutató járásával ellentétesen (0: előre)
 Discard changes	Módosítások elvetése
 Discard draft	Piszkozat elvetése
 Disconnection of distribution circuits	Elosztó áramkörök lekapcsolása
@@ -538,12 +558,14 @@ Drilling list of this face (CSV)	A felület furatlistája (CSV)
 Drilling pattern of the face shown as DXF, DWG or CSV	A megjelenített felület furatképe DXF, DWG vagy CSV formátumban
 Drop between the pages	Ejtse az oldalak közé
 Drop between the rows or onto a section	Ejtse a sorok közé vagy egy szakaszra
+Drop onto a level to put the room on it	Ejtse egy szintre, hogy a helyiség arra kerüljön
 Duct fill	Csatornatöltöttség
 Duct fill limit	Csatornatöltöttség határértéke
 Duplicate	Kettőzés
 Each example builds on the one before and shows more of the features.	Minden példa az előzőre épül, és több funkciót mutat be.
 Each point-to-point connection can belong to a harness	Minden pont-pont összeköttetés tartozhat egy kábelköteghez
 Earthing system	Földelési rendszer
+Eaves	Eresz
 Edge length of the routing grid: smaller is finer and slower	A nyomvonalrács élhossza: a kisebb finomabb és lassabb
 Edit	Szerkesztés
 Edit in table	Szerkesztés táblázatban
@@ -603,6 +625,7 @@ Exported {}	{} exportálva
 Exporting {}	{} exportálása
 Export…	Exportálás…
 Extras	Extrák
+Facing	Tájolás
 Fans, filters, cable glands, lights, handles: choose one, then click where it goes	Ventilátorok, szűrők, kábeltömszelencék, lámpák, fogantyúk: válasszon egyet, majd kattintson a beépítés helyére
 Fastening hardware in the bill of materials	Rögzítőelemek az anyagjegyzékben
 Favorite	Kedvenc
@@ -643,6 +666,7 @@ Floor plan with {} walls	Alaprajz {} fallal
 Floor-standing part	Padlón álló cikk
 Fluid and process	Fluid- és folyamattechnika
 Follows its condition: use Apply conditions	A feltételét követi: használja a Feltételek alkalmazása parancsot
+Foot	Indulás
 For	Ehhez
 For parts without Stock length; longer profiles have to be joined	Stock length nélküli alkatrészekhez; a hosszabb profilokat toldani kell
 For parts without temperature data (Max temperature, Operating temperature); 0: not checked	Hőmérsékleti adatok nélküli alkatrészekhez (Max temperature, Operating temperature); 0: nincs ellenőrzés
@@ -662,8 +686,10 @@ Freeze route	Nyomvonal rögzítése
 Frequency	Frekvencia
 From / to	Forrás / cél
 From a template file…	Sablonfájlból…
+From row to row; 0: free of shade in winter	Sortól sorig; 0: télen árnyékmentes
 From the function definition	A funkciódefinícióból
 From the left end	A bal végtől
+From – to	Tól – ig
 Fullest stretch	Legtelibb szakasz
 Function definitions	Funkciódefiníciók
 Function properties	Funkciótulajdonságok
@@ -688,12 +714,14 @@ Generates the pages of all report blocks again	Újragenerálja az összes kimuta
 Generates {} pages	{} oldalt generál
 Generation failed: {}	Sikertelen generálás: {}
 Generic	Általános
+German zones (DIN 18015-3)	Német zónák (DIN 18015-3)
 Getting started	Első lépések
 Global variable list with direct addresses for CODESYS, TwinCAT and others	Globális változólista közvetlen címekkel a CODESYS, a TwinCAT és más rendszerek számára
 Go to page	Ugrás az oldalra
 Graphic line	Grafikus vonal
 Graphic rectangle	Grafikus téglalap
 Graphical form	Grafikus űrlap
+Greatest distance of the roof hooks along a rail	A tetőkampók legnagyobb távolsága egy sín mentén
 Grid	Rács
 Grid size	Rácsméret
 Grid {} mm	Rács {} mm
@@ -708,6 +736,7 @@ Head (CPU / coupler)	Fejegység (CPU / csatoló)
 Header row	Fejlécsor
 Heat map	Hőtérkép
 Heating	Fűtés
+Heating circuit manifolds and control boxes	Fűtőköri osztók és szabályozódobozok
 Height (mm)	Magasság (mm)
 Height above the floor	Padló feletti magasság
 Height above the mounting plate	Magasság a szerelőlap fölött
@@ -718,8 +747,11 @@ Help	Súgó
 Hide the groups you do not need and put the commands you use most into own groups.	Rejtse el a szükségtelen csoportokat, a leggyakrabban használt parancsokat pedig tegye saját csoportokba.
 Highest phase unbalance	Legnagyobb fázisaszimmetria
 Highest short-circuit current	Legnagyobb zárlati áram
+Highest voltage (open circuit at the lowest temperature), mean and lowest voltage (at maximum power at the mean and the highest temperature), current at maximum power, peak power	Legnagyobb feszültség (üresjárás a legalacsonyabb hőmérsékleten), átlagos és legkisebb feszültség (maximális teljesítménynél az átlagos és a legmagasabb hőmérsékleten), áram maximális teljesítménynél, csúcsteljesítmény
+Highest: the lowest voltage	Legmagasabb: a legkisebb feszültség
 Hole to sheet edge	Furat a lemezszéltől
 Home	Kezdőlap
+Hook distance	Kampótávolság
 Horizontal	Vízszintes
 Horizontal (mm)	Vízszintes (mm)
 Horizontal centres	Vízszintes középvonalak
@@ -731,6 +763,7 @@ Hose defaults and PCT loops of the pre-planning	Tömlő-alapértékek és az el�
 Hose number	Tömlőszám
 Hoses and pipes	Tömlők és csövek
 Hoses rated below it are errors; 0 = not checked	Az ennél kisebb névleges nyomású tömlők hibának számítanak; 0 = nincs ellenőrzés
+How the leaf opens: hinged at its left or right edge (seen from inside the room), into or out of the room, or sliding along the wall	Hogyan nyílik a szárny: a bal vagy jobb élén zsanérral (a helyiség belsejéből nézve), a helyiség felé vagy kifelé, vagy a fal mentén tolva
 IP / bus address	IP- / buszcím
 ISO 639-1 language code	ISO 639-1 szerinti nyelvkód
 Identifiers	Azonosítók
@@ -774,6 +807,7 @@ In every section counting starts again after the section number (2.3.1).	Minden 
 In strip order; PE and other non-numeric terminals keep their designation	Lécsorrendben; a PE és más nem numerikus sorkapcsok megtartják a megnevezésüket
 In the filtered rows	A szűrt sorokban
 In the middle of the first wire	Az első vezeték közepén
+In the middle of the front or right slope, on a flat roof tilted towards the front; move it to its place	Az első vagy jobb tetősík közepén, lapostetőn előre döntve; mozgassa a helyére
 In the project	A projektben
 In the structure of the current page	Az aktuális oldal struktúrájában
 Include manually set numbers	Kézzel megadott számok bevonása
@@ -796,6 +830,7 @@ Inside temperature	Belső hőmérséklet
 Inside without cooling	Belül hűtés nélkül
 Installation	Felállítás
 Installation conditions of the conductors	A vezetők fektetési feltételei
+Installation zones	Szerelési zónák
 Installed plugins	Telepített bővítmények
 Instead of user name and password	Felhasználónév és jelszó helyett
 Instruments in the P&ID carry function letters and loop number in their label (TIC 101); their device tag links them with the schematic.	A P&ID műszerei funkcióbetűket és körszámot viselnek a feliratukban (TIC 101); a készülékazonosítójuk kapcsolja össze őket a kapcsolási rajzzal.
@@ -803,6 +838,7 @@ Insulation	Szigetelés
 Interruption points refer to	A megszakítási pontok hivatkozása
 Introduction	Bevezetés
 Invalid value	Érvénytelen érték
+Inverter or charge controller (devices with PV input data)	Inverter vagy töltésszabályozó (PV-bemeneti adatokkal rendelkező eszközök)
 Isometric	Izometrikus
 Items on the layer	A réteg elemei
 Items with an anchor keep it; the others are inserted relative to the click.	A horgonnyal rendelkező elemek megtartják azt; a többi a kattintáshoz képest kerül beszúrásra.
@@ -831,14 +867,15 @@ Layer	Réteg
 Layer {}	{} réteg
 Layer: {}	Réteg: {}
 Layers of graphics, texts, dimensions and images	Grafikák, szövegek, méretezések és képek rétegei
+Laying in rooms	Fektetés a helyiségekben
 Laying out the wires, cables and tubes…	Vezetékek, kábelek és csövek elrendezése…
 Layout checks	Elrendezési ellenőrzések
 Layout properties	Elrendezés tulajdonságai
 Layout space	Szerelési tér
 Layout spaces	Szerelési terek
+Leave out the ceilings of the rooms and the roofs in the 3D view	A helyiségek mennyezetének és a tetőknek az elhagyása a 3D nézetben
 Leave out the covers of all cable ducts in the 3D view: the wires in them are seen	A 3D nézetben elhagyja az összes kábelcsatorna fedelét: a bennük lévő vezetékek láthatók
 Leave repeated values of the first column blank	Az első oszlop ismétlődő értékeinek üresen hagyása
-Left	Bal
 Left edges	Bal élek
 Legend plates (door devices)	Feliratos táblák (ajtókészülékek)
 Length from the node to the device	Hossz a csomóponttól a készülékig
@@ -850,6 +887,7 @@ Letters, digits, space, - _ . (up to 64 characters)	Betűk, számjegyek, szókö
 Level of a multi-level terminal: upper levels sit on the block of the terminal before	Emeletes sorkapocs szintje: a felső szintek az előző sorkapocs blokkján ülnek
 Level of this kind of message	Ennek az üzenettípusnak a szintje
 Level on top	Szint felül
+Level {} added to building {}; new rooms go onto it	A(z) {0} szint hozzáadva a(z) {1} épülethez; az új helyiségek erre kerülnek
 Levels	Szintek
 Library	Könyvtár
 Limits	Határértékek
@@ -889,6 +927,7 @@ Looking for updates…	Frissítések keresése…
 Looks for a new release of OpenECraft on GitHub and installs it in the background	Új OpenECraft-verziót keres a GitHubon, és a háttérben telepíti
 Loop	Kör
 Lowest fault current	Legkisebb hibaáram
+Lowest: the highest open-circuit voltage	Legalacsonyabb: a legnagyobb üresjárási feszültség
 Macro boxes	Makródobozok
 Macro boxes ({})	Makródobozok ({})
 Macro saved to the library	Makró mentve a könyvtárba
@@ -919,6 +958,7 @@ Master data	Törzsadatok
 Max. pressure	Max. nyomás
 Max. width	Max. szélesség
 Maximum fill of a carrier	Kábeltartó maximális telítettsége
+Mean: typical operation	Átlagos: jellemző üzem
 Measured	Mért
 Measures against common cause failure (at least 65 points)	Közös okú meghibásodás elleni intézkedések (legalább 65 pont)
 Merge a symbol library file	Szimbólumkönyvtár-fájl egyesítése
@@ -927,17 +967,21 @@ Messages	Üzenetek
 Messages ({})	Üzenetek ({})
 Messages of this session	A munkamenet üzenetei
 Middle	Középen
+Middle of the PV array in the floor plan of the building	A PV-mező közepe az épület alaprajzán
 Min. bend radius	Min. hajlítási sugár
 Minimize the ribbon	A menüszalag kis méretre állítása
 Mirror	Tükrözés
 Mirror (selection or symbol being placed)	Tükrözés (kijelölés vagy az elhelyezés alatt álló szimbólum)
 Mode	Mód
 Model of a part (2D / 3D)	Alkatrész modellje (2D / 3D)
+Module part; its size comes from the part	Modul alkatrész; mérete az alkatrészből származik
 Motors feed the short circuit	A motorok táplálják a zárlatot
 Mounted on	Szerelve erre
 Mounting assistant: the panel items in mounting order with their place and part	Szerelési asszisztens: az elrendezési elemek szerelési sorrendben, helyükkel és alkatrészükkel
 Mounting clearance side by side; parts add theirs (Clearance left / right)	Szerelési szabad tér egymás mellett; az alkatrészek hozzáadják a sajátjukat (Clearance left / right)
+Mounting height: {}	Szerelési magasság: {}
 Mounting plate: {} holes, {} cutouts	Szerelőlap: {} furat, {} kivágás
+Mounting system	Szerelőrendszer
 Move	Mozgatás
 Move down	Mozgatás lefelé
 Move left	Mozgatás balra
@@ -998,15 +1042,18 @@ New report page	Új kimutatásoldal
 New request	Új kérelem
 New revision	Új revízió
 New revisions start as drafts, are submitted for review and can be released once approved.	Az új revíziók piszkozatként indulnak, véleményezésre kerülnek beküldésre, és jóváhagyás után kiadhatók.
+New roof	Új tető
 New room	Új helyiség
 New room on this level	Új helyiség ezen a szinten
 New schematic page	Új kapcsolásirajz-oldal
 New scheme	Új séma
 New section	Új szakasz
 New shaft	Új akna
+New stair	Új lépcső
 New sub-page	Új aloldal
 New subsection	Új alszakasz
 New tag for {}	Új azonosító ehhez: {}
+New zone	Új zóna
 New, empty placement scheme	Új, üres elhelyezési séma
 Next free contact numbers on this device	A készülék következő szabad érintkezőszámai
 Next item	Következő elem
@@ -1032,6 +1079,7 @@ No enclosure yet – create one with New enclosure, or a room for cabinets with 
 No field cables: place the enclosures and field devices at nodes of the route network.	Nincsenek terepi kábelek: helyezze el a szekrényeket és a terepi készülékeket a nyomvonalhálózat csomópontjain.
 No filter fans: an air/air heat exchanger or a cooling unit	Nincsenek szűrős ventilátorok: levegő/levegő hőcserélő vagy hűtőkészülék
 No harnesses defined.	Nincsenek definiált kábelkötegek.
+No inverter	Nincs inverter
 No longer reported	Már nem jelentett
 No macros yet. Select items in a schematic and save them as a macro.	Még nincsenek makrók. Jelöljön ki elemeket egy kapcsolási rajzon, és mentse őket makróként.
 No modules: plug in PLC cards of the schematic.	Nincsenek modulok: helyezze be a kapcsolási rajz PLC-kártyáit.
@@ -1106,6 +1154,7 @@ Open project	Projekt megnyitása
 Open projects and files from Autodesk Vault, put the project, exports and 3D models into the vault	Projektek és fájlok megnyitása az Autodesk Vaultból, a projekt, exportok és 3D-modellek elhelyezése a vaultban
 Open the project	A projekt megnyitása
 Open to {}: wires cross beside the mounting plates	Nyitott ehhez: {}: a vezetékek a szerelőlapok mellett haladnak át
+Open walls and floors	Falak és padlók megnyitása
 Open, save, import, export, print and the settings	Megnyitás, mentés, importálás, exportálás, nyomtatás és a beállítások
 OpenECraft page templates	OpenECraft-oldalsablonok
 OpenECraft page templates (JSON)	OpenECraft-oldalsablonok (JSON)
@@ -1132,6 +1181,7 @@ Opened {} from the project server	{} megnyitva a projektszerverről
 Opening	Nyílás
 Opening in the mounting plate / door: click two corners (round: in the properties)	Nyílás a szerelőlapon / ajtón: kattintson két sarokra (kerek: a tulajdonságokban)
 Opening {}…	{} megnyitása…
+Opens	Nyílás
 Opens the page of the release	Megnyitja a kiadás oldalát
 Opens the pages for printing in the browser with its print dialog	Megnyitja az oldalakat nyomtatásra a böngészőben annak nyomtatási párbeszédablakával
 Open…	Megnyitás…
@@ -1145,6 +1195,7 @@ Other values ({})	Egyéb értékek ({})
 Otherwise from the plant layout, or next to the other line-ups	Különben a létesítmény-elrendezésből, vagy a többi szekrénysor mellett
 Out since {} (pages locked)	Kiemelve {} óta (oldalak zárolva)
 Outer diameter (e.g. 8 mm) or DN	Külső átmérő (pl. 8 mm) vagy DN
+Outlets, switches, heating	Aljzatok, kapcsolók, fűtés
 Outline	Körvonal
 Outlines	Körvonalak
 Output bytes	Kimeneti bájtok
@@ -1152,6 +1203,7 @@ Output failed: {}	Sikertelen kiadás: {}
 Output to another project	Kiadás másik projektbe
 Output to project…	Kiadás projektbe…
 Outputs	Kimenetek
+Overhang	Túlnyúlás
 Own colour	Saját szín
 Own drawn form	Saját rajzolt űrlap
 Own groups	Saját csoportok
@@ -1162,6 +1214,7 @@ PLC channels	PLC-csatornák
 PLC hardware and bus topology	PLC-hardver és busztopológia
 PLC overview	PLC-áttekintés
 PNG or JPEG bitmap, e.g. a logo or a photo	PNG vagy JPEG bitkép, pl. logó vagy fénykép
+PV arrays	PV-mezők
 Page graphics	Oldalgrafika
 Page heading	Oldalcím
 Page list, devices, parts, panel layout and settings	Oldallista, készülékek, alkatrészek, szekrényelrendezés és beállítások
@@ -1209,6 +1262,7 @@ Pin-out	Lábkiosztás
 Pipe run	Csővezeték-nyomvonal
 Pipe run on a wall, the ceiling or the floor of the room, along which hoses, tubes and pipes are routed: click the corners, double-click or Enter to finish	Csővezeték-nyomvonal a helyiség falán, mennyezetén vagy padlóján, amely mentén a tömlők, csövek és csővezetékek haladnak: kattintson a sarkokra, a befejezéshez kattintson duplán vagy nyomja meg az Enter billentyűt
 Pipe run {} mm – double-click or Enter to finish	Csővezeték-nyomvonal {} mm – a befejezéshez kattintson duplán, vagy nyomja meg az Enter billentyűt
+Pitch	Hajlásszög
 Pitch X / Y	Osztás X / Y
 Place a comment on the page	Megjegyzés elhelyezése az oldalon
 Place again at all symbols using it	Újbóli elhelyezés minden azt használó szimbólumon
@@ -1426,12 +1480,20 @@ Revisions, approval and release	Revíziók, jóváhagyás és kiadás
 Ribbon	Menüszalag
 Ribbon (JSON)	Menüszalag (JSON)
 Ribbon imported	Menüszalag importálva
-Right	Jobb
 Right click for more	A jobb gombbal további lehetőségek
 Right edges	Jobb élek
 Right neighbour	Jobb oldali szomszéd
 Rights	Jogosultságok
+Risers	Fellépők
+Roof window	Tetőablak
+Roof windows	Tetőablakok
+Roofs	Tetők
 Room	Helyiség
+Room added on level {}: drag its walls or draw new ones in the floor plan, put cabinets into it in their properties	Helyiség hozzáadva a(z) {} szinten: húzza a falait, vagy rajzoljon újakat az alaprajzon, a szekrényeket azok tulajdonságaiban helyezze bele
+Room added: drag its walls or draw new ones in the floor plan, put cabinets into it in their properties	Helyiség hozzáadva: húzza a falait, vagy rajzoljon újakat az alaprajzon, a szekrényeket azok tulajdonságaiban helyezze bele
+Room {} now stands on level {}	A(z) {} helyiség most a(z) {} szinten áll
+Room {} taken out of the building; it stays where it stands	A(z) {} helyiség kivéve az épületből; ott marad, ahol áll
+Rooms under sloped ceilings (lowest – highest ceiling)	Ferde mennyezetű helyiségek (legalacsonyabb – legmagasabb mennyezet)
 Rotate	Elforgatás
 Rotate (selection or symbol being placed)	Elforgatás (kijelölés vagy az elhelyezés alatt álló szimbólum)
 Round	Kerek
@@ -1446,6 +1508,7 @@ Routing path {} mm – double-click or Enter to finish	Fektetési út {} mm – 
 Routing paths	Fektetési utak
 Routing rules	Nyomvonalvezetési szabályok
 Row	Sor
+Row distance	Sortávolság
 Row drawing	Sorrajz
 Row labels	Sorfeliratok
 Rows on released pages cannot be changed. A line break in a text is written as \\n.	A kiadott oldalakon lévő sorok nem módosíthatók. A szövegben a sortörést \\n jelöli.
@@ -1592,12 +1655,16 @@ Signed in to {} as {}	Bejelentkezve ide: {}, felhasználó: {}
 Signed out of Vault	Kijelentkezve a Vaultból
 Single-line	Egyvonalas
 Single-line symbols for the power devices of the schematic that have none yet, on a new overview page	Egyvonalas szimbólumok a kapcsolási rajz azon erősáramú készülékeihez, amelyeknek még nincs, új áttekintő oldalon
+Site	Telek
 Site plan	Helyszínrajz
+Site plan, building {}	Helyszínrajz, {} épület
 Size {} × {} mm	Méret: {} × {} mm
 Slot	Hasíték
+Slot depth	Horonymélység
 Slots	Slotok
 Smallest cross-section of control circuits	Vezérlőáramkörök legkisebb keresztmetszete
 Smallest cross-section of power circuits	Erősáramú áramkörök legkisebb keresztmetszete
+Socket outlets, data and antenna outlets	Dugaszolóaljzatok, adat- és antennaaljzatok
 Some wires have no length: place their devices in the panel layout or set the field length.	Egyes vezetékeknek nincs hossza: helyezze el a készülékeiket a szekrényelrendezésben, vagy adja meg a mezőhosszt.
 Sort by designation	Rendezés megnevezés szerint
 Sort order	Rendezés
@@ -1608,6 +1675,7 @@ Space kept free of routes, or for one class only: click two corners	Nyomvonalakt
 Spare terminals	Tartalék sorkapcsok
 Special text	Speciális szöveg
 Special text: project and page properties such as {page} or {prop:Name} are filled in when the page is drawn	Speciális szöveg: a projekt- és oldaltulajdonságok, például {page} vagy {prop:Name}, az oldal rajzolásakor töltődnek ki
+Stairs	Lépcsők
 Standard form of the report	A kimutatás szabványos űrlapja
 Standard size	Szabványos méret
 Standard workspaces	Alapértelmezett munkaterületek
@@ -1629,6 +1697,8 @@ Still reported	Még jelentett
 Stock length	Szálhossz
 Stop placing for this device	Elhelyezés befejezése ennél a készüléknél
 Stratification (factor c)	Rétegződés (c tényező)
+Strings	Stringek
+Strings of this kind in parallel	Ilyen stringek párhuzamosan
 Strip on the rail	Léc a szerelősínen
 Strip {} mm	Csupaszolás {} mm
 Strips / plugs	Lécek / csatlakozódugók
@@ -1653,6 +1723,7 @@ Switch off the check \"{}\"	A(z) \"{}\" ellenőrzés kikapcsolása
 Switched off on this computer ({})	Ezen a számítógépen kikapcsolva ({})
 Switches the options with a condition by the configurator options	A feltétellel rendelkező opciókat a konfigurátoropciók szerint kapcsolja
 Switches to this workspace with its panes at their default places	Átvált erre a munkaterületre, a panelek az alapértelmezett helyükön
+Switches, push buttons and room thermostats	Kapcsolók, nyomógombok és szobatermosztátok
 Symbol editor	Szimbólumszerkesztő
 Symbol table import failed: {}	Sikertelen szimbólumtábla-importálás: {}
 Symbols and wires on this page are drawn but not evaluated (no devices, connections or reports).	Az oldal szimbólumai és vezetékei megjelennek, de nincsenek kiértékelve (nincsenek készülékek, összeköttetések vagy kimutatások).
@@ -1671,6 +1742,7 @@ Tag	Azonosító
 Tag field	Azonosítómező
 Tag placed by hand	Kézzel elhelyezett azonosító
 Take out a subproject	Alprojekt kiemelése
+Take out of the building	Kivétel az épületből
 Take out {} pages…	{} oldal kiemelése…
 Take over cut lengths	Vágási hosszak átvétele
 Take over selected ({})	Kijelöltek átvétele ({})
@@ -1678,6 +1750,7 @@ Take over {} changes	{} változás átvétele
 Take page out of its option	Oldal kivétele az opciójából
 Take selection out of its option	Kijelölés kivétele az opciójából
 Take the acceptance back	Az elfogadás visszavonása
+Take the room out of the building; it stays where it stands	A helyiség kivétele az épületből; ott marad, ahol áll
 Taken into the drawing: drawn faded	Átvéve a rajzba: halványan megjelenítve
 Takes the comments as function texts (matched by address)	A megjegyzéseket funkciószövegként veszi át (cím alapján párosítva)
 Takes the connection point designations of all functions of this device from the function templates of its parts	A készülék összes funkciójának csatlakozásmegnevezéseit az alkatrészei funkciósablonjaiból veszi át
@@ -1712,6 +1785,7 @@ The door seen from the inside (hinges on the right): cable ducts and the wiring 
 The enclosure stands with its left side against the right side of the chosen one; wires run between them through cable passages	A szekrény bal oldalával a kiválasztott szekrény jobb oldalához áll; a vezetékek kábelátvezetéseken át futnak közöttük
 The items are selected and moved together	Az elemek kijelölése és mozgatása együtt történik
 The macro library has no page macros (Macros › Save page as macro…).	A makrókönyvtárban nincsenek oldalmakrók (Makrók › Oldal mentése makróként…).
+The modules no string takes yet in series, on the first inverter	A még egy stringhez sem tartozó modulok sorba kötve, az első inverteren
 The names of its pages follow	Oldalainak neve is változik
 The page name gets the section number	Az oldal neve megkapja a szakasz számát
 The page type, plot frame, title block, structure, description and the whole content are saved.	Az oldal típusa, rajzkerete, szövegmezője, struktúrája, leírása és teljes tartalma mentésre kerül.
@@ -1724,6 +1798,7 @@ The project's own page templates as a file	A projekt saját oldalsablonjai fájl
 The project's own title blocks	A projekt saját szövegmezői
 The project's own title blocks and report schemes	A projekt saját szövegmezői és kimutatássémái
 The properties of the selection in a window beside the page	A kijelölés tulajdonságai az oldal melletti ablakban
+The rail or mounting base; its accessories are the hooks, clamps and ballast	A sín vagy szerelőtalp; tartozékai a kampók, szorítók és ballaszt
 The recalculation keeps frozen routes as long as they are still possible	Az újraszámítás megtartja a rögzített nyomvonalakat, amíg lehetséges
 The ribbon with the File tab replaces the menus; Ctrl+Shift+P finds any command.	A Fájl lappal rendelkező menüszalag felváltja a menüket; a Ctrl+Shift+P bármely parancsot megtalál.
 The second fault is checked at the line-to-earth voltage	A második hibát a fázis–föld feszültséggel ellenőrzi
@@ -1746,6 +1821,7 @@ This page contains schematic content which is not evaluated on non-schematic pag
 This project is subproject {} of {} (taken out {}). Save it and insert it into the main project when the work is done.	Ez a projekt a(z) {} alprojekt, szülőprojekt: {} (kiemelve: {}). Mentse, és a munka végeztével illessze be a főprojektbe.
 Three wires must meet here: one in its direction and two across. Until then the connection is chained in schematic order.	Itt három vezetéknek kell találkoznia: egynek az irányában és kettőnek keresztben. Addig a kapcsolat a kapcsolási rajz sorrendjében fűződik.
 Three-phase short-circuit current at the supply point	Háromfázisú zárlati áram a betáplálási pontnál
+Tilt	Dőlésszög
 Title	Cím
 Title blocks	Szövegmezők
 Title blocks, plot frames and page templates	Szövegmezők, rajzkeretek és oldalsablonok
@@ -1761,6 +1837,7 @@ Turn about the vertical, counter-clockwise seen from above (90 °: the fronts fa
 Tutorial	Oktatóanyag
 Two wires must meet here at a right angle. With Auto-connect on, connection points facing its arms are wired to it.	Itt két vezetéknek kell derékszögben találkoznia. Bekapcsolt automatikus csatlakoztatással a karjaival szemközti csatlakozási pontok hozzá vezetékeződnek.
 Type a point and press Enter: x y in mm, or @dx dy relative to the last point; it acts like a click of the current tool	Írjon be egy pontot, és nyomja le az Enter billentyűt: x y mm-ben, vagy @dx dy az utolsó ponthoz képest; úgy működik, mint az aktuális eszközzel végzett kattintás
+U {} / {} / {} V, I {} A, {} kWp	U {} / {} / {} V, I {} A, {} kWp
 UI scale	A felület mérete
 Undo	Visszavonás
 Undo brings it back.	A visszavonás visszahozza.
@@ -1836,10 +1913,14 @@ Welcome to OpenECraft	Üdvözli az OpenECraft
 What is new	Újdonságok
 What should be checked or changed?	Mit kell ellenőrizni vagy módosítani?
 Wheel / right or middle drag	Görgő / jobb vagy középső gombos húzás
+Wheel: zoom · drag: move · click on a room: its floor plan	Görgő: nagyítás · húzás: mozgatás · kattintás egy helyiségre: alaprajza
 Wheel: zoom · right click: cancel · graphics snap to 0.5 mm, connection points to the 4 mm grid	Görgő: nagyítás · jobb kattintás: mégse · a grafika 0,5 mm-re, a csatlakozási pontok a 4 mm-es rácsra illeszkednek
 When it differs from the page	Ha eltér az oldaltól
+Where	Hely
 Where the wire starts and ends: a connection point from the part data, one generated from the function template, or the device centre if no connection point matches	A vezeték kezdete és vége: az alkatrészadatokból származó csatlakozási pont, a funkciósablonból generált pont, vagy a készülék közepe, ha egyik csatlakozási pont sem egyezik
+Whole building	Egész épület
 Whole words	Csak teljes szavak
+Width / going	Szélesség / fellépő
 Width / height (mm)	Szélesség / magasság (mm)
 Width × depth	Szélesség × mélység
 Width × height	Szélesség × magasság
@@ -1896,6 +1977,7 @@ all cards	összes kártya
 all lines	összes sor
 all, or e.g. -X*, -W1	összes, vagy pl. -X*, -W1
 all, or e.g. K, Q	mind, vagy pl. K, Q
+along z	z mentén
 both ends	mindkét vég
 built-in	beépített
 by hand	kézzel
@@ -1929,6 +2011,7 @@ given	megadott
 horizontal	vízszintes
 if	ha
 kW	kW
+low side at the rear	alacsony oldal hátul
 male	tű
 manual	kézi
 max. {} °C	max. {} °C
@@ -1938,7 +2021,9 @@ model	modell
 name	név
 no	nem
 no answer	nincs válasz
+no electrical data of the module	nincsenek a modul elektromos adatai
 no rooms	nincs helyiség
+no valid levels	nincs érvényes szint
 no wires	nincsenek vezetékek
 none	nincs
 not defined	nincs definiálva
@@ -1957,6 +2042,8 @@ pin and socket	tű és hüvely
 placed / provided by the parts	elhelyezve / az alkatrészek által biztosítva
 reached: PL {}	elért: PL {}
 review round {}	{}. véleményezési kör
+ridge {} m	gerinc {} m
+sloped ceiling from {} m	ferde mennyezet {} m-től
 some	néhány
 taken over	átvéve
 the project data (page list, devices, settings)	a projektadatok (oldallista, készülékek, beállítások)
@@ -2062,6 +2149,8 @@ x y	x y
 {} mm on the plate + {} mm reserve; the rest is the way from the connection points to the plate.	{} mm a lapon + {} mm tartalék; a többi a csatlakozási pontoktól a lapig tartó út.
 {} mm, now {} mm	{} mm, most {} mm
 {} mm, removed	{} mm, eltávolítva
+{} modules	{} modul
+{} modules, {} kWp	{} modul, {} kWp
 {} new texts in the dictionary	{} új szöveg a szótárban
 {} notes	Megjegyzések: {}
 {} objects pasted	{} objektum beillesztve
@@ -2126,6 +2215,7 @@ x y	x y
 {} °C (max.)	{} °C (max.)
 {} × {} pixels, {}	{} × {} képpont, {}
 {} – {} ({} pages)	{} – {} ({} oldal)
+{}: click to show its floor plan	{}: kattintson az alaprajz megjelenítéséhez
 {}: drag to move it, R turns it, a double-click opens it	{}: húzással mozgatható, R elforgatja, dupla kattintás megnyitja
 {}: drag to move it, a double-click shows the floor	{}: húzással mozgatható, dupla kattintás megjeleníti a padlót
 {}: nothing to change	{}: nincs mit módosítani

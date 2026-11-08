@@ -217,6 +217,7 @@ pub enum Cmd {
     LayoutAccessory,
     Layout3dMacro,
     LayoutWallPart,
+    LayoutInstallation,
     LayoutRackPart,
     LayoutFloorPart,
     LayoutPipeRun,
@@ -237,6 +238,9 @@ pub enum Cmd {
     LayoutHeat,
     LayoutLineup,
     LayoutSite,
+    LayoutBuilding,
+    LayoutZones,
+    LayoutOpenWalls,
     LayoutHideFrontWalls,
     LayoutHideCeiling,
     LayoutOpenDucts,
@@ -684,6 +688,9 @@ pub static ALL: &[Def] = &[
     d(C::LayoutWallPart, "layout_wall_part", tr_const!("Wall-mounted part"), I::Device)
         .menu()
         .tip(tr_const!("Parts marked for wall mounting (inverters, charge controllers, …): choose one, then click where it goes on the wall of the room")),
+    d(C::LayoutInstallation, "layout_installation", tr_const!("Outlets, switches, heating"), I::Device)
+        .menu()
+        .tip(tr_const!("Socket outlets, data and antenna outlets, switches, push buttons and room thermostats, heating circuit manifolds and control boxes: generic ones or from the catalogs (Gira, MDT, COSMO, …); choose one, then click on the wall: it goes at its mounting height")),
     d(C::LayoutFloorPart, "layout_floor_part", tr_const!("Floor-standing part"), I::Cube)
         .menu()
         .tip(tr_const!("Parts marked for floor mounting (pumps, tanks, compressors): choose one, then click where it stands on the floor of the room")),
@@ -708,10 +715,19 @@ pub static ALL: &[Def] = &[
     d(C::LayoutSite, "layout_all_enclosures", tr_const!("All enclosures"), I::Eye)
         .toggle()
         .tip(tr_const!("Show all enclosures side by side at their places in the room")),
+    d(C::LayoutBuilding, "layout_building", tr_const!("Whole building"), I::Building)
+        .toggle()
+        .tip(tr_const!("Show the whole building of the room in the 3D view: all its levels and rooms, the floor slabs, stairs and roofs")),
     d(C::LayoutHideFrontWalls, "layout_hide_front_walls", tr_const!("Hide walls in front"), I::Wall)
         .toggle()
         .tip(tr_const!("Leave out the walls between the eye and the inside of the room or enclosure in the 3D view")),
-    d(C::LayoutHideCeiling, "layout_hide_ceiling", tr_const!("Hide ceiling"), I::Enclosure).toggle().tip(tr_const!("Leave out the ceilings of the rooms in the 3D view")),
+    d(C::LayoutHideCeiling, "layout_hide_ceiling", tr_const!("Hide ceiling"), I::Enclosure).toggle().tip(tr_const!("Leave out the ceilings of the rooms and the roofs in the 3D view")),
+    d(C::LayoutZones, "layout_zones", tr_const!("Installation zones"), I::Grid)
+        .toggle()
+        .tip(tr_const!("Show the installation zones of the rooms see-through: on the walls in the 3D view and the views of the walls, in the floor in the floor plan")),
+    d(C::LayoutOpenWalls, "layout_open_walls", tr_const!("Open walls and floors"), I::Wall)
+        .toggle()
+        .tip(tr_const!("See through the walls and floors of the rooms in the 3D view: the flush-mounted lines in them are seen")),
     d(C::LayoutOpenDucts, "layout_open_ducts", tr_const!("Open cable ducts"), I::Duct).toggle().tip(tr_const!("Leave out the covers of all cable ducts in the 3D view: the wires in them are seen")),
     d(C::LayoutFit, "layout_fit", tr_const!("Fit"), I::Fit),
     d(C::LayoutNcData, "layout_nc_data", tr_const!("NC data"), I::Drill).menu().tip(tr_const!("Drilling pattern of the face shown as DXF, DWG or CSV")),

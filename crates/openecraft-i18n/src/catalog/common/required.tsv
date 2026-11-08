@@ -23,6 +23,7 @@ Bottom	Boden	Fond	Fondo
 Bottom with removable gland plate	Boden mit abnehmbarer Flanschplatte	Fond avec plaque passe-câbles amovible	Fondo con placa pasacables desmontable
 Breaking capacity	Schaltvermögen	Pouvoir de coupure	Poder de corte
 Bridge	Brücke	Pont	Puente
+Building	Gebäude	Bâtiment	Edificio
 Building entry	Hauseinführung	Entrée de bâtiment	Entrada al edificio
 Buildings	Gebäude	Bâtiments	Edificios
 Bundles	Bündel	Faisceaux	Haces
@@ -92,6 +93,7 @@ Descending	Absteigend	Décroissant	Descendente
 Description	Beschreibung	Description	Descripción
 Designation	Bezeichnung	Désignation	Designación
 Device	Betriebsmittel	Appareil	Dispositivo
+Device (PV generator) the modules belong to; its parts then count them in the bill of materials	Betriebsmittel (PV-Generator), zu dem die Module gehören; seine Artikel zählen sie dann in der Stückliste	Appareil (générateur photovoltaïque) auquel appartiennent les modules ; ses articles les comptent alors dans la nomenclature	Dispositivo (generador fotovoltaico) al que pertenecen los módulos; sus artículos los cuentan entonces en la lista de materiales
 Device description	Gerätebeschreibung	Description d'appareil	Descripción de dispositivo
 Device tag	Betriebsmittelkennzeichen	Repère d'appareil	Designación de dispositivo
 Device {}	Betriebsmittel {}	Appareil {}	Dispositivo {}
@@ -163,6 +165,7 @@ Integration	Integration	Intégration	Integración
 Internal (bottom)	Intern (unten)	Interne (bas)	Interno (abajo)
 Interruption point	Unterbrechungspunkt	Point d'interruption	Punto de interrupción
 Italic	Kursiv	Italique	Cursiva
+Its MPP tracker (input), from 1	Sein MPP-Tracker (Eingang), ab 1	Son tracker MPP (entrée), à partir de 1	Su seguidor MPP (entrada), desde 1
 Job	Auftrag	Ordre	Trabajo
 Jumper	Brücke	Pont	Puente
 Key	Schlüssel	Clé	Clave
@@ -172,11 +175,13 @@ Languages	Sprachen	Langues	Idiomas
 Last change	Letzte Änderung	Dernière modification	Último cambio
 Layers	Ebenen	Calques	Capas
 Leave out stored baselines and wiring marks	Gespeicherte Stände und Verdrahtungsmarkierungen weglassen	Omettre les états enregistrés et les marques de câblage	Omitir los estados guardados y las marcas de cableado
+Left	Links	Gauche	Izquierda
 Length	Länge	Longueur	Longitud
 Level	Füllstand	Niveau	Nivel
 Lifecycle	Lebenszyklus	Cycle de vie	Ciclo de vida
 Light	Hell	Clair	Claro
 Line	Linie	Ligne	Línea
+Lines run in the zone	Leitungen verlaufen in der Zone	Les lignes passent dans la zone	Las líneas van por la zona
 Link	Verknüpfung	Lien	Enlace
 Linked	Verknüpft	Lié	Vinculado
 Loaded circuits bunched together	Gehäufte belastete Stromkreise	Circuits chargés groupés	Circuitos cargados agrupados
@@ -198,6 +203,8 @@ Minimum digits of the counter (leading zeros)	Mindestanzahl Stellen des Zählers
 Missing parameter: {}	Fehlender Parameter: {}	Paramètre manquant : {}	Falta el parámetro: {}
 Missing value for --{}	Fehlender Wert für --{}	Valeur manquante pour --{}	Falta el valor de --{}
 Model import failed: {}	Modellimport fehlgeschlagen: {}	Échec de l'import du modèle : {}	Error al importar el modelo: {}
+Modules in series	Module in Reihe	Modules en série	Módulos en serie
+Modules side by side in a row	Module nebeneinander in einer Reihe	Modules côte à côte dans une rangée	Módulos uno al lado de otro en una fila
 Mounted	Montiert	Monté	Montado
 Mounting	Montage	Montage	Montaje
 Mounting data	Montagedaten	Données de montage	Datos de montaje
@@ -221,6 +228,7 @@ No machine {}	Keine Maschine {}	Pas de machine {}	No hay máquina {}
 No page named {}	Keine Seite mit dem Namen {}	Aucune page nommée {}	No hay ninguna página llamada {}
 No page template named {}	Keine Seitenvorlage namens {}	Aucun modèle de page nommé {}	Ninguna plantilla de página llamada {}
 No page {}	Keine Seite {}	Aucune page {}	No hay página {}
+No part {} in the project	Kein Artikel {} im Projekt	Pas d'article {} dans le projet	No hay ningún artículo {} en el proyecto
 No parts found	Keine Artikel gefunden	Aucun article trouvé	No se encontraron artículos
 No plot frame named {}	Kein Plotrahmen namens {}	Aucun cadre nommé {}	Ningún marco llamado {}
 No plug {}	Kein Stecker {}	Aucun connecteur {}	No hay conector {}
@@ -252,6 +260,7 @@ PCT loop overview	PLT-Stellenübersicht	Vue d'ensemble des boucles CCP	Resumen d
 PL	PL	PL	PL
 PLC	SPS	API	PLC
 PLC card	SPS-Karte	Carte API	Tarjeta PLC
+PV array	PV-Anlage	Champ photovoltaïque	Campo fotovoltaico
 Packaging quantity	Verpackungseinheit	Quantité par conditionnement	Cantidad por embalaje
 Page	Seite	Page	Página
 Page description	Seitenbeschreibung	Description de la page	Descripción de la página
@@ -334,10 +343,12 @@ Reserve	Reserve	Réserve	Reserva
 Revision	Revision	Révision	Revisión
 Revision {}	Revision {}	Révision {}	Revisión {}
 Rework	Nacharbeit	Reprise	Retrabajo
+Right	Rechts	Droite	Derecha
 Role	Rolle	Rôle	Rol
 Rooms	Räume	Salles	Salas
 Route	Führen	Router	Trazar
 Routing	Verlegung	Cheminement	Tendido
+Rows of modules (east-west: rows of pairs)	Modulreihen (Ost-West: Reihen von Paaren)	Rangées de modules (est-ouest : rangées de paires)	Filas de módulos (este-oeste: filas de pares)
 Rule	Regel	Règle	Regla
 Rule set	Regelwerk	Jeu de règles	Conjunto de reglas
 Safety function	Sicherheitsfunktion	Fonction de sécurité	Función de seguridad
@@ -373,6 +384,7 @@ Sort by	Sortieren nach	Trier par	Ordenar por
 Source	Quelle	Source	Origen
 State	Zustand	État	Estado
 Status	Status	État	Estado
+String	String	Chaîne	String
 Strip	Abisolierung	Dénudage	Pelado
 Structure	Struktur	Structure	Estructura
 Subproject name	Name des Teilprojekts	Nom du sous-projet	Nombre del subproyecto
@@ -395,7 +407,9 @@ Terminals	Klemmen	Bornes	Bornes
 Text	Text	Texte	Texto
 Text to find	Zu suchender Text	Texte à rechercher	Texto a buscar
 The identifier must not be empty	Das Kennzeichen darf nicht leer sein	L'identificateur ne doit pas être vide	El identificador no debe estar vacío
+The long side of the modules along the rows	Die lange Seite der Module entlang der Reihen	Le grand côté des modules le long des rangées	El lado largo de los módulos a lo largo de las filas
 The page is released	Die Seite ist freigegeben	La page est validée	La página está liberada
+The ridge (or the slope of a shed roof) runs along z instead of x	Der First (oder die Neigung eines Pultdachs) verläuft entlang z statt x	Le faîtage (ou la pente d'un toit en appentis) suit z au lieu de x	La cumbrera (o la pendiente de una cubierta a un agua) va a lo largo de z en lugar de x
 There is a connection symbol at this point already	An diesem Punkt gibt es schon ein Verbindungssymbol	Il y a déjà un symbole de liaison à ce point	Ya hay un símbolo de conexión en este punto
 Thermal	Thermik	Thermique	Térmica
 Time	Zeit	Temps	Tiempo
@@ -443,6 +457,7 @@ access denied	Zugriff verweigert	accès refusé	acceso denegado
 approved	genehmigt	approuvé	aprobado
 bonded	angeschlossen	relié	conectado
 file or folder not found	Datei oder Ordner nicht gefunden	fichier ou dossier introuvable	archivo o carpeta no encontrado
+landscape	quer	paysage	horizontal
 left	nach links	vers la gauche	hacia la izquierda
 mm	mm	mm	mm
 normal	normal	normale	normal

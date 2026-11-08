@@ -10,9 +10,13 @@ use serde::Deserialize;
 const FILES: &[(&str, &str)] = &[
     ("abb", include_str!("../catalogs/abb.json")),
     ("beckhoff", include_str!("../catalogs/beckhoff.json")),
+    ("cosmo", include_str!("../catalogs/cosmo.json")),
     ("dehn", include_str!("../catalogs/dehn.json")),
+    ("gira", include_str!("../catalogs/gira.json")),
     ("hager", include_str!("../catalogs/hager.json")),
     ("janitza", include_str!("../catalogs/janitza.json")),
+    ("jinko", include_str!("../catalogs/jinko.json")),
+    ("longi", include_str!("../catalogs/longi.json")),
     ("loxone", include_str!("../catalogs/loxone.json")),
     ("mdt", include_str!("../catalogs/mdt.json")),
     ("phoenix_contact", include_str!("../catalogs/phoenix_contact.json")),
