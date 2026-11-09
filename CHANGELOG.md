@@ -5,6 +5,11 @@ its GitHub release ([docs/releasing.md](docs/releasing.md)).
 
 ## [0.1.2] - unreleased
 
+- **Project properties:** the name and value fields of the custom properties use the
+  width of the dialog instead of shrinking to a few characters; the dialog can be
+  resized, and a long list of properties scrolls. A renamed property is applied when
+  its name field loses focus (Esc keeps the old name), so the text cursor no longer
+  jumps to another property while typing.
 - **Structure boxes:** *Insert › Structure box* draws a rectangle whose devices take other
   function (`=`) or location (`+`) identifiers than the page (also installation site and
   product); only the aspects set on the box override the page, nested boxes resolve to
