@@ -118,7 +118,14 @@ wires stays where it is. With *Route the connections of moved items anew*
 (*Connections › Wire crossings…*, off by default) such a wire is routed again
 together with the corners after it, up to the next connection point, junction or
 branch, on the way of the least weight: its length in grid steps, 1.2 per bend and
-1.5 per wire crossed; a connection without such a way is squared as before. Editing aids: grid sizes 1, 2, 4, 8 and 16 mm (View); a
+1.5 per wire crossed; a connection without such a way is squared as before.
+Editing aids: grid sizes 1, 2, 4, 8 and 16 mm (View);
+connection points and wire ends off that grid (imported drawings, device boxes of any
+size) add invisible grid lines through them, so the pointer snaps to them where they
+are nearer than the grid, wires can start at such points and things can be connected
+to such wires; a symbol being placed or moved snaps from its own connection points
+(and a moved wire from its ends), so they land on such lines and auto-connect joins
+them; a
 coordinate field in the tool bar (`x y` absolute or `@dx dy` relative to the last
 point, Enter acts like a click of the current tool); *Home › Align* (edges or
 centres), *Distribute* (evenly, horizontally or vertically), *Move selection by…*
@@ -161,7 +168,8 @@ and applies to the canvas and the PDF, SVG and DXF export alike. Command line / 
 ## Routing
 
 Auto-connect draws wires between facing free connection points when
-symbols are placed or moved; the wire tool can route around symbols and other wires
+symbols are placed or moved; while a symbol is placed or moved with the mouse, faint
+dotted lines show the wires it would draw; the wire tool can route around symbols and other wires
 (A); collinear wire pieces can be joined. Also as `route` / `autoconnect` commands.
 
 ## Property placement

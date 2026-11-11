@@ -5,6 +5,15 @@ its GitHub release ([docs/releasing.md](docs/releasing.md)).
 
 ## [0.1.2] - unreleased
 
+- **Invisible grid lines:** connection points and wire ends off the drawing grid, as in
+  imported drawings or on device boxes of any size, add invisible grid lines through
+  them. The pointer snaps to them where they are nearer than the grid, so wires can be
+  drawn from such points and things connected to such wires. A symbol being placed or
+  moved snaps from its own connection points, so they land on such lines and
+  auto-connect joins them ([schematic](docs/features/schematic.md)).
+- **Auto-connect hints:** while a symbol is placed or moved with the mouse, faint
+  dotted lines show the wires auto-connect would draw
+  ([schematic](docs/features/schematic.md#routing)).
 - **Panel layout profile sizing** (#135): select a mounting rail or cable duct and drag
   either end to change its length while the opposite end stays put.
 - **Connection symbols** (#96): Auto-connect wires the branch of a T-junction that sits

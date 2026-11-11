@@ -21,7 +21,7 @@ use openecraft_core::symbols::{Anchor, Func, SymbolDef};
 use openecraft_core::device_boxes;
 use openecraft_core::netlist::junctions;
 use openecraft_core::structure::StructureBox;
-use openecraft_core::{cabledef, conndef, graphics, routing, structure_boxes};
+use openecraft_core::{cabledef, conndef, graphics, routing, snap_lines, structure_boxes};
 use egui::{pos2, vec2, Align2, Color32, FontId, Key, Painter, PointerButton, Pos2, Rect, Sense, Shape as EShape, Stroke, Vec2};
 use std::collections::{BTreeSet, HashMap, HashSet};
 
@@ -126,8 +126,10 @@ impl PropHandle {
 
 enum Drag {
     None,
-    /// The selection with the connection points of its device boxes (`items`) moves.
-    Move { start: P, applied: P, moving: routing::Moving, items: BTreeSet<u64> },
+    /// The selection with the connection points of its device boxes (`items`) moves;
+    /// its connection points and wire ends (`points`) snap to the invisible grid lines
+    /// of what stays (`lines`).
+    Move { start: P, applied: P, moving: Box<routing::Moving>, items: BTreeSet<u64>, points: Vec<P>, lines: snap_lines::SnapLines },
     Box { start: Pos2 },
     /// `side`: side of a dragged connection point designation (symbol orientation).
     Prop { handle: PropHandle, start: P, orig: P, side: Option<LabelSide> },
@@ -424,6 +426,14 @@ fn skewed(painter: &Painter, shape: &TextShape, k: f32) -> Mesh {
         v.pos = shape.pos + rot * vec2(v.pos.x + (h - v.pos.y) * k, v.pos.y);
     }
     mesh
+}
+
+/// Faint dotted lines where auto-connect would draw wires.
+fn draw_hints(g: &EguiDraw<'_>, segs: &[(P, P)]) {
+    let color = g.pal.ghost.gamma_multiply(0.7);
+    for (a, b) in segs {
+        g.painter.extend(EShape::dotted_line(&[g.w2s(*a), g.w2s(*b)], color, 5.0, 1.0));
+    }
 }
 
 fn convex(pts: &[P]) -> bool {
@@ -1054,7 +1064,12 @@ impl Editor {
         let editable = prj.pages[page_i].is_editable() && !self.read_only;
         let ptr = ui.input(|i| i.pointer.hover_pos()).filter(|p| rect.contains(*p));
         let world = ptr.map(|s| self.s2w(rect, s));
-        let snapped = world.map(|w| w.snap(self.grid));
+        // Connection points and wire ends off the grid are invisible grid lines.
+        let placing = match self.tool {
+            Tool::Place(key) => Some((key, true)),
+            _ => resp.dnd_hover_payload::<PlacePayload>().or_else(|| resp.dnd_release_payload::<PlacePayload>()).map(|pl| (pl.symbol, false)),
+        };
+        let snapped = world.map(|w| self.snap_pointer(prj, &prj.pages[page_i], w, placing));
         self.hover = world;
         // New items never go onto a hidden or locked layer.
         if !layer_usable(prj, &self.active_layer) {
@@ -1161,6 +1176,7 @@ impl Editor {
                 let mut g = EguiDraw { painter: &painter, origin, zoom: self.zoom, pal: &pal, force: Some(Ink::Ghost), mirror: None, textures: None };
                 let inst = SymbolInst { pos: sn, ..ops::symbol_preview(prj, &def) };
                 render::draw_symbol(&mut g, &def, &inst, Ink::Ghost);
+                self.autoconnect_hints(&g, prj, &prj.pages[page_i], inst);
             }
         }
         if let (Some(sn), Some(pl), true) = (snapped, resp.dnd_hover_payload::<PartDrag>(), editable) {
@@ -1173,6 +1189,14 @@ impl Editor {
             let at = c + vec2(12.0, -12.0 - text.size().y);
             painter.rect_filled(Rect::from_min_size(at, text.size()).expand(3.0), 3.0, pal.ghost.gamma_multiply(0.18));
             painter.galley(at, text, pal.ghost);
+        }
+        if let (Drag::Move { applied, .. }, true) = (&self.drag, self.autoconnect) {
+            let pg = &prj.pages[page_i];
+            let moves_symbols = pg.symbols.iter().any(|s| self.selection.contains(&s.id)) || pg.junctions.iter().any(|j| self.selection.contains(&j.id));
+            if moves_symbols && (applied.x != 0.0 || applied.y != 0.0) {
+                let g = EguiDraw { painter: &painter, origin, zoom: self.zoom, pal: &pal, force: Some(Ink::Ghost), mirror: None, textures: None };
+                draw_hints(&g, &routing::autoconnect(&prj.symbol_table(), pg, &self.selection, routing::AUTOCONNECT_REACH));
+            }
         }
         if let (Some(sn), Some(w), true) = (snapped, world, editable) {
             let mut g = EguiDraw { painter: &painter, origin, zoom: self.zoom, pal: &pal, force: Some(Ink::Ghost), mirror: None, textures: None };
@@ -1273,6 +1297,7 @@ impl Editor {
                     let r = Rect::from_two_pos(g.w2s(b.min), g.w2s(b.max)).expand(3.0);
                     g.painter.rect_filled(r, 2.0, g.pal.ghost.gamma_multiply(0.18));
                     render::draw_symbol(g, &def, &inst, Ink::Ghost);
+                    self.autoconnect_hints(g, prj, page, inst);
                 }
             }
             Tool::Wire => {
@@ -1664,6 +1689,33 @@ impl Editor {
 
     /// Rotation of a symbol placed at `sn`: a device connection point on the outline of a
     /// device box leads away from its edge, everything else as turned by the user.
+    /// Where the pointer at `w` snaps: to the grid or an invisible grid line. A symbol
+    /// being `placing` (by the tool, or dragged in unturned) snaps from its connection
+    /// points instead, so they land on such lines; a device connection point snaps
+    /// itself, onto the outline of its box.
+    fn snap_pointer(&self, prj: &Project, page: &Page, w: P, placing: Option<(&str, bool)>) -> P {
+        let lines = snap_lines::SnapLines::of_page(prj, page, self.grid);
+        let Some((def, by_tool)) = placing.and_then(|(key, by_tool)| Some((prj.symbol(key)?, by_tool))).filter(|(d, _)| d.func != Func::Connection) else {
+            return lines.snap(w, self.grid);
+        };
+        let inst = match by_tool {
+            true => SymbolInst { rot: self.place_rotation(prj, page, &def, w.snap(self.grid)), mirror: self.place_mirror, ..Default::default() },
+            false => ops::symbol_preview(prj, &def),
+        };
+        match snap_lines::pins_at_origin(&def, &inst) {
+            pins if pins.is_empty() => lines.snap(w, self.grid),
+            pins => lines.snap_from(w, &pins, self.grid),
+        }
+    }
+
+    /// With Auto-connect on, the wires a symbol placed as `inst` would get.
+    fn autoconnect_hints(&self, g: &EguiDraw<'_>, prj: &Project, page: &Page, inst: SymbolInst) {
+        if self.autoconnect {
+            // An id no item has: the symbol is not on the page yet.
+            draw_hints(g, &routing::autoconnect_placed(&prj.symbol_table(), page, SymbolInst { id: u64::MAX, ..inst }));
+        }
+    }
+
     fn place_rotation(&self, prj: &Project, page: &Page, def: &openecraft_core::symbols::SymbolDef, sn: P) -> u8 {
         match def.func {
             Func::Connection => device_boxes::direction_at(prj, page, sn).unwrap_or(self.place_rot),
@@ -1897,16 +1949,19 @@ impl Editor {
                     self.selection.insert(id);
                 }
                 let items = self.items(prj, page_i);
-                let moving = routing::Moving::new(prj, page_i, &items);
-                self.drag = Drag::Move { start: ow, applied: p(0.0, 0.0), moving, items };
+                let moving = Box::new(routing::Moving::new(prj, page_i, &items));
+                let page = &prj.pages[page_i];
+                let points = snap_lines::points_of(prj, page, &items);
+                let lines = snap_lines::SnapLines::without(prj, page, self.grid, &points);
+                self.drag = Drag::Move { start: ow, applied: p(0.0, 0.0), moving, items, points, lines };
             } else {
                 self.drag = Drag::Box { start: origin };
             }
         }
         if resp.dragged_by(PointerButton::Primary) {
             match (&mut self.drag, world) {
-                (Drag::Move { start, applied, moving, items }, Some(w)) => {
-                    let total = (w - *start).snap(self.grid);
+                (Drag::Move { start, applied, moving, items, points, lines }, Some(w)) => {
+                    let total = lines.snap_from(w - *start, points, self.grid);
                     let delta = total - *applied;
                     if delta.x != 0.0 || delta.y != 0.0 {
                         moving.step(prj, page_i, items, delta);
