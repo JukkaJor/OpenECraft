@@ -5,6 +5,9 @@ its GitHub release ([docs/releasing.md](docs/releasing.md)).
 
 ## [0.1.2] - unreleased
 
+- **Full-canvas schematic crosshair:** *File › Settings › Appearance* can extend the
+  placement crosshair to the edges of the schematic canvas, following the snapped
+  working point.
 - **AppImage on more systems:** the AppImage carries the keyboard and cursor libraries
   of X11 (xkbcommon, Xcursor, Xi), so the editor and the parts manager start on systems
   without them instead of quitting with *Library libxkbcommon-x11.so could not be
