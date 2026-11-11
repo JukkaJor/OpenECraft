@@ -122,6 +122,12 @@ its GitHub release ([docs/releasing.md](docs/releasing.md)).
   `add_device_box`, `update_device_box`, `add_device_connections`,
   `update_device_connection`, `list_device_boxes`
   ([schematic](docs/features/schematic.md)).
+- **Device box roles:** a device box with the tag of a device placed elsewhere can add
+  connection points to it (*Extension*) or show only selected connection points of it
+  on another page (*Pin view*). Wires at a view belong to the point it shows, reports
+  list that connection once, and neither role counts as a second main function. Role
+  on `add_device_box` and `update_device_box`, command `show_device_pins`
+  ([schematic](docs/features/schematic.md)).
 
 - **Cable cores at the cable definition line:** the stroke, core designation and cable
   tag of each core sit where a cable definition line of its cable crosses the wire, so
@@ -155,7 +161,8 @@ its GitHub release ([docs/releasing.md](docs/releasing.md)).
   the box is moved, resized or changed (in one undo step); aspects set on a device stay,
   and a tag that exists already is refused instead of merging two devices. Tags on the
   page omit what the box shows; the symbol properties show where each aspect comes from;
-  the structure check reports overlapping boxes. Commands `add_structure_box`,
+  the structure check reports overlapping boxes and devices inside a box with another
+  structure. Commands `add_structure_box`,
   `update_structure_box`, `list_structure_boxes`
   ([schematic](docs/features/schematic.md#structure-identifiers-iec-81346)).
 
