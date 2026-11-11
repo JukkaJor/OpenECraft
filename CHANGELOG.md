@@ -5,6 +5,8 @@ its GitHub release ([docs/releasing.md](docs/releasing.md)).
 
 ## [0.1.2] - unreleased
 
+- **Panel layout profile sizing** (#135): select a mounting rail or cable duct and drag
+  either end to change its length while the opposite end stays put.
 - **Connection symbols** (#96): Auto-connect wires the branch of a T-junction that sits
   on one continuous wire, as it does on a wire split at the junction. While a connection
   symbol tool is active, Tab (*Next routing of the connection symbol to place*) cycles
