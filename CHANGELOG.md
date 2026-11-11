@@ -5,6 +5,14 @@ its GitHub release ([docs/releasing.md](docs/releasing.md)).
 
 ## [0.1.2] - unreleased
 
+- **Trackpads and touch screens** (#134): every 2D and 3D view (schematic, front,
+  floor and site plan, 3D view, field plan, symbol editor) zooms with a pinch and pans
+  with two fingers, both in one movement; on a touch screen the first finger no longer
+  selects, moves or orbits while two are down. The horizontal mouse wheel and
+  `Shift`+wheel pan sideways. *Settings › Navigation* chooses what scrolling does:
+  *Automatic* (trackpads pan, mouse wheels zoom, told apart on macOS), *Zooms (mouse
+  wheel)* or *Pans (trackpad)*, and can invert the direction of panning by scrolling.
+  The symbol editor's canvas pans too (also with the middle mouse button).
 - **Settings after an update check:** checking for updates no longer collapses Settings
   into an unusable title bar. Dialogs already stuck this way recover their contents.
 - **Wire jumps** (#132): wires that cross without a connection can jump over each other
