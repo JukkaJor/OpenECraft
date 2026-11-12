@@ -871,6 +871,9 @@ struct Job {
     extra: f32,
     /// Smallest bend radius in mm; 0: from the rules.
     bend: f32,
+    /// How far it runs straight out of each end before it bends (the ferrule or
+    /// terminal of a wire there), mm.
+    straight: [f32; 2],
     /// Length set in the schematic (hoses), mm; 0: not set.
     set_length: f32,
     /// Page and symbol of a connection point of it, for the messages about it.
@@ -890,7 +893,20 @@ impl Job {
     fn request<'a>(&self, leg: &room::LegPlan, space: &grid::Space, ignore: &'a [u64], rules: &RoutingRules) -> grid::Request<'a> {
         let (area, radius) = self.area_radius(rules);
         let out = |i: usize| self.ends[i].nozzle.zip(self.ends[i].point).map_or(0.0, |(tip, q)| dist(tip, q));
-        grid::Request { kind: self.kind, class: self.class, ignore, at: [leg.a, leg.b], leave: leg.leave, out: [out(0), out(1)], area, turn: (space.cell * 0.5).max(radius), half: self.diameter / 2.0 }
+        // Straight out of the ends of the route, not out of a wall it passes.
+        let straight = |at: V3| self.ends.iter().zip(self.straight).find(|(e, _)| e.point.is_some_and(|q| dist(q, at) < 0.01)).map_or(0.0, |(_, s)| s);
+        grid::Request {
+            kind: self.kind,
+            class: self.class,
+            ignore,
+            at: [leg.a, leg.b],
+            leave: leg.leave,
+            out: [out(0), out(1)],
+            straight: [straight(leg.a), straight(leg.b)],
+            area,
+            turn: (space.cell * 0.5).max(radius),
+            half: self.diameter / 2.0,
+        }
     }
 
     /// The items a leg may pass through: the devices at the ends, its cable glands.
@@ -1056,7 +1072,7 @@ pub fn analyse_cached(prj: &Project, wiring: &mut [RoutedWire], conns: &[Connect
         Err(key) => {
             let (rest, lang, jobs) = *key;
             let before = wiring.to_vec();
-            let routing = route(prj, wiring, jobs.clone(), Glands::default(), progress, crate::parallel::threads().min(ROUTING_THREADS));
+            let routing = route_straight_out(prj, wiring, jobs.clone(), progress, crate::parallel::threads().min(ROUTING_THREADS));
             cache.last = Some(Box::new(Last { prj: rest, lang, jobs, wiring: before, routed: wiring.to_vec(), routing: routing.clone() }));
             routing
         }
@@ -1113,6 +1129,7 @@ fn jobs(prj: &Project, wiring: &[RoutedWire], conns: &[Connection], open: &Netli
             fixed: None,
             extra: 2.0 * rules.cable_reserve,
             bend: 0.0,
+            straight: [0.0; 2],
             set_length: 0.0,
             target: cores.first().map(|c| target(&c.a)),
             laying: Laying::Surface,
@@ -1154,6 +1171,7 @@ fn jobs(prj: &Project, wiring: &[RoutedWire], conns: &[Connection], open: &Netli
             extra: 2.0 * prj.fluid.allowance,
             // Pipes are bent with elbows, the others with the bend radius of the rules.
             bend: if h.config.bend_radius > 0.0 { h.config.bend_radius } else if h.config.line == crate::model::fluid::LineType::Pipe { PIPE_ELBOW * diameter } else { 0.0 },
+            straight: [0.0; 2],
             set_length: h.length * 1000.0,
             target: Some(target(&h.a)),
             laying: Laying::Surface,
@@ -1164,6 +1182,7 @@ fn jobs(prj: &Project, wiring: &[RoutedWire], conns: &[Connection], open: &Netli
         .iter()
         .map(|c| ((crate::netlist::pin_designation(prj, c.a), crate::netlist::pin_designation(prj, c.b)), c))
         .collect();
+    let wire_ends = crate::production::Ends::new(prj, conns);
     for (i, w) in wiring.iter().enumerate() {
         let conn = net_of.get(&(w.from.clone(), w.to.clone())).or_else(|| net_of.get(&(w.to.clone(), w.from.clone())));
         if conn.is_some_and(|c| !c.cable.is_empty()) {
@@ -1187,13 +1206,22 @@ fn jobs(prj: &Project, wiring: &[RoutedWire], conns: &[Connection], open: &Netli
             _ => [end(&w.from, w.enclosure, w.items.0, w.route.points.first()), end(&w.to, w.last_enclosure(), w.items.1, last.points.last())],
         };
         let fixed = (!free).then(|| wire_points(&pos, w));
+        // Straight out of its connection points as far as its ferrules or terminals go.
+        let diameter = crate::harness::outer_diameter(&w.cross_section);
+        let straight = match (direct, conn) {
+            (true, Some(c)) => [(c.a, c.b), (c.b, c.a)].map(|(at, other)| {
+                let (at, other) = (crate::netlist::pin_designation(prj, at), crate::netlist::pin_designation(prj, other));
+                wire_ends.end(prj, &at, &other, &w.cross_section).map_or(0.0, |e| e.straight(&w.cross_section, diameter))
+            }),
+            _ => [0.0; 2],
+        };
         jobs.push(Job {
             kind: RouteKind::Wire,
             key: wire_key(w),
             label: format!("{} – {}", w.from, w.to),
             class,
             ends,
-            diameter: crate::harness::outer_diameter(&w.cross_section),
+            diameter,
             shielded: false,
             wire: Some(i),
             fixed,
@@ -1201,6 +1229,7 @@ fn jobs(prj: &Project, wiring: &[RoutedWire], conns: &[Connection], open: &Netli
             // along the plate also the ways from the connection points down to it.
             extra: if direct { prj.layout.wire_reserve } else { w.length - w.plate_length() },
             bend: 0.0,
+            straight,
             set_length: 0.0,
             target: conn.map(|c| target(&c.a)),
             laying: Laying::Surface,
@@ -1247,6 +1276,27 @@ fn finish_ahead(space:&grid::Space, req:&grid::Request, area:f32, reuse_failed:b
     }
 }
 
+/// [`route`], again where the straight ways out of the ends ([`Job::straight`]) may
+/// have cost a route its way: the jobs at the items that route ends at do without them
+/// then, and if that does not do, all.
+fn route_straight_out(prj: &Project, wiring: &mut [RoutedWire], mut jobs: Vec<Job>, progress: &dyn Fn(usize, usize), workers: usize) -> Routing {
+    let start = wiring.to_vec();
+    loop {
+        let routing = route(prj, wiring, jobs.clone(), Glands::default(), progress, workers);
+        let stuck: Vec<u64> = routing.items.iter().filter(|i| !i.routed()).flat_map(|i| i.ends.iter().filter_map(|e| e.item)).collect();
+        if stuck.is_empty() || jobs.iter().all(|j| j.straight == [0.0; 2]) {
+            return routing;
+        }
+        let mut near = jobs.iter_mut().filter(|j| j.straight != [0.0; 2] && j.ends.iter().any(|e| e.item.is_some_and(|id| stuck.contains(&id)))).peekable();
+        if near.peek().is_some() {
+            near.for_each(|j| j.straight = [0.0; 2]);
+        } else {
+            jobs.iter_mut().for_each(|j| j.straight = [0.0; 2]);
+        }
+        wiring.clone_from_slice(&start);
+    }
+}
+
 /// Routes the `jobs` one after the other, the searches of a class on up to `workers`
 /// threads at the same time (with the same routes).
 #[allow(clippy::too_many_lines)]
@@ -1273,7 +1323,17 @@ fn route(prj: &Project, wiring: &mut [RoutedWire], jobs: Vec<Job>, mut glands: G
     // How far beyond its surface a cable or tube keeps the ones routed after it: half the
     // thickness of the thickest.
     let reach = jobs.iter().filter(|j| j.kind != RouteKind::Wire).map(|j| j.diameter / 2.0).fold(0.0, f32::max);
-    let make_space = |lu: usize| if is_room(lu) { room::room_space(prj, lineups[lu][0], &pos, &poses, rules) } else { grid::Space::build(prj, &lineups[lu], &pos, rules) };
+    let make_space = |lu: usize| {
+        let mut space = if is_room(lu) { room::room_space(prj, lineups[lu][0], &pos, &poses, rules) } else { grid::Space::build(prj, &lineups[lu], &pos, rules) };
+        // Where the cores of the cables part at their ends (a core about half as thick as
+        // its cable), whichever is routed first.
+        for (j, e) in jobs.iter().flat_map(|j| j.ends.iter().map(move |e| (j, e))).filter(|(_, e)| e.enclosure.is_some_and(|ei| lineups[lu].contains(&ei))) {
+            if let Some(q) = e.point {
+                space.take_cores(q, &e.cores, j.diameter / 4.0);
+            }
+        }
+        space
+    };
     // The cable entries the ends of the jobs go through are taken: a route that leaves
     // its cabinet looks for another one.
     for end in jobs.iter().flat_map(|j| &j.ends) {

@@ -5,6 +5,11 @@ its GitHub release ([docs/releasing.md](docs/releasing.md)).
 
 ## [0.1.2] - unreleased
 
+- **Straight ferrules and terminals:** a wire or cable core with a ferrule or a crimped
+  terminal runs straight out of its connection point for the length of it (with its
+  collar or insulated sleeve) and bends only behind it, in the 3D routing and in the 3D
+  view, instead of bending the ferrule where it goes into the device
+  ([panel layout](docs/features/panel-layout.md)).
 - **Keys and gestures:** *File › Settings › Keys and gestures* configures every key,
   modifier and gesture in one place: the keyboard shortcuts (now also the keys that
   move through the 3D view, and the panel layout follows the keys of Rotate, Delete and
