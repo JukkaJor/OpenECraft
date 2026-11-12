@@ -11,7 +11,7 @@ use openecraft_parts::api::{Accessories, ImportResult, PartList, PartQuery, Serv
 use openecraft_parts::portal::{AttachmentKind, Catalog, HistoryEntry, SearchResult, User};
 use openecraft_parts::Part;
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, OnceLock};
 
 /// Result of a finished request.
 #[derive(Debug)]
@@ -51,7 +51,6 @@ pub enum Reply {
 /// Credentials are excluded from Debug, for both kinds of server.
 pub struct CheckedConnection {
     selection: Connection,
-    connection: Connection,
     generation: u64,
     result: Result<ServerInfo, String>,
     warning: Option<String>,
@@ -140,6 +139,26 @@ impl Reply {
     }
 }
 
+/// One lazy credential lookup shared by concurrent requests for this selection.
+/// Only background workers initialize it, including the Credential Manager read.
+#[derive(Clone)]
+struct CredentialCache {
+    selection: Connection,
+    resolved: Arc<OnceLock<Result<Connection, String>>>,
+}
+
+impl CredentialCache {
+    fn resolve(&self, store: &impl CredentialStore) -> Result<Connection, String> {
+        let Connection::Eplan(endpoint) = &self.selection else { return Ok(self.selection.clone()); };
+        if !endpoint.token.trim().is_empty() { return Ok(self.selection.clone()); }
+        self.resolved.get_or_init(|| credentials::connection_with_store(PortalKind::Eplan, &endpoint.url, &endpoint.token, store)).clone()
+    }
+
+    fn call<T: 'static>(&self, store: &impl CredentialStore, build: impl FnOnce(Connection) -> Call<T>) -> Result<Call<T>, String> {
+        self.resolve(store).map(build)
+    }
+}
+
 pub struct ServerClient {
     /// Kind of the server: the OpenECraft parts server or the EPLAN Data Portal (read
     /// through `openecraft_client::eplan`, so the part handling works the same).
@@ -150,7 +169,7 @@ pub struct ServerClient {
     pub token: String,
     /// Explicit opt-in; never persisted with application settings.
     pub remember_pat: bool,
-    cached_connection: Option<(Connection, Connection)>,
+    cached_connection: Option<CredentialCache>,
     check_generation: u64,
     pub info: Option<ServerInfo>,
     pub status: String,
@@ -214,10 +233,17 @@ impl ServerClient {
         Connection::new(self.kind, &self.url, &self.token)
     }
 
-    fn request_connection(&self) -> Result<Connection, String> {
+    fn request_credentials(&mut self) -> CredentialCache {
         let selection = self.connection();
-        Ok(self.cached_connection.as_ref().filter(|(key, _)| key == &selection)
-            .map_or(selection, |(_, connection)| connection.clone()))
+        if self.cached_connection.as_ref().is_none_or(|cache| cache.selection != selection) {
+            self.cached_connection = Some(CredentialCache { selection, resolved: Arc::default() });
+        }
+        self.cached_connection.as_ref().unwrap().clone()
+    }
+
+    fn refresh_credentials(&mut self) -> CredentialCache {
+        self.cached_connection = None;
+        self.request_credentials()
     }
 
     /// Remove only this portal's saved PAT and its explicit GUI value.
@@ -287,20 +313,42 @@ impl ServerClient {
         status: String,
         wrap: impl 'static + Send + FnOnce(Result<T, String>) -> Reply,
     ) {
-        self.status = status;
-        self.pending += 1;
-        let inbox = self.inbox.clone();
-        let ctx = ctx.clone();
-        let deliver = move |reply| {
-            if let Ok(mut inbox) = inbox.lock() {
-                inbox.push(reply);
-            }
-            ctx.request_repaint();
-        };
+        let deliver = self.begin_request(ctx, status);
         match call {
             Ok(call) => call.fetch(move |result| deliver(wrap(result))),
             Err(e) => deliver(wrap(Err(e))),
         }
+    }
+
+    fn begin_request(&mut self, ctx: &egui::Context, status: String) -> impl FnOnce(Reply) + Send + 'static {
+        self.status = status;
+        self.pending += 1;
+        let inbox = self.inbox.clone();
+        let ctx = ctx.clone();
+        move |reply| {
+            if let Ok(mut inbox) = inbox.lock() {
+                inbox.push(reply);
+            }
+            ctx.request_repaint();
+        }
+    }
+
+    /// Resolve credentials and construct this very request off the UI thread.
+    fn send_portal<T: 'static>(
+        &mut self,
+        ctx: &egui::Context,
+        build: impl FnOnce(Connection) -> Call<T> + Send + 'static,
+        status: String,
+        wrap: impl FnOnce(Result<T, String>) -> Reply + Send + 'static,
+    ) {
+        let cache = self.request_credentials();
+        let deliver = self.begin_request(ctx, status);
+        crate::io::background(move || {
+            match cache.call(&SystemCredentialStore, build) {
+                Ok(call) => call.fetch(move |result| deliver(wrap(result))),
+                Err(error) => deliver(wrap(Err(error))),
+            }
+        });
     }
 
     /// A function only the OpenECraft parts server offers.
@@ -322,26 +370,20 @@ impl ServerClient {
         let remember = self.remember_pat;
         self.check_generation += 1;
         let generation = self.check_generation;
-        self.cached_connection = None;
-        self.pending += 1;
-        self.status = tr("Connecting…").into();
-        let inbox = self.inbox.clone();
-        let ctx = ctx.clone();
-        // Credential Manager is read once per check, off the desktop UI thread.
-        // Normal search/detail/download requests only use the session cache.
+        let cache = self.refresh_credentials();
+        let deliver = self.begin_request(ctx, tr("Connecting…").into());
+        // Explicit checks refresh the same cache used by ordinary requests.
         crate::io::background(move || {
-            let connection = credentials::connection_with_store(kind, &url, &token, &SystemCredentialStore);
+            let connection = cache.resolve(&SystemCredentialStore);
             let explicit = (remember && kind == PortalKind::Eplan && !token.trim().is_empty())
                 .then_some(openecraft_client::EplanEndpoint { url, token });
-            let resolved = connection.as_ref().cloned().unwrap_or_else(|_| selection.clone());
             let finish = move |result| {
                 let (result, warning) = match credentials::remember_verified(result, explicit.as_ref(), &SystemCredentialStore) {
                     Ok((info, warning)) => (Ok(info), warning),
                     Err(error) => (Err(error), None),
                 };
-                let check = CheckedConnection { selection, connection: resolved, generation, result, warning };
-                if let Ok(mut inbox) = inbox.lock() { inbox.push(Reply::Checked(Box::new(check))); }
-                ctx.request_repaint();
+                let check = CheckedConnection { selection, generation, result, warning };
+                deliver(Reply::Checked(Box::new(check)));
             };
             match connection { Ok(connection) => connection.info().fetch(finish), Err(error) => finish(Err(error)) }
         });
@@ -356,16 +398,16 @@ impl ServerClient {
     /// Loads the parts with these numbers (e.g. to add them to the project).
     pub fn fetch(&mut self, ctx: &egui::Context, numbers: &[String]) {
         let ids: Vec<String> = numbers.iter().filter_map(|n| self.portal_ids.get(n)).cloned().collect();
-        let call = self.request_connection().map(|c| c.find(numbers, &ids));
-        self.send(ctx, call, tr("Downloading parts…").into(), |r| {
+        let numbers = numbers.to_vec();
+        self.send_portal(ctx, move |c| c.find(&numbers, &ids), tr("Downloading parts…").into(), |r| {
             Reply::Parts(r.map(|s| PartList { revision: s.revision, total: s.total, offset: s.offset, parts: s.parts }))
         });
     }
 
     /// Faceted search (part lists without models).
     pub fn search(&mut self, ctx: &egui::Context, query: &PartQuery) {
-        let call = self.request_connection().map(|c| c.search(&PartQuery { brief: true, ..query.clone() }));
-        self.send(ctx, call, tr("Searching…").into(), Reply::Search);
+        let query = PartQuery { brief: true, ..query.clone() };
+        self.send_portal(ctx, move |c| c.search(&query), tr("Searching…").into(), Reply::Search);
     }
 
     /// Loads the server versions of local parts for an update check; on the EPLAN Data
@@ -374,12 +416,12 @@ impl ServerClient {
         let local = self.kind.update_candidates(local);
         let numbers: Vec<String> = local.iter().map(|p| p.number.clone()).collect();
         let ids: Vec<String> = local.iter().map(|p| p.portal_id.clone()).filter(|id| !id.is_empty()).collect();
-        let call = if self.read_only() && ids.is_empty() {
-            Err(tr("No part of the database comes from the EPLAN Data Portal").to_string())
+        let status = tr("Checking for part updates…").into();
+        if self.read_only() && ids.is_empty() {
+            self.send(ctx, Err(tr("No part of the database comes from the EPLAN Data Portal").to_string()), status, Reply::Versions);
         } else {
-            self.request_connection().map(|c| c.find(&numbers, &ids))
-        };
-        self.send(ctx, call, tr("Checking for part updates…").into(), Reply::Versions);
+            self.send_portal(ctx, move |c| c.find(&numbers, &ids), status, Reply::Versions);
+        }
     }
 
     /// Uploads parts as JSON (needs the access token).
@@ -415,19 +457,19 @@ impl ServerClient {
     /// The whole part with its models, for the details (the search sends parts without
     /// them); the status line stays.
     pub fn detail(&mut self, ctx: &egui::Context, number: &str) {
-        let call = self.request_connection().map(|c| c.part(number));
-        let n = number.to_string();
+        let number = number.to_string();
+        let n = number.clone();
         let status = self.status.clone();
-        self.send(ctx, call, status, move |r| Reply::Detail(n, r.map(|p| p.map(Box::new))));
+        self.send_portal(ctx, move |c| c.part(&number), status, move |r| Reply::Detail(n, r.map(|p| p.map(Box::new))));
     }
 
     /// The accessories of a part and the parts it fits, for the details; the status
     /// line stays.
     pub fn accessories(&mut self, ctx: &egui::Context, number: &str) {
-        let call = self.request_connection().map(|c| c.accessories(number));
-        let n = number.to_string();
+        let number = number.to_string();
+        let n = number.clone();
         let status = self.status.clone();
-        self.send(ctx, call, status, move |r| Reply::Accessories(n, r));
+        self.send_portal(ctx, move |c| c.accessories(&number), status, move |r| Reply::Accessories(n, r));
     }
 
     /// Stores a file with a part.
@@ -442,9 +484,9 @@ impl ServerClient {
     }
 
     pub fn download_file(&mut self, ctx: &egui::Context, id: &str, name: &str, purpose: FileUse) {
-        let call = self.request_connection().map(|c| c.file(id));
+        let id = id.to_string();
         let n = name.to_string();
-        self.send(ctx, call, tr_fmt!("Downloading {}…", name), move |r| Reply::File(n, purpose, r));
+        self.send_portal(ctx, move |c| c.file(&id), tr_fmt!("Downloading {}…", name), move |r| Reply::File(n, purpose, r));
     }
 
     pub fn catalogs(&mut self, ctx: &egui::Context) {
@@ -506,10 +548,9 @@ impl ServerClient {
         for reply in &replies {
             self.pending = self.pending.saturating_sub(1);
             if let Reply::Checked(check) = reply {
-                // An old check must not replace the cache after endpoint/token edits
+                // Ignore metadata from checks superseded by endpoint/token edits
                 // or a later check/forget action.
                 if check.generation != self.check_generation || check.selection != self.connection() { continue; }
-                self.cached_connection = check.result.is_ok().then(|| (check.selection.clone(), check.connection.clone()));
                 self.info = check.result.as_ref().ok().cloned();
             }
             let found = match reply {

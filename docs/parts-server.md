@@ -170,9 +170,14 @@ A storage error is shown separately and does not invalidate the connection. The 
 the current Windows user on this computer, not in a project, JSON settings,
 environment file or MCP response.
 
-Leave the PAT field empty and test the connection to load the saved value. The GUI
-caches it for the session; test the connection again to refresh it after an external
-replacement or removal. Normal GUI requests do not read Credential Manager.
+Leave the PAT field empty to use the saved value automatically. On the first
+request, the GUI loads it in the background before constructing that request;
+concurrent requests share the lookup. The UI thread never waits for the credential
+read. The result, including a missing token or read error, is cached for the session.
+**Test connection** forces a fresh lookup after an external replacement/removal or
+a read error. **Forget saved token** clears the cache as well. A different endpoint
+or explicit token uses a separate cache, so an older lookup cannot replace it.
+
 MCP uses the saved value when
 `parts_connect` selects `Eplan` without an explicit token. Each request resolves the
 credential again, so replacements and removals take effect without restarting MCP.

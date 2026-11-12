@@ -331,7 +331,7 @@ pub fn token_texts(client: &ServerClient) -> (&'static str, &'static str) {
         PortalKind::OpenECraft => (tr("Access token"), tr("only needed for uploads")),
         PortalKind::Eplan if openecraft_client::credentials::SystemCredentialStore::available_for(&client.url) => (
             tr("Personal access token"),
-            tr("Leave blank and test the connection to use the saved token. Saving a replacement requires Remember token."),
+            tr("Leave blank to use the saved token automatically. Saving a replacement requires Remember token."),
         ),
         PortalKind::Eplan => (tr("Personal access token"), tr("created in your EPLAN account (ePulse)")),
     }
