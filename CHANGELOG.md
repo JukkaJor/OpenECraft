@@ -34,6 +34,13 @@ its GitHub release ([docs/releasing.md](docs/releasing.md)).
 - **Auto-connect hints:** while a symbol is placed or moved with the mouse, faint
   dotted lines show the wires auto-connect would draw
   ([schematic](docs/features/schematic.md#routing)).
+- **Cut, copy and paste in the panel layout** (#153): right click an item in the front
+  view for *Cut*, *Copy*, *Paste*, *Properties* and *Remove* (devices go back to the
+  devices to place), or use `Ctrl+X` / `Ctrl+C` / `Ctrl+V`. Rails, ducts and the other
+  items are copied with what is mounted on them, without devices; cut devices go back
+  to the devices to place. The copy follows the pointer until a click places it
+  ([panel layout](docs/features/panel-layout.md#enclosures-and-devices)). New command
+  `copy_panel_items`.
 - **Profile sizes on mounting layouts** (#152): cable ducts, mounting rails and busbar
   systems are labelled with their cross-section and cut length
   (*60 × 100 mm, L = 940 mm*) on mounting layout pages and in the panel layout, on the
