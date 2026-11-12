@@ -3,17 +3,16 @@
 //! the EPLAN Data Portal like a parts server: server info, faceted search, parts by
 //! number and the files of a part (commercial data as CSV, DXF drawings, pictures).
 //! The portal needs the personal access token of an EPLAN account (sent as
-//! `Authorization: Bearer PAT:…`), the access the portal provides for its API; the
-//! token of a browser session is not used. Its API offers no changes, so the
+//! `Authorization: Bearer PAT:…`). Its API offers no changes, so the
 //! connection is read-only.
 //!
 //! | Parts server | EPLAN Data Portal |
 //! | --- | --- |
-//! | `GET /info` | `GET /parts?page[limit]=1` (number of parts) |
+//! | `GET /info` | `GET /parts?page[limit]=1`, then a protected commercial-data POST |
 //! | `POST /search` | `GET /parts?search=&filter[manufacturer]=&filter[catalog_eplan]=&sort=&page[offset]=&page[limit]=` |
 //! | `POST /search` with numbers | `POST /parts` with the portal ids ([`Part::portal_id`]) separated by commas |
 //! | `GET /parts/{number}` | `GET /parts?search="{number}"` (the portal finds parts by id only) |
-//! | `GET /files/{id}` | `GET /download/commercial_data/part/{id}`, `GET /download/dxf_data/part/{id}`, picture previews |
+//! | `GET /files/{id}` | `POST /download/commercial_data/part`, `POST /download/dxf_data/part` (id in the body), picture previews |
 //!
 //! Manufacturers are filtered by their short name, product groups by the id of the
 //! EPLAN catalog entry: (generic product group + 1) · 10⁸ + (product group + 1) · 10⁴ +
@@ -41,10 +40,16 @@ const INCLUDE: &str = "manufacturer,product_top_group,product_group,product_sub_
 const FACETS: [&str; 4] = ["top_group", "group", "subgroup", "manufacturer"];
 
 /// Address of the portal's API and the user's token; builds the requests.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct EplanEndpoint {
     pub url: String,
     pub token: String,
+}
+
+impl std::fmt::Debug for EplanEndpoint {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("EplanEndpoint").field("url", &self.url).field("token", &if self.token.is_empty() { "(empty)" } else { "(redacted)" }).finish()
+    }
 }
 
 impl Default for EplanEndpoint {
@@ -63,11 +68,12 @@ impl EplanEndpoint {
         api::url(&self.url, path)
     }
 
-    /// The personal access token is sent as `Bearer PAT:<token>` (also when written
-    /// with `PAT:`).
+    /// The download gateway accepts PAT credentials as `Bearer PAT:<token>`.
+    /// Accept pasted PAT or Bearer prefixes without duplicating them.
     fn authorized(&self, mut req: ehttp::Request) -> ehttp::Request {
         let token = self.token.trim();
         if !token.is_empty() {
+            let token = token.get(..7).filter(|p| p.eq_ignore_ascii_case("Bearer ")).map_or(token, |_| token[7..].trim());
             let value = format!("Bearer PAT:{}", token.strip_prefix("PAT:").unwrap_or(token));
             req.headers.insert("Authorization", value);
         }
@@ -78,9 +84,26 @@ impl EplanEndpoint {
         self.authorized(ehttp::Request::get(self.url(path)))
     }
 
-    /// The first part: checks address and token, the answer counts the parts.
+    /// Public metadata and catalog size. This alone does not check authentication.
     pub fn info(&self) -> ehttp::Request {
         self.get(&format!("/parts{}", params(&[("page[limit]", "1".into())])))
+    }
+
+    /// Confirm download access using a part returned by the catalog, without hard
+    /// coding a vendor/id. `/authorization` accepts JWTs but rejects valid PATs;
+    /// a public search alone accepts invalid or missing credentials.
+    pub fn connection_check(&self) -> crate::Call<ServerInfo> {
+        let endpoint = self.clone();
+        crate::Call::then(self.info(), move |result| {
+            let response = answer(result)?;
+            let doc: Value = serde_json::from_slice(&response.bytes).map_err(|e| tr_fmt!("unexpected answer: {}", e))?;
+            let info = decode_info(Ok(response))?;
+            let id = doc["data"][0]["id"].as_str().filter(|id| !id.is_empty()).ok_or_else(|| tr("access denied – check the personal access token").to_string())?;
+            Ok(crate::Call::new(endpoint.file(&format!("download/commercial_data/part/{id}")), move |r| {
+                decode_file(r)?;
+                Ok(info)
+            }))
+        })
     }
 
     /// Search with text, manufacturer, product groups, order and page of the query.
@@ -118,12 +141,30 @@ impl EplanEndpoint {
         }
     }
 
+    fn owns_file(&self, url: &str) -> bool {
+        let base = self.url.trim().trim_end_matches('/');
+        crate::same_origin(url, base) && url.get(..base.len()).is_some_and(|p| p.eq_ignore_ascii_case(base)) && url[base.len()..].starts_with(['/', '?'])
+    }
+
     /// The file; the token is only sent to the portal itself.
     pub fn file(&self, id: &str) -> ehttp::Request {
         let url = self.file_url(id);
-        let base = self.url.trim().trim_end_matches('/');
-        let own = crate::same_origin(&url, base) && url.get(..base.len()).is_some_and(|p| p.eq_ignore_ascii_case(base)) && url[base.len()..].starts_with(['/', '?']);
-        let req = ehttp::Request::get(url);
+        let own = self.owns_file(&url);
+        // Current portal downloads POST a comma-separated list of part ids. Keep
+        // stored attachment ids compatible with projects made by older clients.
+        let req = if own {
+            let download = ["dxf_data", "commercial_data"].into_iter().find_map(|kind| {
+                let prefix = self.url(&format!("/download/{kind}/part/"));
+                let part = url.strip_prefix(&prefix)?;
+                (!part.is_empty() && part.bytes().all(|b| b.is_ascii_digit())).then(|| (prefix.trim_end_matches('/').to_string(), part.to_string()))
+            });
+            match download {
+                Some((url, part)) => with_content_type(ehttp::Request::post(url, part.into_bytes()), "text/plain"),
+                None => ehttp::Request::get(url),
+            }
+        } else {
+            ehttp::Request::get(url)
+        };
         if own {
             self.authorized(req)
         } else {
@@ -133,7 +174,7 @@ impl EplanEndpoint {
 
     /// True if the file can only be loaded with the token (not in a web browser).
     pub fn needs_token(&self, id: &str) -> bool {
-        !id.contains("://")
+        self.owns_file(&self.file_url(id))
     }
 }
 

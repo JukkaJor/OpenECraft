@@ -129,8 +129,13 @@ ePulse). The portal then works like a parts server: search by text, manufacturer
 product group, part details with the commercial data (CSV), DXF drawings and
 pictures, adding parts to the local database and the update check of the database.
 
-Only personal access tokens are sent (as `Bearer PAT:<token>`), the access EPLAN
-provides for the portal's API; the token of a browser session is not used. The use of
+The PAT is sent as `Authorization: Bearer PAT:<token>` (pasted `PAT:` and `Bearer `
+prefixes are accepted too). The connection test reads the public catalog and then
+downloads the commercial data of its first returned part to check authenticated
+download access. A successful public search alone does not prove authentication;
+`/authorization` is not used because it rejects PATs accepted by the download gateway. DXF and
+commercial-data downloads POST the part id to `/download/{type}/part`, matching the
+portal's web client; existing attachment ids in saved projects remain supported. The use of
 the portal and of the part data taken from it is governed by EPLAN's terms of use and
 the account's license: check them before putting portal parts on a shared parts
 server. OpenECraft is not affiliated with EPLAN.
@@ -154,6 +159,28 @@ server. OpenECraft is not affiliated with EPLAN.
   web page; import them like other parts files (see [parts management](features/parts.md)).
 - Only the desktop version and the command line reach the portal: it allows no
   cross-origin requests from browsers, so the web version would need a proxy.
+
+### Shared Data Portal PAT on Windows
+
+The editor and CLI/MCP can use the same PAT through Windows Credential Manager.
+Enter the PAT in the editor's Data Portal and use **Test connection** once. Only a
+successful protected-download check saves the replacement. The PAT is stored for
+the current Windows user on this computer, not in a project, JSON settings,
+environment file or MCP response.
+
+Leave the PAT field empty to use the saved value. MCP uses the saved value when
+`parts_connect` selects `Eplan` without an explicit token. Each request resolves the
+credential again, so replacements and removals take effect without restarting MCP.
+An explicit token supplied for the current EPLAN connection takes precedence;
+MCP does not save explicit session tokens to the shared store.
+
+Credentials are scoped to the HTTPS origin, port and API path. Changing the server
+does not reuse another endpoint's saved PAT. **Forget saved token** removes only
+the current portal's entry and clears its GUI field. Other platforms retain
+session-only credentials; no plaintext persistence is used as a fallback.
+
+When upgrading from a version that kept PATs only in memory, enter the PAT once in
+the updated editor and test the connection. It does not need to be entered in MCP.
 
 ## Parts manager
 

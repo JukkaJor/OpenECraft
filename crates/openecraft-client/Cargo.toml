@@ -13,3 +13,7 @@ sha2 = "0.10"
 openecraft-parts = { path = "../openecraft-parts" }
 openecraft-core = { path = "../openecraft-core" }
 openecraft-i18n = { path = "../openecraft-i18n" }
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Security_Credentials"] }
+zeroize = "1"

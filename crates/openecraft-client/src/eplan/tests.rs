@@ -75,8 +75,9 @@ fn requests_of_the_portal() {
     assert_eq!(info.url, "https://portal.test/api/parts?page%5Blimit%5D=1");
     assert_eq!(info.headers.get("Authorization"), Some("Bearer PAT:abc123"));
     assert_eq!(endpoint("PAT:abc").info().headers.get("Authorization"), Some("Bearer PAT:abc"));
-    // The token of a browser session is not passed on as it is: only personal access tokens.
     assert_eq!(endpoint("eyJhbGciOi.x.y").info().headers.get("Authorization"), Some("Bearer PAT:eyJhbGciOi.x.y"));
+    assert_eq!(endpoint(" Bearer abc123 ").info().headers.get("Authorization"), Some("Bearer PAT:abc123"));
+    assert_eq!(endpoint(" Bearer PAT:abc123 ").info().headers.get("Authorization"), Some("Bearer PAT:abc123"));
     assert_eq!(endpoint("").info().headers.get("Authorization"), None);
 
     let include = "include=manufacturer%2Cproduct_top_group%2Cproduct_group%2Cproduct_sub_group%2Cpicture_file.preview";
@@ -102,7 +103,10 @@ fn requests_of_the_portal() {
 fn files_keep_the_token_on_the_portal() {
     let e = endpoint("abc");
     let own = e.file("download/dxf_data/part/4711");
-    assert_eq!(own.url, "https://portal.test/api/download/dxf_data/part/4711");
+    assert_eq!(own.url, "https://portal.test/api/download/dxf_data/part");
+    assert_eq!(own.method, ehttp::Method::POST);
+    assert_eq!(own.body, b"4711");
+    assert_eq!(own.headers.get("Content-Type"), Some("text/plain"));
     assert!(own.headers.get("Authorization").is_some());
     let other = e.file("https://cdn.test/512.jpg");
     assert_eq!(other.url, "https://cdn.test/512.jpg");
@@ -113,6 +117,8 @@ fn files_keep_the_token_on_the_portal() {
         assert_eq!(e.file(id).headers.get("Authorization"), None, "{id}");
     }
     assert!(e.file("https://portal.test/api/download/1").headers.get("Authorization").is_some());
+    assert!(e.needs_token("https://portal.test/api/download/dxf_data/part/4711"));
+    assert!(!e.needs_token("https://portal.test.evil.test/api/download/dxf_data/part/4711"));
     let bare = EplanEndpoint { url: "https://portal.test".into(), ..endpoint("abc") };
     assert_eq!(bare.file("https://portal.test.evil.test/x").headers.get("Authorization"), None);
 }
@@ -198,4 +204,52 @@ fn errors_are_readable() {
     assert_eq!(decode_file(response(500, "oops")).unwrap_err(), "500 Status");
     assert!(decode_info(Err("refused".into())).unwrap_err().contains("refused"));
     assert!(decode_info(response(200, "<html>")).is_err());
+}
+
+#[test]
+fn downloads_use_the_portals_post_protocol_for_both_attachment_forms() {
+    let e = endpoint("issued-token");
+    for kind in ["dxf_data", "commercial_data"] {
+        for id in [format!("download/{kind}/part/577485"), format!("https://portal.test/api/download/{kind}/part/577485")] {
+            let request = e.file(&id);
+            assert_eq!(request.method, ehttp::Method::POST);
+            assert_eq!(request.url, format!("https://portal.test/api/download/{kind}/part"));
+            assert_eq!(request.body, b"577485");
+            assert_eq!(request.headers.get("Authorization"), Some("Bearer PAT:issued-token"));
+        }
+    }
+    let image = e.file("https://cdn.test/download/dxf_data/part/577485");
+    assert_eq!(image.method, ehttp::Method::GET);
+    assert_eq!(image.headers.get("Authorization"), None);
+}
+
+#[test]
+fn public_search_does_not_pass_the_download_access_check() {
+    for status in [401, 403] {
+        let mut requests = 0;
+        let result = endpoint("invalid").connection_check().run(|request| {
+            requests += 1;
+            if request.method == ehttp::Method::GET {
+                response(200, r#"{"data":[{"id":"42"}],"meta":{"total":8}}"#)
+            } else {
+                assert_eq!(request.url, "https://portal.test/api/download/commercial_data/part");
+                assert_eq!(request.body, b"42");
+                response(status, "{}")
+            }
+        });
+        assert!(result.is_err());
+        assert_eq!(requests, 2);
+    }
+    let mut requests = 0;
+    let info = endpoint("valid").connection_check().run(|request| {
+        requests += 1;
+        assert_eq!(request.headers.get("Authorization"), Some("Bearer PAT:valid"));
+        if request.method == ehttp::Method::GET {
+            response(200, r#"{"data":[{"id":"42"}],"meta":{"total":8}}"#)
+        } else {
+            response(200, "part_number;description\nA;Example")
+        }
+    }).unwrap();
+    assert_eq!(info.parts, 8);
+    assert_eq!(requests, 2);
 }

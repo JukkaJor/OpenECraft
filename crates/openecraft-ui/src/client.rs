@@ -6,6 +6,7 @@
 
 use openecraft_i18n::{tr, tr_fmt};
 use openecraft_client::{check, decode, ehttp, Call, Connection, Endpoint, PortalKind};
+use openecraft_client::credentials::{self, CredentialStore, SystemCredentialStore};
 use openecraft_parts::api::{Accessories, ImportResult, PartList, PartQuery, ServerInfo, Session, UserUpdate};
 use openecraft_parts::portal::{AttachmentKind, Catalog, HistoryEntry, SearchResult, User};
 use openecraft_parts::Part;
@@ -122,7 +123,7 @@ pub struct ServerClient {
     pub kind: PortalKind,
     pub url: String,
     /// Access token for changes: the administrator token or the token of a session;
-    /// for the EPLAN Data Portal the personal access token (kept in memory only).
+    /// for EPLAN an explicit PAT. Empty uses the endpoint's saved system credential.
     pub token: String,
     pub info: Option<ServerInfo>,
     pub status: String,
@@ -183,6 +184,24 @@ impl ServerClient {
         Connection::new(self.kind, &self.url, &self.token)
     }
 
+    fn request_connection(&self) -> Result<Connection, String> {
+        credentials::connection_with_store(self.kind, &self.url, &self.token, &SystemCredentialStore)
+    }
+
+    /// Remove only this portal's saved PAT and its explicit GUI value.
+    pub fn forget_saved_pat(&mut self) {
+        if self.kind != PortalKind::Eplan { return; }
+        match SystemCredentialStore.forget(&self.url) {
+            Ok(_) => {
+                self.token.clear();
+                self.info = None;
+                self.status = tr("Saved Data Portal token removed").into();
+                self.failed = false;
+            }
+            Err(error) => { self.status = error.to_string(); self.failed = true; }
+        }
+    }
+
     /// Switches the kind of server; the address and token of each kind are kept.
     pub fn set_kind(&mut self, kind: PortalKind) {
         if kind == self.kind {
@@ -237,7 +256,7 @@ impl ServerClient {
             ctx.request_repaint();
         };
         match call {
-            Ok(Call { request, decode }) => ehttp::fetch(request, move |result| deliver(wrap(decode(result)))),
+            Ok(call) => call.fetch(move |result| deliver(wrap(result))),
             Err(e) => deliver(wrap(Err(e))),
         }
     }
@@ -254,8 +273,12 @@ impl ServerClient {
 
     /// Checks the connection (server info).
     pub fn check(&mut self, ctx: &egui::Context) {
-        let call = self.connection().info();
-        self.send(ctx, Ok(call), tr("Connecting…").into(), Reply::Info);
+        let explicit = (self.kind == PortalKind::Eplan && !self.token.trim().is_empty())
+            .then(|| openecraft_client::EplanEndpoint { url: self.url.clone(), token: self.token.clone() });
+        let call = self.request_connection().map(|c| c.info());
+        self.send(ctx, call, tr("Connecting…").into(), move |result| {
+            Reply::Info(credentials::remember_verified(result, explicit.as_ref(), &SystemCredentialStore))
+        });
     }
 
     /// Loads all parts.
@@ -267,16 +290,16 @@ impl ServerClient {
     /// Loads the parts with these numbers (e.g. to add them to the project).
     pub fn fetch(&mut self, ctx: &egui::Context, numbers: &[String]) {
         let ids: Vec<String> = numbers.iter().filter_map(|n| self.portal_ids.get(n)).cloned().collect();
-        let call = self.connection().find(numbers, &ids);
-        self.send(ctx, Ok(call), tr("Downloading parts…").into(), |r| {
+        let call = self.request_connection().map(|c| c.find(numbers, &ids));
+        self.send(ctx, call, tr("Downloading parts…").into(), |r| {
             Reply::Parts(r.map(|s| PartList { revision: s.revision, total: s.total, offset: s.offset, parts: s.parts }))
         });
     }
 
     /// Faceted search (part lists without models).
     pub fn search(&mut self, ctx: &egui::Context, query: &PartQuery) {
-        let call = self.connection().search(&PartQuery { brief: true, ..query.clone() });
-        self.send(ctx, Ok(call), tr("Searching…").into(), Reply::Search);
+        let call = self.request_connection().map(|c| c.search(&PartQuery { brief: true, ..query.clone() }));
+        self.send(ctx, call, tr("Searching…").into(), Reply::Search);
     }
 
     /// Loads the server versions of local parts for an update check; on the EPLAN Data
@@ -288,7 +311,7 @@ impl ServerClient {
         let call = if self.read_only() && ids.is_empty() {
             Err(tr("No part of the database comes from the EPLAN Data Portal").to_string())
         } else {
-            Ok(self.connection().find(&numbers, &ids))
+            self.request_connection().map(|c| c.find(&numbers, &ids))
         };
         self.send(ctx, call, tr("Checking for part updates…").into(), Reply::Versions);
     }
@@ -326,19 +349,19 @@ impl ServerClient {
     /// The whole part with its models, for the details (the search sends parts without
     /// them); the status line stays.
     pub fn detail(&mut self, ctx: &egui::Context, number: &str) {
-        let call = self.connection().part(number);
+        let call = self.request_connection().map(|c| c.part(number));
         let n = number.to_string();
         let status = self.status.clone();
-        self.send(ctx, Ok(call), status, move |r| Reply::Detail(n, r.map(|p| p.map(Box::new))));
+        self.send(ctx, call, status, move |r| Reply::Detail(n, r.map(|p| p.map(Box::new))));
     }
 
     /// The accessories of a part and the parts it fits, for the details; the status
     /// line stays.
     pub fn accessories(&mut self, ctx: &egui::Context, number: &str) {
-        let call = self.connection().accessories(number);
+        let call = self.request_connection().map(|c| c.accessories(number));
         let n = number.to_string();
         let status = self.status.clone();
-        self.send(ctx, Ok(call), status, move |r| Reply::Accessories(n, r));
+        self.send(ctx, call, status, move |r| Reply::Accessories(n, r));
     }
 
     /// Stores a file with a part.
@@ -353,9 +376,9 @@ impl ServerClient {
     }
 
     pub fn download_file(&mut self, ctx: &egui::Context, id: &str, name: &str, purpose: FileUse) {
-        let call = self.connection().file(id);
+        let call = self.request_connection().map(|c| c.file(id));
         let n = name.to_string();
-        self.send(ctx, Ok(call), tr_fmt!("Downloading {}…", name), move |r| Reply::File(n, purpose, r));
+        self.send(ctx, call, tr_fmt!("Downloading {}…", name), move |r| Reply::File(n, purpose, r));
     }
 
     pub fn catalogs(&mut self, ctx: &egui::Context) {

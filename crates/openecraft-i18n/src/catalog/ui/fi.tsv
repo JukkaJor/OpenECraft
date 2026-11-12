@@ -43,6 +43,7 @@ Filter (number, type, manufacturer, text …)	Suodatin (numero, tyyppi, valmista
 Filter criteria	Suodatusehdot
 Fits these parts	Sopii näihin osiin
 Floor mounting	Lattia-asennus
+Forget saved token	Poista tallennettu tunniste
 Functions the part provides. Used for device selection, the contact image (reserve contacts), the project check and to assign connection designations. Designations are listed in symbol connection order, separated by blanks.	Osan tarjoamat toiminnot. Käytetään laitevalintaan, kosketinkuvaan (varakoskettimet), projektin tarkistukseen ja liitäntämerkintöjen määrittämiseen. Merkinnät luetellaan symbolin liitäntäjärjestyksessä välilyönneillä erotettuina.
 Generate from function template	Luo toimintomallista
 Group by	Ryhmittelyperuste
@@ -51,6 +52,7 @@ Import STL / OBJ / STEP / IGES / IFC / JT…	Tuo STL / OBJ / STEP / IGES / IFC /
 Import SVG…	Tuo SVG…
 Internal values of the EPLAN part exchange (0: undefined)	EPLAN-osasiirron sisäiset arvot (0: määrittelemätön)
 It only works attached to one of the parts it fits; the project check reports it on a device without such a part	Se toimii vain kiinnitettynä johonkin osaan, johon se sopii; projektin tarkistus ilmoittaa siitä laitteessa, jossa tällaista osaa ei ole
+Leave blank to use the saved token. Test connection saves a replacement securely for MCP.	Jätä tyhjäksi käyttääksesi tallennettua tunnistetta. Testaa yhteys tallentaa korvaavan tunnisteen suojatusti myös MCP:n käyttöön.
 Loaded {} parts (revision {})	Ladattu {} osaa (revisio {})
 Loading catalogs…	Ladataan luetteloita…
 Loading favorites…	Ladataan suosikkeja…
@@ -81,6 +83,7 @@ Replaces the connection points by the IEC convention: odd designations at the to
 Reset filter	Nollaa suodatin
 Rotate 90°:	Kierrä 90°:
 Save the file	Tallenna tiedosto
+Saved Data Portal token removed	Tallennettu Data Portal -tunniste poistettu
 Saved catalog {}	Luettelo {} tallennettiin
 Saved part {}	Osa {} tallennettu
 Saved user {}	Käyttäjä {} tallennettiin

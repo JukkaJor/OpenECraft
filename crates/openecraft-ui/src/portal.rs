@@ -329,7 +329,20 @@ pub fn kind_choice(ui: &mut egui::Ui, client: &mut ServerClient) -> bool {
 pub fn token_texts(client: &ServerClient) -> (&'static str, &'static str) {
     match client.kind {
         PortalKind::OpenECraft => (tr("Access token"), tr("only needed for uploads")),
+        PortalKind::Eplan if openecraft_client::credentials::SystemCredentialStore::available_for(&client.url) => (
+            tr("Personal access token"),
+            tr("Leave blank to use the saved token. Test connection saves a replacement securely for MCP."),
+        ),
         PortalKind::Eplan => (tr("Personal access token"), tr("created in your EPLAN account (ePulse)")),
+    }
+}
+
+/// Saved EPLAN credentials belong to the configured endpoint, not to the project.
+pub fn shared_token_controls(ui: &mut egui::Ui, client: &mut ServerClient) {
+    if client.kind == PortalKind::Eplan && openecraft_client::credentials::SystemCredentialStore::available_for(&client.url)
+        && ui.add_enabled(!client.busy(), egui::Button::new(tr("Forget saved token"))).clicked()
+    {
+        client.forget_saved_pat();
     }
 }
 
