@@ -88,3 +88,15 @@ fn windows_store_roundtrip_uses_a_unique_dummy_entry_and_removes_it() {
     assert!(SystemCredentialStore.load(&url).unwrap().is_none());
     assert!(!SystemCredentialStore.forget(&url).unwrap());
 }
+
+#[test]
+fn optional_save_failure_does_not_invalidate_a_working_connection() {
+    let store = MemoryStore { failure: Some(CredentialError { operation: Operation::Save, code: 1312 }), ..Default::default() };
+    let endpoint = EplanEndpoint { url: URL.into(), token: "session-fixture".into() };
+    let (info, warning) = remember_verified(Ok(ServerInfo { parts: 42, ..Default::default() }), Some(&endpoint), &store).unwrap();
+    assert_eq!(info.parts, 42);
+    assert!(warning.unwrap().contains("Could not save"));
+    // No consent (None) means that the failing store is never called.
+    let (_, warning) = remember_verified(Ok(ServerInfo::default()), None, &store).unwrap();
+    assert!(warning.is_none());
+}

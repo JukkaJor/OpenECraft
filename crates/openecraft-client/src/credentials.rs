@@ -83,27 +83,21 @@ fn target_name(url: &str) -> Option<String> {
 
 /// Explicit session/CLI/environment credentials win. Otherwise read the shared
 /// value afresh on each request, so GUI replacements and removals take effect.
-pub fn connection_with_store(kind: PortalKind, url: &str, token: &str, store: &impl CredentialStore) -> Result<Connection, String> {
-    connection_with_lookup(kind, url, token, |url| store.load(url))
-}
-
-/// Read-only adapter for clients whose transport supplies an isolated environment.
-pub fn connection_with_lookup(kind: PortalKind, url: &str, token: &str, lookup: impl FnOnce(&str) -> Result<Option<String>, CredentialError>) -> Result<Connection, String> {
+pub fn connection_with_store(kind: PortalKind, url: &str, token: &str, store: &(impl CredentialStore + ?Sized)) -> Result<Connection, String> {
     if kind != PortalKind::Eplan || !token.trim().is_empty() || target_name(url).is_none() {
         return Ok(Connection::new(kind, url, token));
     }
-    let saved = lookup(url).map_err(|e| e.to_string())?.unwrap_or_default();
+    let saved = store.load(url).map_err(|e| e.to_string())?.unwrap_or_default();
     Ok(Connection::new(kind, url, &saved))
 }
 
-/// Called by the GUI only, after its actual protected download check succeeded.
-/// A failed check never replaces a working saved PAT. MCP reads but does not save.
-pub fn remember_verified(info: Result<ServerInfo, String>, endpoint: Option<&EplanEndpoint>, store: &impl CredentialStore) -> Result<ServerInfo, String> {
+/// A successful connection remains successful if optional persistence fails.
+/// The GUI shows the warning separately; only an explicit opt-in calls this helper.
+pub fn remember_verified(info: Result<ServerInfo, String>, endpoint: Option<&EplanEndpoint>, store: &impl CredentialStore) -> Result<(ServerInfo, Option<String>), String> {
     let info = info?;
-    if let Some(endpoint) = endpoint.filter(|e| !e.token.trim().is_empty()) {
-        store.save(&endpoint.url, &endpoint.token).map_err(|e| e.to_string())?;
-    }
-    Ok(info)
+    let warning = endpoint.filter(|e| !e.token.trim().is_empty())
+        .and_then(|e| store.save(&e.url, &e.token).err()).map(|e| e.to_string());
+    Ok((info, warning))
 }
 
 #[cfg(test)]

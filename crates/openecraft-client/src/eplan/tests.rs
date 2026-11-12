@@ -224,32 +224,70 @@ fn downloads_use_the_portals_post_protocol_for_both_attachment_forms() {
 }
 
 #[test]
-fn public_search_does_not_pass_the_download_access_check() {
+fn public_catalog_access_does_not_pass_the_protected_check() {
     for status in [401, 403] {
         let mut requests = 0;
         let result = endpoint("invalid").connection_check().run(|request| {
             requests += 1;
-            if request.method == ehttp::Method::GET {
-                response(200, r#"{"data":[{"id":"42"}],"meta":{"total":8}}"#)
-            } else {
-                assert_eq!(request.url, "https://portal.test/api/download/commercial_data/part");
-                assert_eq!(request.body, b"42");
-                response(status, "{}")
-            }
+            assert!(request.url.ends_with("/token/fileprovider"));
+            response(status, "{}")
         });
-        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("access denied"));
+        assert_eq!(requests, 1);
+    }
+}
+
+#[test]
+fn connection_check_does_not_download_parts_or_require_commercial_data() {
+    for catalog in [r#"{"data":[],"meta":{"total":0}}"#,
+        r#"{"data":[{"id":"42","attributes":{"data_types":["picture"]}}],"meta":{"total":8}}"#] {
+        let mut requests = 0;
+        let info = endpoint("valid").connection_check().run(|request| {
+            requests += 1;
+            assert_eq!(request.headers.get("Authorization"), Some("Bearer PAT:valid"));
+            assert_eq!(request.method, ehttp::Method::GET);
+            assert!(request.body.is_empty());
+            if request.url.ends_with("/token/fileprovider") {
+                response(200, r#"{"data":{"attributes":{"token":"provider-fixture"}}}"#)
+            } else {
+                assert!(request.url.contains("/parts?"));
+                response(200, catalog)
+            }
+        }).unwrap();
+        assert_eq!(info.parts, if catalog.contains("42") { 8 } else { 0 });
         assert_eq!(requests, 2);
     }
-    let mut requests = 0;
-    let info = endpoint("valid").connection_check().run(|request| {
-        requests += 1;
-        assert_eq!(request.headers.get("Authorization"), Some("Bearer PAT:valid"));
-        if request.method == ehttp::Method::GET {
-            response(200, r#"{"data":[{"id":"42"}],"meta":{"total":8}}"#)
-        } else {
-            response(200, "part_number;description\nA;Example")
+}
+
+#[test]
+fn malformed_service_or_catalog_answers_are_not_reported_as_access_denied() {
+    for body in ["{}", r#"{"data":{"attributes":{"token":17}}}"#, r#"{"data":{"attributes":{"token":""}}}"#] {
+        let error = endpoint("valid").connection_check().run(|_| response(200, body)).unwrap_err();
+        assert!(error.contains("Unexpected Data Portal response"));
+        assert!(!error.contains("access denied"));
+    }
+    for body in ["{}", r#"{"data":null}"#, r#"{"data":{}}"#, r#"{"data":[{}]}"#, r#"{"data":[{"id":17}]}"#, r#"{"data":[{"id":""}]}"#] {
+        assert!(decode_info(response(200, body)).unwrap_err().contains("Unexpected Data Portal response"));
+    }
+}
+
+#[test]
+fn absolute_download_urls_use_the_same_origin_rules_as_authorization() {
+    for kind in ["dxf_data", "commercial_data"] {
+        for host in ["portal.test", "PORTAL.test:443"] {
+            let id = format!("https://{host}/api/download/{kind}/part/4711?language=en");
+            let request = endpoint("fixture").file(&id);
+            assert_eq!(request.method, ehttp::Method::POST);
+            assert_eq!(request.url, format!("https://portal.test/api/download/{kind}/part?language=en"));
+            assert_eq!(request.body, b"4711");
+            assert_eq!(request.headers.get("Authorization"), Some("Bearer PAT:fixture"));
         }
-    }).unwrap();
-    assert_eq!(info.parts, 8);
-    assert_eq!(requests, 2);
+    }
+    for url in ["https://portal.test.evil.test/api/download/dxf_data/part/1", "https://portal.test:444/api/download/dxf_data/part/1",
+        "https://user@portal.test/api/download/dxf_data/part/1", "https://portal.test/API/download/dxf_data/part/1",
+        "https://portal.test/api-other/download/dxf_data/part/1", "https://portal.test/api/../outside"] {
+        let request = endpoint("fixture").file(url);
+        assert_eq!(request.headers.get("Authorization"), None, "{url}");
+        assert!(!endpoint("fixture").needs_token(url));
+    }
 }

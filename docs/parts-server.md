@@ -163,12 +163,17 @@ server. OpenECraft is not affiliated with EPLAN.
 ### Shared Data Portal PAT on Windows
 
 The editor and CLI/MCP can use the same PAT through Windows Credential Manager.
-Enter the PAT in the editor's Data Portal and use **Test connection** once. Only a
-successful protected-download check saves the replacement. The PAT is stored for
+Enter the PAT in the editor's Data Portal, select **Remember token on this computer**,
+and use **Test connection**. Remembering is off by default: without this opt-in the
+PAT stays in the session. Only a successful protected-service check saves a replacement.
+A storage error is shown separately and does not invalidate the connection. The PAT is stored for
 the current Windows user on this computer, not in a project, JSON settings,
 environment file or MCP response.
 
-Leave the PAT field empty to use the saved value. MCP uses the saved value when
+Leave the PAT field empty and test the connection to load the saved value. The GUI
+caches it for the session; test the connection again to refresh it after an external
+replacement or removal. Normal GUI requests do not read Credential Manager.
+MCP uses the saved value when
 `parts_connect` selects `Eplan` without an explicit token. Each request resolves the
 credential again, so replacements and removals take effect without restarting MCP.
 An explicit token supplied for the current EPLAN connection takes precedence;
@@ -180,7 +185,10 @@ the current portal's entry and clears its GUI field. Other platforms retain
 session-only credentials; no plaintext persistence is used as a fallback.
 
 When upgrading from a version that kept PATs only in memory, enter the PAT once in
-the updated editor and test the connection. It does not need to be entered in MCP.
+the updated editor, select **Remember token on this computer**, and test the connection.
+It does not need to be entered in MCP. Connection tests query the protected
+file-provider token service and public catalog metadata; they do not download a
+commercial-data file or depend on a particular catalog part having one.
 
 ## Parts manager
 

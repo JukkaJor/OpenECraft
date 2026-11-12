@@ -17,12 +17,12 @@ fn both_kinds_answer_in_the_parts_server_types() {
     let eplan = Connection::new(PortalKind::Eplan, "https://portal.test/api", "pat");
     assert_eq!(eplan.kind(), PortalKind::Eplan);
     let info = eplan.info().run(|req| {
-        if req.method == ehttp::Method::GET {
+        if req.url.contains("/parts?") {
             assert!(req.url.starts_with("https://portal.test/api/parts?"));
             response(r#"{"data":[{"id":"1"}],"meta":{"total":7}}"#)
         } else {
-            assert_eq!(req.url, "https://portal.test/api/download/commercial_data/part");
-            response("number;description\nA;Part")
+            assert_eq!(req.url, "https://portal.test/api/token/fileprovider");
+            response(r#"{"data":{"attributes":{"token":"provider-fixture"}}}"#)
         }
     });
     assert_eq!(info.unwrap().parts, 7);

@@ -4,7 +4,7 @@
 
 use crate::args::Options;
 use openecraft_client::{check, decode, decode_found, ehttp, text, Call, Connection, Endpoint, PortalKind};
-use openecraft_client::credentials::{CredentialError, CredentialStore, SystemCredentialStore};
+use openecraft_client::credentials::{CredentialStore, SystemCredentialStore};
 use openecraft_parts::access::{Policy, Settings};
 use openecraft_parts::api::{ImportResult, PartQuery, ServerInfo, Session, UserUpdate};
 use openecraft_parts::portal::{AttachmentKind, Catalog, HistoryEntry, PartsRight, SearchResult, User};
@@ -12,17 +12,11 @@ use openecraft_parts::Part;
 
 pub trait Transport {
     fn fetch(&self, request: &ehttp::Request) -> ehttp::Result<ehttp::Response>;
-
-    /// Mock transports never access the user's credential store.
-    fn shared_pat(&self, _url: &str) -> Result<Option<String>, CredentialError> { Ok(None) }
 }
 
 pub struct Http;
 
 impl Transport for Http {
-    fn shared_pat(&self, url: &str) -> Result<Option<String>, CredentialError> {
-        SystemCredentialStore.load(url)
-    }
     fn fetch(&self, request: &ehttp::Request) -> ehttp::Result<ehttp::Response> {
         ehttp::fetch_blocking(request)
     }
@@ -33,6 +27,7 @@ pub struct Server {
     pub endpoint: Endpoint,
     pub kind: PortalKind,
     pub transport: Box<dyn Transport>,
+    pub credentials: Box<dyn CredentialStore>,
 }
 
 impl Server {
@@ -45,7 +40,7 @@ impl Server {
             url: o.server.clone().or_else(|| env("OPENECRAFT_SERVER")).unwrap_or(default.url),
             token: o.token.clone().or_else(|| env("OPENECRAFT_TOKEN")).unwrap_or_default(),
         };
-        Server { endpoint, kind: PortalKind::OpenECraft, transport: Box::new(Http) }
+        Server { endpoint, kind: PortalKind::OpenECraft, transport: Box::new(Http), credentials: Box::new(SystemCredentialStore) }
     }
 
     fn fetch(&self, request: ehttp::Request) -> ehttp::Result<ehttp::Response> {
@@ -53,7 +48,7 @@ impl Server {
     }
 
     pub fn connection(&self) -> Result<Connection, String> {
-        openecraft_client::credentials::connection_with_lookup(self.kind, &self.endpoint.url, &self.endpoint.token, |url| self.transport.shared_pat(url))
+        openecraft_client::credentials::connection_with_store(self.kind, &self.endpoint.url, &self.endpoint.token, self.credentials.as_ref())
     }
 
     fn call<T: 'static>(&self, call: Call<T>) -> Result<T, String> {

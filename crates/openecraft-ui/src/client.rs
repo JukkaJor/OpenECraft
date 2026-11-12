@@ -17,6 +17,7 @@ use std::sync::{Arc, Mutex};
 #[derive(Debug)]
 pub enum Reply {
     Info(Result<ServerInfo, String>),
+    Checked(Box<CheckedConnection>),
     Parts(Result<PartList, String>),
     Imported(Result<ImportResult, String>),
     /// A part was saved, or a file attached to / removed from it.
@@ -46,6 +47,23 @@ pub enum Reply {
     File(String, FileUse, Result<Vec<u8>, String>),
 }
 
+/// A background connection check and its endpoint-specific session credential.
+/// Credentials are excluded from Debug, for both kinds of server.
+pub struct CheckedConnection {
+    selection: Connection,
+    connection: Connection,
+    generation: u64,
+    result: Result<ServerInfo, String>,
+    warning: Option<String>,
+}
+
+impl std::fmt::Debug for CheckedConnection {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("CheckedConnection").field("generation", &self.generation)
+            .field("result", &self.result).field("warning", &self.warning).finish_non_exhaustive()
+    }
+}
+
 /// What a downloaded file is for.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum FileUse {
@@ -58,6 +76,7 @@ pub enum FileUse {
 impl Reply {
     pub fn error(&self) -> Option<&str> {
         match self {
+            Reply::Checked(check) => check.result.as_ref().err().map(String::as_str),
             Reply::Info(Err(e))
             | Reply::Parts(Err(e))
             | Reply::Imported(Err(e))
@@ -87,6 +106,10 @@ impl Reply {
             return tr_fmt!("Parts server: {}", e);
         }
         match self {
+            Reply::Checked(check) => {
+                let status = Reply::Info(check.result.clone()).describe();
+                match &check.warning { Some(warning) => format!("{status}; {warning}"), None => status }
+            }
             Reply::Info(Ok(info)) => {
                 let access = match &info.user {
                     Some(u) => tr_fmt!("signed in as {} ({})", u.name, tr(u.role.title())),
@@ -125,6 +148,10 @@ pub struct ServerClient {
     /// Access token for changes: the administrator token or the token of a session;
     /// for EPLAN an explicit PAT. Empty uses the endpoint's saved system credential.
     pub token: String,
+    /// Explicit opt-in; never persisted with application settings.
+    pub remember_pat: bool,
+    cached_connection: Option<(Connection, Connection)>,
+    check_generation: u64,
     pub info: Option<ServerInfo>,
     pub status: String,
     /// Address and token of the other kind of server.
@@ -145,6 +172,9 @@ impl Default for ServerClient {
             kind: PortalKind::OpenECraft,
             url,
             token,
+            remember_pat: false,
+            cached_connection: None,
+            check_generation: 0,
             info: None,
             status: String::new(),
             other: (PortalKind::Eplan.default_url(), String::new()),
@@ -185,17 +215,26 @@ impl ServerClient {
     }
 
     fn request_connection(&self) -> Result<Connection, String> {
-        credentials::connection_with_store(self.kind, &self.url, &self.token, &SystemCredentialStore)
+        let selection = self.connection();
+        Ok(self.cached_connection.as_ref().filter(|(key, _)| key == &selection)
+            .map_or(selection, |(_, connection)| connection.clone()))
     }
 
     /// Remove only this portal's saved PAT and its explicit GUI value.
     pub fn forget_saved_pat(&mut self) {
         if self.kind != PortalKind::Eplan { return; }
-        match SystemCredentialStore.forget(&self.url) {
-            Ok(_) => {
+        self.forget_saved_pat_with(&SystemCredentialStore);
+    }
+
+    fn forget_saved_pat_with(&mut self, store: &impl CredentialStore) {
+        self.check_generation += 1;
+        match store.forget(&self.url) {
+            Ok(removed) => {
+                self.cached_connection = None;
+                self.remember_pat = false;
                 self.token.clear();
                 self.info = None;
-                self.status = tr("Saved Data Portal token removed").into();
+                self.status = if removed { tr("Saved Data Portal token removed") } else { tr("No saved Data Portal token for this endpoint") }.into();
                 self.failed = false;
             }
             Err(error) => { self.status = error.to_string(); self.failed = true; }
@@ -210,6 +249,9 @@ impl ServerClient {
         let current = (std::mem::take(&mut self.url), std::mem::take(&mut self.token));
         (self.url, self.token) = std::mem::replace(&mut self.other, current);
         self.kind = kind;
+        self.cached_connection = None;
+        self.remember_pat = false;
+        self.check_generation += 1;
         self.info = None;
         self.status.clear();
         self.failed = false;
@@ -273,11 +315,35 @@ impl ServerClient {
 
     /// Checks the connection (server info).
     pub fn check(&mut self, ctx: &egui::Context) {
-        let explicit = (self.kind == PortalKind::Eplan && !self.token.trim().is_empty())
-            .then(|| openecraft_client::EplanEndpoint { url: self.url.clone(), token: self.token.clone() });
-        let call = self.request_connection().map(|c| c.info());
-        self.send(ctx, call, tr("Connecting…").into(), move |result| {
-            Reply::Info(credentials::remember_verified(result, explicit.as_ref(), &SystemCredentialStore))
+        let selection = self.connection();
+        let kind = self.kind;
+        let url = self.url.clone();
+        let token = self.token.clone();
+        let remember = self.remember_pat;
+        self.check_generation += 1;
+        let generation = self.check_generation;
+        self.cached_connection = None;
+        self.pending += 1;
+        self.status = tr("Connecting…").into();
+        let inbox = self.inbox.clone();
+        let ctx = ctx.clone();
+        // Credential Manager is read once per check, off the desktop UI thread.
+        // Normal search/detail/download requests only use the session cache.
+        crate::io::background(move || {
+            let connection = credentials::connection_with_store(kind, &url, &token, &SystemCredentialStore);
+            let explicit = (remember && kind == PortalKind::Eplan && !token.trim().is_empty())
+                .then_some(openecraft_client::EplanEndpoint { url, token });
+            let resolved = connection.as_ref().cloned().unwrap_or_else(|_| selection.clone());
+            let finish = move |result| {
+                let (result, warning) = match credentials::remember_verified(result, explicit.as_ref(), &SystemCredentialStore) {
+                    Ok((info, warning)) => (Ok(info), warning),
+                    Err(error) => (Err(error), None),
+                };
+                let check = CheckedConnection { selection, connection: resolved, generation, result, warning };
+                if let Ok(mut inbox) = inbox.lock() { inbox.push(Reply::Checked(Box::new(check))); }
+                ctx.request_repaint();
+            };
+            match connection { Ok(connection) => connection.info().fetch(finish), Err(error) => finish(Err(error)) }
         });
     }
 
@@ -439,6 +505,13 @@ impl ServerClient {
         let replies: Vec<Reply> = self.inbox.lock().map(|mut i| std::mem::take(&mut *i)).unwrap_or_default();
         for reply in &replies {
             self.pending = self.pending.saturating_sub(1);
+            if let Reply::Checked(check) = reply {
+                // An old check must not replace the cache after endpoint/token edits
+                // or a later check/forget action.
+                if check.generation != self.check_generation || check.selection != self.connection() { continue; }
+                self.cached_connection = check.result.is_ok().then(|| (check.selection.clone(), check.connection.clone()));
+                self.info = check.result.as_ref().ok().cloned();
+            }
             let found = match reply {
                 Reply::Search(Ok(r)) | Reply::Versions(Ok(r)) => r.parts.as_slice(),
                 Reply::Parts(Ok(list)) => list.parts.as_slice(),
@@ -469,7 +542,13 @@ impl ServerClient {
                 self.failed = reply.error().is_some();
             }
         }
-        replies
+        // Keep the public Info notification used by the parts manager to reload
+        // parts and catalogs; credential details stay inside this client.
+        replies.into_iter().filter_map(|reply| match reply {
+            Reply::Checked(check) if check.generation == self.check_generation && check.selection == self.connection() => Some(Reply::Info(check.result)),
+            Reply::Checked(_) => None,
+            reply => Some(reply),
+        }).collect()
     }
 
     /// True if the status line shows an error.
